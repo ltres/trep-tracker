@@ -1,1 +1,10 @@
-/* You can add global styles to this file, and also import other style files */
+@import 'assets/jetbrains-mono.scss';
+
+$background-color: #161a24;
+$text-color: #ffffff;
+
+html{
+    background-color: $background-color;
+    color: $text-color;
+    font-family: 'JetBrains Mono';
+}
