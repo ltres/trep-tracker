@@ -12,6 +12,7 @@ import { Observable } from 'rxjs';
   styleUrl: './main-board.component.scss',
 })
 export class MainBoardComponent implements OnInit{
+
   @ViewChildren(TaskComponent) taskComponents!: QueryList<TaskComponent>;
 
   constructor(private taskService: TaskService) {
@@ -26,8 +27,11 @@ export class MainBoardComponent implements OnInit{
 
   }
 
+  focusTask($event: Task) {
+    this.taskService.activeTask = $event;
+  }
   createNewTask() {
-    let task = {textContent: ''} as Task;
+    let task = {textContent: 'Task'} as Task;
     this.taskService.addTask(task);
     this.taskService.activeTask = task;
   }
