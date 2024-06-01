@@ -2,9 +2,16 @@
 
 $background-color: #161a24;
 $text-color: #ffffff;
-
+$font-size:16px;
 html{
     background-color: $background-color;
     color: $text-color;
     font-family: 'JetBrains Mono';
+    font-size: $font-size
+
+}
+body{
+    margin: 0;
+    padding: 0;
+    font-size: $font-size
 }
