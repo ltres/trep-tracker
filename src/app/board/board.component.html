@@ -1,0 +1,7 @@
+
+<!-- <button (click)="createNewTask()">Create New Task</button> -->
+
+<ng-container *ngFor="let lane of lanes$ | async">
+  <lane [lane]="lane"></lane>
+</ng-container>  
+

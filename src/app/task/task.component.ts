@@ -1,7 +1,7 @@
 import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, Renderer2, ViewChild } from '@angular/core';
 import { Editor, NgxEditorModule } from 'ngx-editor';
 import { Task } from '../../types/task';
-import { TaskService } from '../../service/task.service';
+import { BoardService } from '../../service/task.service';
 
 @Component({
   selector: 'task',
@@ -22,7 +22,7 @@ export class TaskComponent implements OnInit, OnDestroy {
 
   clickX = 0;
   clickY = 0;
-  constructor(private taskService: TaskService, private renderer: Renderer2, private el: ElementRef) {
+  constructor(private taskService: BoardService, private renderer: Renderer2, private el: ElementRef) {
 
   }
 
@@ -58,6 +58,8 @@ export class TaskComponent implements OnInit, OnDestroy {
   }
 
   dragEnd($event: DragEvent) {
+    // @ts-ignore
+    $event.dataTransfer.setDragImage($event.target, window.outerWidth, window.outerHeight);
     this.renderer.setStyle(this.el.nativeElement, 'position', 'absolute');
     this.renderer.setStyle(this.el.nativeElement, 'left', `${$event.clientX - this.clickX}px`);
     this.renderer.setStyle(this.el.nativeElement, 'top', `${$event.clientY - this.clickY}px`);

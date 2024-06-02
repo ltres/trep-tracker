@@ -1,5 +1,6 @@
 
 
 <main class="main">
-    <main-board></main-board>
+    <button (click)="addBoard()">Add board</button>
+    <board *ngFor="let board of boards$ | async" [board]="board"></board>
 </main>

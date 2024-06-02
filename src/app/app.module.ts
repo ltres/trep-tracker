@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgxEditorModule } from 'ngx-editor';
-import { MainBoardComponent } from './main-board/main-board.component';
+import { BoardComponent } from './board/board.component';
 import { TaskComponent } from './task/task.component';
 import { AppComponent } from './app.component';
-import { TaskService } from '../service/task.service';
+import { BoardService } from '../service/task.service';
+import { LaneComponent } from './lane/lane.component';
 
 @NgModule({
-  declarations: [AppComponent,MainBoardComponent, TaskComponent],
+  declarations: [AppComponent, BoardComponent, LaneComponent, TaskComponent],
   imports: [
     CommonModule,
     BrowserModule,
@@ -17,7 +18,7 @@ import { TaskService } from '../service/task.service';
     ReactiveFormsModule,
     NgxEditorModule
   ],
-  providers: [TaskService],
+  providers: [BoardService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
