@@ -80,11 +80,15 @@ export class BoardService {
         }
         
         this._boards$.next(boards);
-        this.setActiveTask(task);
+        //this.setActiveTask(task);
     }
 
     setActiveTask(task: Task) {
         let boards = this._boards$.getValue();
+        let active = boards.flatMap( b => b.lanes.flatMap( l => l.tasks.flatMap( t => t.active ? t.id : undefined) ))
+        if( active.indexOf( task.id ) >= 0 ){
+            return;
+        }
         boards.forEach( b => b.lanes.forEach( l => l.tasks.forEach( t => t.active = t.id === task.id) ))
         this._boards$.next(boards);
     }
@@ -138,7 +142,7 @@ export class BoardService {
     }
 
     publishDragEvent(task: Task, dragCoordinates: DragEventCoordinates) {
-        this.setActiveTask(task);
+        //this.setActiveTask(task);
         this._dragEvent$.next({ task, dragCoordinates });
     }
 
