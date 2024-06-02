@@ -1,7 +1,7 @@
-import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, Renderer2, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostBinding, Input, OnDestroy, OnInit, Output, Renderer2, ViewChild } from '@angular/core';
 import { Editor, NgxEditorModule } from 'ngx-editor';
-import { Task } from '../../types/task';
-import { BoardService } from '../../service/task.service';
+import { Board, Task } from '../../types/task';
+import { BoardService } from '../../service/board.service';
 
 @Component({
   selector: 'task',
@@ -11,36 +11,37 @@ import { BoardService } from '../../service/task.service';
   styleUrl: './task.component.scss'
 })
 export class TaskComponent implements OnInit, OnDestroy {
+  @HostBinding('style.position') position = 'relative';
+  @HostBinding('style.top') top: string | undefined;
+  @HostBinding('style.left') left: string | undefined;
 
   @ViewChild('editorElement') editorElement: ElementRef | undefined; 
   @Input() task!: Task;
+  @Input() board!: Board;
+
   @Output() createNewTask: EventEmitter<void> = new EventEmitter();
   @Output() askFocus: EventEmitter<Task> = new EventEmitter();
 
-  isActive = false;
-  editor!: Editor;
+  editor: Editor | undefined;
 
-  clickX = 0;
-  clickY = 0;
-  constructor(private taskService: BoardService, private renderer: Renderer2, private el: ElementRef) {
+  deltaX = 0;
+  deltaY = 0;
+  constructor(private boardService: BoardService, private renderer: Renderer2, private el: ElementRef) {
 
   }
 
   editorChange($event: string) {
     // console.log($event)
     if($event.endsWith('<p></p>')) {
-      this.editor.setContent($event.replace('<p></p>', ''));
+      this.editor?.setContent($event.replace('<p></p>', ''));
       this.createNewTask.emit();
     }
   }
 
   ngOnInit(): void {
-    this.taskService.tasks$.subscribe((tasks) => {
-
-    });
-    this.taskService.activeTask$.subscribe((task) => {
-      if( task && task === this.task) {
-        this.isActive = true;
+    this.boardService.activeTask$.subscribe((task) => {
+      if( task && task.id === this.task.id) {
+        this.task = task;
         this.editor = new Editor();
         this.editor.commands.focus().exec();
         setTimeout(() => {
@@ -51,29 +52,45 @@ export class TaskComponent implements OnInit, OnDestroy {
         //const transaction = this.editor.view.state.tr.setSelection(Selection.atEnd(view.docView.node));
 
       } else {
-        this.isActive = false;
-        this.editor.destroy();
+        this.task.active = false;
+        this.editor?.destroy();
       }
     });
   }
 
-  dragEnd($event: DragEvent) {
-    // @ts-ignore
-    $event.dataTransfer.setDragImage($event.target, window.outerWidth, window.outerHeight);
-    this.renderer.setStyle(this.el.nativeElement, 'position', 'absolute');
-    this.renderer.setStyle(this.el.nativeElement, 'left', `${$event.clientX - this.clickX}px`);
-    this.renderer.setStyle(this.el.nativeElement, 'top', `${$event.clientY - this.clickY}px`);
+  
+  activateTask(task: Task) {
+    this.boardService.setActiveTask(task);
   }
+
+  /**
+   * If the task was dropped over another, put the task in the same lane after/before that task.
+   * Otherwise, create another floating lane
+   * @param $event 
+   */
+  dragEnd($event: DragEvent) {
+    const style = getComputedStyle(document.querySelectorAll('body')[0])
+    const paddingLeft = parseInt(style.paddingLeft);
+    const paddingTop = parseInt(style.paddingTop);
+    //
+    this.boardService.publishDragEvent( this.task, {
+      cursorX: $event.clientX, 
+      cursorY:$event.clientY, 
+      deltaX: this.deltaX + paddingLeft, 
+      deltaY: this.deltaY + paddingTop 
+    })
+  }
+  
   dragStart($event: DragEvent) {
     const rect = this.el.nativeElement.getBoundingClientRect();
-    this.clickX= $event.clientX - rect.left;
-    this.clickY = $event.clientY - rect.top;
-    console.log('OffsetX:', this.clickX);
-    console.log('OffsetY:', this.clickY);
+
+    this.deltaX = $event.clientX - rect.left //- paddingLeft;
+    this.deltaY = $event.clientY - rect.top //- paddingTop;
+    // console.debug(` click x ${$event.clientX}, click y ${$event.clientY}, rect x ${rect.left}, rect y ${rect.top}, computed x ${this.clickX}, computed y ${this.clickY}`)
   }
 
   destroyEditor(): void {
-    this.editor.destroy();
+    this.editor?.destroy();
   }
 
   ngOnDestroy(): void {

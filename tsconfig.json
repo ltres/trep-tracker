@@ -1,6 +1,10 @@
 /* To learn more about this file see: https://angular.io/config/tsconfig. */
+
 {
   "compileOnSave": false,
+  "include": [
+    "src/**/*.ts" // Add this line to include all TypeScript files in the 'src' directory and its subdirectories
+  ],
   "compilerOptions": {
     "outDir": "./dist/out-tsc",
     "strict": true,

@@ -1,6 +1,11 @@
 
 
 <main class="main">
-    <button (click)="addBoard()">Add board</button>
-    <board *ngFor="let board of boards$ | async" [board]="board"></board>
+
+    <div>
+        <board *ngFor="let board of boards$ | async" [board]="board"></board>
+    </div>
+    <div class="fixed-bottom">
+        <button (click)="addBoard()">Add board</button>
+    </div>
 </main>

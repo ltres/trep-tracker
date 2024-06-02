@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { BoardComponent } from './board/board.component';
-import { BoardService } from '../service/task.service';
+import { BoardService } from '../service/board.service';
 import { Observable } from 'rxjs';
 import { Board } from '../types/task';
 import { generateUUID } from '../utils/utils';
@@ -13,19 +13,25 @@ import { generateUUID } from '../utils/utils';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
 
   title = 'trep-tracker';
 
   constructor(private boardService: BoardService) {
 
   }
+  ngOnInit(): void {
+    this.addBoard()
+  }
+
   addBoard() {
     this.boardService.addBoard({
       id: generateUUID(),
       lanes: [{
         id: generateUUID(),
-        tasks: []
+        tasks: [],
+        position:"relative",
+        main: true
       }]
     })
   }

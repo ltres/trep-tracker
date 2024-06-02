@@ -8,10 +8,32 @@ html{
     color: $text-color;
     font-family: 'JetBrains Mono';
     font-size: $font-size
+    
 
 }
 body{
     margin: 0;
     padding: 0;
-    font-size: $font-size
+    font-size: $font-size;
+    padding:2rem
+}
+
+.floating-label{
+    position: absolute;
+    top: 100%;
+    margin: 0;
+    opacity: 50%;
+    font-size: 75%;
+}
+.floating-label.board-floating-label{
+    top: calc(100% + 1rem);
+}
+
+.NgxEditor__Wrapper p{
+    white-space: nowrap!important;
+}
+
+.fixed-bottom{
+    position: fixed;
+    bottom: 0;
 }

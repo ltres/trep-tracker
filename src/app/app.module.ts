@@ -6,7 +6,7 @@ import { NgxEditorModule } from 'ngx-editor';
 import { BoardComponent } from './board/board.component';
 import { TaskComponent } from './task/task.component';
 import { AppComponent } from './app.component';
-import { BoardService } from '../service/task.service';
+import { BoardService } from '../service/board.service';
 import { LaneComponent } from './lane/lane.component';
 
 @NgModule({
