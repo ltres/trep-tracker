@@ -1,8 +1,9 @@
-import { Component, HostBinding, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, HostBinding, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { Board, Lane, Task } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 import { generateUUID } from '../../utils/utils';
 import { Observable } from 'rxjs';
+import { TaskComponent } from '../task/task.component';
 
 @Component({
   selector: 'lane',
@@ -15,6 +16,9 @@ export class LaneComponent implements OnInit{
   @HostBinding('style.position') position = 'relative';
   @HostBinding('style.top') top: string | undefined;
   @HostBinding('style.left') left: string | undefined;
+
+  @ViewChildren(TaskComponent, { read: ElementRef }) taskComponentsElRefs: QueryList<ElementRef> | undefined;
+  @ViewChildren(TaskComponent) taskComponents: QueryList<TaskComponent> | undefined;
 
   @Input() lane!: Lane;
   @Input() board!: Board;

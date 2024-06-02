@@ -47,26 +47,38 @@ export class BoardService {
         )
     }
 
-    addTask(lane: Lane, task: Task) {
+    addTask(lane: Lane, task: Task, order?: {
+        task: Task,
+        how: "before"|"after"
+    }) {
         let boards = this._boards$.getValue();
         let active = boards.find( b => b.lanes.find( l => l.id === lane.id ));
         if(!active){
             throw new Error(`Cannot find board for lane ${lane.id}`)
         }
         
-        // Remove the task from other lanes
+        // Remove the task from all lanes
         boards.forEach( b => b.lanes.forEach( l => {
-            if (l.id !== lane.id) {
-                const index = l.tasks.findIndex(t => t.id === task.id);
-                if (index !== -1) {
-                    l.tasks.splice(index, 1);
-                }
+            const index = l.tasks.findIndex(t => t.id === task.id);
+            if (index !== -1) {
+                l.tasks.splice(index, 1);
             }
+            
         }));
 
         active.lanes = active.lanes.filter( l => l.tasks.length > 0 || l.main);
-
-        active.lanes.find( l => l.id === lane.id )!.tasks.push(task);
+        let listToEdit = active.lanes.find( l => l.id === lane.id )!.tasks;
+        if(!order){
+            listToEdit.push(task);
+        }else{
+            const index = listToEdit.findIndex(t => t.id === order.task.id);
+            if (index !== -1) {
+                listToEdit.splice(index + (order.how === 'before' ? 0 : 1), 0, task);
+            } else {
+                listToEdit.push(task);
+            }
+        }
+        
         this._boards$.next(boards);
         this.setActiveTask(task);
     }
@@ -126,7 +138,7 @@ export class BoardService {
     }
 
     publishDragEvent(task: Task, dragCoordinates: DragEventCoordinates) {
-        //console.info(`Drag event published for task ${task.id} at ${x}, ${y}`)
+        this.setActiveTask(task);
         this._dragEvent$.next({ task, dragCoordinates });
     }
 
