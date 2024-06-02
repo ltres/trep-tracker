@@ -2,6 +2,7 @@ import { Component, ElementRef, EventEmitter, HostBinding, Input, OnDestroy, OnI
 import { Editor, NgxEditorModule } from 'ngx-editor';
 import { Board, Task } from '../../types/task';
 import { BoardService } from '../../service/board.service';
+import { plugins, schema } from '../../utils/prosemirror';
 
 @Component({
   selector: 'task',
@@ -42,7 +43,10 @@ export class TaskComponent implements OnInit, OnDestroy {
     this.boardService.activeTask$.subscribe((task) => {
       if( task && task.id === this.task.id) {
         this.task = task;
-        this.editor = new Editor();
+        this.editor = new Editor({
+          schema,
+          plugins,
+        });
         this.editor.commands.focus().exec();
         setTimeout(() => {
           // @ts-ignore
@@ -58,9 +62,12 @@ export class TaskComponent implements OnInit, OnDestroy {
     });
   }
 
-  
-  activateTask(task: Task) {
-    this.boardService.setActiveTask(task);
+  activateTask() {
+    this.boardService.setActiveTask(this.task);
+  }
+
+  toggleTaskStatus(){
+    this.boardService.toggleTaskStatus(this.task);
   }
 
   /**

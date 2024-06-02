@@ -1,7 +1,32 @@
+$active-background:black;
+$todo-color:white;
+$completed-color:rgb(18, 187, 2);
+
 :host{
     min-width: 10rem;
     display: inline-block;
-    --ngx-editor-background-color: black;
-    --ngx-editor-text-color: white;
+    --ngx-editor-background-color: $active-background;
+    
 }
 
+.task-wrapper{
+    display: flex;
+    align-items: center;
+    --ngx-editor-text-color: $todo-color;
+    .NgxEditor__Wrapper{
+        flex-grow: 1;
+        border: 0px !important;;
+    }
+    &.active{
+        background-color: $active-background;
+    }
+    &.completed{
+        color:$completed-color;
+        --ngx-editor-text-color: $completed-color;
+    }
+}
+
+.drag-handle{
+    font-size: 150%;
+    color: $todo-color!important;
+}

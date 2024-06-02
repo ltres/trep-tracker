@@ -45,7 +45,7 @@ export class LaneComponent implements OnInit{
 
   createNewTask() {
     let uuid = generateUUID();
-    let task = { textContent: `Task ${uuid}`, id:uuid, active: false };
+    let task: Task = { textContent: `Task ${uuid}`, id:uuid, active: false, status: "todo" };
     this.boardService.addTask(this.lane, task);
     this.boardService.setActiveTask(task);
   }

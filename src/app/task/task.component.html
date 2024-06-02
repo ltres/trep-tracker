@@ -1,24 +1,36 @@
-<div class="NgxEditor__Wrapper" 
-(click)="activateTask(this.task)" 
+<div class="task-wrapper" 
+[class.active]="this.task.active"
+[class]="this.task.status"
+(click)="activateTask()" 
 draggable="true"
 (dragstart)="dragStart($event)" 
-(dragend)="dragEnd($event)">
-    <ng-container *ngIf="task.active">
-        <ng-container *ngIf="editor">
-            <ngx-editor-floating-menu [editor]="editor"></ngx-editor-floating-menu>
-            <!--<ngx-editor-menu [editor]="editor"> </ngx-editor-menu>-->
-            <ngx-editor 
-            #editorElement
-            [editor]="editor" 
-            [(ngModel)]="task.textContent" 
-            (ngModelChange)="editorChange($event)"
-            [disabled]="false" 
-            [placeholder]="'Type here...'"
-            ></ngx-editor>
+(dragend)="dragEnd($event)"
+>
+    <div class="drag-handle big">
+        ⋮
+    </div>
+    <div *ngIf="this.task.status === 'todo'" class="status big" (click)="toggleTaskStatus()">☐</div>
+    <div *ngIf="this.task.status === 'completed'" class="status big" (click)="toggleTaskStatus()">☑</div>
+
+    <div class="NgxEditor__Wrapper" 
+>
+        <ng-container *ngIf="task.active">
+            <ng-container *ngIf="editor">
+                <ngx-editor-floating-menu [editor]="editor"></ngx-editor-floating-menu>
+                <!--<ngx-editor-menu [editor]="editor"> </ngx-editor-menu>-->
+                <ngx-editor 
+                #editorElement
+                [editor]="editor" 
+                [(ngModel)]="task.textContent" 
+                (ngModelChange)="editorChange($event)"
+                [disabled]="false" 
+                [placeholder]="'Type here...'"
+                ></ngx-editor>
+            </ng-container>
         </ng-container>
-    </ng-container>
-    <ng-container *ngIf="!task.active">
-        <div [innerHTML]="task.textContent">
-        </div>
-    </ng-container>
+        <ng-container *ngIf="!task.active">
+            <div [innerHTML]="task.textContent">
+            </div>
+        </ng-container>
+    </div>
 </div>

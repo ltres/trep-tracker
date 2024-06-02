@@ -3,7 +3,8 @@
 {
   "compileOnSave": false,
   "include": [
-    "src/**/*.ts" // Add this line to include all TypeScript files in the 'src' directory and its subdirectories
+    "src/**/*.ts",
+    "src/**/*.d.ts",
   ],
   "compilerOptions": {
     "outDir": "./dist/out-tsc",

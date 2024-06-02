@@ -19,6 +19,7 @@ export interface Task{
     id: string,
     textContent: string;
     active: boolean;
+    status: "completed" | "todo"
 }
 
 export interface DragEventCoordinates{

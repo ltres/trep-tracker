@@ -7,6 +7,7 @@ import { generateUUID } from "../utils/utils";
     providedIn: 'root'
 })
 export class BoardService {
+
     private _boards$: BehaviorSubject<Board[]> = new BehaviorSubject<Board[]>([]);
     //private _lanes$: BehaviorSubject<Lane[]> = new BehaviorSubject<Lane[]>([]);
     //private _tasks$: BehaviorSubject<Task[]> = new BehaviorSubject<Task[]>([]);
@@ -66,7 +67,6 @@ export class BoardService {
             
         }));
 
-        active.lanes = active.lanes.filter( l => l.tasks.length > 0 || l.main);
         let listToEdit = active.lanes.find( l => l.id === lane.id )!.tasks;
         if(!order){
             listToEdit.push(task);
@@ -79,6 +79,8 @@ export class BoardService {
             }
         }
         
+        active.lanes = active.lanes.filter( l => l.tasks.length > 0 || l.main);
+
         this._boards$.next(boards);
         //this.setActiveTask(task);
     }
@@ -148,5 +150,20 @@ export class BoardService {
 
     get dragEvent$(): Observable<{task: Task, dragCoordinates: DragEventCoordinates} | undefined> {
         return this._dragEvent$;
+    }
+
+    toggleTaskStatus(task: Task) {
+        let boards = this._boards$.getValue();
+
+        boards.forEach(board => {
+            board.lanes.forEach(lane => {
+                const targetTask = lane.tasks.find(t => t.id === task.id);
+                if (targetTask) {
+                    targetTask.status = targetTask.status === 'completed' ? 'todo' : 'completed';
+                }
+            });
+        });
+
+        this._boards$.next(boards);
     }
 }
