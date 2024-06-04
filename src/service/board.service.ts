@@ -7,12 +7,32 @@ import { generateUUID } from "../utils/utils";
     providedIn: 'root'
 })
 export class BoardService {
-
     private _boards$: BehaviorSubject<Board[]> = new BehaviorSubject<Board[]>([]);
-    //private _lanes$: BehaviorSubject<Lane[]> = new BehaviorSubject<Lane[]>([]);
-    //private _tasks$: BehaviorSubject<Task[]> = new BehaviorSubject<Task[]>([]);
-    //private _activeTask$: BehaviorSubject<Task | undefined> = new BehaviorSubject<Task | undefined>(undefined);
-    private _dragEvent$: BehaviorSubject<{task: Task, dragCoordinates: DragEventCoordinates} | undefined> = new BehaviorSubject<{task: Task, dragCoordinates: DragEventCoordinates} | undefined>(undefined);
+    private _editorActiveTask$: BehaviorSubject<Task | undefined> = new BehaviorSubject<Task | undefined>(undefined);
+
+    private _selectedTasks$: BehaviorSubject<Task[] | undefined> = new BehaviorSubject<Task[] | undefined>(undefined);
+    private _lastSelectedTask$: BehaviorSubject<Task | undefined> = new BehaviorSubject<Task | undefined>(undefined);
+
+    private _lastSelectedLane$: BehaviorSubject<Lane | undefined> = new BehaviorSubject<Lane | undefined>(undefined);
+
+    constructor() {
+        let keys = ['_boards$', '_editorActiveTask$', '_selectedTasks$', '_lastSelectedTask$', '_lastSelectedLane$'];
+        for(let key of keys){
+            let o = JSON.parse(localStorage.getItem(key) || '[]');
+            if(o){
+                //@ts-ignore
+                this[key].next(o);
+            }
+            //@ts-ignore
+            this[key].subscribe( b => {
+                localStorage.setItem(key, JSON.stringify(b));
+            })
+        }
+        this._selectedTasks$.subscribe( b => {
+            this._lastSelectedTask$.next(b && b.length > 0 ? b[b.length - 1] : undefined);
+        });
+
+    }
 
     get boards$(): Observable<Board[]> {
         return this._boards$;
@@ -36,6 +56,10 @@ export class BoardService {
                 return targetLane ? targetLane.tasks : [];
             })
         );
+    }
+
+    getTasksCount(){
+        return this._boards$.getValue().reduce( (acc, board) => acc + board.lanes.reduce( (acc, lane) => acc + lane.tasks.length, 0), 0);
     }
 
     getLane$(lane: Lane): Observable<Lane | undefined>{
@@ -85,27 +109,54 @@ export class BoardService {
         //this.setActiveTask(task);
     }
 
-    setActiveTask(task: Task) {
-        let boards = this._boards$.getValue();
-        let active = boards.flatMap( b => b.lanes.flatMap( l => l.tasks.flatMap( t => t.active ? t.id : undefined) ))
-        if( active.indexOf( task.id ) >= 0 ){
-            return;
+    activateEditorOnTask(lane: Lane, task: Task) {
+        if( this._editorActiveTask$.getValue() === task ){
+            return
         }
-        boards.forEach( b => b.lanes.forEach( l => l.tasks.forEach( t => t.active = t.id === task.id) ))
-        this._boards$.next(boards);
+        this._editorActiveTask$.next(task);
+        //this._selectedTasks$.next([task]);
+        this._lastSelectedLane$.next(lane);
     }
 
-    get activeTask$(): Observable<Task | undefined> {
-        return this._boards$.pipe(
-            map(boards => {
-                const activeTask = boards.flatMap(board => board.lanes.flatMap(lane => lane.tasks.find(task => task.active))).filter( t => t);
-                return activeTask.length > 0 ? activeTask[0] : undefined;
-            })
-        );
+    get editorActiveTask$(): Observable<Task | undefined> {
+        return this._editorActiveTask$;
     }
 
+    selectTask(lane: Lane, task: Task) {
+        let cur = this._selectedTasks$.getValue() || [];
+        if( cur?.find( t => t.id === task.id ) ){
+            cur = cur.filter(t => t.id !== task.id);
+        }else{
+            cur?.push(task);
+        }
+        this._selectedTasks$.next(cur);
+        this._lastSelectedLane$.next(lane);
+        console.log('selectTask', this._selectedTasks$.getValue())
+    }
 
+    clearSelectedTasks() {
+        this._selectedTasks$.next([]);
+        this._lastSelectedLane$.next(undefined);
+    }
 
+    get selectedTasks$(): Observable<Task[] | undefined> {
+        return this._selectedTasks$;
+    }
+    get selectedTasks(): Task[] | undefined {
+        return this._selectedTasks$.getValue();
+    }  
+    get lastSelectedTask$(): Observable<Task | undefined> {
+        return this._lastSelectedTask$;
+    }
+    get lastSelectedTask(): Task | undefined {
+        return this._lastSelectedTask$.getValue();
+    }
+    get lastSelectedLane$(): Observable<Lane | undefined> {
+        return this._lastSelectedLane$;
+    }
+    get lastSelectedLane(): Lane | undefined {
+        return this._lastSelectedLane$.getValue();
+    }
     /**
      * Adds a floating lane to the specified board.
      * The floating lane contains a single task and is positioned at the specified coordinates.
@@ -113,7 +164,7 @@ export class BoardService {
      * If a lane becomes empty after removing the task, it is also removed from the board.
      * Finally, the new floating lane is added to the board and the updated boards are emitted.
      */
-    addFloatingLane(board: Board, task: Task, dragCoordinates: DragEventCoordinates ) {
+    addFloatingLane(board: Board, task: Task, dragCoordinates: DragEventCoordinates ):Lane {
         let boards = this._boards$.getValue();
         let activeBoard = boards.find( b => b.id === board.id);
         if(!activeBoard){
@@ -141,15 +192,8 @@ export class BoardService {
         activeBoard.lanes.push(newLane);
 
         this._boards$.next(boards);
-    }
 
-    publishDragEvent(task: Task, dragCoordinates: DragEventCoordinates) {
-        //this.setActiveTask(task);
-        this._dragEvent$.next({ task, dragCoordinates });
-    }
-
-    get dragEvent$(): Observable<{task: Task, dragCoordinates: DragEventCoordinates} | undefined> {
-        return this._dragEvent$;
+        return newLane;
     }
 
     toggleTaskStatus(task: Task) {
@@ -165,5 +209,18 @@ export class BoardService {
         });
 
         this._boards$.next(boards);
+    }
+
+    getTaskInDirection(lane: Lane, task: Task, direction: 'up' | 'down' | 'left' | 'right'): Task | undefined {
+        let tasks = this._boards$.getValue().find(b => b.lanes.find(l => l.id === lane.id))?.lanes.find(l => l.id === lane.id)?.tasks;
+        if (!tasks) {
+            throw new Error(`Cannot find tasks for lane ${lane.id}`);
+        }
+        let index = tasks.findIndex(t => t.id === task.id);
+        if (index === -1) {
+            throw new Error(`Cannot find task ${task.id} in lane ${lane.id}`);
+        }
+
+        return tasks[ direction === 'up' ? index - 1 : index + 1];
     }
 }

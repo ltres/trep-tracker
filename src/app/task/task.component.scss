@@ -1,11 +1,13 @@
-$active-background:black;
+$editor-active-background:black;
+$selected-background:white;
+
 $todo-color:white;
 $completed-color:rgb(18, 187, 2);
 
 :host{
     min-width: 10rem;
     display: inline-block;
-    --ngx-editor-background-color: $active-background;
+    --ngx-editor-background-color: $editor-active-background;
     
 }
 
@@ -17,12 +19,15 @@ $completed-color:rgb(18, 187, 2);
         flex-grow: 1;
         border: 0px !important;;
     }
-    &.active{
-        background-color: $active-background;
+    &.editor-active{
+        background-color: $editor-active-background!important;   
     }
     &.completed{
         color:$completed-color;
         --ngx-editor-text-color: $completed-color;
+    }
+    &.selected{
+        border-left:.15rem solid $todo-color;
     }
 }
 

@@ -18,7 +18,6 @@ export interface Lane{
 export interface Task{
     id: string,
     textContent: string;
-    active: boolean;
     status: "completed" | "todo"
 }
 

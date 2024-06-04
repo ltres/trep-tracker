@@ -1,10 +1,11 @@
 <div class="task-wrapper" 
-[class.active]="this.task.active"
+[class.editor-active]="this.editorActive"
+[class.selected]="this.selected"
 [class]="this.task.status"
-(click)="activateTask()" 
+(click)="this.keyboardService.isCtrlPressed() ? selectTask(): activateEditorOnTask()" 
 draggable="true"
-(dragstart)="dragStart($event)" 
-(dragend)="dragEnd($event)"
+(dragstart)="onDragStart($event)" 
+(dragend)="onDragEnd($event)"
 >
     <div class="drag-handle big">
         ⋮
@@ -14,7 +15,7 @@ draggable="true"
 
     <div class="NgxEditor__Wrapper" 
 >
-        <ng-container *ngIf="task.active">
+        <ng-container *ngIf="editorActive">
             <ng-container *ngIf="editor">
                 <ngx-editor-floating-menu [editor]="editor"></ngx-editor-floating-menu>
                 <!--<ngx-editor-menu [editor]="editor"> </ngx-editor-menu>-->
@@ -28,7 +29,7 @@ draggable="true"
                 ></ngx-editor>
             </ng-container>
         </ng-container>
-        <ng-container *ngIf="!task.active">
+        <ng-container *ngIf="!editorActive">
             <div [innerHTML]="task.textContent">
             </div>
         </ng-container>

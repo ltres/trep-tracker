@@ -1,6 +1,6 @@
 
 <ng-container *ngFor="let task of tasks$ | async">
-  <task [task]="task" [board]="board" (createNewTask)="createNewTask()"  ></task>
+  <task [task]="task" [board]="board" [lane]="lane" (createNewTask)="createNewTask()"  ></task>
 </ng-container>
 
 <p class="floating-label">Lane: {{lane.id}}</p>

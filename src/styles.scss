@@ -2,76 +2,95 @@
 
 $background-color: #161a24;
 $text-color: #ffffff;
-$font-size:16px;
-html{
-    background-color: $background-color;
-    color: $text-color;
-    font-family: 'JetBrains Mono';
-    font-size: $font-size
-    
-
-}
-body{
-    margin: 0;
-    padding: 0;
-    font-size: $font-size;
-    padding:2rem
-}
-
-.floating-label{
-    position: absolute;
-    top: 100%;
-    margin: 0;
-    opacity: 50%;
-    font-size: 75%;
-}
-.floating-label.board-floating-label{
-    top: calc(100% + 1rem);
-}
+$font-size: 16px;
 
 
 
-.fixed-bottom{
-    position: fixed;
-    bottom: 0;
+html {
+  background-color: $background-color;
+  color: $text-color;
+  font-family: 'JetBrains Mono';
+  font-size: $font-size
 }
-p{
-    padding: 0!important;
-    margin: 0 !important;
+
+body {
+  margin: 0;
+  padding: 0;
+  font-size: $font-size;
+  padding: 2rem
 }
-.NgxEditor__Content{
-    padding: 0!important;
-    margin:0 !important
+
+.floating-label {
+  position: absolute;
+  top: 100%;
+  margin: 0;
+  opacity: 50%;
+  font-size: 75%;
 }
-.big{
-    font-size: 150%;
+
+.floating-label.board-floating-label {
+  top: calc(100% + 1rem);
+}
+
+
+
+.fixed-bottom {
+  position: fixed;
+  bottom: 0;
+}
+
+p {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.NgxEditor__Content {
+  padding: 0 !important;
+  margin: 0 !important
+}
+
+.big {
+  font-size: 150%;
 }
 
 .prosemirror-mention-node {
-    color: blue !important;
-    text-decoration: underline !important;
-  }
-  
-  .prosemirror-tag-node {
-    color: gray !important;
-    font-style: italic;
-  }
-  
-  .suggestion-item-list {
-    background-color: #f9f9f9;
-    min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-    z-index: 1;
-  }
-  
-  .suggestion-item {
-    color: black;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-  }
-  
-  .suggestion-item:hover {
-    background-color: #f1f1f1;
-    cursor: pointer;
-  }
+  color: blue !important;
+  text-decoration: underline !important;
+}
+
+.prosemirror-tag-node {
+  color: gray !important;
+  font-style: italic;
+}
+
+.suggestion-item-list {
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.suggestion-item {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.suggestion-item:hover {
+  background-color: #f1f1f1;
+  cursor: pointer;
+}
+
+button {
+  border: 1px solid white;
+  color: white;
+  border-radius: 0;
+  padding: 0.2rem 0.5rem;
+
+  background: $text-color;
+  color: $background-color;
+  font: inherit;
+  cursor: pointer;
+  outline: none;
+}

@@ -1,8 +1,10 @@
 import { Component, ElementRef, EventEmitter, HostBinding, Input, OnDestroy, OnInit, Output, Renderer2, ViewChild } from '@angular/core';
 import { Editor, NgxEditorModule } from 'ngx-editor';
-import { Board, Task } from '../../types/task';
+import { Board, Lane, Task } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 import { plugins, schema } from '../../utils/prosemirror';
+import { DragService } from '../../service/drag.service';
+import { KeyboardService } from '../../service/keyboard.service';
 
 @Component({
   selector: 'task',
@@ -12,22 +14,31 @@ import { plugins, schema } from '../../utils/prosemirror';
   styleUrl: './task.component.scss'
 })
 export class TaskComponent implements OnInit, OnDestroy {
+
   @HostBinding('style.position') position = 'relative';
   @HostBinding('style.top') top: string | undefined;
   @HostBinding('style.left') left: string | undefined;
 
   @ViewChild('editorElement') editorElement: ElementRef | undefined; 
   @Input() task!: Task;
+  @Input() lane!: Lane;
   @Input() board!: Board;
 
   @Output() createNewTask: EventEmitter<void> = new EventEmitter();
-  @Output() askFocus: EventEmitter<Task> = new EventEmitter();
+  
+  editorActive: boolean = false;
+  selected: boolean = false;
 
   editor: Editor | undefined;
 
   deltaX = 0;
   deltaY = 0;
-  constructor(private boardService: BoardService, private renderer: Renderer2, private el: ElementRef) {
+  
+  constructor(
+    private boardService: BoardService, 
+    private dragService: DragService,
+    protected keyboardService: KeyboardService,
+    private el: ElementRef) {
 
   }
 
@@ -40,30 +51,37 @@ export class TaskComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.boardService.activeTask$.subscribe((task) => {
+    this.boardService.editorActiveTask$.subscribe((task) => {
       if( task && task.id === this.task.id) {
-        this.task = task;
+        this.editorActive = true;
         this.editor = new Editor({
           schema,
           plugins,
         });
         this.editor.commands.focus().exec();
-        setTimeout(() => {
-          // @ts-ignore
-          // this.editorElement?.elementRef.nativeElement.querySelectorAll('[contenteditable]')[0].click();
-        },0);
-        //const endPos = this.editor.view.state.doc.content.size;
-        //const transaction = this.editor.view.state.tr.setSelection(Selection.atEnd(view.docView.node));
-
       } else {
-        this.task.active = false;
+        this.editorActive = false;
         this.editor?.destroy();
       }
     });
+    this.boardService.selectedTasks$.subscribe((tasks) => {
+      if( tasks && tasks.find(t => t.id === this.task.id)) {
+        this.selected = true;
+      }else{
+        this.selected = false;
+      }
+    })
   }
 
-  activateTask() {
-    this.boardService.setActiveTask(this.task);
+  activateEditorOnTask() {
+    this.boardService.activateEditorOnTask(this.lane,this.task);
+    this.boardService.clearSelectedTasks();
+    this.boardService.selectTask(this.lane, this.task);
+  }
+
+  selectTask() {
+    this.boardService.selectTask(this.lane,this.task);
+    this.boardService.activateEditorOnTask(this.lane,this.task);
   }
 
   toggleTaskStatus(){
@@ -75,20 +93,29 @@ export class TaskComponent implements OnInit, OnDestroy {
    * Otherwise, create another floating lane
    * @param $event 
    */
-  dragEnd($event: DragEvent) {
+  onDragEnd($event: DragEvent) {
     const style = getComputedStyle(document.querySelectorAll('body')[0])
     const paddingLeft = parseInt(style.paddingLeft);
     const paddingTop = parseInt(style.paddingTop);
     //
-    this.boardService.publishDragEvent( this.task, {
+    this.dragService.publishDragEvent( this.task, {
       cursorX: $event.clientX, 
       cursorY:$event.clientY, 
       deltaX: this.deltaX + paddingLeft, 
       deltaY: this.deltaY + paddingTop 
     })
+    this.boardService.clearSelectedTasks();
+    this.boardService.selectTask(this.lane, this.task);
   }
   
-  dragStart($event: DragEvent) {
+  onDragStart($event: DragEvent) {
+    if(!this.editorActive && !this.selected){
+      this.boardService.clearSelectedTasks();
+    }
+    if(!this.selected){
+      this.boardService.selectTask(this.lane,this.task);
+    }
+
     const rect = this.el.nativeElement.getBoundingClientRect();
 
     this.deltaX = $event.clientX - rect.left //- paddingLeft;
