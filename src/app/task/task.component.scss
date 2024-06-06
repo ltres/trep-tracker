@@ -8,7 +8,8 @@ $completed-color:rgb(18, 187, 2);
     min-width: 10rem;
     display: inline-block;
     --ngx-editor-background-color: $editor-active-background;
-    
+    flex-basis: 0;
+    flex-grow: 1;
 }
 
 .task-wrapper{
@@ -29,6 +30,12 @@ $completed-color:rgb(18, 187, 2);
     &.selected{
         border-left:.15rem solid $todo-color;
     }
+}
+
+.task-children-wrapper{
+    display: flex;
+    flex-direction: column;
+    padding-left: 1rem
 }
 
 .drag-handle{

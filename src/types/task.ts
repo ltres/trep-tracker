@@ -5,21 +5,24 @@ export interface Board{
     id: string,
     lanes: Lane[]
 }
-export interface Lane{
-    id: string,
-    main?: boolean,
-    tasks: Task[]
+export interface Lane extends Parent{
     position: 'relative' | 'absolute'
     coordinates?: {
         x: number,
         y: number
     }
 }
-export interface Task{
-    id: string,
+export interface Task extends Parent{
     textContent: string;
     status: "completed" | "todo"
 }
+
+export interface Parent{
+    id: string,
+    children: Task[];
+}
+
+
 
 export interface DragEventCoordinates{
     cursorX: number,

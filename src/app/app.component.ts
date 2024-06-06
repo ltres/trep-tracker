@@ -29,9 +29,8 @@ export class AppComponent implements OnInit {
       id: generateUUID(),
       lanes: [{
         id: generateUUID(),
-        tasks: [],
-        position:"relative",
-        main: true
+        children: [],
+        position: "relative"
       }]
     })
   }

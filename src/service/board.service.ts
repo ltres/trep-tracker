@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { Board, DragEventCoordinates, Lane, Task } from "../types/task";
+import { Board, DragEventCoordinates, Lane, Parent, Task } from "../types/task";
 import { BehaviorSubject, Observable, map } from "rxjs";
 import { generateUUID } from "../utils/utils";
 
@@ -7,8 +7,13 @@ import { generateUUID } from "../utils/utils";
     providedIn: 'root'
 })
 export class BoardService {
+
     private _boards$: BehaviorSubject<Board[]> = new BehaviorSubject<Board[]>([]);
     private _editorActiveTask$: BehaviorSubject<Task | undefined> = new BehaviorSubject<Task | undefined>(undefined);
+
+    private _allLanes$: BehaviorSubject<Lane[] | undefined> = new BehaviorSubject<Lane[] | undefined>(undefined);
+    private _allTasks$: BehaviorSubject<Task[] | undefined> = new BehaviorSubject<Task[] | undefined>(undefined);
+    private _allParents$: BehaviorSubject<Parent[] | undefined> = new BehaviorSubject<Parent[] | undefined>(undefined);
 
     private _selectedTasks$: BehaviorSubject<Task[] | undefined> = new BehaviorSubject<Task[] | undefined>(undefined);
     private _lastSelectedTask$: BehaviorSubject<Task | undefined> = new BehaviorSubject<Task | undefined>(undefined);
@@ -16,29 +21,48 @@ export class BoardService {
     private _lastSelectedLane$: BehaviorSubject<Lane | undefined> = new BehaviorSubject<Lane | undefined>(undefined);
 
     constructor() {
-        let keys = ['_boards$', '_editorActiveTask$', '_selectedTasks$', '_lastSelectedTask$', '_lastSelectedLane$'];
-        for(let key of keys){
+        let keys = ['_boards$', '_editorActiveTask$', '_selectedTasks$', '_lastSelectedTask$', '_lastSelectedLane$', '_allTasks$', '_allLanes$'];
+        for (let key of keys) {
             let o = JSON.parse(localStorage.getItem(key) || '[]');
-            if(o){
+            if (o) {
                 //@ts-ignore
                 this[key].next(o);
             }
             //@ts-ignore
-            this[key].subscribe( b => {
+            this[key].subscribe(b => {
                 localStorage.setItem(key, JSON.stringify(b));
             })
         }
-        this._selectedTasks$.subscribe( b => {
+        this._selectedTasks$.subscribe(b => {
             this._lastSelectedTask$.next(b && b.length > 0 ? b[b.length - 1] : undefined);
         });
+        this._boards$.subscribe(b => {
+            let allTasks: Task[] = [];
+            let allLanes: Lane[] = [];
+            b.forEach(board => {
+                board.lanes.forEach(lane => {
+                    allTasks = allTasks.concat(lane.children);
+                    lane.children.forEach(task => {
+                        allTasks = allTasks.concat(this.getDescendants(task));
+                    })
+                })
+                allLanes = allLanes.concat(board.lanes);
+            })
+            this._allTasks$.next(allTasks);
+            this._allLanes$.next(allLanes);
+            this._allParents$.next([...allTasks, ...allLanes]);
+        })
+    }
 
+    getDescendants(task: Task): Task[] {
+        return task.children.reduce((acc, t) => acc.concat(this.getDescendants(t)), task.children).filter(t => t);
     }
 
     get boards$(): Observable<Board[]> {
         return this._boards$;
     }
 
-    addBoard(board:Board) {
+    addBoard(board: Board) {
         this._boards$.next([...this._boards$.getValue(), board]);
     }
 
@@ -49,68 +73,27 @@ export class BoardService {
     }
 
     getTasks$(lane: Lane): Observable<Task[] | undefined> {
+        return this._allLanes$.pipe(
+            map(lanes => lanes?.find(l => l.id === lane.id)?.children)
+        ) 
+    }
+
+    getTasksCount() {
+        return this._allTasks$.getValue()?.length || 0;
+    }
+
+    getLane$(lane: Lane): Observable<Lane | undefined> {
         return this._boards$.pipe(
             map(boards => {
-                const targetBoard = boards.find(b => b.lanes.find(l => l.id === lane.id));
-                const targetLane = targetBoard?.lanes.find(l => l.id === lane.id);
-                return targetLane ? targetLane.tasks : [];
-            })
-        );
-    }
+                let b = boards.find(board => board.lanes.find(l => l.id === lane.id))
 
-    getTasksCount(){
-        return this._boards$.getValue().reduce( (acc, board) => acc + board.lanes.reduce( (acc, lane) => acc + lane.tasks.length, 0), 0);
-    }
-
-    getLane$(lane: Lane): Observable<Lane | undefined>{
-        return this._boards$.pipe(
-            map(boards => { 
-                let b = boards.find( board => board.lanes.find( l => l.id === lane.id ) )
-
-                return b?.lanes.find( l => l.id === lane.id )!;
+                return b?.lanes.find(l => l.id === lane.id)!;
             })
         )
     }
 
-    addTask(lane: Lane, task: Task, order?: {
-        task: Task,
-        how: "before"|"after"
-    }) {
-        let boards = this._boards$.getValue();
-        let active = boards.find( b => b.lanes.find( l => l.id === lane.id ));
-        if(!active){
-            throw new Error(`Cannot find board for lane ${lane.id}`)
-        }
-        
-        // Remove the task from all lanes
-        boards.forEach( b => b.lanes.forEach( l => {
-            const index = l.tasks.findIndex(t => t.id === task.id);
-            if (index !== -1) {
-                l.tasks.splice(index, 1);
-            }
-            
-        }));
-
-        let listToEdit = active.lanes.find( l => l.id === lane.id )!.tasks;
-        if(!order){
-            listToEdit.push(task);
-        }else{
-            const index = listToEdit.findIndex(t => t.id === order.task.id);
-            if (index !== -1) {
-                listToEdit.splice(index + (order.how === 'before' ? 0 : 1), 0, task);
-            } else {
-                listToEdit.push(task);
-            }
-        }
-        
-        active.lanes = active.lanes.filter( l => l.tasks.length > 0 || l.main);
-
-        this._boards$.next(boards);
-        //this.setActiveTask(task);
-    }
-
     activateEditorOnTask(lane: Lane, task: Task) {
-        if( this._editorActiveTask$.getValue() === task ){
+        if (this._editorActiveTask$.getValue() === task) {
             return
         }
         this._editorActiveTask$.next(task);
@@ -124,9 +107,9 @@ export class BoardService {
 
     selectTask(lane: Lane, task: Task) {
         let cur = this._selectedTasks$.getValue() || [];
-        if( cur?.find( t => t.id === task.id ) ){
+        if (cur?.find(t => t.id === task.id)) {
             cur = cur.filter(t => t.id !== task.id);
-        }else{
+        } else {
             cur?.push(task);
         }
         this._selectedTasks$.next(cur);
@@ -144,7 +127,7 @@ export class BoardService {
     }
     get selectedTasks(): Task[] | undefined {
         return this._selectedTasks$.getValue();
-    }  
+    }
     get lastSelectedTask$(): Observable<Task | undefined> {
         return this._lastSelectedTask$;
     }
@@ -164,25 +147,17 @@ export class BoardService {
      * If a lane becomes empty after removing the task, it is also removed from the board.
      * Finally, the new floating lane is added to the board and the updated boards are emitted.
      */
-    addFloatingLane(board: Board, task: Task, dragCoordinates: DragEventCoordinates ):Lane {
+    addFloatingLane(board: Board,dragCoordinates: DragEventCoordinates): Lane {
         let boards = this._boards$.getValue();
-        let activeBoard = boards.find( b => b.id === board.id);
-        if(!activeBoard){
+        let activeBoard = boards.find(b => b.id === board.id);
+        if (!activeBoard) {
             throw new Error(`Cannot find board for board ${board.id}`)
         }
-        
-        activeBoard.lanes.forEach(l => {
-            const index = l.tasks.findIndex(t => t.id === task.id);
-            if (index !== -1) {
-                l.tasks.splice(index, 1);
-            }
-        });
-
-        activeBoard.lanes = activeBoard.lanes.filter( l => l.tasks.length > 0 || l.main);
+        activeBoard.lanes = activeBoard.lanes.filter(l => l.children.length > 0);
 
         let newLane: Lane = {
             id: generateUUID(),
-            tasks: [task],
+            children: [],
             position: 'absolute',
             coordinates: {
                 x: dragCoordinates.cursorX - dragCoordinates.deltaX,
@@ -201,7 +176,7 @@ export class BoardService {
 
         boards.forEach(board => {
             board.lanes.forEach(lane => {
-                const targetTask = lane.tasks.find(t => t.id === task.id);
+                const targetTask = lane.children.find(t => t.id === task.id);
                 if (targetTask) {
                     targetTask.status = targetTask.status === 'completed' ? 'todo' : 'completed';
                 }
@@ -212,15 +187,70 @@ export class BoardService {
     }
 
     getTaskInDirection(lane: Lane, task: Task, direction: 'up' | 'down' | 'left' | 'right'): Task | undefined {
-        let tasks = this._boards$.getValue().find(b => b.lanes.find(l => l.id === lane.id))?.lanes.find(l => l.id === lane.id)?.tasks;
-        if (!tasks) {
-            throw new Error(`Cannot find tasks for lane ${lane.id}`);
-        }
-        let index = tasks.findIndex(t => t.id === task.id);
-        if (index === -1) {
-            throw new Error(`Cannot find task ${task.id} in lane ${lane.id}`);
+        // get all the tasks in the lane, including descendants, in an ordered array
+        let orderedLinearizedTasks = lane.children.reduce((acc, t) => acc.concat(t).concat(this.getDescendants(t)), [] as Task[]).filter(t => t);
+        let index = orderedLinearizedTasks.findIndex(t => t.id === task.id);
+
+        return orderedLinearizedTasks[direction === 'up' ? index - 1 : index + 1];
+    }
+
+    findParent(obj: Parent): Parent | undefined{
+        return this._allParents$.getValue()?.find(p => p.children.find(c => c.id === obj.id));
+    }
+
+    addAsSibling(parent: Parent, sibling: Task | undefined, task: Task, position: 'before' | 'after' = 'before'){
+        let boards = this._boards$.getValue();
+
+        // remove the task from any parent
+        this._allParents$.getValue()?.forEach(p => {
+            p.children = p.children.filter(c => c.id !== task.id);
+        })
+
+        if(sibling){
+            // find the index of the sibling
+            let index = parent.children.findIndex(c => c.id === sibling.id);
+            if(index === -1){
+                throw new Error(`Cannot find sibling with id ${sibling.id} in parent with id ${parent.id}`);
+            }
+            // add the task before or after the sibling
+            parent.children.splice(position === 'before' ? index : index + 1, 0, task);
+        }else{
+            // add the task at the end of the parent
+            parent.children.push(task);
         }
 
-        return tasks[ direction === 'up' ? index - 1 : index + 1];
+
+        // Publish the changes
+        this._boards$.next(boards);
+
+    }
+
+    addAsChild(parent: Parent, child: Task){
+        let boards = this._boards$.getValue();
+
+        // remove the child from any children set
+        this._allParents$.getValue()?.forEach(p => {
+            p.children = p.children.filter(c => c.id !== child.id);
+        })
+        // add the child to the parent, if it is not already there
+        if(!parent.children.find(c => c.id === child.id)){
+            parent.children.push(child);
+        }
+
+        // Publish the changes
+        this._boards$.next(boards);
+    }
+
+    removeChild(parent: Parent, child: Task){
+        let boards = this._boards$.getValue();
+        parent.children = parent.children.filter(c => c.id !== child.id);
+        // task need to become sibling of the parent. Find the parent of the parent
+        let grandParent = this.findParent(parent);
+        if(grandParent){
+            grandParent.children.push(child);  
+        }
+
+        // Publish the changes
+        this._boards$.next(boards);
     }
 }

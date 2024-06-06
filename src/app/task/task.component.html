@@ -34,4 +34,8 @@ draggable="true"
             </div>
         </ng-container>
     </div>
+
 </div>
+<div class="task-children-wrapper">
+    <task *ngFor="let child of this.task.children" [task]="child" [board]="this.board" [lane]="this.lane"></task>
+</div>    
