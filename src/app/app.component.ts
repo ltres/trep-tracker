@@ -30,7 +30,8 @@ export class AppComponent implements OnInit {
       lanes: [{
         id: generateUUID(),
         children: [],
-        position: "relative"
+        position: "relative",
+        _type: "lane",
       }]
     })
   }

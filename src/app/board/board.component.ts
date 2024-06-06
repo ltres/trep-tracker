@@ -63,14 +63,7 @@ export class BoardComponent implements OnInit {
               if (!overlappedTask) {
                 throw new Error("Cannot find task")
               }
-              let selected = this.boardService.selectedTasks?.filter(t => t.id !== e.task.id && t.id !== overlappedTask.id);
-              this.boardService.addAsSibling(lane, overlappedTask, e.task, inside === "top-half" ? "before" : "after");
-              //this.boardService.addTask(lane, e.task, { how: inside === "top-half" ? "before" : "after", task: overlappedTask });
-              if (selected) {
-                for (let t of selected) {
-                  this.boardService.addAsSibling(lane, overlappedTask, e.task, inside === "top-half" ? "before" : "after");
-                }
-              }
+              this.boardService.addAsSiblings(lane, overlappedTask, this.boardService.selectedTasks, inside === "top-half" ? "before" : "after");
             }
           }
           if (!matched) {
@@ -82,15 +75,8 @@ export class BoardComponent implements OnInit {
         //console.log(el);
       }
       if (!matched) {
-        let selected = this.boardService.selectedTasks?.filter(t => t.id !== e.task.id);;
         let newLane = this.boardService.addFloatingLane(this.board, e?.dragCoordinates);
-        this.boardService.addAsSibling(newLane, undefined, e.task);
-
-        if (selected) {
-          for (let t of selected) {
-            this.boardService.addAsSibling(newLane, undefined, e.task, undefined);
-          }
-        }
+        this.boardService.addAsSiblings(newLane, undefined, this.boardService.selectedTasks);
       }
       //console.log("Grabbed")
     })
@@ -105,9 +91,9 @@ export class BoardComponent implements OnInit {
       }
 
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-        let nearby = e?.key === 'ArrowDown' ? this.boardService.getTaskInDirection(lane, task, "down") : this.boardService.getTaskInDirection(lane, task, "up");
+        let nearby = e?.key === 'ArrowDown' ? this.boardService.getTaskInDirection(lane, [task], "down") : this.boardService.getTaskInDirection(lane, [task], "up");
         if (!nearby) {
-          throw new Error("Cannot find nearby task")
+          return;
         }
         if (this.keyboardService.isCtrlPressed()) {
           this.boardService.selectTask(lane, nearby);
@@ -118,18 +104,21 @@ export class BoardComponent implements OnInit {
         }
       } else if (e.key === 'ArrowRight') {
         // Make this task a child of the task on the top
-        let wannaBeParent = this.boardService.getTaskInDirection(lane, task, "up");
+        let wannaBeParent = this.boardService.getTaskInDirection(lane, this.boardService.selectedTasks, "up");
         if (!wannaBeParent) {
           throw new Error("Cannot find nearby task")
         }
-        this.boardService.addAsChild(wannaBeParent, task);
+        this.boardService.addAsChild(wannaBeParent, this.boardService.selectedTasks);
       } else if (e.key === 'ArrowLeft') {
         // Children task gets promoted to the same level as the parent
         let parent = this.boardService.findParent(task);
         if (!parent) {
           throw new Error("Cannot find parent task")
         }
-        this.boardService.removeChild(parent, task);
+        if(this.boardService.isLane(parent)){
+          return;
+        }
+        this.boardService.removeChildren(parent, this.boardService.selectedTasks);
       }
 
     });

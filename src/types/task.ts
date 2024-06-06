@@ -7,6 +7,7 @@ export interface Board{
 }
 export interface Lane extends Parent{
     position: 'relative' | 'absolute'
+    _type: 'lane',
     coordinates?: {
         x: number,
         y: number
