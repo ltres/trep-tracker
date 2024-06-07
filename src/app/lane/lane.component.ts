@@ -46,7 +46,7 @@ export class LaneComponent implements OnInit{
   createNewTask() {
     let uuid = generateUUID();
     let task: Task = { textContent: `Task ${this.boardService.getTasksCount() + 1} ${uuid}`, id:uuid, status: "todo", children: []};
-    this.boardService.addAsSiblings(this.lane, undefined, [task]);
+    this.boardService.addAsChild(this.lane, [task]);
     this.boardService.clearSelectedTasks();
     this.boardService.selectTask(this.lane,task);
     this.boardService.activateEditorOnTask(this.lane,task);

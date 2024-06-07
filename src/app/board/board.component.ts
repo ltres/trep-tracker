@@ -76,7 +76,7 @@ export class BoardComponent implements OnInit {
       }
       if (!matched) {
         let newLane = this.boardService.addFloatingLane(this.board, e?.dragCoordinates);
-        this.boardService.addAsSiblings(newLane, undefined, this.boardService.selectedTasks);
+        this.boardService.addAsChild(newLane, this.boardService.selectedTasks);
       }
       //console.log("Grabbed")
     })

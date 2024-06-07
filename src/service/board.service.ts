@@ -55,8 +55,8 @@ export class BoardService {
     }
 
     getDescendants(task: Task): Task[] {
-        let descendants:Task[] = [];
-        for(let child of task.children){
+        let descendants: Task[] = [];
+        for (let child of task.children) {
             descendants = descendants.concat(child).concat(this.getDescendants(child));
         }
 
@@ -80,7 +80,7 @@ export class BoardService {
     getTasks$(lane: Lane): Observable<Task[] | undefined> {
         return this._allLanes$.pipe(
             map(lanes => lanes?.find(l => l.id === lane.id)?.children)
-        ) 
+        )
     }
 
     getTasksCount() {
@@ -152,7 +152,7 @@ export class BoardService {
      * If a lane becomes empty after removing the task, it is also removed from the board.
      * Finally, the new floating lane is added to the board and the updated boards are emitted.
      */
-    addFloatingLane(board: Board,dragCoordinates: DragEventCoordinates): Lane {
+    addFloatingLane(board: Board, dragCoordinates: DragEventCoordinates): Lane {
         let boards = this._boards$.getValue();
         let activeBoard = boards.find(b => b.id === board.id);
         if (!activeBoard) {
@@ -180,26 +180,23 @@ export class BoardService {
     toggleTaskStatus(task: Task) {
         let boards = this._boards$.getValue();
 
-        boards.forEach(board => {
-            board.lanes.forEach(lane => {
-                const targetTask = lane.children.find(t => t.id === task.id);
-                if (targetTask) {
-                    targetTask.status = targetTask.status === 'completed' ? 'todo' : 'completed';
-                }
-            });
-        });
+        this._allTasks$.getValue()?.forEach(t => {
+            if (t.id === task.id) {
+                t.status = t.status === 'completed' ? 'todo' : 'completed';
+            }
+        })
 
         this._boards$.next(boards);
     }
 
     getTaskInDirection(lane: Lane, tasks: Task[] | undefined, direction: 'up' | 'down' | 'left' | 'right'): Task | undefined {
-        if(!tasks || tasks.length === 0){
+        if (!tasks || tasks.length === 0) {
             return;
         }
         // get all the tasks in the lane, including descendants, in an ordered array
         let orderedLinearizedTasks = lane.children.reduce((acc, t) => acc.concat(t).concat(this.getDescendants(t)), [] as Task[]).filter(t => t);
         let index = orderedLinearizedTasks.length - 1;
-        for(let toCkeck of tasks){
+        for (let toCkeck of tasks) {
             let internalIdx = orderedLinearizedTasks.findIndex(t => t.id === toCkeck.id);
             index = internalIdx < index ? internalIdx : index;
         }
@@ -207,30 +204,34 @@ export class BoardService {
         return orderedLinearizedTasks[direction === 'up' ? index - 1 : index + 1];
     }
 
-    findParent(obj: Parent): Parent | undefined{
+    findParent(obj: Parent): Parent | undefined {
         return this._allParents$.getValue()?.find(p => p.children.find(c => c.id === obj.id));
     }
 
-    addAsSiblings(parent: Parent, sibling: Task | undefined, tasks: Task[] | undefined, position: 'before' | 'after' = 'before'){
-        if(!tasks || tasks.length === 0){
+    addAsSiblings(parent: Parent, sibling: Task | undefined, tasks: Task[] | undefined, position: 'before' | 'after' = 'before') {
+        if (!tasks || tasks.length === 0) {
             return;
         }
         let boards = this._boards$.getValue();
 
+
+        tasks = this.getTopLevelTasks(tasks);
+
         // remove the task from any parent
         this._allParents$.getValue()?.forEach(p => {
-            p.children = p.children.filter(c => !tasks.find(t => t.id === c.id));
+            p.children = p.children.filter(c => !tasks?.find(t => t.id === c.id));
         })
 
-        if(sibling){
+
+        if (sibling) {
             // find the index of the sibling
             let index = parent.children.findIndex(c => c.id === sibling.id);
-            if(index === -1){
+            if (index === -1) {
                 throw new Error(`Cannot find sibling with id ${sibling.id} in parent with id ${parent.id}`);
             }
             // add the task before or after the sibling
             parent.children.splice(position === 'before' ? index : index + 1, 0, ...tasks);
-        }else{
+        } else {
             // add the task at the end of the parent
             parent.children = parent.children.concat(tasks);
         }
@@ -241,17 +242,14 @@ export class BoardService {
 
     }
 
-    addAsChild(parent: Parent, children: Task[] | undefined){
-        if(!children || children.length === 0){
+    addAsChild(parent: Parent, children: Task[] | undefined) {
+        if (!children || children.length === 0) {
             return;
         }
         let boards = this._boards$.getValue();
 
         // incoming tasks could be related one another. Keep only the top level tasks
-        for(let child of children){
-            let descendants = this.getDescendants(child);
-            children = children.filter(c => descendants.map(d => d.id).indexOf(c.id) === -1);
-        }
+        children = this.getTopLevelTasks(children);
 
         // remove the child from any children set
         this._allParents$.getValue()?.forEach(p => {
@@ -259,7 +257,7 @@ export class BoardService {
         })
         // add the child to the parent, if it is not already there
         children.forEach(child => {
-            if(!parent.children.find(c => c.id === child.id)){
+            if (!parent.children.find(c => c.id === child.id)) {
                 parent.children.push(child);
             }
         })
@@ -268,28 +266,37 @@ export class BoardService {
         this._boards$.next(boards);
     }
 
-    removeChildren(parent: Parent, children: Task[] | undefined){
-        if(!children || children.length === 0){
+    removeChildren(parent: Parent, children: Task[] | undefined) {
+        if (!children || children.length === 0) {
             return;
         }
         let boards = this._boards$.getValue();
-        // incoming tasks could be related one another. Keep only the top level tasks
-        for(let child of children){
-            let descendants = this.getDescendants(child);
-            children = children.filter(c => descendants.map(d => d.id).indexOf(c.id) === -1);
-        }
+
+        children = this.getTopLevelTasks(children);
 
         parent.children = parent.children.filter(c => !children.find(t => t.id === c.id));
         // task need to become sibling of the parent. Find the parent of the parent
         let grandParent = this.findParent(parent);
-        if(grandParent){
+        if (grandParent) {
             grandParent.children = grandParent.children.concat(children);
         }
 
         // Publish the changes
         this._boards$.next(boards);
     }
-    isLane(parent: Parent): parent is Lane{
+    isLane(parent: Parent): parent is Lane {
         return (parent as Lane)._type === 'lane';
     }
+
+    // retrieves only the tasks higher in the hierarchy
+    getTopLevelTasks(tasks: Task[]): Task[] {
+        let ret: Task[] = [...tasks];
+        // incoming tasks could be related one another. Keep only the top level tasks
+        for (let child of tasks) {
+            let descendants = this.getDescendants(child);
+            ret = ret.filter(c => descendants.map(d => d.id).indexOf(c.id) === -1);
+        }
+        return ret;
+    }
+
 }
