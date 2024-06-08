@@ -38,12 +38,17 @@ export class BoardService {
             let allLanes: Lane[] = [];
             b.forEach(board => {
                 board.children.forEach(lane => {
-                    
+
                     allTasks = allTasks.concat(lane.children);
                     lane.children.forEach(task => {
                         allTasks = allTasks.concat(this.getDescendants(task).filter(t => this.isTask(t)) as Task[]);
                     })
+
+
                 })
+                // remove lanes without children
+                board.children = board.children.filter(l => l.children.length > 0);
+
                 allLanes = allLanes.concat(board.children);
             })
             this._allTasks$.next(allTasks);
@@ -110,8 +115,8 @@ export class BoardService {
             } else {
                 cur?.push(task);
             }
-        } else{
-            cur.find(t => t.id === task.id) ? cur = cur: cur = cur.concat(task);
+        } else {
+            cur.find(t => t.id === task.id) ? cur = cur : cur = cur.concat(task);
         }
         this._lastSelectedTask$.next(task);
         this._selectedTasks$.next(cur);
@@ -161,7 +166,7 @@ export class BoardService {
      * If a lane becomes empty after removing the task, it is also removed from the board.
      * Finally, the new floating lane is added to the board and the updated boards are emitted.
      */
-    addFloatingLane(board: Board, x:number, y:number, children: Task[] | undefined): Lane {
+    addFloatingLane(board: Board, x: number, y: number, children: Task[] | undefined): Lane {
         let boards = this._boards$.getValue();
         let activeBoard = boards.find(b => b.id === board.id);
         if (!activeBoard) {
@@ -180,7 +185,7 @@ export class BoardService {
         }
         activeBoard.children.push(newLane);
 
-        if(children){
+        if (children) {
             this.addAsChild(newLane, children);
         }
 
@@ -206,7 +211,7 @@ export class BoardService {
             return;
         }
         // get all the tasks in the lane, including descendants, in an ordered array
-        let orderedLinearizedTasks = lane.children.reduce((acc, t) => acc.concat(t).concat(this.getDescendants(t)), [] as Container[]).filter(t => t && this.isTask(t) ) as Task[];
+        let orderedLinearizedTasks = lane.children.reduce((acc, t) => acc.concat(t).concat(this.getDescendants(t)), [] as Container[]).filter(t => t && this.isTask(t)) as Task[];
         let index = orderedLinearizedTasks.length - 1;
         for (let toCkeck of tasks) {
             let internalIdx = orderedLinearizedTasks.findIndex(t => t.id === toCkeck.id);
@@ -220,15 +225,15 @@ export class BoardService {
         if (!objs || objs.length === 0) {
             return;
         }
-        if( this.isLanes(objs) ){
-            
-        }else if( this.isTasks(objs) ){
+        if (this.isLanes(objs)) {
+
+        } else if (this.isTasks(objs)) {
             objs = this.getTopLevelTasks(objs);
         }
 
         let parents = this._allParents$.getValue()?.filter(p => p.children.length > 0 && p.children.find(c => objs.find(o => o.id === c.id)));
 
-        if( !parents || parents?.length !== 1){
+        if (!parents || parents?.length !== 1) {
             console.info('findParent: objs.length !== 1', objs);
             return;
         }
@@ -344,7 +349,7 @@ export class BoardService {
         return ret;
     }
 
-    hasNextSibling(board: Board, task: Task):boolean {
+    hasNextSibling(board: Board, task: Task): boolean {
         let has: boolean = false;
         this._allParents$.getValue()?.forEach(p => {
             let index = p.children.findIndex(c => c.id === task.id);
@@ -355,7 +360,7 @@ export class BoardService {
         return has;
     }
 
-    publishBoardUpdate(){
+    publishBoardUpdate() {
         this._boards$.next(this._boards$.getValue());
     }
 

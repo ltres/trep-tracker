@@ -13,7 +13,7 @@
 .task-wrapper{
     display: flex;
     align-items: center;
-    --ngx-editor-text-color: $border-color;
+    --ngx-editor-text-color: $translucent-color;
     .NgxEditor__Wrapper{
         flex-grow: 1;
         border: 0px !important;;
@@ -45,8 +45,8 @@
         right: 0;
         width: 50%;
         height:  1rem;
-        border-left: 1px solid $border-color;
-        border-bottom: 1px solid $border-color;
+        border-left: 1px solid $translucent-color;
+        border-bottom: 1px solid $translucent-color;
     }
     .border-line{
         position: absolute;
@@ -54,7 +54,7 @@
         right: 0;
         width: 50%;
         height:  calc(100% - 1rem);
-        border-left: 1px solid $border-color;
+        border-left: 1px solid $translucent-color;
         ///border-bottom: 1px solid $todo-color;
     }
 }

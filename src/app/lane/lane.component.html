@@ -1,5 +1,5 @@
 <div class="lane-toolbar flex">
-  <span class="drag-handle big">⋯</span>
+  <div class="grower"></div><div class="small translucent" (click)="createNewTask()">New task</div><span class="drag-handle big">⋯</span>
 </div>
 
 <ng-container *ngFor="let task of tasks$ | async">
@@ -7,4 +7,7 @@
 </ng-container>
 
 <p class="floating-label">Lane: {{lane.id}}</p>
-<button (click)="createNewTask()">Create New Task</button>
+
+<div class="lane-toolbar flex">
+  <div class="grower"></div><div class="small translucent" (click)="createNewTask()">New task</div>
+</div>
