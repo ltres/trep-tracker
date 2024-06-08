@@ -2,7 +2,7 @@
 
 
 :host{
-    min-width: $min-width;
+    min-width: $min-width / 2;
     //width: 100%;
     display: inline-block;
     --ngx-editor-background-color: $editor-active-background;
@@ -37,6 +37,7 @@
 .line{
     flex-basis: 1rem;
     flex-grow: 0;
+    flex-shrink: 0;
     position: relative;
     .border-angle{
         position: absolute;

@@ -1,6 +1,6 @@
 
 
-<main class="main">
+<main class="main" ondragover="event.preventDefault()">
 
     <div>
         <board *ngFor="let board of boards$ | async" [board]="board"></board>

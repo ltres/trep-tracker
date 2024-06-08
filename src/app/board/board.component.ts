@@ -7,6 +7,7 @@ import { LaneComponent } from '../lane/lane.component';
 import { isInside } from '../../utils/utils';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
+import { BaseComponent } from '../base/base.component';
 
 @Component({
   selector: 'board',
@@ -15,7 +16,7 @@ import { KeyboardService } from '../../service/keyboard.service';
   templateUrl: './board.component.html',
   styleUrl: './board.component.scss',
 })
-export class BoardComponent implements OnInit {
+export class BoardComponent extends BaseComponent implements OnInit {
   @Input() board!: Board;
   @ViewChildren(LaneComponent, { read: ElementRef }) laneComponentsElRefs: QueryList<ElementRef> | undefined;
   @ViewChildren(LaneComponent,) laneComponents: QueryList<LaneComponent> | undefined;
@@ -25,6 +26,7 @@ export class BoardComponent implements OnInit {
     private dragService: DragService,
     private keyboardService: KeyboardService,
   ) {
+    super()
     // this.taskService = taskService;
   }
 
@@ -83,7 +85,7 @@ export class BoardComponent implements OnInit {
       //console.log("Grabbed")*/
       //console.log(e)
     //})
-    this.keyboardService.keyboardEvent$.subscribe(e => {
+    this.subscriptions = this.keyboardService.keyboardEvent$.subscribe(e => {
       if (e?.type != 'keydown' || !e || ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].indexOf(e.key) === -1) {
         return
       }

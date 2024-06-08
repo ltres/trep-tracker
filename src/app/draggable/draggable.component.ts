@@ -1,8 +1,10 @@
-import { AfterViewInit, Component, ElementRef, HostListener } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostBinding, HostListener, OnInit } from '@angular/core';
 import { BoardService } from '../../service/board.service';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
-import { Container } from '../../types/task';
+import { Board, Container } from '../../types/task';
+import { overlaps } from '../../utils/utils';
+import { BaseComponent } from '../base/base.component';
 
 @Component({
   selector: 'draggable',
@@ -11,29 +13,57 @@ import { Container } from '../../types/task';
   templateUrl: './draggable.component.html',
   styleUrl: './draggable.component.scss'
 })
-export abstract class DraggableComponent implements AfterViewInit {
+export abstract class DraggableComponent extends BaseComponent implements OnInit, AfterViewInit {
   protected _object: Container | undefined;
+  protected _board: Board | undefined;
 
   private deltaX: number = 0;
   private deltaY: number = 0;
+
+  @HostBinding('style.left.px')
+  private left = 0;
+
+  @HostBinding('style.top.px')
+  private top = 0;
+
+  @HostBinding('style.position')
+  private position: string | undefined;;
 
   constructor(
     protected boardService: BoardService,
     protected dragService: DragService,
     protected keyboardService: KeyboardService,
     public el: ElementRef) {
-    this.dragService.overlapCheckRequest$.subscribe(rect => {
-      this.dragService.publishOverlapMatchResponse(this.object, this);;
-    });
+    super();
+    this.dragService.addToRegistry(this);
+    this.subscriptions = this.boardService.parents$.subscribe(parents => {
+      if (!this.object) return;
+      let thisObject = parents?.find(parent => parent.id === this.object?.id && parent._type === this.object?._type);
+      if (thisObject) {
+        this.left = thisObject.coordinates?.x || 0;
+        this.top = thisObject.coordinates?.y || 0;
+        this.position = thisObject.coordinates ? 'fixed' : undefined;
+      }
+    })
   }
-  ngAfterViewInit(): void {
+  ngOnInit(): void {
     this.el.nativeElement.setAttribute('draggable', 'true');
     if (!this.object || !this.object.coordinates) return;
-    this.el.nativeElement.style.left = this.object.coordinates.x + 'px';
-    this.el.nativeElement.style.top = this.object.coordinates.y + 'px';
-    this.el.nativeElement.style.position = 'fixed';
+    this.left = this.object.coordinates.x;
+    this.top = this.object.coordinates.y;
+    this.position = 'fixed';
   }
+  ngAfterViewInit(): void {
+
+  }
+
+  override ngOnDestroy(): void {
+    super.ngOnDestroy();
+    this.dragService.removeFromRegistry(this);
+  }
+
   abstract get object(): Container | undefined;
+  abstract get board(): Board | undefined;
 
   /**
    * If the task was dropped over another, put the task in the same lane after/before that task.
@@ -45,12 +75,14 @@ export abstract class DraggableComponent implements AfterViewInit {
     this.el.nativeElement.style.left = ($event.clientX - this.deltaX) + 'px';
     this.el.nativeElement.style.top = ($event.clientY - this.deltaY) + 'px';
     this.el.nativeElement.style.position = 'fixed';
+    if (!this.object) return;
+
+    this.object.coordinates = { x: $event.clientX - this.deltaX, y: $event.clientY - this.deltaY };
+    this.boardService.publishBoardUpdate();
+
     this.dragService.publishDragEvent(this, $event);
     $event.stopPropagation();
     $event.stopImmediatePropagation();
-    if (!this.object) return;
-    this.object.coordinates = { x: $event.clientX - this.deltaX, y: $event.clientY - this.deltaY };
-    this.boardService.publishBoardUpdate();
   }
   @HostListener('drag', ['$event'])
   onDrag($event: DragEvent, parent: Container) {
@@ -69,8 +101,8 @@ export abstract class DraggableComponent implements AfterViewInit {
   onDragStart($event: DragEvent) {
     this.deltaX = $event.clientX - this.el.nativeElement.getBoundingClientRect().left,
       this.deltaY = $event.clientY - this.el.nativeElement.getBoundingClientRect().top;
-    $event.stopPropagation();
-    $event.stopImmediatePropagation();
+    //$event.stopPropagation();
+    //$event.stopImmediatePropagation();
     if ($event.target instanceof Element) {
       $event.dataTransfer?.setDragImage($event.target, window.outerWidth, window.outerHeight);
     }

@@ -41,7 +41,7 @@ export class BoardService {
                     
                     allTasks = allTasks.concat(lane.children);
                     lane.children.forEach(task => {
-                        allTasks = allTasks.concat(this.getDescendants(task));
+                        allTasks = allTasks.concat(this.getDescendants(task).filter(t => this.isTask(t)) as Task[]);
                     })
                 })
                 allLanes = allLanes.concat(board.children);
@@ -52,17 +52,13 @@ export class BoardService {
         })
     }
 
-    getDescendants(task: Task): Task[] {
-        let descendants: Task[] = [];
-        for (let child of task.children) {
+    getDescendants(container: Container): Container[] {
+        let descendants: Container[] = [];
+        for (let child of container.children) {
             descendants = descendants.concat(child).concat(this.getDescendants(child));
         }
 
         return descendants
-    }
-
-    get boards$(): Observable<Board[]> {
-        return this._boards$;
     }
 
     addBoard(board: Board) {
@@ -104,9 +100,7 @@ export class BoardService {
         this._lastSelectedLane$.next(lane);
     }
 
-    get editorActiveTask$(): Observable<Task | undefined> {
-        return this._editorActiveTask$;
-    }
+
 
     selectTask(lane: Lane, task: Task, method: 'mouse' | 'keyboard') {
         let cur = this._selectedTasks$.getValue() || [];
@@ -133,23 +127,32 @@ export class BoardService {
     get selectedTasks$(): Observable<Task[] | undefined> {
         return this._selectedTasks$;
     }
-    get selectedTasks(): Task[] | undefined {
-        return this._selectedTasks$.getValue();
-    }
     get lastSelectedTask$(): Observable<Task | undefined> {
         return this._lastSelectedTask$;
     }
-    get lastSelectedTask(): Task | undefined {
-        return this._lastSelectedTask$.getValue();
-    }
     get lastSelectedLane$(): Observable<Lane | undefined> {
         return this._lastSelectedLane$;
+    }
+    get boards$(): Observable<Board[]> {
+        return this._boards$;
+    }
+    get parents$(): Observable<Container[] | undefined> {
+        return this._allParents$;
+    }
+    get editorActiveTask$(): Observable<Task | undefined> {
+        return this._editorActiveTask$;
     }
     get lastSelectedLane(): Lane | undefined {
         return this._lastSelectedLane$.getValue();
     }
     get parents(): Container[] | undefined {
         return this._allParents$.getValue();
+    }
+    get lastSelectedTask(): Task | undefined {
+        return this._lastSelectedTask$.getValue();
+    }
+    get selectedTasks(): Task[] | undefined {
+        return this._selectedTasks$.getValue();
     }
     /**
      * Adds a floating lane to the specified board.
@@ -158,7 +161,7 @@ export class BoardService {
      * If a lane becomes empty after removing the task, it is also removed from the board.
      * Finally, the new floating lane is added to the board and the updated boards are emitted.
      */
-    addFloatingLane(board: Board, dragCoordinates: DragEventCoordinates, children: Task[] | undefined): Lane {
+    addFloatingLane(board: Board, x:number, y:number, children: Task[] | undefined): Lane {
         let boards = this._boards$.getValue();
         let activeBoard = boards.find(b => b.id === board.id);
         if (!activeBoard) {
@@ -171,8 +174,8 @@ export class BoardService {
             children: [],
             _type: 'lane',
             coordinates: {
-                x: dragCoordinates.cursorX - dragCoordinates.deltaX,
-                y: dragCoordinates.cursorY - dragCoordinates.deltaY
+                x,
+                y
             }
         }
         activeBoard.children.push(newLane);
@@ -203,7 +206,7 @@ export class BoardService {
             return;
         }
         // get all the tasks in the lane, including descendants, in an ordered array
-        let orderedLinearizedTasks = lane.children.reduce((acc, t) => acc.concat(t).concat(this.getDescendants(t)), [] as Task[]).filter(t => t);
+        let orderedLinearizedTasks = lane.children.reduce((acc, t) => acc.concat(t).concat(this.getDescendants(t)), [] as Container[]).filter(t => t && this.isTask(t) ) as Task[];
         let index = orderedLinearizedTasks.length - 1;
         for (let toCkeck of tasks) {
             let internalIdx = orderedLinearizedTasks.findIndex(t => t.id === toCkeck.id);
@@ -286,6 +289,11 @@ export class BoardService {
             }
         })
 
+        // remove custom coordinates from children
+        children.forEach(c => {
+            delete c.coordinates;
+        })
+
         // Publish the changes
         this._boards$.next(boards);
     }
@@ -309,7 +317,10 @@ export class BoardService {
         this._boards$.next(boards);
     }
 
-    isLane(parent: Container): parent is Lane {
+    isLane(parent: Container | undefined): parent is Lane {
+        if (!parent) {
+            return false;
+        }
         return (parent as Lane)._type === 'lane';
     }
     isTask(parent: Container): parent is Task {

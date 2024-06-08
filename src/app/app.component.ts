@@ -27,6 +27,7 @@ export class AppComponent implements OnInit {
   addBoard() {
     this.boardService.addBoard({
       id: generateUUID(),
+      _type: "board",
       children: [{
         id: generateUUID(),
         children: [],

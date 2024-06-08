@@ -15,10 +15,6 @@ import { DraggableComponent } from '../draggable/draggable.component';
   styleUrl: './task.component.scss'
 })
 export class TaskComponent extends DraggableComponent implements OnInit, OnDestroy {
-  @HostBinding('style.position') position = 'relative';
-  @HostBinding('style.top') top: string | undefined;
-  @HostBinding('style.left') left: string | undefined;
-
   @ViewChild('editorElement') editorElement: ElementRef | undefined; 
   @Input() task!: Task;
   @Input() lane!: Lane;
@@ -53,8 +49,9 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
     }
   }
 
-  ngOnInit(): void {
-    this.boardService.editorActiveTask$.subscribe((task) => {
+  override ngOnInit(): void {
+    super.ngOnInit();
+    this.subscriptions = this.boardService.editorActiveTask$.subscribe((task) => {
       if( task && task.id === this.task.id) {
         this.editorActive = true;
         this.editor = new Editor({
@@ -67,7 +64,7 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
         this.editor?.destroy();
       }
     });
-    this.boardService.selectedTasks$.subscribe((tasks) => {
+    this.subscriptions = this.boardService.selectedTasks$.subscribe((tasks) => {
       if( tasks && tasks.find(t => t.id === this.task.id)) {
         this.selected = true;
       }else{
@@ -119,7 +116,8 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
     this.editor?.destroy();
   }
 
-  ngOnDestroy(): void {
+  override ngOnDestroy(): void {
+    super.ngOnDestroy();
     this.destroyEditor();
   }
 }

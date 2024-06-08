@@ -14,3 +14,9 @@ export function isInside(dragCoordinates: DragEventCoordinates, DOMRect: DOMRect
     }
     return false;
 }
+
+export function overlaps(DOMRect: DOMRect | undefined, DOMRect2: DOMRect | undefined): boolean {
+    if(!DOMRect || !DOMRect2)return false;
+    return DOMRect.x < DOMRect2.x + DOMRect2.width && DOMRect.x + DOMRect.width > DOMRect2.x 
+    && DOMRect.y < DOMRect2.y + DOMRect2.height && DOMRect.y + DOMRect.height > DOMRect2.y;
+}

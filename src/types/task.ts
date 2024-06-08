@@ -14,7 +14,7 @@ export interface Task extends Container<Task>{
 export interface Container<T extends Container<any> = any> {
     id: string;
     children: T[];
-
+    _type: string,
     coordinates?: {
         x: number,
         y: number

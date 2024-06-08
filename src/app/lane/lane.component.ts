@@ -16,11 +16,6 @@ import { KeyboardService } from '../../service/keyboard.service';
   styleUrl: './lane.component.scss'
 })
 export class LaneComponent extends DraggableComponent implements OnInit{
-
-  @HostBinding('style.position') position = 'relative';
-  @HostBinding('style.top') top: string | undefined;
-  @HostBinding('style.left') left: string | undefined;
-
   @ViewChildren(TaskComponent, { read: ElementRef }) taskComponentsElRefs: QueryList<ElementRef> | undefined;
   @ViewChildren(TaskComponent) taskComponents: QueryList<TaskComponent> | undefined;
 
@@ -39,14 +34,13 @@ export class LaneComponent extends DraggableComponent implements OnInit{
     return this.lane;
   }
 
-  ngOnInit(): void {
-    this.boardService.getLane$(this.lane).subscribe( l => {
+  override ngOnInit(): void {
+    super.ngOnInit();
+    this.subscriptions = this.boardService.getLane$(this.lane).subscribe( l => {
       if(!l){
         return;
       }
       this.lane = l;
-      this.top = l.coordinates?.y + 'px';
-      this.left = l.coordinates?.x + 'px'
     })
   }
 
