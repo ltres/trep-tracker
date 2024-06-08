@@ -15,7 +15,8 @@ import { KeyboardService } from '../../service/keyboard.service';
   templateUrl: './lane.component.html',
   styleUrl: './lane.component.scss'
 })
-export class LaneComponent extends DraggableComponent implements OnInit{
+export class LaneComponent extends DraggableComponent implements OnInit {
+
   @ViewChildren(TaskComponent, { read: ElementRef }) taskComponentsElRefs: QueryList<ElementRef> | undefined;
   @ViewChildren(TaskComponent) taskComponents: QueryList<TaskComponent> | undefined;
 
@@ -23,7 +24,7 @@ export class LaneComponent extends DraggableComponent implements OnInit{
   @Input() board!: Board;
 
   constructor(
-    protected override boardService: BoardService, 
+    protected override boardService: BoardService,
     protected override dragService: DragService,
     protected override keyboardService: KeyboardService,
     public override el: ElementRef) {
@@ -36,8 +37,8 @@ export class LaneComponent extends DraggableComponent implements OnInit{
 
   override ngOnInit(): void {
     super.ngOnInit();
-    this.subscriptions = this.boardService.getLane$(this.lane).subscribe( l => {
-      if(!l){
+    this.subscriptions = this.boardService.getLane$(this.lane).subscribe(l => {
+      if (!l) {
         return;
       }
       this.lane = l;
@@ -46,21 +47,25 @@ export class LaneComponent extends DraggableComponent implements OnInit{
 
   get tasks$(): Observable<Task[] | undefined> {
     return this.boardService.getTasks$(this.lane);
-  } 
+  }
 
   createNewTask() {
     let uuid = generateUUID();
-    let task: Task = { 
-      textContent: `Task ${this.boardService.getTasksCount() + 1} ${uuid}`, 
-      id:uuid, 
-      status: "todo", 
+    let task: Task = {
+      textContent: `Task ${this.boardService.getTasksCount() + 1} ${uuid}`,
+      id: uuid,
+      status: "todo",
       _type: 'task',
       children: []
     };
     this.boardService.addAsChild(this.lane, [task]);
     this.boardService.clearSelectedTasks();
-    this.boardService.selectTask(this.lane,task, 'mouse');
-    this.boardService.activateEditorOnTask(this.lane,task);
+    this.boardService.toggleTaskSelection(task);
+    this.boardService.activateEditorOnTask(task);
+  }
+
+  deleteLane() {
+    this.boardService.deleteLane(this.lane);
   }
 
 

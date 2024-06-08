@@ -1,6 +1,7 @@
+@use "sass:string";
+
 @import 'assets/jetbrains-mono.scss';
 @import "assets/variables";
-
 html {
   background-color: $background-color;
   color: $text-color;
@@ -105,6 +106,54 @@ button {
     flex-basis: 0;
   }
 }
+
+@function str-replace($string, $search, $replace: '') {
+  $string: #{$string};
+  $index: str-index($string, $search);
+
+  @if $index {
+    @return str-slice($string, 1, $index - 1) + $replace + str-replace(str-slice($string, $index + str-length($search)), $search, $replace);
+  }
+
+  @return $string;
+}
+
+@mixin generate-utility-classes($padding-values) {
+  @each $padding in $padding-values {
+    .p-#{str-replace($padding, ".", "")} {
+      padding: $padding * 1rem;
+    }
+    .p-x-#{str-replace($padding, ".", "")} {
+      padding-left: $padding * 1rem;
+      padding-right: $padding * 1rem;
+    }
+    .p-y-#{str-replace($padding, ".", "")} {
+      padding-top: $padding * 1rem;
+      padding-bottom: $padding * 1rem;
+    }
+    .m-#{str-replace($padding, ".", "")} {
+      margin: $padding * 1rem;
+    }
+    .m-x-#{str-replace($padding, ".", "")} {
+      margin-left: $padding * 1rem;
+      margin-right: $padding * 1rem;
+    }
+    .m-y-#{str-replace($padding, ".", "")} {
+      margin-top: $padding * 1rem;
+      margin-bottom: $padding * 1rem;
+    }
+    .g-#{str-replace($padding, ".", "")} {
+      gap: $padding * 1rem;
+    }
+  }
+}
+
+@include generate-utility-classes(0.25 0.5 1);
+
+.danger{
+  color: $danger-color
+}
+
 
 .drag-handle{
   font-size: 150%;

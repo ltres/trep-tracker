@@ -1,13 +1,18 @@
-<div class="lane-toolbar flex">
-  <div class="grower"></div><div class="small translucent" (click)="createNewTask()">New task</div><span class="drag-handle big">⋯</span>
-</div>
+<div class="lane-wrapper" data-consider-for-overlapping-checks="true">
+  <div class="lane-toolbar flex g-05 p-x-05">
+    <div class="grower"></div>
+    <div class="small translucent danger" *ngIf="(tasks$ | async)?.length == 0" (click)="deleteLane()">Delete lane</div>
+    <div class="small translucent" (click)="createNewTask()">New task</div>
+    <span class="drag-handle big">⋯</span>
+  </div>
 
-<ng-container *ngFor="let task of tasks$ | async">
-  <task [task]="task" [parent]="lane" [board]="board" [lane]="lane" (createNewTask)="createNewTask()"></task>
-</ng-container>
+  <ng-container *ngFor="let task of tasks$ | async">
+    <task [task]="task" [parent]="lane" [board]="board" [lane]="lane" (createNewTask)="createNewTask()"></task>
+  </ng-container>
 
-<p class="floating-label">Lane: {{lane.id}}</p>
+  <p class="floating-label">Lane: {{lane.id}}</p>
 
-<div class="lane-toolbar flex">
-  <div class="grower"></div><div class="small translucent" (click)="createNewTask()">New task</div>
+  <div class="lane-toolbar flex g-05 p-x-05">
+    <div class="grower"></div><div class="small translucent" (click)="createNewTask()">New task</div>
+  </div>
 </div>

@@ -11,6 +11,7 @@ import { LaneComponent } from './lane/lane.component';
 import { KeyboardService } from '../service/keyboard.service';
 import { KeyboardListenerComponent } from './keyboard-listener/keyboard-listener.component';
 import { DragService } from '../service/drag.service';
+import { CKEditorModule } from 'ckeditor4-angular';
 
 @NgModule({
     declarations: [AppComponent, BoardComponent, LaneComponent, TaskComponent],
@@ -22,7 +23,8 @@ import { DragService } from '../service/drag.service';
         FormsModule,
         ReactiveFormsModule,
         NgxEditorModule,
-        KeyboardListenerComponent
+        KeyboardListenerComponent,
+        CKEditorModule
     ]
 })
 export class AppModule { }

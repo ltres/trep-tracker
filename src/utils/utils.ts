@@ -20,3 +20,9 @@ export function overlaps(DOMRect: DOMRect | undefined, DOMRect2: DOMRect | undef
     return DOMRect.x < DOMRect2.x + DOMRect2.width && DOMRect.x + DOMRect.width > DOMRect2.x 
     && DOMRect.y < DOMRect2.y + DOMRect2.height && DOMRect.y + DOMRect.height > DOMRect2.y;
 }
+
+export function cursorIsInside(event: DragEvent, DOMRect: DOMRect | undefined): boolean {
+    if (!DOMRect) return false;
+    return DOMRect.x < event.clientX && event.clientX < DOMRect.x + DOMRect.width &&
+        DOMRect.y < event.clientY && event.clientY < DOMRect.y + DOMRect.height;
+}

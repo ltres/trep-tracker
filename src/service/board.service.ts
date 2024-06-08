@@ -7,6 +7,7 @@ import { generateUUID } from "../utils/utils";
     providedIn: 'root'
 })
 export class BoardService {
+
     private _boards$: BehaviorSubject<Board[]> = new BehaviorSubject<Board[]>([]);
     private _editorActiveTask$: BehaviorSubject<Task | undefined> = new BehaviorSubject<Task | undefined>(undefined);
 
@@ -17,10 +18,8 @@ export class BoardService {
     private _selectedTasks$: BehaviorSubject<Task[] | undefined> = new BehaviorSubject<Task[] | undefined>(undefined);
     private _lastSelectedTask$: BehaviorSubject<Task | undefined> = new BehaviorSubject<Task | undefined>(undefined);
 
-    private _lastSelectedLane$: BehaviorSubject<Lane | undefined> = new BehaviorSubject<Lane | undefined>(undefined);
-
     constructor() {
-        let keys = ['_boards$', '_editorActiveTask$', '_selectedTasks$', '_lastSelectedTask$', '_lastSelectedLane$', '_allTasks$', '_allLanes$'];
+        let keys = ['_boards$', '_editorActiveTask$', '_selectedTasks$', '_lastSelectedTask$', '_allTasks$', '_allLanes$'];
         for (let key of keys) {
             let o = JSON.parse(localStorage.getItem(key) || '[]');
             if (o) {
@@ -47,7 +46,7 @@ export class BoardService {
 
                 })
                 // remove lanes without children
-                board.children = board.children.filter(l => l.children.length > 0);
+                // board.children = board.children.filter(l => l.children.length > 0);
 
                 allLanes = allLanes.concat(board.children);
             })
@@ -96,37 +95,35 @@ export class BoardService {
         )
     }
 
-    activateEditorOnTask(lane: Lane, task: Task) {
+    activateEditorOnTask( task: Task) {
         if (this._editorActiveTask$.getValue() === task) {
             return
         }
         this._editorActiveTask$.next(task);
-        //this._selectedTasks$.next([task]);
-        this._lastSelectedLane$.next(lane);
     }
 
-
-
-    selectTask(lane: Lane, task: Task, method: 'mouse' | 'keyboard') {
+    toggleTaskSelection(task: Task) {
         let cur = this._selectedTasks$.getValue() || [];
-        if (method === 'mouse') {
-            if (cur?.find(t => t.id === task.id)) {
-                cur = cur.filter(t => t.id !== task.id);
-            } else {
-                cur?.push(task);
-            }
+        if (cur?.find(t => t.id === task.id)) {
+            cur = cur.filter(t => t.id !== task.id);
         } else {
-            cur.find(t => t.id === task.id) ? cur = cur : cur = cur.concat(task);
+            cur?.push(task);
         }
         this._lastSelectedTask$.next(task);
         this._selectedTasks$.next(cur);
-        this._lastSelectedLane$.next(lane);
-        // console.log('selectTask', this._selectedTasks$.getValue())
+    }
+    addToSelection(task: Task) {
+        let cur = this._selectedTasks$.getValue() || [];
+        if (cur?.find(t => t.id === task.id)) {
+            return;
+        }
+        cur?.push(task);
+        this._lastSelectedTask$.next(task);
+        this._selectedTasks$.next(cur);
     }
 
     clearSelectedTasks() {
         this._selectedTasks$.next([]);
-        this._lastSelectedLane$.next(undefined);
     }
 
     get selectedTasks$(): Observable<Task[] | undefined> {
@@ -135,9 +132,7 @@ export class BoardService {
     get lastSelectedTask$(): Observable<Task | undefined> {
         return this._lastSelectedTask$;
     }
-    get lastSelectedLane$(): Observable<Lane | undefined> {
-        return this._lastSelectedLane$;
-    }
+
     get boards$(): Observable<Board[]> {
         return this._boards$;
     }
@@ -146,9 +141,6 @@ export class BoardService {
     }
     get editorActiveTask$(): Observable<Task | undefined> {
         return this._editorActiveTask$;
-    }
-    get lastSelectedLane(): Lane | undefined {
-        return this._lastSelectedLane$.getValue();
     }
     get parents(): Container[] | undefined {
         return this._allParents$.getValue();
@@ -206,15 +198,22 @@ export class BoardService {
         this._boards$.next(boards);
     }
 
-    getTaskInDirection(lane: Lane, tasks: Task[] | undefined, direction: 'up' | 'down' | 'left' | 'right'): Task | undefined {
+    getTaskInDirection( tasks: Task[] | undefined, direction: 'up' | 'down' | 'left' | 'right'): Task | undefined {
         if (!tasks || tasks.length === 0) {
             return;
         }
+
+        // get outer parent of the tasks
+        let parent = this.findAncestor(tasks);
+        if (!parent) {
+            return;
+        }
+        // let taskToFind = this.getTopLevelTasks(tasks);
         // get all the tasks in the lane, including descendants, in an ordered array
-        let orderedLinearizedTasks = lane.children.reduce((acc, t) => acc.concat(t).concat(this.getDescendants(t)), [] as Container[]).filter(t => t && this.isTask(t)) as Task[];
+        let orderedLinearizedTasks = this.getDescendants(parent).filter(c => this.isTask(c)) as Task[];
         let index = orderedLinearizedTasks.length - 1;
-        for (let toCkeck of tasks) {
-            let internalIdx = orderedLinearizedTasks.findIndex(t => t.id === toCkeck.id);
+        for (let toCheck of tasks) {
+            let internalIdx = orderedLinearizedTasks.findIndex(t => t.id === toCheck.id);
             index = internalIdx < index ? internalIdx : index;
         }
 
@@ -238,6 +237,21 @@ export class BoardService {
             return;
         }
         return parents[0];
+    }
+    findAncestor(objs:Container[] | undefined): Container | undefined {
+        if (!objs || objs.length === 0) {
+            return;
+        }
+        let parent = this.findParent(objs);
+
+        while( parent != null ){
+            let grandParent = this.findParent([parent]);
+            if( !grandParent ){
+                return parent;
+            }
+            parent = grandParent;
+        }
+        return parent
     }
 
     addAsSiblings(parent: Container, sibling: Task | undefined, tasks: Task[] | undefined, position: 'before' | 'after' = 'before') {
@@ -328,7 +342,10 @@ export class BoardService {
         }
         return (parent as Lane)._type === 'lane';
     }
-    isTask(parent: Container): parent is Task {
+    isTask(parent: Container | undefined): parent is Task {
+        if (!parent) {
+            return false;
+        }
         return (parent as Task)._type === 'task';
     }
     isLanes(parent: Container[]): parent is Lane[] {
@@ -362,6 +379,19 @@ export class BoardService {
 
     publishBoardUpdate() {
         this._boards$.next(this._boards$.getValue());
+    }
+
+    deleteLane(lane: Lane) {
+        if(lane.children.length > 0){
+            throw new Error(`Cannot delete lane with children`);
+        }
+        let boards = this._boards$.getValue();
+        let board = boards.find(b => b.children.find(l => l.id === lane.id));
+        if (!board) {
+            throw new Error(`Cannot find board for lane with id ${lane.id}`);
+        }
+        board.children = board.children.filter(l => l.id !== lane.id);
+        this._boards$.next(boards);
     }
 
 }

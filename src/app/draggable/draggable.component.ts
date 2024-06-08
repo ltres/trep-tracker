@@ -100,12 +100,16 @@ export abstract class DraggableComponent extends BaseComponent implements OnInit
   @HostListener('dragstart', ['$event'])
   onDragStart($event: DragEvent) {
     this.deltaX = $event.clientX - this.el.nativeElement.getBoundingClientRect().left,
-      this.deltaY = $event.clientY - this.el.nativeElement.getBoundingClientRect().top;
+    this.deltaY = $event.clientY - this.el.nativeElement.getBoundingClientRect().top;
+
+
     //$event.stopPropagation();
     //$event.stopImmediatePropagation();
     if ($event.target instanceof Element) {
       $event.dataTransfer?.setDragImage($event.target, window.outerWidth, window.outerHeight);
     }
+    if(!this.object || !this.boardService.isTask(this.object)) return
+      this.boardService.addToSelection(this.object);
   }
 
 }
