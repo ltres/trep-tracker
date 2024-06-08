@@ -27,10 +27,9 @@ export class AppComponent implements OnInit {
   addBoard() {
     this.boardService.addBoard({
       id: generateUUID(),
-      lanes: [{
+      children: [{
         id: generateUUID(),
         children: [],
-        position: "relative",
         _type: "lane",
       }]
     })

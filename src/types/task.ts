@@ -1,26 +1,24 @@
-import { Input } from "@angular/core";
+export interface Board extends Container<Lane>{
 
-
-export interface Board{
-    id: string,
-    lanes: Lane[]
 }
-export interface Lane extends Parent{
-    position: 'relative' | 'absolute'
+export interface Lane extends Container<Task>{
     _type: 'lane',
+    
+}
+export interface Task extends Container<Task>{
+    textContent: string;
+    _type: 'task',
+    status: "completed" | "todo"
+}
+
+export interface Container<T extends Container<any> = any> {
+    id: string;
+    children: T[];
+
     coordinates?: {
         x: number,
         y: number
     }
-}
-export interface Task extends Parent{
-    textContent: string;
-    status: "completed" | "todo"
-}
-
-export interface Parent{
-    id: string,
-    children: Task[];
 }
 
 

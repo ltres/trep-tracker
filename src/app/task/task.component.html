@@ -3,11 +3,12 @@
 [class.selected]="this.selected"
 [class]="this.task.status"
 (click)="this.keyboardService.isCtrlPressed() ? selectTask(): activateEditorOnTask()" 
-draggable="true"
-(dragstart)="onDragStart($event)" 
-(dragend)="onDragEnd($event)"
+
 >
-    <div class="drag-handle big">
+    <div class="drag-handle big" 
+    draggable="true"
+    (dragstart)="onDragStart($event)" 
+    (dragend)="onDragEnd($event)">
         ⋮
     </div>
     <div *ngIf="this.task.status === 'todo'" class="status big" (click)="toggleTaskStatus()">☐</div>
@@ -37,5 +38,12 @@ draggable="true"
 
 </div>
 <div class="task-children-wrapper">
-    <task *ngFor="let child of this.task.children" [task]="child" [board]="this.board" [lane]="this.lane"></task>
+    <div class="flex" *ngFor="let child of this.task.children; let last = last">
+        <div class="line">
+            <div class="border-angle"></div>
+            <div *ngIf="!last" class="border-line"></div>
+        </div>
+        <task [parent]="this.task" [task]="child" [board]="this.board" [lane]="this.lane"></task>
+    </div>
+    
 </div>    

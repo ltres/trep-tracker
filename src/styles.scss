@@ -1,10 +1,5 @@
 @import 'assets/jetbrains-mono.scss';
-
-$background-color: #161a24;
-$text-color: #ffffff;
-$font-size: 16px;
-
-
+@import "assets/variables";
 
 html {
   background-color: $background-color;
@@ -24,8 +19,9 @@ body {
   position: absolute;
   top: 100%;
   margin: 0;
-  opacity: 50%;
+  
   font-size: 75%;
+  color: $border-color;
 }
 
 .floating-label.board-floating-label {
@@ -83,7 +79,7 @@ p {
 }
 
 button {
-  border: 1px solid white;
+  border: none;
   color: white;
   border-radius: 0;
   padding: 0.2rem 0.5rem;
@@ -93,4 +89,22 @@ button {
   font: inherit;
   cursor: pointer;
   outline: none;
+}
+
+.flex{
+  display: flex;
+  > * {
+    flex-grow: 1;
+    flex-basis: 0;
+  }
+}
+
+.drag-handle{
+  font-size: 150%;
+  color: $border-color!important;
+  cursor: pointer;
+}
+
+.rotate{
+  transform: rotate(90deg);
 }

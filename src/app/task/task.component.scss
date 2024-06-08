@@ -1,12 +1,10 @@
-$editor-active-background:black;
-$selected-background:white;
+@import "../../assets/variables";
 
-$todo-color:white;
-$completed-color:rgb(18, 187, 2);
 
 :host{
     min-width: 10rem;
-    display: inline-block;
+    width: 100%;
+    display: block;
     --ngx-editor-background-color: $editor-active-background;
     flex-basis: 0;
     flex-grow: 1;
@@ -15,7 +13,7 @@ $completed-color:rgb(18, 187, 2);
 .task-wrapper{
     display: flex;
     align-items: center;
-    --ngx-editor-text-color: $todo-color;
+    --ngx-editor-text-color: $border-color;
     .NgxEditor__Wrapper{
         flex-grow: 1;
         border: 0px !important;;
@@ -28,17 +26,34 @@ $completed-color:rgb(18, 187, 2);
         --ngx-editor-text-color: $completed-color;
     }
     &.selected{
-        border-left:.15rem solid $todo-color;
+        border-left:.15rem solid $text-color;
     }
 }
 
-.task-children-wrapper{
-    display: flex;
-    flex-direction: column;
-    padding-left: 1rem
-}
 
-.drag-handle{
-    font-size: 150%;
-    color: $todo-color!important;
+
+
+
+.line{
+    flex-basis: 1rem;
+    flex-grow: 0;
+    position: relative;
+    .border-angle{
+        position: absolute;
+        top:0;
+        right: 0;
+        width: 50%;
+        height:  1rem;
+        border-left: 1px solid $border-color;
+        border-bottom: 1px solid $border-color;
+    }
+    .border-line{
+        position: absolute;
+        bottom:0;
+        right: 0;
+        width: 50%;
+        height:  calc(100% - 1rem);
+        border-left: 1px solid $border-color;
+        ///border-bottom: 1px solid $todo-color;
+    }
 }

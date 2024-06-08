@@ -4,6 +4,9 @@ import { BoardService } from '../../service/board.service';
 import { generateUUID } from '../../utils/utils';
 import { Observable } from 'rxjs';
 import { TaskComponent } from '../task/task.component';
+import { DraggableComponent } from '../draggable/draggable.component';
+import { DragService } from '../../service/drag.service';
+import { KeyboardService } from '../../service/keyboard.service';
 
 @Component({
   selector: 'lane',
@@ -12,7 +15,7 @@ import { TaskComponent } from '../task/task.component';
   templateUrl: './lane.component.html',
   styleUrl: './lane.component.scss'
 })
-export class LaneComponent implements OnInit{
+export class LaneComponent extends DraggableComponent implements OnInit{
   @HostBinding('style.position') position = 'relative';
   @HostBinding('style.top') top: string | undefined;
   @HostBinding('style.left') left: string | undefined;
@@ -23,8 +26,12 @@ export class LaneComponent implements OnInit{
   @Input() lane!: Lane;
   @Input() board!: Board;
 
-  constructor(private boardService: BoardService) {
-    // this.taskService = taskService;
+  constructor(
+    protected override boardService: BoardService, 
+    protected override dragService: DragService,
+    protected override keyboardService: KeyboardService,
+    protected override el: ElementRef) {
+    super(boardService, dragService, keyboardService, el);
   }
 
   ngOnInit(): void {
@@ -33,7 +40,6 @@ export class LaneComponent implements OnInit{
         return;
       }
       this.lane = l;
-      this.position = l.position;
       this.top = l.coordinates?.y + 'px';
       this.left = l.coordinates?.x + 'px'
     })
@@ -45,10 +51,16 @@ export class LaneComponent implements OnInit{
 
   createNewTask() {
     let uuid = generateUUID();
-    let task: Task = { textContent: `Task ${this.boardService.getTasksCount() + 1} ${uuid}`, id:uuid, status: "todo", children: []};
+    let task: Task = { 
+      textContent: `Task ${this.boardService.getTasksCount() + 1} ${uuid}`, 
+      id:uuid, 
+      status: "todo", 
+      _type: 'task',
+      children: []
+    };
     this.boardService.addAsChild(this.lane, [task]);
     this.boardService.clearSelectedTasks();
-    this.boardService.selectTask(this.lane,task);
+    this.boardService.selectTask(this.lane,task, 'mouse');
     this.boardService.activateEditorOnTask(this.lane,task);
   }
 

@@ -35,9 +35,12 @@ export class BoardComponent implements OnInit {
 
   ngOnInit() {
     this.dragService.dragEvent$.subscribe(e => {
+      
+
       //console.log(this.laneComponents)
+      /*
       let dragEndPos = { x: e?.dragCoordinates.cursorX, y: e?.dragCoordinates.cursorY }
-      if (!dragEndPos.x || !dragEndPos.y || !e?.task) {
+      if (!dragEndPos.x || !dragEndPos.y || !e?.parent) {
         return
       }
       let matched = false;
@@ -75,10 +78,10 @@ export class BoardComponent implements OnInit {
         //console.log(el);
       }
       if (!matched) {
-        let newLane = this.boardService.addFloatingLane(this.board, e?.dragCoordinates);
-        this.boardService.addAsChild(newLane, this.boardService.selectedTasks);
+        let newLane = this.boardService.addFloatingLane(this.board, e?.dragCoordinates, this.boardService.selectedTasks);
       }
-      //console.log("Grabbed")
+      //console.log("Grabbed")*/
+      console.log(e)
     })
     this.keyboardService.keyboardEvent$.subscribe(e => {
       if (e?.type != 'keydown' || !e || ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].indexOf(e.key) === -1) {
@@ -96,11 +99,11 @@ export class BoardComponent implements OnInit {
           return;
         }
         if (this.keyboardService.isCtrlPressed()) {
-          this.boardService.selectTask(lane, nearby);
+          this.boardService.selectTask(lane, nearby, 'keyboard');
         } else {
           this.boardService.activateEditorOnTask(lane, nearby);
           this.boardService.clearSelectedTasks();
-          this.boardService.selectTask(lane, nearby);
+          this.boardService.selectTask(lane, nearby, 'keyboard');
         }
       } else if (e.key === 'ArrowRight') {
         // Make this task a child of the task on the top
@@ -111,7 +114,7 @@ export class BoardComponent implements OnInit {
         this.boardService.addAsChild(wannaBeParent, this.boardService.selectedTasks);
       } else if (e.key === 'ArrowLeft') {
         // Children task gets promoted to the same level as the parent
-        let parent = this.boardService.findParent(task);
+        let parent = this.boardService.findParent(this.boardService.selectedTasks);
         if (!parent) {
           throw new Error("Cannot find parent task")
         }

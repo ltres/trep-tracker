@@ -1,8 +1,10 @@
+<div class="lane-toolbar flex">
+  <span class="drag-handle big" draggable="true" (dragstart)="onDragStart($event)" (dragend)="onDragEnd($event, this.lane)">⋯</span>
+</div>
 
 <ng-container *ngFor="let task of tasks$ | async">
-  <task [task]="task" [board]="board" [lane]="lane" (createNewTask)="createNewTask()"  ></task>
+  <task [task]="task" [parent]="lane" [board]="board" [lane]="lane" (createNewTask)="createNewTask()"></task>
 </ng-container>
 
 <p class="floating-label">Lane: {{lane.id}}</p>
 <button (click)="createNewTask()">Create New Task</button>
-

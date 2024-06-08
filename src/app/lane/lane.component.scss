@@ -1,3 +1,5 @@
+@import "../../assets/variables";
+
 :host{
     position: relative;
     display: inline-flex;
@@ -6,6 +8,16 @@
     // width: 100vw;
     //height: 100vh;
     //padding: 2rem;
-    outline: 1px solid grey;
+    outline: 1px solid $border-color;
     outline-offset: -1px;
+}
+
+.lane-toolbar{
+    justify-content: flex-end;
+    align-items: center;
+    height: 1rem;
+}
+.drag-handle{
+    flex-grow: 0;
+    margin-right: 0.5rem;
 }
