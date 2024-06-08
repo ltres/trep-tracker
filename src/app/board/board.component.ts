@@ -34,7 +34,7 @@ export class BoardComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.dragService.dragEvent$.subscribe(e => {
+    // this.dragService.dragEvent$.subscribe(e => {
       
 
       //console.log(this.laneComponents)
@@ -81,8 +81,8 @@ export class BoardComponent implements OnInit {
         let newLane = this.boardService.addFloatingLane(this.board, e?.dragCoordinates, this.boardService.selectedTasks);
       }
       //console.log("Grabbed")*/
-      console.log(e)
-    })
+      //console.log(e)
+    //})
     this.keyboardService.keyboardEvent$.subscribe(e => {
       if (e?.type != 'keydown' || !e || ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].indexOf(e.key) === -1) {
         return

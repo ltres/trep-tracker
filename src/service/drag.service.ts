@@ -10,47 +10,41 @@ import { DraggableComponent } from "../app/draggable/draggable.component";
 })
 export class DragService {
 
-    private _dragEndEvent$: BehaviorSubject<{ draggedElement: Container, event: DragEvent } | undefined> = new BehaviorSubject<{ draggedElement: Container, event: DragEvent } | undefined>(undefined);
+    private _dragEndEvent$: BehaviorSubject<{ draggedComponent: DraggableComponent, event: DragEvent } | undefined> = new BehaviorSubject<{ draggedComponent: DraggableComponent, event: DragEvent } | undefined>(undefined);
     private _overlapCheckRequest$: Subject<DOMRect | undefined> = new Subject<DOMRect | undefined>();
     private _overlapMatchResponse$: BehaviorSubject<{ parent: Container<any>, component: DraggableComponent } | undefined> = new BehaviorSubject<{ parent: Container, component: DraggableComponent } | undefined>(undefined);
 
     constructor(private boardService: BoardService) {
-        this._dragEndEvent$.subscribe(e => {
-            if (!e) {
+        this._dragEndEvent$.subscribe(event => {
+            if (!event) {
                 return;
             }
-            let { clientX: x, clientY: y } = e?.event;
-            let { draggedElement } = e;
+            console.log("Drag end event", event);
+            let { clientX: x, clientY: y } = event?.event;
+            let { draggedComponent: draggedElement } = event;
             let allDraggables = this.boardService.parents;
             if (!allDraggables) return;
-            // check overlapping with any draggable:
-            let overlapping = allDraggables.find(maybeDraggedOver => {
-                if (maybeDraggedOver.id === draggedElement.id) {
-                    // same element, skip
-                    return false;
-                }
-                /* let rect = maybeDraggedOver.coordinates;
-                if (!rect) {
-                    return false;
-                }
-                return x > rect.x && x < rect.x + rect.width && y > rect.y && y < rect.y + rect.height; */
-                return true;
-            });
-
+            this._overlapCheckRequest$.next(draggedElement.el.nativeElement.getBoundingClientRect());
+        
 
         });
     }
 
-    publishDragEvent(draggable: Container, event: DragEvent) {
-        this._dragEndEvent$.next({ draggedElement: draggable, event });
+    publishDragEvent(draggable: DraggableComponent, event: DragEvent) {
+        this._dragEndEvent$.next({ draggedComponent: draggable, event });
     }
-    publishOverlapMatchResponse(parent: Container, component: DraggableComponent) {
+    publishOverlapMatchResponse(parent: Container | undefined, component: DraggableComponent) {
+        if(!parent){
+            console.warn("Parent is undefined");
+            return;
+        }
         this._overlapMatchResponse$.next({ parent, component });
     }
 
-    get dragEvent$(): Observable<{ draggedElement: Container } | undefined> {
+    get dragEndEvent$(): Observable<{ draggedComponent: DraggableComponent, event: DragEvent } | undefined> {
         return this._dragEndEvent$;
     }
+
     get overlapCheckRequest$(): Observable<DOMRect | undefined> {
         return this._overlapCheckRequest$;
     }

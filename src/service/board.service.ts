@@ -344,4 +344,8 @@ export class BoardService {
         return has;
     }
 
+    publishBoardUpdate(){
+        this._boards$.next(this._boards$.getValue());
+    }
+
 }

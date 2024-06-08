@@ -2,9 +2,9 @@
 
 
 :host{
-    min-width: 10rem;
-    width: 100%;
-    display: block;
+    min-width: $min-width;
+    //width: 100%;
+    display: inline-block;
     --ngx-editor-background-color: $editor-active-background;
     flex-basis: 0;
     flex-grow: 1;

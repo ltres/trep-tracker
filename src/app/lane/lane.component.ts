@@ -1,5 +1,5 @@
 import { Component, ElementRef, HostBinding, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { Board, Lane, Task } from '../../types/task';
+import { Board, Container, Lane, Task } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 import { generateUUID } from '../../utils/utils';
 import { Observable } from 'rxjs';
@@ -9,13 +9,14 @@ import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
 
 @Component({
-  selector: 'lane',
+  selector: 'lane[lane][board]',
   //standalone: true,
   // imports: [],
   templateUrl: './lane.component.html',
   styleUrl: './lane.component.scss'
 })
 export class LaneComponent extends DraggableComponent implements OnInit{
+
   @HostBinding('style.position') position = 'relative';
   @HostBinding('style.top') top: string | undefined;
   @HostBinding('style.left') left: string | undefined;
@@ -30,8 +31,12 @@ export class LaneComponent extends DraggableComponent implements OnInit{
     protected override boardService: BoardService, 
     protected override dragService: DragService,
     protected override keyboardService: KeyboardService,
-    protected override el: ElementRef) {
+    public override el: ElementRef) {
     super(boardService, dragService, keyboardService, el);
+  }
+
+  override get object(): Container | undefined {
+    return this.lane;
   }
 
   ngOnInit(): void {

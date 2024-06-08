@@ -5,12 +5,7 @@
 (click)="this.keyboardService.isCtrlPressed() ? selectTask(): activateEditorOnTask()" 
 
 >
-    <div class="drag-handle big" 
-    draggable="true"
-    (dragstart)="onDragStart($event)" 
-    (dragend)="onDragEnd($event)">
-        ⋮
-    </div>
+    <div class="drag-handle big">⋮</div>
     <div *ngIf="this.task.status === 'todo'" class="status big" (click)="toggleTaskStatus()">☐</div>
     <div *ngIf="this.task.status === 'completed'" class="status big" (click)="toggleTaskStatus()">☑</div>
 

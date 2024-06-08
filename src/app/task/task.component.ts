@@ -8,7 +8,7 @@ import { KeyboardService } from '../../service/keyboard.service';
 import { DraggableComponent } from '../draggable/draggable.component';
 
 @Component({
-  selector: 'task',
+  selector: 'task[task][lane][parent][board]',
   //standalone: true,
   //imports: [NgxEditorModule,],
   templateUrl: './task.component.html',
@@ -33,13 +33,16 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
 
   editor: Editor | undefined;
 
-  
   constructor(
     protected override boardService: BoardService, 
     protected override dragService: DragService,
     protected override keyboardService: KeyboardService,
-    protected override el: ElementRef) {
+    public override el: ElementRef) {
     super(boardService, dragService, keyboardService, el);
+  }
+
+  override get object(): Container | undefined {
+    return this.task;
   }
 
   editorChange($event: string) {
