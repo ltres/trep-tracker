@@ -107,8 +107,16 @@ export class BoardComponent extends BaseComponent implements OnInit {
         if (!nearby) {
           return;
         }
-
-        let caretPos = getCaretPosition();
+        let el: Node | undefined;
+        this.registry.baseComponentRegistry.forEach(c => {
+          if (c.object && c.object.id === task.id && c.object._type === task._type) {
+            el = c.el.nativeElement;
+          }
+        });
+        let caretPos = 0;
+        if(el) {
+          caretPos = getCaretPosition(el);
+        }
 
         if (e.ctrlKey === true) {
 

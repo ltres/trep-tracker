@@ -11,7 +11,10 @@ data-consider-for-overlapping-checks="true"
     <div *ngIf="this.task.status === 'completed'" class="status big" (click)="toggleTaskStatus()">☑</div>
 
     <div class="editor-wrapper">
-        <div #editor [attr.contenteditable]="true" [textContent]="task.textContent" (input)="updateValue(task.textContent, $event.target)"></div>
+        <!-- <div #editor [attr.contenteditable]="true" [innerHTML]="task.textContent" (blur)="updateValue($event)"></div> -->
+        
+        <div #editor [contenteditableHtml]="true" contenteditable="true" [(contenteditableModel)]="task.textContent"></div>
+
     </div>
 
 </div>

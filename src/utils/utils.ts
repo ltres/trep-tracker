@@ -80,6 +80,28 @@ export function setCaretPosition( editableDiv: HTMLElement, position: number,) {
     }
 }
 
-export function getCaretPosition(): number{
-    return window.getSelection()?.getRangeAt(0).endOffset ?? 0;
+export function getCaretPosition2(): number{
+    try{
+        return window.getSelection()?.getRangeAt(0).endOffset ?? 0;
+    }catch(e){
+        return 0;
+    }
+}
+
+export function getCaretPosition(element: Node) {
+    var caretOffset = 0;
+    if (typeof window.getSelection != "undefined") {
+        var range: Range | undefined;
+        try{
+            range = window.getSelection()?.getRangeAt(0);
+        }catch(e){
+            return 0;
+        }
+        if(!range)return 0;
+        var preCaretRange = range.cloneRange();
+        preCaretRange.selectNodeContents(element);
+        preCaretRange.setEnd(range.endContainer, range.endOffset);
+        caretOffset = preCaretRange.toString().length;
+    }
+    return caretOffset;
 }

@@ -11,10 +11,10 @@ import { KeyboardService } from '../service/keyboard.service';
 import { KeyboardListenerComponent } from './keyboard-listener/keyboard-listener.component';
 import { DragService } from '../service/drag.service';
 import { RegistryService } from '../service/registry.service';
-import { ContentEditableModelDirective } from './directive/contenteditable.directive';
+import { ContenteditableDirective } from './directive/contenteditable.directive';
 
 @NgModule({
-    declarations: [AppComponent, BoardComponent, LaneComponent, TaskComponent, ContentEditableModelDirective],
+    declarations: [AppComponent, BoardComponent, LaneComponent, TaskComponent, ContenteditableDirective],
     providers: [BoardService, KeyboardService, DragService, RegistryService],
     bootstrap: [AppComponent],
     imports: [

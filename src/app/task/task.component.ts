@@ -50,8 +50,8 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
     }
   }
 
-  updateValue(arg0: string, arg1: EventTarget|null) {
-    this.task.textContent = (arg1 as HTMLElement).textContent ?? '';
+  updateValue( $event: Event) {
+    this.task.textContent = ($event.target as HTMLElement).innerHTML ?? '';
   }
 
   override ngOnInit(): void {
