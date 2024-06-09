@@ -16,7 +16,7 @@
     --ngx-editor-text-color: $translucent-color;
     //border-left: 1px solid $translucent-color;
     &.editor-active{
-        background-color: $editor-active-background!important;   
+        background-color: $editor-active-background;   
     }
     &.completed{
         color:$completed-color;

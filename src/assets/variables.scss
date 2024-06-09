@@ -8,7 +8,7 @@ $main-padding:2rem;
 $translucent-opacity: 0.3;
 $translucent-color: rgba($text-color, $translucent-opacity);
 
-$editor-active-background:black;
+$editor-active-background:rgba(0, 0, 0, 0.4);
 $selected-background:$text-color;
 
 $completed-color:rgb(18, 187, 2);

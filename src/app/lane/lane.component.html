@@ -1,4 +1,4 @@
-<div class="lane-wrapper" data-consider-for-overlapping-checks="true">
+<div class="lane-wrapper" [class.static-view]="isTagged() && (tasks$ | async)?.length === 0" data-consider-for-overlapping-checks="true">
   <div class="lane-toolbar flex g-05 p-x-05">
     <div class="lane-title grow no-wrap" [container]="this.lane" [contenteditableHtml]="true" contenteditable="true" [(contenteditableModel)]="lane.textContent"> </div>
     <div class="grow"></div>
