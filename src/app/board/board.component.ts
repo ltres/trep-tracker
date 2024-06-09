@@ -1,13 +1,14 @@
 import { Component, ElementRef, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { Board, Lane, Task } from '../../types/task';
+import { Board, Container, Lane, Task } from '../../types/task';
 import { TaskComponent } from '../task/task.component';
 import { BoardService } from '../../service/board.service';
 import { Observable } from 'rxjs';
 import { LaneComponent } from '../lane/lane.component';
-import { isInside } from '../../utils/utils';
+import { getCaretPosition, isInside } from '../../utils/utils';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
 import { BaseComponent } from '../base/base.component';
+import { RegistryService } from '../../service/registry.service';
 
 @Component({
   selector: 'board',
@@ -17,16 +18,18 @@ import { BaseComponent } from '../base/base.component';
   styleUrl: './board.component.scss',
 })
 export class BoardComponent extends BaseComponent implements OnInit {
+
   @Input() board!: Board;
   @ViewChildren(LaneComponent, { read: ElementRef }) laneComponentsElRefs: QueryList<ElementRef> | undefined;
   @ViewChildren(LaneComponent,) laneComponents: QueryList<LaneComponent> | undefined;
 
   constructor(
     private boardService: BoardService,
-    private dragService: DragService,
     private keyboardService: KeyboardService,
+    protected override registry: RegistryService,
+    public override el: ElementRef
   ) {
-    super()
+    super(registry,el)
     // this.taskService = taskService;
   }
 
@@ -35,7 +38,12 @@ export class BoardComponent extends BaseComponent implements OnInit {
     return this.boardService.getLanes$(this.board);
   }
 
-  ngOnInit() {
+  override get object(): Container<any> | undefined {
+    return this.board
+  }
+
+  override ngOnInit() {
+    super.ngOnInit();
     // this.dragService.dragEvent$.subscribe(e => {
 
 
@@ -99,21 +107,26 @@ export class BoardComponent extends BaseComponent implements OnInit {
         if (!nearby) {
           return;
         }
-        if (this.keyboardService.isCtrlPressed()) {
+
+        let caretPos = getCaretPosition();
+
+        if (e.ctrlKey === true) {
+
+          this.boardService.activateEditorOnTask(nearby, caretPos);
           this.boardService.addToSelection(nearby);
         } else {
-          this.boardService.activateEditorOnTask(nearby);
+          this.boardService.activateEditorOnTask(nearby, caretPos);
           this.boardService.clearSelectedTasks();
           this.boardService.addToSelection(nearby);
         }
-      } else if (e.key === 'ArrowRight') {
+      } else if (e.key === 'ArrowRight' && e.ctrlKey === true) {
         // Make this task a child of the task on the top
         let wannaBeParent = this.boardService.getTaskInDirection(this.boardService.selectedTasks, "up");
         if (!wannaBeParent) {
           throw new Error("Cannot find nearby task")
         }
         this.boardService.addAsChild(wannaBeParent, this.boardService.selectedTasks);
-      } else if (e.key === 'ArrowLeft') {
+      } else if (e.key === 'ArrowLeft' && e.ctrlKey === true) {
         // Children task gets promoted to the same level as the parent
         let parent = this.boardService.findParent(this.boardService.selectedTasks);
         if (!parent) {

@@ -16,8 +16,4 @@ export class KeyboardService {
     return this._keyboardEvent$;
   }
 
-  isCtrlPressed(): boolean {
-    return this._keyboardEvent$.value?.ctrlKey || false;
-  }
-
 }

@@ -3,7 +3,7 @@ data-consider-for-overlapping-checks="true"
 [class.editor-active]="this.editorActive"
 [class.selected]="this.selected"
 [class]="this.task.status"
-(click)="this.keyboardService.isCtrlPressed() ? selectTask(): activateEditorOnTask()" 
+(click)="clickTask($event)" 
 
 >
     <div class="drag-handle big">⋮</div>
@@ -18,7 +18,7 @@ data-consider-for-overlapping-checks="true"
 
             </ckeditor>
             -->
-            <div #editor contenteditable="true" [innerHTML]="task.textContent">
+            <div #editor contenteditable="true" [textContent]="task.textContent" (input)="updateValue(task.textContent, $event.target)">
             </div>
         </ng-container>
         <ng-container *ngIf="!editorActive">
@@ -34,7 +34,7 @@ data-consider-for-overlapping-checks="true"
             <div class="border-angle"></div>
             <div *ngIf="!last" class="border-line"></div>
         </div>
-        <task [parent]="this.task" [task]="child" [board]="this.board" [lane]="this.lane"></task>
+        <task [parent]="this.task" [task]="child"  [board]="this.board" [lane]="this.lane"></task>
     </div>
     
 </div>    

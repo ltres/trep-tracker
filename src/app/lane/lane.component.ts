@@ -7,6 +7,7 @@ import { TaskComponent } from '../task/task.component';
 import { DraggableComponent } from '../draggable/draggable.component';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
+import { RegistryService } from '../../service/registry.service';
 
 @Component({
   selector: 'lane[lane][board]',
@@ -27,8 +28,9 @@ export class LaneComponent extends DraggableComponent implements OnInit {
     protected override boardService: BoardService,
     protected override dragService: DragService,
     protected override keyboardService: KeyboardService,
+    protected override registry: RegistryService,
     public override el: ElementRef) {
-    super(boardService, dragService, keyboardService, el);
+    super(boardService, dragService, keyboardService, registry, el );
   }
 
   override get object(): Container | undefined {
@@ -61,7 +63,7 @@ export class LaneComponent extends DraggableComponent implements OnInit {
     this.boardService.addAsChild(this.lane, [task]);
     this.boardService.clearSelectedTasks();
     this.boardService.toggleTaskSelection(task);
-    this.boardService.activateEditorOnTask(task);
+    this.boardService.activateEditorOnTask(task, 0);
   }
 
   deleteLane() {

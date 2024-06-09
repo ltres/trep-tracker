@@ -1,6 +1,6 @@
 @use "sass:string";
 
-@import 'assets/jetbrains-mono.scss';
+@import 'assets/jetbrains-mono/jetbrains-mono.scss';
 @import "assets/variables";
 html {
   background-color: $background-color;
@@ -167,4 +167,8 @@ button {
 .translucent{
   //background-color: $translucent-color !important;
   opacity: .3;
+}
+[contenteditable="true"]{
+  border: none!important;
+  outline: none!important;
 }

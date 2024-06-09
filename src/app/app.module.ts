@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
-import { NgxEditorModule } from 'ngx-editor';
 import { BoardComponent } from './board/board.component';
 import { TaskComponent } from './task/task.component';
 import { AppComponent } from './app.component';
@@ -11,20 +10,19 @@ import { LaneComponent } from './lane/lane.component';
 import { KeyboardService } from '../service/keyboard.service';
 import { KeyboardListenerComponent } from './keyboard-listener/keyboard-listener.component';
 import { DragService } from '../service/drag.service';
-import { CKEditorModule } from 'ckeditor4-angular';
+import { RegistryService } from '../service/registry.service';
+import { ContentEditableModelDirective } from './directive/contenteditable.directive';
 
 @NgModule({
-    declarations: [AppComponent, BoardComponent, LaneComponent, TaskComponent],
-    providers: [BoardService, KeyboardService, DragService],
+    declarations: [AppComponent, BoardComponent, LaneComponent, TaskComponent, ContentEditableModelDirective],
+    providers: [BoardService, KeyboardService, DragService, RegistryService],
     bootstrap: [AppComponent],
     imports: [
         CommonModule,
         BrowserModule,
         FormsModule,
         ReactiveFormsModule,
-        NgxEditorModule,
         KeyboardListenerComponent,
-        CKEditorModule
     ]
 })
 export class AppModule { }

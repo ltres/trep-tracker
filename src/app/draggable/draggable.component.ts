@@ -5,6 +5,7 @@ import { KeyboardService } from '../../service/keyboard.service';
 import { Board, Container } from '../../types/task';
 import { overlaps } from '../../utils/utils';
 import { BaseComponent } from '../base/base.component';
+import { RegistryService } from '../../service/registry.service';
 
 @Component({
   selector: 'draggable',
@@ -13,8 +14,7 @@ import { BaseComponent } from '../base/base.component';
   templateUrl: './draggable.component.html',
   styleUrl: './draggable.component.scss'
 })
-export abstract class DraggableComponent extends BaseComponent implements OnInit, AfterViewInit {
-  protected _object: Container | undefined;
+export abstract class DraggableComponent extends BaseComponent implements OnInit {
   protected _board: Board | undefined;
 
   private deltaX: number = 0;
@@ -33,9 +33,9 @@ export abstract class DraggableComponent extends BaseComponent implements OnInit
     protected boardService: BoardService,
     protected dragService: DragService,
     protected keyboardService: KeyboardService,
-    public el: ElementRef) {
-    super();
-    this.dragService.addToRegistry(this);
+    protected override registry: RegistryService,
+    public override el: ElementRef) {
+    super(registry, el);
     this.subscriptions = this.boardService.parents$.subscribe(parents => {
       if (!this.object) return;
       let thisObject = parents?.find(parent => parent.id === this.object?.id && parent._type === this.object?._type);
@@ -46,23 +46,19 @@ export abstract class DraggableComponent extends BaseComponent implements OnInit
       }
     })
   }
-  ngOnInit(): void {
+  override ngOnInit(): void {
+    super.ngOnInit();
     this.el.nativeElement.setAttribute('draggable', 'true');
     if (!this.object || !this.object.coordinates) return;
     this.left = this.object.coordinates.x;
     this.top = this.object.coordinates.y;
     this.position = 'fixed';
   }
-  ngAfterViewInit(): void {
-
-  }
 
   override ngOnDestroy(): void {
     super.ngOnDestroy();
-    this.dragService.removeFromRegistry(this);
   }
 
-  abstract get object(): Container | undefined;
   abstract get board(): Board | undefined;
 
   /**

@@ -4,17 +4,18 @@ import { BehaviorSubject, Observable, Subject, map } from "rxjs";
 import { cursorIsInside, generateUUID, overlaps } from "../utils/utils";
 import { BoardService } from "./board.service";
 import { DraggableComponent } from "../app/draggable/draggable.component";
+import { RegistryService } from "./registry.service";
 
 @Injectable({
     providedIn: 'root'
 })
 export class DragService {
-
     private _dragEndEvent$: BehaviorSubject<{ draggedComponent: DraggableComponent, event: DragEvent } | undefined> = new BehaviorSubject<{ draggedComponent: DraggableComponent, event: DragEvent } | undefined>(undefined);
-    private _draggableComponentRegistry$: BehaviorSubject<DraggableComponent[]> = new BehaviorSubject<DraggableComponent[]>([]);
 
-
-    constructor(private boardService: BoardService) {
+    constructor(
+        private boardService: BoardService,
+        private registryService: RegistryService
+    ) {
         this._dragEndEvent$.subscribe(event => {
             if (!event) {
                 return;
@@ -32,7 +33,7 @@ export class DragService {
                 return
             }
             // look for overlapped component in the registry
-            let registry = this._draggableComponentRegistry$.getValue();
+            let registry = this.registryService.draggableComponentRegistry
             let overlappedComponent = registry.filter(mayBeOverlapped => {
                 if(mayBeOverlapped === draggedComponent) return false;
                 
@@ -79,22 +80,6 @@ export class DragService {
 
     publishDragEvent(draggable: DraggableComponent, event: DragEvent) {
         this._dragEndEvent$.next({ draggedComponent: draggable, event });
-    }
-
-    addToRegistry(draggable: DraggableComponent) {
-        let registry = this._draggableComponentRegistry$.getValue();
-        registry.push(draggable);
-        this._draggableComponentRegistry$.next(registry);
-    }
-    removeFromRegistry(draggable: DraggableComponent) {
-        let registry = this._draggableComponentRegistry$.getValue();
-        let index = registry.findIndex(d => d === draggable);
-        if (index === -1) {
-            console.warn("Component not found in registry");
-            return;
-        }
-        registry.splice(index, 1);
-        this._draggableComponentRegistry$.next(registry);
     }
 
     get dragEndEvent$(): Observable<{ draggedComponent: DraggableComponent, event: DragEvent } | undefined> {

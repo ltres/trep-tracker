@@ -1,11 +1,11 @@
 import { Component, ElementRef, EventEmitter, HostBinding, Input, OnDestroy, OnInit, Output, Renderer2, ViewChild, viewChild } from '@angular/core';
-import { Editor, NgxEditorModule } from 'ngx-editor';
 import { Board, Lane, Container, Task } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
 import { DraggableComponent } from '../draggable/draggable.component';
-import { CKEditor4, CKEditorComponent } from 'ckeditor4-angular';
+import { setCaretPosition } from '../../utils/utils';
+import { RegistryService } from '../../service/registry.service';
 
 @Component({
   selector: 'task[task][lane][parent][board]',
@@ -15,7 +15,8 @@ import { CKEditor4, CKEditorComponent } from 'ckeditor4-angular';
   styleUrl: './task.component.scss'
 })
 export class TaskComponent extends DraggableComponent implements OnInit, OnDestroy {
-  @ViewChild(CKEditorComponent) editorComponent: CKEditorComponent | undefined;
+
+
   @ViewChild('editor') editor: ElementRef | undefined;
   @Input() task!: Task;
   @Input() lane!: Lane;
@@ -27,39 +28,15 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
 
   editorActive: boolean = false;
   selected: boolean = false;
-  type: CKEditor4.EditorType = CKEditor4.EditorType.INLINE;
-
-  editorConfig: CKEditor4.Config = {
-    extraPlugins: 'divarea',
-    // skin: 'prestige,/assets/prestige/',
-    skin: 'moono-dark,/assets/moono-dark/',
-
-    toolbarGroups: [
-      { name: 'document', groups: ['mode', 'document', 'doctools'] },
-      { name: 'clipboard', groups: ['clipboard', 'undo'] },
-      { name: 'editing', groups: ['find', 'selection', 'spellchecker', 'editing'] },
-      { name: 'forms', groups: ['forms'] },
-      { name: 'basicstyles', groups: ['basicstyles', 'cleanup'] },
-      { name: 'paragraph', groups: ['list', 'indent', 'blocks', 'align', 'bidi', 'paragraph'] },
-      { name: 'links', groups: ['links'] },
-      { name: 'insert', groups: ['insert'] },
-      { name: 'styles', groups: ['styles'] },
-      { name: 'colors', groups: ['colors'] },
-      { name: 'tools', groups: ['tools'] },
-      { name: 'others', groups: ['others'] },
-      { name: 'about', groups: ['about'] }
-    ],
-
-    removeButtons: 'Source,Save,Templates,NewPage,Preview,Print,Cut,Copy,Paste,PasteText,PasteFromWord,Find,Replace,SelectAll,Scayt,Form,Checkbox,Radio,TextField,Textarea,Select,Button,HiddenField,Subscript,Superscript,CopyFormatting,RemoveFormat,Blockquote,CreateDiv,JustifyBlock,BidiLtr,BidiRtl,Language,Flash,HorizontalRule,Smiley,PageBreak,SpecialChar,Iframe,Styles,Format,Font,FontSize,Maximize,ShowBlocks,About,Undo,Redo,Outdent,Indent,NumberedList,Anchor,Unlink,Link,Image'
-  };
 
 
   constructor(
     protected override boardService: BoardService,
     protected override dragService: DragService,
     protected override keyboardService: KeyboardService,
+    protected override registry: RegistryService,
     public override el: ElementRef) {
-    super(boardService, dragService, keyboardService, el);
+    super(boardService, dragService, keyboardService, registry, el);
   }
 
   override get object(): Container | undefined {
@@ -71,24 +48,31 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
     if ($event.endsWith('<p></p>')) {
       this.createNewTask.emit();
     }
+  }
 
-
+  updateValue(arg0: string, arg1: EventTarget|null) {
+    this.task.textContent = (arg1 as HTMLElement).textContent ?? '';
   }
 
   override ngOnInit(): void {
     super.ngOnInit();
-    this.subscriptions = this.boardService.editorActiveTask$.subscribe((task) => {
+    this.subscriptions = this.boardService.editorActiveTask$.subscribe((data: { task: Task, startingCaretPosition: number | undefined } | undefined) => {
+      if (!data) return;
+      let { task, startingCaretPosition } = data;
       if (task && task.id === this.task.id) {
         this.editorActive = true;
 
         setTimeout(() => {
           this.editor?.nativeElement.focus();
+          if (startingCaretPosition) {
+            setCaretPosition(this.editor?.nativeElement, Math.min(startingCaretPosition,this.task.textContent.length));
+          }
           //const editorInstance = this.editorComponent?.instance;
           //editorInstance.focus();
-        },10)
+        }, 10)
 
 
-        
+
       } else {
         this.editorActive = false;
       }
@@ -101,6 +85,11 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
       }
     })
   }
+
+  clickTask($event: MouseEvent) {
+    this.activateEditorOnTask()
+  }
+
   /**
  * If the task was dropped over another, put the task in the same lane after/before that task.
  * Otherwise, create another floating lane
@@ -123,14 +112,14 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
   }
 
   activateEditorOnTask() {
-    this.boardService.activateEditorOnTask(this.task);
+    this.boardService.activateEditorOnTask(this.task, undefined);
     this.boardService.clearSelectedTasks();
     this.boardService.toggleTaskSelection(this.task);
   }
 
   selectTask() {
     this.boardService.toggleTaskSelection(this.task);
-    this.boardService.activateEditorOnTask(this.task);
+    this.boardService.activateEditorOnTask(this.task, undefined);
   }
 
   toggleTaskStatus() {

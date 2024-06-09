@@ -9,7 +9,7 @@ import { generateUUID } from "../utils/utils";
 export class BoardService {
 
     private _boards$: BehaviorSubject<Board[]> = new BehaviorSubject<Board[]>([]);
-    private _editorActiveTask$: BehaviorSubject<Task | undefined> = new BehaviorSubject<Task | undefined>(undefined);
+    private _editorActiveTask$: BehaviorSubject<{task: Task , startingCaretPosition: number | undefined} | undefined> = new BehaviorSubject<{task: Task, startingCaretPosition: number | undefined} | undefined>(undefined);
 
     private _allLanes$: BehaviorSubject<Lane[] | undefined> = new BehaviorSubject<Lane[] | undefined>(undefined);
     private _allTasks$: BehaviorSubject<Task[] | undefined> = new BehaviorSubject<Task[] | undefined>(undefined);
@@ -95,11 +95,11 @@ export class BoardService {
         )
     }
 
-    activateEditorOnTask( task: Task) {
-        if (this._editorActiveTask$.getValue() === task) {
+    activateEditorOnTask( task: Task, caretPosition: number | undefined) {
+        if (this._editorActiveTask$.getValue()?.task === task) {
             return
         }
-        this._editorActiveTask$.next(task);
+        this._editorActiveTask$.next({task, startingCaretPosition: caretPosition});
     }
 
     toggleTaskSelection(task: Task) {
@@ -139,7 +139,7 @@ export class BoardService {
     get parents$(): Observable<Container[] | undefined> {
         return this._allParents$;
     }
-    get editorActiveTask$(): Observable<Task | undefined> {
+    get editorActiveTask$(): Observable<{task: Task, startingCaretPosition: number | undefined}  | undefined> {
         return this._editorActiveTask$;
     }
     get parents(): Container[] | undefined {
