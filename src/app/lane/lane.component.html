@@ -1,18 +1,28 @@
 <div class="lane-wrapper" data-consider-for-overlapping-checks="true">
   <div class="lane-toolbar flex g-05 p-x-05">
-    <div class="grower"></div>
-    <div class="small translucent danger" *ngIf="(tasks$ | async)?.length == 0" (click)="deleteLane()">Delete lane</div>
-    <div class="small translucent" (click)="createNewTask()">New task</div>
-    <span class="drag-handle big">⋯</span>
+    <div class="lane-title grow no-wrap" [container]="this.lane" [contenteditableHtml]="true" contenteditable="true" [(contenteditableModel)]="lane.textContent"> </div>
+    <div class="grow"></div>
+    <div class="small translucent danger no-grow" *ngIf="(tasks$ | async)?.length == 0 && !isTagged()" (click)="deleteLane()">Delete lane</div>
+    <div class="small translucent no-grow" *ngIf="isTagged() && !lane.showChildren" (click)="toggleShowChildren()">Show Children ☐</div>
+    <div class="small translucent no-grow" *ngIf="isTagged() && lane.showChildren" (click)="toggleShowChildren()">Show Children <span class="completed">☑</span></div>
+
+    <div class="small translucent no-grow" (click)="createNewTask()">New task</div>
+    <span class="drag-handle big no-grow">⋯</span>
   </div>
 
   <ng-container *ngFor="let task of tasks$ | async">
     <task [task]="task" [parent]="lane" [board]="board" [lane]="lane" (createNewTask)="createNewTask()"></task>
   </ng-container>
 
+  <ng-container *ngIf="isTagged()">
+    <div class="static-view flex column">
+        <task *ngFor="let task of taggedTasks$ | async" [static]="true" [showChildren]="lane.showChildren" [task]="task" [parent]="lane" [board]="board" [lane]="lane"></task>
+    </div>
+  </ng-container>
+
   <p class="floating-label">Lane: {{lane.id}}</p>
 
   <div class="lane-toolbar flex g-05 p-x-05">
-    <div class="grower"></div><div class="small translucent" (click)="createNewTask()">New task</div>
+    <div class="grow"></div><div class="small translucent no-grow" (click)="createNewTask()">New task</div>
   </div>
 </div>

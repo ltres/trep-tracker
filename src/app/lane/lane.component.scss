@@ -15,13 +15,8 @@
 .lane-toolbar{
     justify-content: flex-end;
     align-items: center;
-    height: 1rem;
-    > *{
-        flex-grow: 0;
-    }
-    .grower{
-        flex-grow: 1;
-    }
+    //height: 1rem;
+
     .small{
         white-space:nowrap;
         cursor: pointer;
@@ -29,4 +24,13 @@
 }
 .drag-handle{
     flex-grow: 0;
+}
+.lane-title{
+    color:$lane-title-color;
+    //text-decoration: underline;
+    font-weight: bold;
+}
+
+.static-view{
+    background-color: $static-background-color;
 }

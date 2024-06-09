@@ -101,10 +101,19 @@ button {
 
 .flex{
   display: flex;
-  > * {
-    flex-grow: 1;
-    flex-basis: 0;
-  }
+}
+.column{
+  flex-direction: column;
+}
+
+.grow{
+  flex-grow: 1;
+}
+.no-grow{
+  flex-grow: 0;
+}
+.no-wrap{
+  white-space: nowrap;
 }
 
 @function str-replace($string, $search, $replace: '') {
@@ -153,6 +162,9 @@ button {
 .danger{
   color: $danger-color
 }
+.completed{
+  color: $completed-color
+}
 
 
 .drag-handle{
@@ -166,12 +178,12 @@ button {
 }
 .translucent{
   //background-color: $translucent-color !important;
-  opacity: .3;
+  opacity: $translucent-opacity;
 }
 [contenteditable="true"]{
   border: none!important;
   outline: none!important;
 }
 .tag{
-  color: orange;
+  color: $tag-color;
 }

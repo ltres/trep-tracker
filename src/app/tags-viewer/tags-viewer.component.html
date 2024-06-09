@@ -1,0 +1,5 @@
+
+
+<span class="tag m-x-025" *ngFor="let entry of (this.tagService.uniqueTagsAndNumerosity$ | async)">
+    <span>{{ entry.tag }}</span><span class="small translucent">x{{entry.numerosity}}</span>
+</span>

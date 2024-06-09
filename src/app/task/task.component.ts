@@ -15,15 +15,14 @@ import { RegistryService } from '../../service/registry.service';
   styleUrl: './task.component.scss'
 })
 export class TaskComponent extends DraggableComponent implements OnInit, OnDestroy {
-
-
   @ViewChild('editor') editor: ElementRef | undefined;
   @Input() task!: Task;
   @Input() lane!: Lane;
   @Input() parent!: Container;
 
   @Input() board!: Board;
-
+  @Input() showChildren: boolean = true;
+  
   @Output() createNewTask: EventEmitter<void> = new EventEmitter();
 
   editorActive: boolean = false;

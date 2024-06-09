@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostBinding, HostListener, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostBinding, HostListener, Input, OnInit } from '@angular/core';
 import { BoardService } from '../../service/board.service';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
@@ -15,6 +15,7 @@ import { RegistryService } from '../../service/registry.service';
   styleUrl: './draggable.component.scss'
 })
 export abstract class DraggableComponent extends BaseComponent implements OnInit {
+  @Input() static: boolean = false;
   protected _board: Board | undefined;
 
   private deltaX: number = 0;
@@ -36,6 +37,7 @@ export abstract class DraggableComponent extends BaseComponent implements OnInit
     protected override registry: RegistryService,
     public override el: ElementRef) {
     super(registry, el);
+    if(this.static)return
     this.subscriptions = this.boardService.parents$.subscribe(parents => {
       if (!this.object) return;
       let thisObject = parents?.find(parent => parent.id === this.object?.id && parent._type === this.object?._type);
@@ -48,6 +50,7 @@ export abstract class DraggableComponent extends BaseComponent implements OnInit
   }
   override ngOnInit(): void {
     super.ngOnInit();
+    if(this.static)return
     this.el.nativeElement.setAttribute('draggable', 'true');
     if (!this.object || !this.object.coordinates) return;
     this.left = this.object.coordinates.x;
@@ -68,6 +71,7 @@ export abstract class DraggableComponent extends BaseComponent implements OnInit
    */
   @HostListener('dragend', ['$event'])
   onDragEnd($event: DragEvent, parent: Container) {
+    if(this.static)return
     this.el.nativeElement.style.left = ($event.clientX - this.deltaX) + 'px';
     this.el.nativeElement.style.top = ($event.clientY - this.deltaY) + 'px';
     this.el.nativeElement.style.position = 'fixed';
@@ -82,6 +86,7 @@ export abstract class DraggableComponent extends BaseComponent implements OnInit
   }
   @HostListener('drag', ['$event'])
   onDrag($event: DragEvent, parent: Container) {
+    if(this.static)return
     this.el.nativeElement.style.left = ($event.clientX - this.deltaX) + 'px';
     this.el.nativeElement.style.top = ($event.clientY - this.deltaY) + 'px';
     this.el.nativeElement.style.position = 'fixed';
@@ -95,6 +100,7 @@ export abstract class DraggableComponent extends BaseComponent implements OnInit
 
   @HostListener('dragstart', ['$event'])
   onDragStart($event: DragEvent) {
+    if(this.static)return
     this.deltaX = $event.clientX - this.el.nativeElement.getBoundingClientRect().left,
     this.deltaY = $event.clientY - this.el.nativeElement.getBoundingClientRect().top;
 

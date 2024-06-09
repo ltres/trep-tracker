@@ -12,12 +12,9 @@
 
 .task-wrapper{
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     --ngx-editor-text-color: $translucent-color;
-    .NgxEditor__Wrapper{
-        flex-grow: 1;
-        border: 0px !important;;
-    }
+    //border-left: 1px solid $translucent-color;
     &.editor-active{
         background-color: $editor-active-background!important;   
     }
@@ -29,10 +26,9 @@
         border-left:.15rem solid $text-color;
     }
 }
-
-
-
-
+.editor-wrapper{
+    align-self: center;
+}
 
 .line{
     flex-basis: 1rem;

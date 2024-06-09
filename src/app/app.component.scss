@@ -1,5 +1,10 @@
+@import "../assets/variables";
+
 main {
-    padding: 2rem;
-    width: calc(100vw - 4rem);
-    height: calc(100vh - 4rem);
+    padding: $main-padding;
+    width: calc(100vw - 2 * $main-padding);
+    height: calc(100vh - 2 * $main-padding);
+}
+.bottom-bar{
+    width: calc(100% - 2 * $main-padding);
 }

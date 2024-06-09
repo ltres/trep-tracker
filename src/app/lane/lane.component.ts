@@ -51,11 +51,20 @@ export class LaneComponent extends DraggableComponent implements OnInit {
     return this.boardService.getTasks$(this.lane);
   }
 
+  isTagged(): boolean {
+    return this.lane.tags? this.lane.tags.length > 0 : false;
+  }
+
+  get taggedTasks$(): Observable<Task[] | undefined> {
+    return this.boardService.getTaggedTasks$(this.lane.tags);
+  }
+
   createNewTask() {
     let uuid = generateUUID();
     let task: Task = {
       textContent: `Task ${this.boardService.getTasksCount() + 1} ${uuid}`,
       id: uuid,
+      tags:[],
       status: "todo",
       _type: 'task',
       children: []
@@ -70,5 +79,10 @@ export class LaneComponent extends DraggableComponent implements OnInit {
     this.boardService.deleteLane(this.lane);
   }
 
+  toggleShowChildren() {
+    this.lane.showChildren = !this.lane.showChildren;
+    this.boardService.publishBoardUpdate();
+  }
+    
 
 }

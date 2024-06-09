@@ -6,25 +6,22 @@ data-consider-for-overlapping-checks="true"
 (click)="clickTask($event)" 
 
 >
-    <div class="drag-handle big">⋮</div>
+    <div *ngIf="!this.static"class="drag-handle big">⋮</div>
     <div *ngIf="this.task.status === 'todo'" class="status big" (click)="toggleTaskStatus()">☐</div>
     <div *ngIf="this.task.status === 'completed'" class="status big" (click)="toggleTaskStatus()">☑</div>
 
-    <div class="editor-wrapper">
-        <!-- <div #editor [attr.contenteditable]="true" [innerHTML]="task.textContent" (blur)="updateValue($event)"></div> -->
-        
-        <div #editor [contenteditableHtml]="true" contenteditable="true" [(contenteditableModel)]="task.textContent"></div>
-
+    <div class="editor-wrapper grow">    
+        <div #editor [container]="this.task" [contenteditableHtml]="true" contenteditable="true" [(contenteditableModel)]="task.textContent"></div>
     </div>
 
 </div>
-<div class="task-children-wrapper">
+<div *ngIf="showChildren" class="task-children-wrapper">
     <div class="flex" *ngFor="let child of this.task.children; let last = last">
         <div class="line">
             <div class="border-angle"></div>
             <div *ngIf="!last" class="border-line"></div>
         </div>
-        <task [parent]="this.task" [task]="child"  [board]="this.board" [lane]="this.lane"></task>
+        <task [static]="static" [parent]="this.task" [task]="child"  [board]="this.board" [lane]="this.lane"></task>
     </div>
     
 </div>    

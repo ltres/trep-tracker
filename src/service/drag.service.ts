@@ -1,5 +1,4 @@
 import { Injectable } from "@angular/core";
-import { Board, DragEventCoordinates, Lane, Container, Task } from "../types/task";
 import { BehaviorSubject, Observable, Subject, map } from "rxjs";
 import { cursorIsInside, generateUUID, overlaps } from "../utils/utils";
 import { BoardService } from "./board.service";

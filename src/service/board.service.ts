@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { Board, DragEventCoordinates, Lane, Container, Task } from "../types/task";
+import { Board, Lane, Container, Task, Tag } from "../types/task";
 import { BehaviorSubject, Observable, map } from "rxjs";
 import { generateUUID } from "../utils/utils";
 
@@ -7,7 +7,6 @@ import { generateUUID } from "../utils/utils";
     providedIn: 'root'
 })
 export class BoardService {
-
     private _boards$: BehaviorSubject<Board[]> = new BehaviorSubject<Board[]>([]);
     private _editorActiveTask$: BehaviorSubject<{task: Task , startingCaretPosition: number | undefined} | undefined> = new BehaviorSubject<{task: Task, startingCaretPosition: number | undefined} | undefined>(undefined);
 
@@ -164,11 +163,15 @@ export class BoardService {
         if (!activeBoard) {
             throw new Error(`Cannot find board for board ${board.id}`)
         }
-        activeBoard.children = activeBoard.children.filter(l => l.children.length > 0);
+        activeBoard.children = activeBoard.children.filter(l => l.children.length > 0 || l.tags.length > 0);
 
+        let id = generateUUID();
         let newLane: Lane = {
-            id: generateUUID(),
+            id ,
             children: [],
+            tags:[],
+            showChildren: true,
+            textContent: 'New Lane ' + id,
             _type: 'lane',
             coordinates: {
                 x,
@@ -394,4 +397,16 @@ export class BoardService {
         this._boards$.next(boards);
     }
 
+    getTaggedTasks$(tags: Tag[] | undefined): Observable<Task[] | undefined> {
+        return this._allTasks$.pipe(
+            map(tasks => {
+                if (!tags || tags.length === 0) {
+                    return tasks;
+                }
+                return tasks?.filter(task => 
+                    task.tags.filter( t => tags.find(tag => tag.tag.toLowerCase() === t.tag.toLowerCase())).length === tags.length
+                )
+            })
+        )
+    }
 }

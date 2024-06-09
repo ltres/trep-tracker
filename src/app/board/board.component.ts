@@ -4,7 +4,7 @@ import { TaskComponent } from '../task/task.component';
 import { BoardService } from '../../service/board.service';
 import { Observable } from 'rxjs';
 import { LaneComponent } from '../lane/lane.component';
-import { getCaretPosition, isInside } from '../../utils/utils';
+import { getCaretPosition } from '../../utils/utils';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
 import { BaseComponent } from '../base/base.component';

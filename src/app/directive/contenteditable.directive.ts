@@ -3,20 +3,24 @@ import {
     HostListener, Sanitizer, SecurityContext
 } from '@angular/core';
 import { getCaretPosition, setCaretPosition } from '../../utils/utils';
+import { Container } from '../../types/task';
+import { BoardService } from '../../service/board.service';
+import { TagService } from '../../service/tag.service';
 
 @Directive({
-    selector: '[contenteditableModel]'
+    selector: '[contenteditableModel][container]'
 })
 export class ContenteditableDirective implements OnChanges {
     /** Model */
     @Input() contenteditableModel: string = "";
+    @Input() container!: Container;
     @Output() contenteditableModelChange = new EventEmitter();
     /** Allow (sanitized) html */
     @Input() contenteditableHtml?: boolean = false;
 
     constructor(
+        private tagService: TagService,
         private elRef: ElementRef,
-        private sanitizer: Sanitizer
     ) { }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -38,7 +42,16 @@ export class ContenteditableDirective implements OnChanges {
             value = value.replace(/[\n\s]+$/, '');
         }
 
-        value = value.replace(/(<span class="tag">)?(@[^ <]+)(<\/span>)?/g, '<span class="tag">$2</span>');
+        value = value.replace(/(<span tag="true" class="tag">)?(@[^\s\u00A0\u202F<]+)(<\/span>)?/g, '<span tag="true" class="tag">$2</span>');
+
+        // extract and publish tags
+        const regex = /<span tag="true" class="tag">([^<]+)<\/span>/g;
+        const tags = [];
+        let match;
+        while ((match = regex.exec(value)) !== null) {
+            tags.push(match[1]);
+        }
+        this.tagService.updateTags(this.container, tags);
 
         this.contenteditableModelChange.emit(value);
     }

@@ -12,10 +12,13 @@ import { KeyboardListenerComponent } from './keyboard-listener/keyboard-listener
 import { DragService } from '../service/drag.service';
 import { RegistryService } from '../service/registry.service';
 import { ContenteditableDirective } from './directive/contenteditable.directive';
-
+import { TagDirective } from './directive/tag.directive';
+import { TagService } from '../service/tag.service';
+import { TagsViewerComponent } from './tags-viewer/tags-viewer.component';
+ 
 @NgModule({
-    declarations: [AppComponent, BoardComponent, LaneComponent, TaskComponent, ContenteditableDirective],
-    providers: [BoardService, KeyboardService, DragService, RegistryService],
+    declarations: [AppComponent, BoardComponent, LaneComponent, TaskComponent, ContenteditableDirective, TagDirective, TagsViewerComponent],
+    providers: [BoardService, KeyboardService, DragService, RegistryService, TagService],
     bootstrap: [AppComponent],
     imports: [
         CommonModule,

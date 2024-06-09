@@ -25,11 +25,17 @@ export class AppComponent implements OnInit {
   }
 
   addBoard() {
+    let laneId = generateUUID();
     this.boardService.addBoard({
       id: generateUUID(),
       _type: "board",
+      textContent: "Board",
+      tags:[],
       children: [{
         id: generateUUID(),
+        tags:[],
+        showChildren: true,
+        textContent: "Lane " + laneId,
         children: [],
         _type: "lane",
       }]

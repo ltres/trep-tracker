@@ -11,7 +11,6 @@ import { BaseComponent } from "../app/base/base.component";
     providedIn: 'root'
 })
 export class RegistryService {
-
     private _draggableComponentRegistry$: BehaviorSubject<DraggableComponent[]> = new BehaviorSubject<DraggableComponent[]>([]);
     private _baseComponentRegistry$: BehaviorSubject<BaseComponent[]> = new BehaviorSubject<BaseComponent[]>([]);
 
