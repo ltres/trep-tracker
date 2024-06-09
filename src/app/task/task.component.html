@@ -10,21 +10,8 @@ data-consider-for-overlapping-checks="true"
     <div *ngIf="this.task.status === 'todo'" class="status big" (click)="toggleTaskStatus()">☐</div>
     <div *ngIf="this.task.status === 'completed'" class="status big" (click)="toggleTaskStatus()">☑</div>
 
-    <div class="editor-wrapper" 
->
-        <ng-container *ngIf="editorActive">
-            <!--
-            <ckeditor #editor [(ngModel)]="this.task.textContent" [type]="type" [config]="editorConfig">
-
-            </ckeditor>
-            -->
-            <div #editor contenteditable="true" [textContent]="task.textContent" (input)="updateValue(task.textContent, $event.target)">
-            </div>
-        </ng-container>
-        <ng-container *ngIf="!editorActive">
-            <div [innerHTML]="task.textContent">
-            </div>
-        </ng-container>
+    <div class="editor-wrapper">
+        <div #editor [attr.contenteditable]="true" [textContent]="task.textContent" (input)="updateValue(task.textContent, $event.target)"></div>
     </div>
 
 </div>
