@@ -15,10 +15,21 @@ import { ContenteditableDirective } from './directive/contenteditable.directive'
 import { TagDirective } from './directive/tag.directive';
 import { TagService } from '../service/tag.service';
 import { TagsViewerComponent } from './tags-viewer/tags-viewer.component';
+import { StorageService } from '../service/storage.service';
+import { StorageComponent } from './storage/storage.component';
  
 @NgModule({
-    declarations: [AppComponent, BoardComponent, LaneComponent, TaskComponent, ContenteditableDirective, TagDirective, TagsViewerComponent],
-    providers: [BoardService, KeyboardService, DragService, RegistryService, TagService],
+    declarations: [
+        AppComponent,
+         BoardComponent, 
+         LaneComponent, 
+         TaskComponent, 
+         ContenteditableDirective, 
+         TagDirective, 
+         TagsViewerComponent,
+         StorageComponent
+        ],
+    providers: [BoardService, KeyboardService, DragService, RegistryService, TagService, StorageService],
     bootstrap: [AppComponent],
     imports: [
         CommonModule,
