@@ -1,30 +1,60 @@
 import { Injectable } from "@angular/core";
 import { ipcRenderer } from 'electron';
 import { BoardService } from "./board.service";
+import { Subscription } from "rxjs";
 
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root'
 })
 export class StorageService {
-    storagePath = "C:/Users/l.tresoldi/Google Drive/trep-tracker-status";
+  storagePath = "C:/Users/l.tresoldi/Google Drive/trep-tracker-status";
+  initializedWithValidStatus = false;
+  subscription: Subscription | undefined;
+  constructor(private boardService: BoardService) {
 
-    constructor(private boardService: BoardService) {
-        console.log("Found file" + this.readFile(this.storagePath));
+  }
 
-        this.boardService.boards$.subscribe(boards => {
-            this.writeFile(this.storagePath, JSON.stringify(boards));
-        });
+  initWithStoragePath(storagePath: string): void {
+    this.storagePath = storagePath;
+    if(!this.initializedWithValidStatus){
+      this.boardService.deserialize(this.readFile(this.storagePath))
+      this.initializedWithValidStatus = true;
     }
+    if(this.subscription) this.subscription.unsubscribe();
+    this.subscription = this.boardService.boards$.subscribe(boards => {
+      this.writeFile(this.storagePath, this.boardService.serialize());
+    });
+  }
 
-    readFile(filePath: string): any {
-        // @ts-ignore
+  readFile(filePath: string): any {
+    if (window.electron) {
+      try{
         return window.electron.readFile(filePath);
+      }catch(e){
+        console.warn("Error reading file", e);
+        return "{}";
       }
-    
-      writeFile(filePath: string, content: string): void {
-         // @ts-ignore
-        window.electron.writeFile(filePath, content);
-      }
+    } else {
+      return JSON.parse(localStorage.getItem("trep-tracker-status") ?? "{}");
+    }
+  }
 
+  writeFile(filePath: string, content: string): void {
+    if (window.electron) {
+      window.electron.writeFile(filePath, content);
+    } else {
+      localStorage.setItem("trep-tracker-status", content);
+    }
+    
+  }
+}
+
+declare global {
+  interface Window {
+    electron?: {
+      readFile: (filePath: string) => string;
+      writeFile: (filePath: string, content: string) => string;
+    };
+  }
 }

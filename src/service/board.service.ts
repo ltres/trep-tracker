@@ -18,19 +18,6 @@ export class BoardService {
     private _lastSelectedTask$: BehaviorSubject<Task | undefined> = new BehaviorSubject<Task | undefined>(undefined);
 
     constructor() {
-        let keys = ['_boards$', '_editorActiveTask$', '_selectedTasks$', '_lastSelectedTask$', '_allTasks$', '_allLanes$'];
-        for (let key of keys) {
-            let o = JSON.parse(localStorage.getItem(key) || '[]');
-            if (o) {
-                //@ts-ignore
-                this[key].next(o);
-            }
-            //@ts-ignore
-            this[key].subscribe(b => {
-                localStorage.setItem(key, JSON.stringify(b));
-            })
-        }
-
         this._boards$.subscribe(b => {
             let allTasks: Task[] = [];
             let allLanes: Lane[] = [];
@@ -408,5 +395,29 @@ export class BoardService {
                 )
             })
         )
+    }
+
+    serialize(): string{
+        let boards = this._boards$.getValue();
+        let selectedTasks = this._selectedTasks$.getValue();
+        let lastSelectedTask = this._lastSelectedTask$.getValue();
+        let editorActiveTask = this._editorActiveTask$.getValue();
+
+        return JSON.stringify({boards, selectedTasks, lastSelectedTask, editorActiveTask});
+    }
+    deserialize(data: string): void{
+        let o = JSON.parse(data);
+        if(!o.boards){
+            console.warn('No boards found in the data');
+            this._boards$.next([]);        
+            this._selectedTasks$.next([]);
+            this._lastSelectedTask$.next(undefined);
+            this._editorActiveTask$.next(undefined);
+        }else{
+            this._boards$.next(o.boards);
+            this._selectedTasks$.next(o.selectedTasks ?? []);
+            this._lastSelectedTask$.next(o.lastSelectedTask ?? []);
+            this._editorActiveTask$.next(o.editorActiveTask ?? []);
+        }
     }
 }

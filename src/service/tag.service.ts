@@ -12,7 +12,8 @@ export class TagService {
 
     constructor(private boardService: BoardService) {
         this.boardService.parents$.subscribe(parents => {
-            let tags:Tag[] = parents?.reduce((acc, parent) => { return acc.concat(parent.tags ?? []) }, [] as Tag[]) ?? [];
+            let tags:Tag[] = parents?.filter( p => !this.boardService.isLane(p) || (this.boardService.isLane(p) && p.tags.length === 0) ) //exclude static lanes
+            .reduce((acc, parent) => { return acc.concat(parent.tags ?? []) }, [] as Tag[]) ?? [];
             this._tags$.next(tags.map(t => ({ tag: t.tag.toLowerCase() })));
         });
     }
