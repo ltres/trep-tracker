@@ -15,6 +15,11 @@ body {
   font-size: $font-size;
 }
 
+* {
+  scrollbar-color: $lane-title-color $background-color;
+  scrollbar-width: thin;
+}
+
 .floating-label {
   position: absolute;
   top: 100%;
@@ -25,7 +30,8 @@ body {
 }
 
 .floating-label.board-floating-label {
-  top: calc(100% + 1rem);
+  top: 0;
+  white-space: nowrap;
 }
 
 

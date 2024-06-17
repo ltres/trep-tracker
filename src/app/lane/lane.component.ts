@@ -64,10 +64,13 @@ export class LaneComponent extends DraggableComponent implements OnInit {
     let task: Task = {
       textContent: `Task ${this.boardService.getTasksCount() + 1} ${uuid}`,
       id: uuid,
-      tags:[],
+      tags: [],
       status: "todo",
       _type: 'task',
-      children: []
+      children: [],
+      creationDate: new Date(),
+      stateChangeDate: undefined,
+      priority: 0,
     };
     this.boardService.addAsChild(this.lane, [task]);
     this.boardService.clearSelectedTasks();

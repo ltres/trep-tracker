@@ -12,7 +12,8 @@
 
 .task-wrapper{
     display: flex;
-    align-items: flex-start;
+    align-items: center;
+
     --ngx-editor-text-color: $translucent-color;
     //border-left: 1px solid $translucent-color;
     &.editor-active{
@@ -26,8 +27,13 @@
         border-left:.15rem solid $text-color;
     }
 }
+
 .editor-wrapper{
     align-self: center;
+}
+
+.date-wrapper{
+    white-space: nowrap;
 }
 
 .line{

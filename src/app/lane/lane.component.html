@@ -1,5 +1,5 @@
-<div class="lane-wrapper" [class.static-view]="isTagged() && (tasks$ | async)?.length === 0" data-consider-for-overlapping-checks="true">
-  <div class="lane-toolbar flex g-05 p-x-05">
+<div class="lane-wrapper p-x-05" [class.static-view]="isTagged() && (tasks$ | async)?.length === 0" data-consider-for-overlapping-checks="true">
+  <div class="lane-toolbar flex g-05 ">
     <div class="lane-title grow no-wrap" [container]="this.lane" [contenteditableHtml]="true" contenteditable="true" [(contenteditableModel)]="lane.textContent"> </div>
     <div class="grow"></div>
     <div class="small translucent danger no-grow" *ngIf="(tasks$ | async)?.length == 0 && !isTagged()" (click)="deleteLane()">Delete lane</div>
@@ -20,9 +20,9 @@
     </div>
   </ng-container>
 
-  <p class="floating-label">Lane: {{lane.id}}</p>
+  <!-- <p class="floating-label">Lane: {{lane.id}}</p> -->
 
-  <div class="lane-toolbar flex g-05 p-x-05">
-    <div class="grow"></div><div class="small translucent no-grow" (click)="createNewTask()">sss New task</div>
+  <div class="lane-toolbar flex g-05">
+    <div class="grow"></div><div class="small translucent no-grow" (click)="createNewTask()">New task</div>
   </div>
 </div>

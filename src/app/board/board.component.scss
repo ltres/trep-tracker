@@ -1,11 +1,16 @@
 @import "../../assets/variables";
 :host{
     position: relative;
-    display: inline-flex;
+    display: flex;
     //flex-direction: column;
     // width: 100vw;
     //height: 100vh;
     //padding: 2rem;
-    outline: 1px solid grey;
-    outline-offset: -1px;
+    //outline: 1px solid grey;
+    //outline-offset: -1px;
+}
+.board-label{
+   position: absolute;
+   top:0;
+   right: 0;
 }

@@ -1,4 +1,4 @@
-<div class="task-wrapper" 
+<div class="task-wrapper g-025" 
 data-consider-for-overlapping-checks="true"
 [class.editor-active]="this.editorActive"
 [class.selected]="this.selected"
@@ -13,9 +13,11 @@ data-consider-for-overlapping-checks="true"
     <div class="editor-wrapper grow">    
         <div #editor [container]="this.task" [contenteditableHtml]="true" contenteditable="true" [(contenteditableModel)]="task.textContent"></div>
     </div>
-
+    <div class="date-wrapper translucent small">
+        created {{this.task.creationDate | date: 'dd-MM-yy hh:mm a'}}
+    </div>
 </div>
-<div *ngIf="showChildren" class="task-children-wrapper">
+<div *ngIf="showChildren" class="task-children-wrapper g-025 ">
     <div class="flex" *ngFor="let child of this.task.children; let last = last">
         <div class="line">
             <div class="border-angle"></div>

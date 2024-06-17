@@ -23,13 +23,10 @@ export class BoardService {
             let allLanes: Lane[] = [];
             b.forEach(board => {
                 board.children.forEach(lane => {
-
                     allTasks = allTasks.concat(lane.children);
                     lane.children.forEach(task => {
                         allTasks = allTasks.concat(this.getDescendants(task).filter(t => this.isTask(t)) as Task[]);
                     })
-
-
                 })
                 // remove lanes without children
                 // board.children = board.children.filter(l => l.children.length > 0);
@@ -38,7 +35,7 @@ export class BoardService {
             })
             this._allTasks$.next(allTasks);
             this._allLanes$.next(allLanes);
-            this._allParents$.next([...allTasks, ...allLanes]);
+            this._allParents$.next([...allTasks, ...allLanes, ...this.boards]);
         })
     }
 
@@ -128,6 +125,9 @@ export class BoardService {
     get editorActiveTask$(): Observable<{task: Task, startingCaretPosition: number | undefined}  | undefined> {
         return this._editorActiveTask$;
     }
+    get boards(): Board[] {
+        return this._boards$.getValue();  
+    }
     get parents(): Container[] | undefined {
         return this._allParents$.getValue();
     }
@@ -154,16 +154,20 @@ export class BoardService {
 
         let id = generateUUID();
         let newLane: Lane = {
-            id ,
+            id,
             children: [],
-            tags:[],
+            tags: [],
             showChildren: true,
             textContent: 'New Lane ' + id,
             _type: 'lane',
             coordinates: {
                 x,
                 y
-            }
+            },
+            creationDate: new Date(),
+            stateChangeDate: undefined,
+            priority: 0,
+            width: undefined
         }
         activeBoard.children.push(newLane);
 
@@ -399,11 +403,11 @@ export class BoardService {
 
     serialize(): string{
         let boards = this._boards$.getValue();
-        let selectedTasks = this._selectedTasks$.getValue();
-        let lastSelectedTask = this._lastSelectedTask$.getValue();
-        let editorActiveTask = this._editorActiveTask$.getValue();
+        //let selectedTasks = this._selectedTasks$.getValue();
+        //let lastSelectedTask = this._lastSelectedTask$.getValue();
+        //let editorActiveTask = this._editorActiveTask$.getValue();
 
-        return JSON.stringify({boards, selectedTasks, lastSelectedTask, editorActiveTask});
+        return JSON.stringify({boards});
     }
     deserialize(data: string): void{
         let o = JSON.parse(data);
@@ -414,10 +418,23 @@ export class BoardService {
             this._lastSelectedTask$.next(undefined);
             this._editorActiveTask$.next(undefined);
         }else{
+            // fixes to existing data and new fields
+            
+
+
             this._boards$.next(o.boards);
-            this._selectedTasks$.next(o.selectedTasks ?? []);
-            this._lastSelectedTask$.next(o.lastSelectedTask ?? []);
-            this._editorActiveTask$.next(o.editorActiveTask ?? []);
+            this.parents?.forEach(p => {
+                if(!p.creationDate){
+                    p.creationDate = new Date();
+                }
+                if(p.priority == null){
+                    p.priority = 0;
+                }
+
+            });
+            //this._selectedTasks$.next(o.selectedTasks ?? []);
+            //this._lastSelectedTask$.next(o.lastSelectedTask ?? []);
+            //this._editorActiveTask$.next(o.editorActiveTask ?? []);
         }
     }
 }

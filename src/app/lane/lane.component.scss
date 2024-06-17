@@ -1,10 +1,20 @@
 @import "../../assets/variables";
 
+:host{
+    resize: horizontal;
+    overflow-x: auto;
+    overflow-y: visible;
+    position: relative;
+    //max-width: $max-lane-width;
+}
+
 .lane-wrapper{
     position: relative;
-    display: inline-flex;
+    display: flex;
     flex-direction: column;
+    //width: 100%;
     min-width: $min-width;
+    //max-width: $max-lane-width;
     // width: 100vw;
     //height: 100vh;
     //padding: 2rem;

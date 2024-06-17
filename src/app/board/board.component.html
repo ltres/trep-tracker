@@ -1,7 +1,8 @@
+<p class="board-label translucent">Board: {{board.id}}</p>
+
 <ng-container *ngFor="let lane of lanes$ | async">
   <lane [lane]="lane" [board]="this.board"></lane>
 </ng-container>  
 
 
-<p class="floating-label board-floating-label">Board: {{board.id}}</p>
 

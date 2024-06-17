@@ -3,7 +3,8 @@ export interface Board extends Container<Lane>{
 }
 export interface Lane extends Container<Task>{
     _type: 'lane',
-    showChildren: boolean
+    showChildren: boolean,
+    width: number | undefined
 }
 export interface Task extends Container<Task>{
     
@@ -17,10 +18,14 @@ export interface Container<T extends Container<any> = any> {
     children: T[];
     tags: Tag[];
     _type: string,
+    creationDate: Date,
+    stateChangeDate: Date | undefined,
+    priority: number,
     coordinates?: {
         x: number,
         y: number
-    }
+    },
+    
 }
 
 export interface Tag{

@@ -21,6 +21,9 @@ export class AppComponent implements OnInit {
 
   }
   ngOnInit(): void {
+    if(this.boardService.boards.length === 0) {
+      this.addBoard()
+    }
     //this.addBoard()
   }
 
@@ -30,15 +33,22 @@ export class AppComponent implements OnInit {
       id: generateUUID(),
       _type: "board",
       textContent: "Board",
-      tags:[],
+      tags: [],
       children: [{
         id: generateUUID(),
-        tags:[],
+        tags: [],
         showChildren: true,
         textContent: "Lane " + laneId,
         children: [],
         _type: "lane",
-      }]
+        creationDate: new Date(),
+        stateChangeDate: undefined,
+        priority: 0,
+        width: undefined
+      }],
+      creationDate: new Date(),
+      stateChangeDate: undefined,
+      priority: 0,
     })
   }
 

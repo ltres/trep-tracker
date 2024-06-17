@@ -74,9 +74,15 @@ export class ContenteditableDirective implements OnChanges {
         // Only refresh if content changed to avoid cursor loss
         // (as ngOnChanges can be triggered an additional time by onInput())
         if (newContent !== this.elRef.nativeElement[this.getProperty()]) {
-            let pos = getCaretPosition(this.elRef.nativeElement);
+            let pos = 0
+            if( document.activeElement === this.elRef.nativeElement ){
+                // avoids moving the cursor to copies of the same element
+                pos = getCaretPosition(this.elRef.nativeElement);
+            }
             this.elRef.nativeElement[this.getProperty()] = newContent;
-            setCaretPosition(this.elRef.nativeElement, pos);
+            if( document.activeElement === this.elRef.nativeElement ){
+                setCaretPosition(this.elRef.nativeElement, pos);
+            }
         }
     }
 
