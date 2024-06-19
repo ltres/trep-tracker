@@ -37,21 +37,10 @@ export class ContenteditableDirective implements OnChanges {
     @HostListener('blur')  // additional fallback
     @HostListener('keyup') onInput(trim = false) {
         let value = this.elRef.nativeElement[this.getProperty()];
-        if (trim) {
-            value = value.replace(/^[\n\s]+/, '');
-            value = value.replace(/[\n\s]+$/, '');
-        }
 
-        value = value.replace(/(<span tag="true" class="tag">)?(@[^\s\u00A0\u202F<]+)(<\/span>)?/g, '<span tag="true" class="tag">$2</span>');
-
-        // extract and publish tags
-        const regex = /<span tag="true" class="tag">([^<]+)<\/span>/g;
-        const tags = [];
-        let match;
-        while ((match = regex.exec(value)) !== null) {
-            tags.push(match[1]);
-        }
-        this.tagService.updateTags(this.container, tags);
+        this.container.textContent = value;
+        this.tagService.extractAndUpdateTags(this.container);
+        value = this.container.textContent;
 
         this.contenteditableModelChange.emit(value);
     }

@@ -6,7 +6,7 @@ data-consider-for-overlapping-checks="true"
 (click)="clickTask($event)" 
 
 >
-    <div *ngIf="!this.static"class="drag-handle big">⋮</div>
+    <div *ngIf="!this.static"class="drag-handle big" drag-on-this="true">⋮</div>
     <div *ngIf="this.task.status === 'todo'" class="status big" (click)="toggleTaskStatus()">☐</div>
     <div *ngIf="this.task.status === 'completed'" class="status big" (click)="toggleTaskStatus()">☑</div>
 
@@ -16,6 +16,9 @@ data-consider-for-overlapping-checks="true"
     <div class="date-wrapper translucent small">
         created {{this.task.creationDate | date: 'dd-MM-yy hh:mm a'}}
     </div>
+    <div class="task-toolbar">
+        <span *ngIf="!static && task.status === 'completed'" (click)="archiveTask()" class="archive pointer">🖿</span>
+    </div>
 </div>
 <div *ngIf="showChildren" class="task-children-wrapper g-025 ">
     <div class="flex" *ngFor="let child of this.task.children; let last = last">
@@ -23,7 +26,7 @@ data-consider-for-overlapping-checks="true"
             <div class="border-angle"></div>
             <div *ngIf="!last" class="border-line"></div>
         </div>
-        <task [static]="static" [parent]="this.task" [task]="child"  [board]="this.board" [lane]="this.lane"></task>
+        <task [static]="static" [parent]="this.task" [task]="child"  [board]="this.board" [lane]="this.lane" *ngIf="!child.archived"></task>
     </div>
     
 </div>    

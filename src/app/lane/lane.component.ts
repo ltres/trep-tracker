@@ -71,6 +71,8 @@ export class LaneComponent extends DraggableComponent implements OnInit {
       creationDate: new Date(),
       stateChangeDate: undefined,
       priority: 0,
+      archived: false,
+      archivedDate: undefined
     };
     this.boardService.addAsChild(this.lane, [task]);
     this.boardService.clearSelectedTasks();

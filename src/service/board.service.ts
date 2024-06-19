@@ -1,12 +1,14 @@
-import { Injectable } from "@angular/core";
-import { Board, Lane, Container, Task, Tag } from "../types/task";
-import { BehaviorSubject, Observable, map } from "rxjs";
+import { Injectable, Injector } from "@angular/core";
+import { Board, Lane, Container, Task, Tag, DoneTag, ArchivedTag } from "../types/task";
+import { BehaviorSubject, Observable, filter, map } from "rxjs";
 import { generateUUID } from "../utils/utils";
+import { TagService } from "./tag.service";
 
 @Injectable({
     providedIn: 'root'
 })
 export class BoardService {
+
     private _boards$: BehaviorSubject<Board[]> = new BehaviorSubject<Board[]>([]);
     private _editorActiveTask$: BehaviorSubject<{task: Task , startingCaretPosition: number | undefined} | undefined> = new BehaviorSubject<{task: Task, startingCaretPosition: number | undefined} | undefined>(undefined);
 
@@ -17,7 +19,11 @@ export class BoardService {
     private _selectedTasks$: BehaviorSubject<Task[] | undefined> = new BehaviorSubject<Task[] | undefined>(undefined);
     private _lastSelectedTask$: BehaviorSubject<Task | undefined> = new BehaviorSubject<Task | undefined>(undefined);
 
-    constructor() {
+    private tagService!: TagService;
+
+    constructor(injector:Injector) {
+
+        setTimeout(() => this.tagService = injector.get(TagService));
         this._boards$.subscribe(b => {
             let allTasks: Task[] = [];
             let allLanes: Lane[] = [];
@@ -167,7 +173,9 @@ export class BoardService {
             creationDate: new Date(),
             stateChangeDate: undefined,
             priority: 0,
-            width: undefined
+            width: undefined,
+            archived: false,
+            archivedDate: undefined
         }
         activeBoard.children.push(newLane);
 
@@ -182,13 +190,22 @@ export class BoardService {
 
     toggleTaskStatus(task: Task) {
         let boards = this._boards$.getValue();
+        task.status = task.status === 'completed' ? 'todo' : 'completed';
+        if(task.status === 'completed'){
+            task.textContent.indexOf(DoneTag.tag) === -1 ? task.textContent += ' ' + DoneTag.tag : task.textContent;
+        }else{
+            task.textContent = task.textContent.replace(DoneTag.tag, '');
+        }
+        task.stateChangeDate = new Date();
+        this.tagService.extractAndUpdateTags(task);
+        this._boards$.next(boards);
+    }
 
-        this._allTasks$.getValue()?.forEach(t => {
-            if (t.id === task.id) {
-                t.status = t.status === 'completed' ? 'todo' : 'completed';
-            }
-        })
-
+    archiveTask(task: Task) {
+        let boards = this._boards$.getValue();
+        task.archived = true;
+        task.archivedDate = new Date();
+        task.textContent.indexOf(ArchivedTag.tag) === -1 ? task.textContent += ' ' + ArchivedTag.tag : task.textContent;
         this._boards$.next(boards);
     }
 
@@ -389,6 +406,7 @@ export class BoardService {
     }
 
     getTaggedTasks$(tags: Tag[] | undefined): Observable<Task[] | undefined> {
+        let acc: string[] = [];
         return this._allTasks$.pipe(
             map(tasks => {
                 if (!tags || tags.length === 0) {
@@ -429,6 +447,9 @@ export class BoardService {
                 }
                 if(p.priority == null){
                     p.priority = 0;
+                }
+                if(p.archived == null){
+                    p.archived = false
                 }
 
             });

@@ -1,4 +1,5 @@
 import {
+  AfterContentInit,
   AfterViewInit,
   Component,
   ElementRef,
@@ -22,7 +23,7 @@ import { RegistryService } from '../../service/registry.service';
   templateUrl: './draggable.component.html',
   styleUrl: './draggable.component.scss',
 })
-export abstract class DraggableComponent extends BaseComponent implements OnInit {
+export abstract class DraggableComponent extends BaseComponent implements AfterViewInit {
   @Input() static: boolean = false;
   protected _board: Board | undefined;
 
@@ -31,6 +32,8 @@ export abstract class DraggableComponent extends BaseComponent implements OnInit
 
   private resizeObserver = new ResizeObserver(this.onResize.bind(this));
   private resizeTimeout: any;
+
+  private draggableEl: Element | undefined;
 
   @HostBinding('style.left.px')
   private get left(): number {
@@ -66,11 +69,15 @@ export abstract class DraggableComponent extends BaseComponent implements OnInit
       let thisObject = parents?.find((parent) =>parent.id === this.object?.id && parent._type === this.object?._type );
     });
   }
-  override ngOnInit(): void {
-    super.ngOnInit();
+
+  ngAfterViewInit(): void {
+    //super.ngOnInit();
     if (this.static) return;
-    this.el.nativeElement.setAttribute('draggable', 'true');
-    this.resizeObserver.observe(this.el.nativeElement);
+    let el = this.el.nativeElement as HTMLElement;
+    this.draggableEl = el.querySelector("[drag-on-this]") ?? el;
+    this.draggableEl.setAttribute('draggable', 'true');
+
+    this.resizeObserver.observe(this.draggableEl);
   }
 
   override ngOnDestroy(): void {

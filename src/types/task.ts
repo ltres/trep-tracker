@@ -20,6 +20,8 @@ export interface Container<T extends Container<any> = any> {
     _type: string,
     creationDate: Date,
     stateChangeDate: Date | undefined,
+    archived: boolean,
+    archivedDate: Date | undefined,
     priority: number,
     coordinates?: {
         x: number,
@@ -31,3 +33,6 @@ export interface Container<T extends Container<any> = any> {
 export interface Tag{
     tag: string;
 }
+
+export const DoneTag : Tag = {tag: '@Done'}
+export const ArchivedTag : Tag = {tag: '@Archived'}

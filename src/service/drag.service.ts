@@ -33,7 +33,23 @@ export class DragService {
             }
             // look for overlapped component in the registry
             let registry = this.registryService.draggableComponentRegistry
-            let overlappedComponent = registry.filter(mayBeOverlapped => {
+            let overlappedComponent = registry
+            .sort((a, b) => {
+                if (this.boardService.isTask(a.object) && !this.boardService.isTask(b.object)) {
+                    return -1;
+                }
+                if (this.boardService.isTask(b.object) && !this.boardService.isTask(a.object)) {
+                    return 1;
+                }
+                if (this.boardService.isLane(a.object) && !this.boardService.isLane(b.object)) {
+                    return -1;
+                }
+                if (this.boardService.isLane(b.object) && !this.boardService.isLane(a.object)) {
+                    return 1;
+                }
+                return 0;
+            })
+            .filter(mayBeOverlapped => {
                 if(mayBeOverlapped === draggedComponent) return false;
                 
                 // overlapped element's html may contain a data-consider-for-overlapping-checks attribute. 

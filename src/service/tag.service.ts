@@ -38,12 +38,31 @@ export class TagService {
     /**
      * Updates the tags of a container data model.
      */
-    updateTags(container: Container<any>, tags: string[]) {
+    extractAndUpdateTags(container: Container<any>) {
+        let value = container.textContent;
+        value = value.replace(/^[\n\s]+/, '');
+        value = value.replace(/[\n\s]+$/, '');
+        
+        // Tags wrappig
+        value = value.replace(/(<span tag="true" class="tag">)?(@[^\s\u00A0\u202F<]+)(<\/span>)?/g, '<span tag="true" class="tag">$2</span>');
+
+        // Tags extraction
+        const regex = /<span tag="true" class="tag">([^<]+)<\/span>/g;
+        const tags = [];
+        let match;
+        while ((match = regex.exec(value)) !== null) {
+            tags.push(match[1]);
+        }
+
+        // Cleanup
+        value = value.replace(/<span tag="true" class="tag"><\/span>/g,"");
+        container.textContent = value;
         let currentTags = container.tags ?? [];
         let newTags = tags.map(t => ({tag: t}));
         let tagsToAdd = newTags.filter(t => !currentTags?.find(ct => ct.tag === t.tag));
         let tagsToRemove = currentTags?.filter(ct => !newTags.find(t => t.tag === ct.tag));
         container.tags = newTags;
+
         if( tagsToAdd.length > 0 || tagsToRemove.length > 0 ){
             this.boardService.publishBoardUpdate();
         }

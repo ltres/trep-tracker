@@ -15,6 +15,7 @@ import { RegistryService } from '../../service/registry.service';
   styleUrl: './task.component.scss'
 })
 export class TaskComponent extends DraggableComponent implements OnInit, OnDestroy {
+
   @ViewChild('editor') editor: ElementRef | undefined;
   @Input() task!: Task;
   @Input() lane!: Lane;
@@ -123,6 +124,10 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
 
   toggleTaskStatus() {
     this.boardService.toggleTaskStatus(this.task);
+  }
+
+  archiveTask() {
+    this.boardService.archiveTask(this.task);
   }
 
   hasNextSibling(): boolean {

@@ -7,11 +7,11 @@
     <div class="small translucent no-grow" *ngIf="isTagged() && lane.showChildren" (click)="toggleShowChildren()">Show Children <span class="completed">☑</span></div>
 
     <div class="small translucent no-grow" (click)="createNewTask()">New task</div>
-    <span class="drag-handle big no-grow">⋯</span>
+    <span drag-on-this="true" class="drag-handle big no-grow">⋯</span>
   </div>
 
   <ng-container *ngFor="let task of tasks$ | async">
-    <task [task]="task" [parent]="lane" [board]="board" [lane]="lane" (createNewTask)="createNewTask()"></task>
+    <task [task]="task" [parent]="lane" [board]="board" [lane]="lane" *ngIf="!task.archived" (createNewTask)="createNewTask()"></task>
   </ng-container>
 
   <ng-container *ngIf="isTagged()">

@@ -44,11 +44,15 @@ export class AppComponent implements OnInit {
         creationDate: new Date(),
         stateChangeDate: undefined,
         priority: 0,
-        width: undefined
+        width: undefined,
+        archived: false,
+        archivedDate: undefined
       }],
       creationDate: new Date(),
       stateChangeDate: undefined,
       priority: 0,
+      archived: false,
+      archivedDate: undefined
     })
   }
 
