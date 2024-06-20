@@ -112,10 +112,16 @@ button {
 .flex{
   display: flex;
 }
+.wrap{
+  flex-wrap: wrap;
+}
 .column{
   flex-direction: column;
 }
+.w-100{
+  width: 100%;
 
+}
 .grow{
   flex-grow: 1;
 }
@@ -194,6 +200,10 @@ button {
   border: none!important;
   outline: none!important;
 }
-.tag{
-  color: $tag-color;
+
+.tag-orange{
+  color: $tag-orange-color;
+}
+.tag-yellow{
+  color: $tag-yellow-color;
 }

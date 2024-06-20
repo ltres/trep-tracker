@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { Board, Lane, Container, Task, Tag } from "../types/task";
+import { Board, Lane, Container, Task, Tag, tagIdentifiers, tagHtmlWrapper, tagCapturingGroup } from "../types/task";
 import { BehaviorSubject, Observable, map } from "rxjs";
 import { generateUUID } from "../utils/utils";
 import { BoardService } from "./board.service";
@@ -43,20 +43,29 @@ export class TagService {
         value = value.replace(/^[\n\s]+/, '');
         value = value.replace(/[\n\s]+$/, '');
         
-        // Tags wrappig
-        value = value.replace(/(<span tag="true" class="tag">)?(@[^\s\u00A0\u202F<]+)(<\/span>)?/g, '<span tag="true" class="tag">$2</span>');
-
-        // Tags extraction
-        const regex = /<span tag="true" class="tag">([^<]+)<\/span>/g;
         const tags = [];
-        let match;
-        while ((match = regex.exec(value)) !== null) {
-            tags.push(match[1]);
-        }
+        for( let tagIdentifier of tagIdentifiers){
+            let wrappers = tagHtmlWrapper( tagIdentifier.class );
+            let regex = new RegExp(`(${wrappers[0]})?${tagCapturingGroup(tagIdentifier.symbol)}?(${wrappers[1]})?`, 'g');
 
-        // Cleanup
-        value = value.replace(/<span tag="true" class="tag"><\/span>/g,"");
-        container.textContent = value;
+            // step #0 tag unwrapping
+            value = value.replace(regex, `${tagIdentifier.symbol}$2`);
+
+            // Step #1 Tags extraction
+            regex = new RegExp(tagCapturingGroup(tagIdentifier.symbol), 'g');           
+            let match;
+            while ((match = regex.exec(value)) !== null) {
+                tags.push(match[1]);
+            }
+
+             // Step #1 Tags wrapping
+            value = value.replace(regex, `${wrappers[0]}${tagIdentifier.symbol}$1${wrappers[1]}`);
+
+            // Step #3 Cleanup empty wrappers
+            value = value.replaceAll(`${wrappers[0]}${wrappers[1]}`,"");
+            container.textContent = value;
+        }
+       
         let currentTags = container.tags ?? [];
         let newTags = tags.map(t => ({tag: t}));
         let tagsToAdd = newTags.filter(t => !currentTags?.find(ct => ct.tag === t.tag));

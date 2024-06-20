@@ -1,5 +1,7 @@
-<p class="board-label translucent">Board: {{board.id}}</p>
-
+<div class="board-toolbar">
+  <p class="board-label translucent">Board: {{board.id}}</p>
+  <p (click)="addLane()" class="button translucent pointer">Add lane</p>
+</div>
 <ng-container *ngFor="let lane of lanes$ | async">
   <lane [lane]="lane" [board]="this.board"></lane>
 </ng-container>  

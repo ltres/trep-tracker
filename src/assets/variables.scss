@@ -2,7 +2,7 @@ $background-color: #161a24;
 $static-background-color: #241624;
 $text-color: #ffffff;
 $font-size: 12px;
-
+$title-size: 1.2rem;
 $main-padding:2rem;
 
 $translucent-opacity: 0.3;
@@ -13,7 +13,9 @@ $selected-background:$text-color;
 
 $completed-color:rgb(18, 187, 2);
 $danger-color:rgb(255, 0, 0);
-$tag-color: rgb(255, 145, 0);
+$tag-orange-color: rgb(255, 145, 0);
+$tag-yellow-color: rgb(200, 255, 0);
+
 $lane-title-color:rgb(255, 0, 191);
 
 $min-width: 20rem;

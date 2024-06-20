@@ -1,8 +1,8 @@
 import { Component, ElementRef, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { Board, Container, Lane, Task } from '../../types/task';
+import { Board, Container, Lane, Task, getNewTask } from '../../types/task';
 import { TaskComponent } from '../task/task.component';
 import { BoardService } from '../../service/board.service';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { LaneComponent } from '../lane/lane.component';
 import { getCaretPosition } from '../../utils/utils';
 import { DragService } from '../../service/drag.service';
@@ -46,64 +46,32 @@ export class BoardComponent extends BaseComponent implements OnInit {
     return this.board
   }
 
+  addLane() {
+    this.boardService.addFloatingLane(this.board, 
+      this.el.nativeElement.getBoundingClientRect().width / 2 , 
+      this.el.nativeElement.getBoundingClientRect().height / 2, []);
+  }
+
   override ngOnInit() {
     super.ngOnInit();
-    // this.dragService.dragEvent$.subscribe(e => {
 
-
-    //console.log(this.laneComponents)
-    /*
-    let dragEndPos = { x: e?.dragCoordinates.cursorX, y: e?.dragCoordinates.cursorY }
-    if (!dragEndPos.x || !dragEndPos.y || !e?.parent) {
-      return
-    }
-    let matched = false;
-    // lets see if the drop overlaps a lane:
-    for (let laneElRef of this.laneComponentsElRefs?.toArray() ?? []) {
-      if (isInside(e.dragCoordinates, (laneElRef.nativeElement as HTMLElement).getBoundingClientRect())) {
-        let laneComponent = this.laneComponents?.toArray()[this.laneComponentsElRefs!.toArray().indexOf(laneElRef)];
-        if (!laneComponent) {
-          throw new Error("Cannot find laneComponent")
-        }
-        let lane = laneComponent.lane
-        console.log(`Drag end position is inside lane ${lane}`);
-        if (!lane) {
-          throw new Error("Cannot find lane")
-        }
-        // let's understand task overlap as well:
-        let taskElRefs = laneComponent.taskComponentsElRefs;
-        for (let taskElRef of taskElRefs?.toArray() ?? []) {
-          let inside = isInside(e.dragCoordinates, (taskElRef.nativeElement as HTMLElement).getBoundingClientRect())
-          if (inside) {
-            matched = true;
-            let overlappedTask = laneComponent.taskComponents?.toArray()[laneComponent.taskComponentsElRefs?.toArray().indexOf(taskElRef)!].task;
-            if (!overlappedTask) {
-              throw new Error("Cannot find task")
-            }
-            this.boardService.addAsSiblings(lane, overlappedTask, this.boardService.selectedTasks, inside === "top-half" ? "before" : "after");
-          }
-        }
-        if (!matched) {
-          throw new Error("Cannot find task");
-        }
-
-
-      }
-      //console.log(el);
-    }
-    if (!matched) {
-      let newLane = this.boardService.addFloatingLane(this.board, e?.dragCoordinates, this.boardService.selectedTasks);
-    }
-    //console.log("Grabbed")*/
-    //console.log(e)
-    //})
     this.subscriptions = this.keyboardService.keyboardEvent$.subscribe(e => {
-      if (e?.type != 'keydown' || !e || ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].indexOf(e.key) === -1) {
+      if (e?.type != 'keydown' || !e || ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Enter'].indexOf(e.key) === -1) {
         return
       }
       let task = this.boardService.lastSelectedTask;
       if (!task) {
         throw new Error("Cannot find lane or task")
+      }
+      let el: Node | undefined;
+      this.registry.baseComponentRegistry.forEach(c => {
+        if (c.object && c.object.id === task.id && c.object._type === task._type) {
+          el = c.el.nativeElement;
+        }
+      });
+      let caretPos = 0;
+      if(el) {
+        caretPos = getCaretPosition(el);
       }
 
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
@@ -111,16 +79,7 @@ export class BoardComponent extends BaseComponent implements OnInit {
         if (!nearby) {
           return;
         }
-        let el: Node | undefined;
-        this.registry.baseComponentRegistry.forEach(c => {
-          if (c.object && c.object.id === task.id && c.object._type === task._type) {
-            el = c.el.nativeElement;
-          }
-        });
-        let caretPos = 0;
-        if(el) {
-          caretPos = getCaretPosition(el);
-        }
+
 
         if (e.ctrlKey === true) {
           if(e.shiftKey === true) {
@@ -154,6 +113,20 @@ export class BoardComponent extends BaseComponent implements OnInit {
           return;
         }
         this.boardService.removeChildren(parent, this.boardService.selectedTasks);
+      }else if(e.key === 'Enter'){
+        // Create a new task
+        if(!e.ctrlKey || !e.shiftKey){
+          return;
+        }
+        let parent = this.boardService.findParent(this.boardService.selectedTasks);
+        if (!parent) {
+          throw new Error("Cannot find parent task")
+        }
+        let task = getNewTask()
+        this.boardService.addAsSiblings(parent, this.boardService.lastSelectedTask, [task], "after");
+        this.boardService.activateEditorOnTask(task, caretPos);
+        this.boardService.clearSelectedTasks();
+        this.boardService.addToSelection(task);
       }
 
     });

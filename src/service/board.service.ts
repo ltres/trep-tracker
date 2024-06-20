@@ -8,9 +8,6 @@ import { TagService } from "./tag.service";
     providedIn: 'root'
 })
 export class BoardService {
-
-
-
     private _boards$: BehaviorSubject<Board[]> = new BehaviorSubject<Board[]>([]);
     private _editorActiveTask$: BehaviorSubject<{task: Task , startingCaretPosition: number | undefined} | undefined> = new BehaviorSubject<{task: Task, startingCaretPosition: number | undefined} | undefined>(undefined);
 
@@ -57,6 +54,9 @@ export class BoardService {
     }
 
     addBoard(board: Board) {
+        this._boards$.next([...this._boards$.getValue(), board]);
+    }
+    addLane(board: Board) {
         this._boards$.next([...this._boards$.getValue(), board]);
     }
 
