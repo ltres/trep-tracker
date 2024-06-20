@@ -47,7 +47,7 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
 
   @HostBinding('style.position')
   private get position(): string | undefined {
-    return this.object?.coordinates ? 'fixed' : undefined;
+    return this.object?.coordinates ? 'absolute' : undefined;
   }
 
   @HostBinding('style.width.px')
@@ -74,10 +74,10 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
     //super.ngOnInit();
     if (this.static) return;
     let el = this.el.nativeElement as HTMLElement;
-    this.draggableEl = el.querySelector("[drag-on-this]") ?? el;
+    this.draggableEl = el.querySelector("[drag-on-this]:not([draggable])") ?? el;
     this.draggableEl.setAttribute('draggable', 'true');
 
-    this.resizeObserver.observe(this.draggableEl);
+    this.resizeObserver.observe(this.el.nativeElement);
   }
 
   override ngOnDestroy(): void {

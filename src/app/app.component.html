@@ -5,9 +5,9 @@
     <board *ngFor="let board of boards$ | async" [board]="board"></board>
 
     <div class="bottom-bar fixed-bottom flex">
-        <!-- <div>
-            <button (click)="addBoard()">Add board</button>
-        </div> -->
+        <div>
+            <button (click)="reset()">Add board</button>
+        </div>
         <tags-viewer class="grow"></tags-viewer>
         <keyboard-listener></keyboard-listener>
         <storage></storage>

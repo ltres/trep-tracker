@@ -4,7 +4,8 @@
     resize: horizontal;
     overflow-x: auto;
     overflow-y: visible;
-    position: relative;
+    //position: relative;
+    display: inline-block;
     //max-width: $max-lane-width;
 }
 

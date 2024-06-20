@@ -1,8 +1,21 @@
-const { app, BrowserWindow, ipcMain  } = require('electron')
+import { app, BrowserWindow, ipcMain  } from 'electron'
+import contextMenu from 'electron-context-menu';
+import { createRequire } from "module";
+import { fileURLToPath } from 'url';
+const require = createRequire(import.meta.url);
+
 let path = require('path')
+
+const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+const __dirname = path.dirname(__filename); // get the name of the directory
+
+
+
 let win;
 
 let relPath = "/dist/trep-tracker/browser"
+
+
 
 require('electron-reload')(__dirname, {
   electron: path.join(__dirname, 'node_modules/.bin/electron.cmd'),
@@ -14,7 +27,7 @@ function createWindow () {
   // Create the browser window.
   win = new BrowserWindow({
     webPreferences: {
-      preload: path.join(__dirname, 'electron-preload.js'),
+      preload: path.join(__dirname, 'electron-preload.cjs'),
       nodeIntegration: true,
       contextIsolation: true
     },
@@ -37,7 +50,12 @@ function createWindow () {
 }
 
 // Create window on electron intialization
-app.on('ready', createWindow)
+app.on('ready', () => {
+  createWindow();
+  contextMenu({
+    showSaveImageAs: true
+  });
+})
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {

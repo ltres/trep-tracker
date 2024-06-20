@@ -9,6 +9,7 @@ import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
 import { BaseComponent } from '../base/base.component';
 import { RegistryService } from '../../service/registry.service';
+import { DraggableComponent } from '../draggable/draggable.component';
 
 @Component({
   selector: 'board',
@@ -24,12 +25,15 @@ export class BoardComponent extends BaseComponent implements OnInit {
   @ViewChildren(LaneComponent,) laneComponents: QueryList<LaneComponent> | undefined;
 
   constructor(
-    private boardService: BoardService,
-    private keyboardService: KeyboardService,
+    protected  boardService: BoardService,
+    protected  keyboardService: KeyboardService,
     protected override registry: RegistryService,
+    protected  dragService: DragService,
     public override el: ElementRef
   ) {
-    super(registry,el)
+    //super(boardService, dragService, keyboardService, registry,el);
+    super(registry, el)
+
     // this.taskService = taskService;
   }
 
@@ -103,7 +107,7 @@ export class BoardComponent extends BaseComponent implements OnInit {
       }
 
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-        let nearby = e?.key === 'ArrowDown' ? this.boardService.getTaskInDirection([task], "down") : this.boardService.getTaskInDirection([task], "up");
+        let nearby = e?.key === 'ArrowDown' ? this.boardService.getTaskInDirection(this.boardService.selectedTasks, "down") : this.boardService.getTaskInDirection(this.boardService.selectedTasks, "up");
         if (!nearby) {
           return;
         }
@@ -119,10 +123,16 @@ export class BoardComponent extends BaseComponent implements OnInit {
         }
 
         if (e.ctrlKey === true) {
-
-          this.boardService.activateEditorOnTask(nearby, caretPos);
-          this.boardService.addToSelection(nearby);
+          if(e.shiftKey === true) {
+            // Move case
+            this.boardService.switchPosition(this.boardService.selectedTasks, e.key);
+          }else{
+            // Select multiple case
+            this.boardService.activateEditorOnTask(nearby, caretPos);
+            this.boardService.addToSelection(nearby);
+          }
         } else {
+          // Select next/previous case
           this.boardService.activateEditorOnTask(nearby, caretPos);
           this.boardService.clearSelectedTasks();
           this.boardService.addToSelection(nearby);

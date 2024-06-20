@@ -9,6 +9,8 @@ import { TagService } from "./tag.service";
 })
 export class BoardService {
 
+
+
     private _boards$: BehaviorSubject<Board[]> = new BehaviorSubject<Board[]>([]);
     private _editorActiveTask$: BehaviorSubject<{task: Task , startingCaretPosition: number | undefined} | undefined> = new BehaviorSubject<{task: Task, startingCaretPosition: number | undefined} | undefined>(undefined);
 
@@ -222,13 +224,24 @@ export class BoardService {
         // let taskToFind = this.getTopLevelTasks(tasks);
         // get all the tasks in the lane, including descendants, in an ordered array
         let orderedLinearizedTasks = this.getDescendants(parent).filter(c => this.isTask(c)) as Task[];
-        let index = orderedLinearizedTasks.length - 1;
-        for (let toCheck of tasks) {
-            let internalIdx = orderedLinearizedTasks.findIndex(t => t.id === toCheck.id);
-            index = internalIdx < index ? internalIdx : index;
+        let index = 0;
+        if( direction === 'up' || direction === 'left' ){
+            // Get smalles index from the tasks
+            index = orderedLinearizedTasks.length - 1;
+            for (let toCheck of tasks) {
+                let internalIdx = orderedLinearizedTasks.findIndex(t => t.id === toCheck.id);
+                index = internalIdx < index ? internalIdx : index;
+            }
+        }else{
+            // Get bigger index from the tasks
+            index = 0;
+            for (let toCheck of tasks) {
+                let internalIdx = orderedLinearizedTasks.findIndex(t => t.id === toCheck.id);
+                index = internalIdx > index ? internalIdx : index;
+            }
         }
 
-        return orderedLinearizedTasks[direction === 'up' ? index - 1 : index + 1];
+        return orderedLinearizedTasks[direction === 'up' || direction === 'left' ? index - 1 : index + 1];
     }
 
     findParent(objs: Container[] | undefined): Container | undefined {
@@ -326,6 +339,33 @@ export class BoardService {
 
         // Publish the changes
         this._boards$.next(boards);
+    }
+    switchPosition(selectedTasks: Task[] | undefined, direction: 'ArrowUp'| 'ArrowDown') {
+        if (!selectedTasks || selectedTasks.length === 0) {
+            return;
+        }
+
+        /*
+        if(selectedTasks.find( t => this.getDescendants(t).map( t => t.id ).find(id => id === nearby.id ) )){
+            throw new Error(`Cannot switch position of a task with its descendants`);
+        }*/
+        selectedTasks = this.getTopLevelTasks(selectedTasks);
+
+        let parent = this.findParent(selectedTasks);
+        if(!parent){
+            throw new Error(`Cannot find parent of the selected tasks`);
+        }
+        let siblings = parent?.children || [];
+
+        let index = selectedTasks.map( sel => siblings.findIndex( s => s.id === sel.id )).sort()[0];
+
+        if( direction === "ArrowUp" && index > 0 ){
+            parent.children.splice(index - 1, selectedTasks.length + 1, ...selectedTasks.concat( siblings[index - 1] ) );
+        }else if( direction === "ArrowDown" && index < siblings.length - 1 ){
+            parent.children.splice(index, selectedTasks.length + 1, ...[siblings[index + selectedTasks.length]].concat( selectedTasks ) );
+        }
+
+        this.publishBoardUpdate();
     }
 
     removeChildren(parent: Container, children: Task[] | undefined) {
@@ -457,5 +497,8 @@ export class BoardService {
             //this._lastSelectedTask$.next(o.lastSelectedTask ?? []);
             //this._editorActiveTask$.next(o.editorActiveTask ?? []);
         }
+    }
+    reset() {
+        this._boards$.next([]);
     }
 }

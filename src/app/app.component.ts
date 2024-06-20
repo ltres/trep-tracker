@@ -27,6 +27,11 @@ export class AppComponent implements OnInit {
     //this.addBoard()
   }
 
+  reset(){
+    this.boardService.reset();
+    this.addBoard()
+  }
+
   addBoard() {
     let laneId = generateUUID();
     this.boardService.addBoard({
