@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit } from '@angular/core';
+import { AfterContentChecked, AfterContentInit, AfterViewChecked, AfterViewInit, Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { BoardComponent } from './board/board.component';
 import { BoardService } from '../service/board.service';
@@ -13,7 +13,7 @@ import { generateUUID } from '../utils/utils';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent implements AfterViewInit {
+export class AppComponent implements AfterContentInit {
 
   title = 'trep-tracker';
   board: Board | undefined
@@ -21,7 +21,7 @@ export class AppComponent implements AfterViewInit {
 
   }
 
-  ngAfterViewInit(): void {
+  ngAfterContentInit (): void {
     if(this.boardService.boards.length === 0) {
       this.addNewBoard()
     }

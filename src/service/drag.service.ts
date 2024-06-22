@@ -9,7 +9,8 @@ import { RegistryService } from "./registry.service";
     providedIn: 'root'
 })
 export class DragService {
-    private _dragEndEvent$: BehaviorSubject<{ draggedComponent: DraggableComponent, event: DragEvent } | undefined> = new BehaviorSubject<{ draggedComponent: DraggableComponent, event: DragEvent } | undefined>(undefined);
+    private _dragEndEvent$: BehaviorSubject<{ draggedComponent: DraggableComponent, event: DragEvent, deltaX: number, deltaY: number } | undefined> 
+    = new BehaviorSubject<{ draggedComponent: DraggableComponent, event: DragEvent, deltaX: number, deltaY: number  } | undefined>(undefined);
 
     constructor(
         private boardService: BoardService,
@@ -19,11 +20,11 @@ export class DragService {
             if (!event) {
                 return;
             }
-            if(1 === 1)return;
             console.info("Drag end event", event);
             let { draggedComponent } = event;
             let { object: draggedObject } = draggedComponent;
             let { board } = draggedComponent;
+            let {deltaX, deltaY} = event;
             if (!draggedObject || !board) {
                 console.warn("Dragged component has no object");
                 return;
@@ -61,7 +62,8 @@ export class DragService {
                 return cursorIsInside(event.event, overlappedConsiderForOverlappingChecks.getBoundingClientRect())});
             if (!overlappedComponent || overlappedComponent.length === 0) {
                 // NO Overlap case:
-                this.boardService.addFloatingLane(board, event.event.clientX, event.event.clientY, [draggedObject]);
+                draggedComponent.el.nativeElement.getBoundingClientRect();
+                this.boardService.addFloatingLane(board, event.event.clientX - deltaX, event.event.clientY - deltaY, [draggedObject]);
                 console.info("No overlapped component found");
                 return;
             } else {
@@ -94,8 +96,8 @@ export class DragService {
         });
     }
 
-    publishDragEvent(draggable: DraggableComponent, event: DragEvent) {
-        this._dragEndEvent$.next({ draggedComponent: draggable, event });
+    publishDragEvent(draggable: DraggableComponent, event: DragEvent, deltaX: number, deltaY: number ) {
+        this._dragEndEvent$.next({ draggedComponent: draggable, event, deltaX, deltaY});
     }
 
     get dragEndEvent$(): Observable<{ draggedComponent: DraggableComponent, event: DragEvent } | undefined> {

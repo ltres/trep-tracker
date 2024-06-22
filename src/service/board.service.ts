@@ -210,6 +210,7 @@ export class BoardService {
         activeBoard.children = activeBoard.children.filter(l => l.children.length > 0 || l.tags.length > 0);
 
         let newLane: Lane = getNewLane();
+        newLane.coordinates = { x, y };
         activeBoard.children.push(newLane);
 
         if (children) {

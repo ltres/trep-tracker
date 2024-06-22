@@ -37,7 +37,7 @@ export class LaneComponent extends DraggableComponent implements OnInit {
 
   @HostBinding('style.overflow-x')
   get overflowX(): string {
-    return this.menuOpen ? 'visible' : 'unset';
+    return this.menuOpen ? 'visible' : 'auto';
   }
 
   override get object(): Container | undefined {

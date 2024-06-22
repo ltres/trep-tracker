@@ -27,13 +27,14 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
   @Input() static: boolean = false;
   protected _board: Board | undefined;
 
-  private deltaX: number = 0;
-  private deltaY: number = 0;
-
   private resizeObserver = new ResizeObserver(this.onResize.bind(this));
   private resizeTimeout: any;
 
   private draggableEl: Element | undefined;
+  private ancestors: HTMLElement[] | undefined;
+
+  private deltaX: number = 0;
+  private deltaY: number = 0;
 
   @HostBinding('style.left.px')
   private get left(): number {
@@ -47,7 +48,7 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
 
   @HostBinding('style.position')
   private get position(): string | undefined {
-    return this.object?.coordinates ? 'absolute' : undefined;
+    return this.object?.coordinates ? 'fixed' : undefined;
   }
 
   @HostBinding('style.width.px')
@@ -96,18 +97,11 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
   onDragEnd($event: DragEvent, parent: Container) {
     if (this.static) return;
     if (!this.object) return;
-    if (!this.object.coordinates) this.object.coordinates = { x: 0, y: 0 };
-    // this.el.nativeElement.style.position = 'unset';
-    this.object.coordinates.x = $event.clientX - this.deltaX;
-    this.object.coordinates.y = $event.clientY - this.deltaY;
+    this.calcCoordinates(this.object, $event);
 
-    this.object.coordinates = {
-      x: $event.clientX - this.deltaX,
-      y: $event.clientY - this.deltaY,
-    };
     this.boardService.publishBoardUpdate();
 
-    this.dragService.publishDragEvent(this, $event);
+    this.dragService.publishDragEvent(this, $event, this.deltaX, this.deltaY);
     $event.stopPropagation();
     $event.stopImmediatePropagation();
   }
@@ -115,17 +109,16 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
   onDrag($event: DragEvent, parent: Container) {
     if (this.static) return;
     if (!this.object) return;
-    if (!this.object.coordinates) this.object.coordinates = { x: 0, y: 0 };
-    this.object.coordinates.x = $event.clientX - this.deltaX;
-    this.object.coordinates.y = $event.clientY - this.deltaY;
+    this.calcCoordinates(this.object, $event);
 
+    /*
     if ($event.target instanceof Element) {
       $event.dataTransfer?.setDragImage(
         $event.target,
         window.outerWidth,
         window.outerHeight
       );
-    }
+    } */
     $event.stopPropagation();
     $event.stopImmediatePropagation();
   }
@@ -133,22 +126,61 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
   @HostListener('dragstart', ['$event'])
   onDragStart($event: DragEvent) {
     if (this.static) return;
-    this.deltaX = $event.clientX - this.el.nativeElement.getBoundingClientRect().left;
-    this.deltaY = $event.clientY - this.el.nativeElement.getBoundingClientRect().top;
-    this.el.nativeElement.style.position = 'absolute';
+    if (!this.object) return;
+    let node = this.el.nativeElement as HTMLElement;
+
+    this.deltaX = $event.clientX - node.getBoundingClientRect().left;
+    this.deltaY = $event.clientY - node.getBoundingClientRect().top;
+    //this.calcCoordinates(this.object, $event);
+
 
     //$event.stopPropagation();
     //$event.stopImmediatePropagation();
+    /*
     if ($event.target instanceof Element) {
       $event.dataTransfer?.setDragImage(
         $event.target,
         window.outerWidth,
         window.outerHeight
       );
-    }
+    }*/
+    $event.stopPropagation();
+    $event.stopImmediatePropagation(); 
     if (!this.object || !this.boardService.isTask(this.object)) return;
     this.boardService.addToSelection(this.object);
   }
+
+  calcCoordinates(object: Container, $event: DragEvent): void{
+    if(!object.coordinates){
+      object.coordinates = { x: 0, y: 0 }
+    };
+
+    let node = this.el.nativeElement as HTMLElement;
+
+    object.coordinates.x = $event.clientX  - this.deltaX // + window.scrollX;
+    object.coordinates.y = $event.clientY  - this.deltaY //+ window.scrollY;
+    // console.warn( "step 1",this.object!.coordinates ); 
+    /*
+    if( !this.ancestors){
+      this.ancestors = [];
+      let parent: HTMLElement | null;
+      while( ( parent = node.parentElement ) != null ){
+        if( window.getComputedStyle(parent).position === 'absolute' || window.getComputedStyle(parent).position === 'relative' ){
+          this.ancestors.push(parent);
+        }
+        node = parent; 
+      }
+    }
+
+    
+    this.ancestors.forEach( (ancestor) => {
+      this.object!.coordinates!.x -= ancestor.getBoundingClientRect().left //+ window.scrollX;
+      this.object!.coordinates!.y -= ancestor.getBoundingClientRect().top //+ window.scrollY;
+    }) 
+      */
+    //console.warn(  "step 2",this.object!.coordinates );
+  }
+  
 
   onResize() {
     if (!this.object || !this.boardService.isLane(this.object)) return;
