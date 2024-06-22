@@ -8,6 +8,7 @@
     --ngx-editor-background-color: $editor-active-background;
     flex-basis: 0;
     flex-grow: 1;
+    z-index: 15;
 }
 
 .task-wrapper{

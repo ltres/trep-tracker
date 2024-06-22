@@ -19,6 +19,7 @@ export class DragService {
             if (!event) {
                 return;
             }
+            if(1 === 1)return;
             console.info("Drag end event", event);
             let { draggedComponent } = event;
             let { object: draggedObject } = draggedComponent;

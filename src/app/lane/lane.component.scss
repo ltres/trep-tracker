@@ -2,15 +2,16 @@
 
 :host{
     resize: horizontal;
-    //overflow-x: auto;
+    overflow-x: unset;
     overflow-y: visible;
     //position: relative;
     display: inline-block;
     //max-width: $max-lane-width;
+    z-index: 10;
 }
 
 .lane-wrapper{
-    position: relative;
+    // position: relative;
     display: flex;
     flex-direction: column;
     //width: 100%;

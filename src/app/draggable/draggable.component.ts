@@ -97,7 +97,7 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
     if (this.static) return;
     if (!this.object) return;
     if (!this.object.coordinates) this.object.coordinates = { x: 0, y: 0 };
-
+    // this.el.nativeElement.style.position = 'unset';
     this.object.coordinates.x = $event.clientX - this.deltaX;
     this.object.coordinates.y = $event.clientY - this.deltaY;
 
@@ -135,6 +135,7 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
     if (this.static) return;
     this.deltaX = $event.clientX - this.el.nativeElement.getBoundingClientRect().left;
     this.deltaY = $event.clientY - this.el.nativeElement.getBoundingClientRect().top;
+    this.el.nativeElement.style.position = 'absolute';
 
     //$event.stopPropagation();
     //$event.stopImmediatePropagation();

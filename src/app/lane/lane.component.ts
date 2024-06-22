@@ -1,5 +1,5 @@
 import { Component, ElementRef, HostBinding, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { Board, Container, Lane, Task, getNewTask } from '../../types/task';
+import { Board, Container, Lane, Priority, Tag, Task, getNewTask } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 import { generateUUID } from '../../utils/utils';
 import { Observable } from 'rxjs';
@@ -17,13 +17,12 @@ import { RegistryService } from '../../service/registry.service';
   styleUrl: './lane.component.scss'
 })
 export class LaneComponent extends DraggableComponent implements OnInit {
-
-
   @ViewChildren(TaskComponent, { read: ElementRef }) taskComponentsElRefs: QueryList<ElementRef> | undefined;
   @ViewChildren(TaskComponent) taskComponents: QueryList<TaskComponent> | undefined;
 
   @Input() lane!: Lane;
   @Input() board!: Board;
+
 
   menuOpen = false
 
@@ -38,7 +37,7 @@ export class LaneComponent extends DraggableComponent implements OnInit {
 
   @HostBinding('style.overflow-x')
   get overflowX(): string {
-    return this.menuOpen ? 'visible' : 'auto';
+    return this.menuOpen ? 'visible' : 'unset';
   }
 
   override get object(): Container | undefined {
@@ -47,29 +46,26 @@ export class LaneComponent extends DraggableComponent implements OnInit {
 
   override ngOnInit(): void {
     super.ngOnInit();
-    this.subscriptions = this.boardService.getLane$(this.lane).subscribe(l => {
-      if (!l) {
-        return;
-      }
-      this.lane = l;
-    })
   }
 
-  get tasks$(): Observable<Task[] | undefined> {
-    return this.boardService.getTasks$(this.lane);
+  get tasks(): Observable<Task[] | undefined> {
+    return this.boardService.getTasks$(this.lane, this.lane.priority);
+  }
+
+  get taggedTasks(): Observable<Task[] | undefined> {
+    return this.boardService.getTaggedTasks$(this.lane.tags, this.lane.priority);
+  }
+
+  displayStaticStuff(): boolean{
+    return this.isTagged() || ( this.lane.priority !== undefined && this.lane.children.length === 0 );
   }
 
   isTagged(): boolean {
     return this.lane.tags? this.lane.tags.length > 0 : false;
   }
 
-  get taggedTasks$(): Observable<Task[] | undefined> {
-    return this.boardService.getTaggedTasks$(this.lane.tags);
-  }
-
   createNewTask() {
-    let uuid = generateUUID();
-    let task: Task = getNewTask( `${this.boardService.getTasksCount() + 1}` );
+    let task: Task = getNewTask( `Task ${this.boardService.getTasksCount() + 1}` );
     this.boardService.addAsChild(this.lane, [task]);
     this.boardService.clearSelectedTasks();
     this.boardService.toggleTaskSelection(task);

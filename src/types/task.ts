@@ -21,7 +21,7 @@ export interface Container<T extends Container<any> = any> {
     tags: Tag[];
     _type: string,
     creationDate: Date,
-    priority: undefined | 1 | 2 | 3 | 4,
+    priority: Priority,
     stateChangeDate: Date | undefined,
     archived: boolean,
     archivedDate: Date | undefined,
@@ -29,8 +29,9 @@ export interface Container<T extends Container<any> = any> {
         x: number,
         y: number
     },
-    
 }
+
+export type Priority = undefined | 1 | 2 | 3 | 4
 
 export interface Tag{
     tag: string;

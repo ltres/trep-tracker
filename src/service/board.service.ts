@@ -1,5 +1,5 @@
 import { Injectable, Injector } from "@angular/core";
-import { Board, Lane, Container, Task, Tag, DoneTag, ArchivedTag, tagIdentifiers, getNewBoard, getNewLane } from "../types/task";
+import { Board, Lane, Container, Task, Tag, DoneTag, ArchivedTag, tagIdentifiers, getNewBoard, getNewLane, Priority } from "../types/task";
 import { BehaviorSubject, Observable, filter, map } from "rxjs";
 import { generateUUID } from "../utils/utils";
 import { TagService } from "./tag.service";
@@ -73,9 +73,34 @@ export class BoardService {
         );
     }
 
-    getTasks$(lane: Lane): Observable<Task[] | undefined> {
+    getTasks$(lane: Lane, priority: Priority | undefined): Observable<Task[] | undefined> {
         return this._allLanes$.pipe(
-            map(lanes => lanes?.find(l => l.id === lane.id)?.children)
+            map(lanes => {
+                let res = lanes?.find(l => l.id === lane.id)?.children
+                if( priority ){
+                    res = res?.filter( t => t.priority === priority );
+                }
+                return res;
+            })
+        )
+    }
+
+    getTaggedTasks$(tags: Tag[] | undefined, priority: Priority | undefined): Observable<Task[] | undefined> {
+        return this._allTasks$.pipe(
+            map(tasks => {
+                let res = tasks;
+
+                if(tags){
+                    res = tasks?.filter(task => 
+                        task.tags.filter( t => tags.find(tag => tag.tag.toLowerCase() === t.tag.toLowerCase())).length === tags.length
+                    )
+                }
+                if( priority ){
+                    res = res?.filter( t => t.priority === priority );
+                }
+
+                return res;
+            })
         )
     }
 
@@ -464,20 +489,6 @@ export class BoardService {
         descendants.forEach(d => d.children = d.children.filter(t => !t.archived));
         
         this.publishBoardUpdate();
-    }
-
-    getTaggedTasks$(tags: Tag[] | undefined): Observable<Task[] | undefined> {
-        let acc: string[] = [];
-        return this._allTasks$.pipe(
-            map(tasks => {
-                if (!tags || tags.length === 0) {
-                    return tasks;
-                }
-                return tasks?.filter(task => 
-                    task.tags.filter( t => tags.find(tag => tag.tag.toLowerCase() === t.tag.toLowerCase())).length === tags.length
-                )
-            })
-        )
     }
 
     serialize(): string{
