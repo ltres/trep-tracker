@@ -91,6 +91,10 @@ export class DragService {
                     return;
                 }
 
+                if( overlappedObject.id === draggedObject.id && overlappedObject._type === draggedObject._type) {
+                    throw new Error("Dragged object and overlapped object are the same");
+                }
+
                 this.boardService.addAsChild(overlappedObject, [draggedObject]);
             }
         });

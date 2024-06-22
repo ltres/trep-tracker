@@ -48,7 +48,7 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
 
   @HostBinding('style.position')
   private get position(): string | undefined {
-    return this.object?.coordinates ? 'fixed' : undefined;
+    return this.static ? "static" : this.object?.coordinates ? 'fixed' : undefined;
   }
 
   @HostBinding('style.width.px')

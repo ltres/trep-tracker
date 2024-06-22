@@ -13,14 +13,12 @@ data-consider-for-overlapping-checks="true"
     <div *ngIf="this.task.status === 'completed'" class="status big pointer" (click)="toggleTaskStatus()">☑</div>
 
     <div class="flex wrap w-100">
-        <div class="editor-wrapper grow flex">    
-            <div #editor [container]="this.task" 
+            <div class="grow flex" #editor [container]="this.task" 
             [contenteditableHtml]="true" 
             contenteditable="true" 
             [(contenteditableModel)]="task.textContent"
             (onBlur)="this.boardService.publishBoardUpdate()"
             ></div>
-        </div>
         
         <div class="date-wrapper translucent small flex align-items-center">
             created {{this.task.creationDate | date: 'dd-MM-yy hh:mm a'}}

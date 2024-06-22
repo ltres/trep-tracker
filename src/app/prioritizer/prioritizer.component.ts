@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, ElementRef, HostListener, Input } from '@angular/core';
 import { Container, Priority } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 
@@ -12,7 +12,9 @@ export class PrioritizerComponent {
   @Input() container!: Container;
   protected open: boolean = false;
 
-  constructor(private boardService: BoardService) {
+  constructor(
+    private eRef: ElementRef,
+    private boardService: BoardService) {
     
   }
 
@@ -32,4 +34,6 @@ export class PrioritizerComponent {
     this.boardService.publishBoardUpdate();
     this.open = false;
   }
+
+  
 }
