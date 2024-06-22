@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { BoardComponent } from './board/board.component';
 import { BoardService } from '../service/board.service';
 import { Observable } from 'rxjs';
-import { Board } from '../types/task';
+import { Board, getNewBoard, getNewLane } from '../types/task';
 import { generateUUID } from '../utils/utils';
 
 @Component({
@@ -13,52 +13,31 @@ import { generateUUID } from '../utils/utils';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements AfterViewInit {
 
   title = 'trep-tracker';
-
+  board: Board | undefined
   constructor(private boardService: BoardService) {
 
   }
-  ngOnInit(): void {
+
+  ngAfterViewInit(): void {
     if(this.boardService.boards.length === 0) {
-      this.addBoard()
+      this.addNewBoard()
     }
-    //this.addBoard()
+    this.boardService.selectFirstBoard();
+    this.boardService.selectedBoard$.subscribe(board => {
+      this.board = board
+    })
   }
 
   reset(){
     this.boardService.reset();
-    this.addBoard()
+    this.addNewBoard()
   }
 
-  addBoard() {
-    let laneId = generateUUID();
-    this.boardService.addBoard({
-      id: generateUUID(),
-      _type: "board",
-      textContent: "Board",
-      tags: [],
-      children: [{
-        id: generateUUID(),
-        tags: [],
-        showChildren: true,
-        textContent: "Lane " + laneId,
-        children: [],
-        _type: "lane",
-        creationDate: new Date(),
-        stateChangeDate: undefined,
-        priority: 0,
-        width: undefined,
-        archived: false,
-        archivedDate: undefined
-      }],
-      creationDate: new Date(),
-      stateChangeDate: undefined,
-      priority: 0,
-      archived: false,
-      archivedDate: undefined
-    })
+  addNewBoard() {
+    this.boardService.addNewBoard()
   }
 
   get boards$(): Observable<Board[]> {

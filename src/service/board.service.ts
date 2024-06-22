@@ -1,5 +1,5 @@
 import { Injectable, Injector } from "@angular/core";
-import { Board, Lane, Container, Task, Tag, DoneTag, ArchivedTag } from "../types/task";
+import { Board, Lane, Container, Task, Tag, DoneTag, ArchivedTag, tagIdentifiers, getNewBoard, getNewLane } from "../types/task";
 import { BehaviorSubject, Observable, filter, map } from "rxjs";
 import { generateUUID } from "../utils/utils";
 import { TagService } from "./tag.service";
@@ -8,12 +8,16 @@ import { TagService } from "./tag.service";
     providedIn: 'root'
 })
 export class BoardService {
+
+    private _selectedBoard$: BehaviorSubject<Board | undefined> = new BehaviorSubject<Board | undefined>(undefined);
+
     private _boards$: BehaviorSubject<Board[]> = new BehaviorSubject<Board[]>([]);
     private _editorActiveTask$: BehaviorSubject<{task: Task , startingCaretPosition: number | undefined} | undefined> = new BehaviorSubject<{task: Task, startingCaretPosition: number | undefined} | undefined>(undefined);
 
     private _allLanes$: BehaviorSubject<Lane[] | undefined> = new BehaviorSubject<Lane[] | undefined>(undefined);
     private _allTasks$: BehaviorSubject<Task[] | undefined> = new BehaviorSubject<Task[] | undefined>(undefined);
     private _allParents$: BehaviorSubject<Container[] | undefined> = new BehaviorSubject<Container[] | undefined>(undefined);
+    //private _allNuked$: BehaviorSubject<Task[]> = new BehaviorSubject<Task[]>([]);
 
     private _selectedTasks$: BehaviorSubject<Task[] | undefined> = new BehaviorSubject<Task[] | undefined>(undefined);
     private _lastSelectedTask$: BehaviorSubject<Task | undefined> = new BehaviorSubject<Task | undefined>(undefined);
@@ -24,6 +28,7 @@ export class BoardService {
 
         setTimeout(() => this.tagService = injector.get(TagService));
         this._boards$.subscribe(b => {
+            console.info('Boards updated');
             let allTasks: Task[] = [];
             let allLanes: Lane[] = [];
             b.forEach(board => {
@@ -53,7 +58,9 @@ export class BoardService {
         return descendants
     }
 
-    addBoard(board: Board) {
+    addNewBoard() {
+        let board = getNewBoard( getNewLane() )
+
         this._boards$.next([...this._boards$.getValue(), board]);
     }
     addLane(board: Board) {
@@ -112,9 +119,15 @@ export class BoardService {
         this._lastSelectedTask$.next(task);
         this._selectedTasks$.next(cur);
     }
-
     clearSelectedTasks() {
         this._selectedTasks$.next([]);
+    }
+    selectFirstBoard() {
+        let boards = this._boards$.getValue();
+        if (boards.length === 0) {
+            return;
+        }
+        this._selectedBoard$.next(boards[0]);
     }
 
     get selectedTasks$(): Observable<Task[] | undefined> {
@@ -123,7 +136,9 @@ export class BoardService {
     get lastSelectedTask$(): Observable<Task | undefined> {
         return this._lastSelectedTask$;
     }
-
+    get selectedBoard$(): Observable<Board | undefined> {
+        return this._selectedBoard$;
+    }
     get boards$(): Observable<Board[]> {
         return this._boards$;
     }
@@ -132,6 +147,12 @@ export class BoardService {
     }
     get editorActiveTask$(): Observable<{task: Task, startingCaretPosition: number | undefined}  | undefined> {
         return this._editorActiveTask$;
+    }
+    get selectedBoard(): Board | undefined {
+        return this._selectedBoard$.getValue();
+    }
+    setSelectedBoard(board: Board) {
+        this._selectedBoard$.next(board);
     }
     get boards(): Board[] {
         return this._boards$.getValue();  
@@ -144,6 +165,9 @@ export class BoardService {
     }
     get selectedTasks(): Task[] | undefined {
         return this._selectedTasks$.getValue();
+    }
+    isSelected(board: Board) {
+        return this._selectedBoard$.getValue()?.id === board.id;
     }
     /**
      * Adds a floating lane to the specified board.
@@ -160,25 +184,7 @@ export class BoardService {
         }
         activeBoard.children = activeBoard.children.filter(l => l.children.length > 0 || l.tags.length > 0);
 
-        let id = generateUUID();
-        let newLane: Lane = {
-            id,
-            children: [],
-            tags: [],
-            showChildren: true,
-            textContent: 'New Lane ' + id,
-            _type: 'lane',
-            coordinates: {
-                x,
-                y
-            },
-            creationDate: new Date(),
-            stateChangeDate: undefined,
-            priority: 0,
-            width: undefined,
-            archived: false,
-            archivedDate: undefined
-        }
+        let newLane: Lane = getNewLane();
         activeBoard.children.push(newLane);
 
         if (children) {
@@ -194,20 +200,25 @@ export class BoardService {
         let boards = this._boards$.getValue();
         task.status = task.status === 'completed' ? 'todo' : 'completed';
         if(task.status === 'completed'){
-            task.textContent.indexOf(DoneTag.tag) === -1 ? task.textContent += ' ' + DoneTag.tag : task.textContent;
+            task.textContent.indexOf(DoneTag.tag) === -1 ? task.textContent += ' ' + tagIdentifiers[0].symbol + DoneTag.tag : task.textContent;
         }else{
-            task.textContent = task.textContent.replace(DoneTag.tag, '');
+            task.textContent = task.textContent.replace(tagIdentifiers[0].symbol + DoneTag.tag, '');
         }
         task.stateChangeDate = new Date();
         this.tagService.extractAndUpdateTags(task);
         this._boards$.next(boards);
     }
 
-    archiveTask(task: Task) {
+    toggleArchived(task: Task) {
         let boards = this._boards$.getValue();
-        task.archived = true;
+        task.archived = !task.archived;
+        if(task.archived){
+            task.textContent.indexOf(ArchivedTag.tag) === -1 ? task.textContent += ' ' + tagIdentifiers[0].symbol + ArchivedTag.tag : task.textContent;
+        }else{
+            task.textContent = task.textContent.replace(tagIdentifiers[0].symbol + ArchivedTag.tag, '');
+        }
         task.archivedDate = new Date();
-        task.textContent.indexOf(ArchivedTag.tag) === -1 ? task.textContent += ' ' + ArchivedTag.tag : task.textContent;
+        this.tagService.extractAndUpdateTags(task);
         this._boards$.next(boards);
     }
 
@@ -445,6 +456,16 @@ export class BoardService {
         this._boards$.next(boards);
     }
 
+    nukeArchived(lane: Lane) {
+        // this._boards$.getValue();
+        
+        lane.children = lane.children.filter(t => !t.archived);
+        let descendants = this.getDescendants(lane);
+        descendants.forEach(d => d.children = d.children.filter(t => !t.archived));
+        
+        this.publishBoardUpdate();
+    }
+
     getTaggedTasks$(tags: Tag[] | undefined): Observable<Task[] | undefined> {
         let acc: string[] = [];
         return this._allTasks$.pipe(
@@ -486,7 +507,7 @@ export class BoardService {
                     p.creationDate = new Date();
                 }
                 if(p.priority == null){
-                    p.priority = 0;
+                    p.priority = undefined;
                 }
                 if(p.archived == null){
                     p.archived = false

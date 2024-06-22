@@ -15,7 +15,7 @@ export class StorageComponent {
 
   set storagePath(value: string) {
     this._storagePath = value;
-    // this.storageService.initWithStoragePath(this.storagePath);
+    this.storageService.initWithStoragePath(this.storagePath);
   }
 
   constructor(private storageService: StorageService) {

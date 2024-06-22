@@ -1,0 +1,12 @@
+@import "../../assets/variables";
+
+input{
+    font-family: 'JetBrains Mono';
+    overflow: visible;
+    background-color: $background-color;
+    color: $text-color;
+    outline: none;
+    border-color: transparent;
+    border: 1px solid $translucent-color;
+
+}

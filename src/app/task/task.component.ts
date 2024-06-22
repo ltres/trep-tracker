@@ -126,8 +126,8 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
     this.boardService.toggleTaskStatus(this.task);
   }
 
-  archiveTask() {
-    this.boardService.archiveTask(this.task);
+  toggleArchived() {
+    this.boardService.toggleArchived(this.task);
   }
 
   hasNextSibling(): boolean {

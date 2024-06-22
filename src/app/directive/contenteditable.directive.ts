@@ -15,6 +15,8 @@ export class ContenteditableDirective implements OnChanges {
     @Input() contenteditableModel: string = "";
     @Input() container!: Container;
     @Output() contenteditableModelChange = new EventEmitter();
+    @Output() onBlur = new EventEmitter();
+
     /** Allow (sanitized) html */
     @Input() contenteditableHtml?: boolean = false;
 
@@ -44,6 +46,12 @@ export class ContenteditableDirective implements OnChanges {
 
         this.contenteditableModelChange.emit(value);
     }
+
+    @HostListener('blur')  // additional fallback
+    onBlurred() {
+        this.onBlur.emit();
+    }
+
 
     @HostListener('paste') onPaste() {
         this.onInput();

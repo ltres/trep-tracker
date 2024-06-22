@@ -124,7 +124,7 @@ export class BoardComponent extends BaseComponent implements OnInit {
         }
         let task = getNewTask()
         this.boardService.addAsSiblings(parent, this.boardService.lastSelectedTask, [task], "after");
-        this.boardService.activateEditorOnTask(task, caretPos);
+        this.boardService.activateEditorOnTask(task, 0);
         this.boardService.clearSelectedTasks();
         this.boardService.addToSelection(task);
       }

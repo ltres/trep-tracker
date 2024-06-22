@@ -17,6 +17,9 @@ import { TagService } from '../service/tag.service';
 import { TagsViewerComponent } from './tags-viewer/tags-viewer.component';
 import { StorageService } from '../service/storage.service';
 import { StorageComponent } from './storage/storage.component';
+import { LaneMenuComponent } from './lane-menu/lane-menu.component';
+import { BoardSelectionMenuComponent } from './board-selection-menu/board-selection-menu.component';
+import { PrioritizerComponent } from './prioritizer/prioritizer.component';
  
 @NgModule({
     declarations: [
@@ -27,7 +30,10 @@ import { StorageComponent } from './storage/storage.component';
          ContenteditableDirective, 
          TagDirective, 
          TagsViewerComponent,
-         StorageComponent
+         StorageComponent,
+         LaneMenuComponent,
+         BoardSelectionMenuComponent,
+         PrioritizerComponent
         ],
     providers: [BoardService, KeyboardService, DragService, RegistryService, TagService, StorageService],
     bootstrap: [AppComponent],

@@ -9,9 +9,9 @@ export interface Lane extends Container<Task>{
     width: number | undefined
 }
 export interface Task extends Container<Task>{
-    
     _type: 'task',
     status: "completed" | "todo"
+    
 }
 
 export interface Container<T extends Container<any> = any> {
@@ -21,10 +21,10 @@ export interface Container<T extends Container<any> = any> {
     tags: Tag[];
     _type: string,
     creationDate: Date,
+    priority: undefined | 1 | 2 | 3 | 4,
     stateChangeDate: Date | undefined,
     archived: boolean,
     archivedDate: Date | undefined,
-    priority: number,
     coordinates?: {
         x: number,
         y: number
@@ -36,8 +36,8 @@ export interface Tag{
     tag: string;
 }
 
-export const DoneTag : Tag = {tag: '@Done'}
-export const ArchivedTag : Tag = {tag: '@Archived'}
+export const DoneTag : Tag = {tag: 'Done'}
+export const ArchivedTag : Tag = {tag: 'Archived'}
 
 export const tagIdentifiers:{symbol: string, class:string}[] = [
     {
@@ -54,10 +54,10 @@ const spaces = "\s\t\n\u00A0\u2002\u2003\u2006\u202F "
 export const tagCapturingGroup = (symbol:string) => ( `${symbol}([A-Za-z0-9\-\_]+)` );
 
 
-export const getNewTask: () => Task = () => (
+export const getNewTask: ( textContent?: string | undefined ) => Task = (textContent?: string | undefined) => (
      {
         id: generateUUID(),
-        textContent: "",
+        textContent: textContent ?? "",
         children: [],
         tags: [],
         _type: "task",
@@ -65,7 +65,40 @@ export const getNewTask: () => Task = () => (
         stateChangeDate: undefined,
         archived: false,
         archivedDate: undefined,
-        priority: 0,
+        priority: undefined,
         status: "todo"
+    }
+)
+
+export const getNewLane: () => Lane = () => {
+    let id = generateUUID();
+    return {
+        id: id,
+        tags: [],
+        showChildren: true,
+        textContent: "Lane " + id,
+        children: [],
+        _type: "lane",
+        creationDate: new Date(),
+        stateChangeDate: undefined,
+        priority: undefined,
+        width: undefined,
+        archived: false,
+        archivedDate: undefined
+    }
+}
+
+export const getNewBoard: (firstLane: Lane) => Board = (firstLane: Lane) => (
+    {      
+            id: generateUUID(),
+            _type: "board",
+            textContent: "Board",
+            tags: [],
+            priority: undefined,
+            children: [firstLane],
+            creationDate: new Date(),
+            stateChangeDate: undefined,
+            archived: false,
+            archivedDate: undefined       
     }
 )

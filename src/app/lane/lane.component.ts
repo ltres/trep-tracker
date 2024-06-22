@@ -1,5 +1,5 @@
 import { Component, ElementRef, HostBinding, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { Board, Container, Lane, Task } from '../../types/task';
+import { Board, Container, Lane, Task, getNewTask } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 import { generateUUID } from '../../utils/utils';
 import { Observable } from 'rxjs';
@@ -18,11 +18,14 @@ import { RegistryService } from '../../service/registry.service';
 })
 export class LaneComponent extends DraggableComponent implements OnInit {
 
+
   @ViewChildren(TaskComponent, { read: ElementRef }) taskComponentsElRefs: QueryList<ElementRef> | undefined;
   @ViewChildren(TaskComponent) taskComponents: QueryList<TaskComponent> | undefined;
 
   @Input() lane!: Lane;
   @Input() board!: Board;
+
+  menuOpen = false
 
   constructor(
     protected override boardService: BoardService,
@@ -31,6 +34,11 @@ export class LaneComponent extends DraggableComponent implements OnInit {
     protected override registry: RegistryService,
     public override el: ElementRef) {
     super(boardService, dragService, keyboardService, registry, el );
+  }
+
+  @HostBinding('style.overflow-x')
+  get overflowX(): string {
+    return this.menuOpen ? 'visible' : 'auto';
   }
 
   override get object(): Container | undefined {
@@ -61,19 +69,7 @@ export class LaneComponent extends DraggableComponent implements OnInit {
 
   createNewTask() {
     let uuid = generateUUID();
-    let task: Task = {
-      textContent: `Task ${this.boardService.getTasksCount() + 1} ${uuid}`,
-      id: uuid,
-      tags: [],
-      status: "todo",
-      _type: 'task',
-      children: [],
-      creationDate: new Date(),
-      stateChangeDate: undefined,
-      priority: 0,
-      archived: false,
-      archivedDate: undefined
-    };
+    let task: Task = getNewTask( `${this.boardService.getTasksCount() + 1}` );
     this.boardService.addAsChild(this.lane, [task]);
     this.boardService.clearSelectedTasks();
     this.boardService.toggleTaskSelection(task);
@@ -88,6 +84,8 @@ export class LaneComponent extends DraggableComponent implements OnInit {
     this.lane.showChildren = !this.lane.showChildren;
     this.boardService.publishBoardUpdate();
   }
-    
+  nukeArchived() {
+    this.boardService.nukeArchived(this.lane);
+  }
 
 }

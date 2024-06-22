@@ -26,6 +26,9 @@
     &.selected{
         border-left:.15rem solid $text-color;
     }
+    &.archived{
+        color: $archived-color;
+    }
 }
 
 .editor-wrapper{

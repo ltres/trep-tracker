@@ -2,33 +2,43 @@
 data-consider-for-overlapping-checks="true"
 [class.editor-active]="this.editorActive"
 [class.selected]="this.selected"
+[class.archived]="this.task.archived"
 [class]="this.task.status"
 (click)="clickTask($event)" 
 
 >
-    <div *ngIf="!this.static"class="drag-handle big" drag-on-this="true">⋮</div>
-    <div *ngIf="this.task.status === 'todo'" class="status big" (click)="toggleTaskStatus()">☐</div>
-    <div *ngIf="this.task.status === 'completed'" class="status big" (click)="toggleTaskStatus()">☑</div>
+    <div *ngIf="!this.static"class="drag-handle big pointer" drag-on-this="true">⋮</div>
+    <div *ngIf="this.task.status === 'todo'" class="status big pointer" (click)="toggleTaskStatus()">☐</div>
+    <div *ngIf="this.task.status === 'completed'" class="status big pointer" (click)="toggleTaskStatus()">☑</div>
 
     <div class="flex wrap w-100">
-        <div class="editor-wrapper grow">    
-            <div #editor [container]="this.task" [contenteditableHtml]="true" contenteditable="true" [(contenteditableModel)]="task.textContent"></div>
+        <div class="editor-wrapper grow flex">    
+            <div #editor [container]="this.task" 
+            [contenteditableHtml]="true" 
+            contenteditable="true" 
+            [(contenteditableModel)]="task.textContent"
+            (onBlur)="this.boardService.publishBoardUpdate()"
+            ></div>
+            <prioritizer [container]="task"> </prioritizer>
         </div>
+        
         <div class="date-wrapper translucent small">
             created {{this.task.creationDate | date: 'dd-MM-yy hh:mm a'}}
         </div>
         <div class="task-toolbar">
-            <span *ngIf="!static && task.status === 'completed'" (click)="archiveTask()" class="archive pointer">🖿</span>
+            <span *ngIf="!static && task.status === 'completed'" (click)="toggleArchived()" class="archive pointer">🖿</span>
         </div>
     </div>
 </div>
 <div *ngIf="showChildren" class="task-children-wrapper g-025 ">
-    <div class="flex" *ngFor="let child of this.task.children; let last = last">
-        <div class="line">
-            <div class="border-angle"></div>
-            <div *ngIf="!last" class="border-line"></div>
+    <ng-container *ngFor="let child of this.task.children; let last = last">
+        <div class="flex" >
+            <div class="line">
+                <div class="border-angle"></div>
+                <div *ngIf="!last" class="border-line"></div>
+            </div>
+            <task [static]="static" [parent]="this.task" [task]="child"  [board]="this.board" [lane]="this.lane"></task>
         </div>
-        <task [static]="static" [parent]="this.task" [task]="child"  [board]="this.board" [lane]="this.lane" *ngIf="!child.archived"></task>
-    </div>
+    </ng-container>
     
 </div>    

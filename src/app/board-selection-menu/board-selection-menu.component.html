@@ -1,0 +1,10 @@
+<button (click)="selectBoard(board)"
+*ngFor="let board of boards" class="board-selection" 
+[class.active]="this.boardService.isSelected(board)"
+[innerHTML]="board.textContent"
+>
+</button> 
+
+<button (click)="addBoard()" class="big">
+    +
+</button>

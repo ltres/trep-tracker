@@ -1,16 +1,20 @@
 
 
-<main class="main" ondragover="event.preventDefault()">
+<main class="main flex" ondragover="event.preventDefault()">
 
-    <board *ngFor="let board of boards$ | async" [board]="board"></board>
+    <div class="column-1 flex column">
+        <board *ngIf="board" [board]="board"></board>
 
-    <div class="bottom-bar fixed-bottom flex">
-        <div>
-            <button (click)="reset()">Add board</button>
+        <div class="bottom-bar flex g-1">
+        <!-- <div>
+                <button (click)="reset()">Add board</button>
+            </div> -->
+            <tags-viewer class="grow"></tags-viewer>
+            <storage></storage>
+            <keyboard-listener></keyboard-listener>
+            
         </div>
-        <tags-viewer class="grow"></tags-viewer>
-        <keyboard-listener></keyboard-listener>
-        <storage></storage>
     </div>
+    <board-selection-menu class="column-2 flex"></board-selection-menu>
 
 </main>

@@ -1,17 +1,34 @@
 <div class="lane-wrapper p-x-05" [class.static-view]="isTagged() && (tasks$ | async)?.length === 0" data-consider-for-overlapping-checks="true">
   <div class="lane-toolbar flex g-05 ">
-    <div class="lane-title grow no-wrap" [container]="this.lane" [contenteditableHtml]="true" contenteditable="true" [(contenteditableModel)]="lane.textContent"> </div>
+    <div class="grow no-wrap flex align-items-center" >
+      <div class="lane-title   no-wrap" 
+      [container]="this.lane" 
+      [contenteditableHtml]="true" 
+      contenteditable="true" 
+      [(contenteditableModel)]="lane.textContent"
+      (onBlur)="this.boardService.publishBoardUpdate()"
+      > </div> 
+      <prioritizer [container]="lane"> </prioritizer>
+    </div>
     <div class="grow"></div>
-    <div class="small translucent danger no-grow" *ngIf="(tasks$ | async)?.length == 0 && !isTagged()" (click)="deleteLane()">Delete lane</div>
-    <div class="small translucent no-grow" *ngIf="isTagged() && !lane.showChildren" (click)="toggleShowChildren()">Show Children ☐</div>
-    <div class="small translucent no-grow" *ngIf="isTagged() && lane.showChildren" (click)="toggleShowChildren()">Show Children <span class="completed">☑</span></div>
+    <div class="no-grow relative">
+      <div class="small translucent no-grow" (click)="menuOpen = !menuOpen; $event.stopPropagation()">☰</div>
+      <lane-menu *ngIf="menuOpen" [lane]="lane" (onClose)="menuOpen = false">
+        <button class="small no-grow" (click)="nukeArchived()">☢ Nuke archived </button>
 
-    <div class="small translucent no-grow" (click)="createNewTask()">New task</div>
+        <button class="small danger no-grow" *ngIf="(tasks$ | async)?.length == 0" (click)="deleteLane()">␡ Delete lane</button>
+        <button class="small no-grow" *ngIf="isTagged() && !lane.showChildren" (click)="toggleShowChildren()">☐ Show Children </button>
+        <button class="small no-grow" *ngIf="isTagged() && lane.showChildren" (click)="toggleShowChildren()"><span class="completed">☑</span> Show Children </button>
+    
+        <button class="small no-grow" (click)="createNewTask()">🆕 New task</button>
+      </lane-menu>
+    </div>
+
     <span drag-on-this="true" class="drag-handle big no-grow">⋯</span>
   </div>
 
   <ng-container *ngFor="let task of tasks$ | async">
-    <task [task]="task" [parent]="lane" [board]="board" [lane]="lane" *ngIf="!task.archived" (createNewTask)="createNewTask()"></task>
+    <task [task]="task" [parent]="lane" [board]="board" [lane]="lane"  (createNewTask)="createNewTask()"></task>
   </ng-container>
 
   <ng-container *ngIf="isTagged()">
@@ -23,6 +40,6 @@
   <!-- <p class="floating-label">Lane: {{lane.id}}</p> -->
 
   <div class="lane-toolbar flex g-05">
-    <div class="grow"></div><div class="small translucent no-grow" (click)="createNewTask()">New task</div>
+    <div class="grow"></div><button class="small no-grow" (click)="createNewTask()">New task</button>
   </div>
 </div>

@@ -1,1 +1,6 @@
-<input [(ngModel)]="storagePath">
+
+<div>
+    <p>Status storage location</p>
+    <input [(ngModel)]="storagePath" #myInput [size]="myInput.value.length">
+
+</div>
