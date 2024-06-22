@@ -16,7 +16,7 @@ body {
 }
 
 * {
-  scrollbar-color: $lane-title-color $background-color;
+  scrollbar-color: $scrollbar-color $background-color;
   scrollbar-width: thin;
 }
 
@@ -160,6 +160,19 @@ button {
       padding-top: $padding * 1rem;
       padding-bottom: $padding * 1rem;
     }
+    .p-l-#{str-replace($padding, ".", "")} {
+      padding-left: $padding * 1rem;
+    }
+    .p-r-#{str-replace($padding, ".", "")} {
+      padding-right: $padding * 1rem;
+    }
+    .p-t-#{str-replace($padding, ".", "")} {
+      padding-top: $padding * 1rem;
+    }
+    .p-b-#{str-replace($padding, ".", "")} {
+      padding-top: $padding * 1rem;
+    }
+
     .m-#{str-replace($padding, ".", "")} {
       margin: $padding * 1rem;
     }
@@ -169,6 +182,18 @@ button {
     }
     .m-y-#{str-replace($padding, ".", "")} {
       margin-top: $padding * 1rem;
+      margin-bottom: $padding * 1rem;
+    }
+    .m-l-#{str-replace($padding, ".", "")} {
+      margin-left: $padding * 1rem;
+    }
+    .m-r-#{str-replace($padding, ".", "")} {
+      margin-right: $padding * 1rem;
+    }
+    .m-t-#{str-replace($padding, ".", "")} {
+      margin-top: $padding * 1rem;
+    }
+    .m-b-#{str-replace($padding, ".", "")} {
       margin-bottom: $padding * 1rem;
     }
     .g-#{str-replace($padding, ".", "")} {
@@ -212,4 +237,14 @@ button {
 }
 .tag-yellow{
   color: $tag-yellow-color;
+}
+
+input, textarea{
+  font-family: 'JetBrains Mono';
+  overflow: visible;
+  background-color: $background-color;
+  color: $text-color;
+  outline: none;
+  border-color: transparent;
+  border: 1px solid $translucent-color;
 }

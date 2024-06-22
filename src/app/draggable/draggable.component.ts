@@ -33,6 +33,8 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
   private draggableEl: Element | undefined;
   private ancestors: HTMLElement[] | undefined;
 
+  private isBeingDragged: boolean = false;
+  
   private deltaX: number = 0;
   private deltaY: number = 0;
 
@@ -48,7 +50,7 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
 
   @HostBinding('style.position')
   private get position(): string | undefined {
-    return this.static ? "static" : this.object?.coordinates ? 'fixed' : undefined;
+    return this.static ? "static" : this.isBeingDragged ? 'fixed' : undefined;
   }
 
   @HostBinding('style.width.px')
@@ -95,6 +97,8 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
    */
   @HostListener('dragend', ['$event'])
   onDragEnd($event: DragEvent, parent: Container) {
+    this.isBeingDragged = false;
+
     if (this.static) return;
     if (!this.object) return;
     this.calcCoordinates(this.object, $event);
@@ -125,6 +129,7 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
 
   @HostListener('dragstart', ['$event'])
   onDragStart($event: DragEvent) {
+    this.isBeingDragged = true;
     if (this.static) return;
     if (!this.object) return;
     let node = this.el.nativeElement as HTMLElement;

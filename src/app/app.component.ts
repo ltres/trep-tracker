@@ -3,7 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { BoardComponent } from './board/board.component';
 import { BoardService } from '../service/board.service';
 import { Observable } from 'rxjs';
-import { Board, getNewBoard, getNewLane } from '../types/task';
+import { Board, Lane, getNewBoard, getNewLane } from '../types/task';
 import { generateUUID } from '../utils/utils';
 
 @Component({
@@ -29,6 +29,10 @@ export class AppComponent implements AfterContentInit {
     this.boardService.selectedBoard$.subscribe(board => {
       this.board = board
     })
+  }
+
+  getFirstLane(): Lane | undefined {
+    return this.board?.children.find(child => child.tags.length === 0);
   }
 
   reset(){

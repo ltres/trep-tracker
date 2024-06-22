@@ -99,6 +99,8 @@ export class BoardService {
                     res = res?.filter( t => t.priority === priority );
                 }
 
+                res = res?.sort((a, b) => (b.priority ?? 0) - ( a.priority ?? 0 ));
+
                 return res;
             })
         )
@@ -226,7 +228,7 @@ export class BoardService {
         let boards = this._boards$.getValue();
         task.status = task.status === 'completed' ? 'todo' : 'completed';
         if(task.status === 'completed'){
-            task.textContent.indexOf(DoneTag.tag) === -1 ? task.textContent += ' ' + tagIdentifiers[0].symbol + DoneTag.tag : task.textContent;
+            task.textContent.indexOf(DoneTag.tag) === -1 ? task.textContent += '&nbsp;' + tagIdentifiers[0].symbol + DoneTag.tag : task.textContent;
         }else{
             task.textContent = task.textContent.replace(tagIdentifiers[0].symbol + DoneTag.tag, '');
         }
@@ -239,7 +241,7 @@ export class BoardService {
         let boards = this._boards$.getValue();
         task.archived = !task.archived;
         if(task.archived){
-            task.textContent.indexOf(ArchivedTag.tag) === -1 ? task.textContent += ' ' + tagIdentifiers[0].symbol + ArchivedTag.tag : task.textContent;
+            task.textContent.indexOf(ArchivedTag.tag) === -1 ? task.textContent += '&nbsp;' + tagIdentifiers[0].symbol + ArchivedTag.tag : task.textContent;
         }else{
             task.textContent = task.textContent.replace(tagIdentifiers[0].symbol + ArchivedTag.tag, '');
         }
@@ -372,7 +374,9 @@ export class BoardService {
         // remove custom coordinates from children
         children.forEach(c => {
             delete c.coordinates;
+            this.tagService.extractAndUpdateTags(c);
         })
+        
 
         // Publish the changes
         this._boards$.next(boards);

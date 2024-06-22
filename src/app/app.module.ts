@@ -20,6 +20,7 @@ import { StorageComponent } from './storage/storage.component';
 import { LaneMenuComponent } from './lane-menu/lane-menu.component';
 import { BoardSelectionMenuComponent } from './board-selection-menu/board-selection-menu.component';
 import { PrioritizerComponent } from './prioritizer/prioritizer.component';
+import { ImporterComponent } from './importer/importer.component';
  
 @NgModule({
     declarations: [
@@ -33,7 +34,8 @@ import { PrioritizerComponent } from './prioritizer/prioritizer.component';
          StorageComponent,
          LaneMenuComponent,
          BoardSelectionMenuComponent,
-         PrioritizerComponent
+         PrioritizerComponent,
+         ImporterComponent
         ],
     providers: [BoardService, KeyboardService, DragService, RegistryService, TagService, StorageService],
     bootstrap: [AppComponent],

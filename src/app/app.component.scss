@@ -6,10 +6,10 @@ main {
     //height: 100vh;
     //width: calc(100vw - 2 * $main-padding);
     //height: calc(100vh - 2 * $main-padding);
-    max-width: 100vw;
-    max-height: 100vh;
-    width: 100vw;
-    height: 100vh;
+    max-width: 100%;
+    min-height: 100vh;
+    width: 100%;
+    //height: 100vh;
     position: relative;
     align-items: stretch;
     .column-1{

@@ -8,7 +8,7 @@
       [(contenteditableModel)]="lane.textContent"
       (onBlur)="this.boardService.publishBoardUpdate()"
       > </div> 
-      <prioritizer [container]="lane"> </prioritizer>
+      <prioritizer [container]="lane" class="m-l-025"> </prioritizer>
     </div>
     <div class="grow"></div>
     <span class="small no-grow" *ngIf="displayStaticStuff() && lane.showChildren" (click)="toggleShowChildren()"><span class="completed">☑</span></span>

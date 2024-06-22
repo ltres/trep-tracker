@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostBinding, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { Board, Container, Lane, Task, getNewTask } from '../../types/task';
 import { TaskComponent } from '../task/task.component';
 import { BoardService } from '../../service/board.service';
@@ -18,11 +18,13 @@ import { DraggableComponent } from '../draggable/draggable.component';
   templateUrl: './board.component.html',
   styleUrl: './board.component.scss',
 })
-export class BoardComponent extends BaseComponent implements OnInit {
-
+export class BoardComponent extends BaseComponent implements OnInit, AfterViewInit {
   @Input() board!: Board;
   @ViewChildren(LaneComponent, { read: ElementRef }) laneComponentsElRefs: QueryList<ElementRef> | undefined;
   @ViewChildren(LaneComponent,) laneComponents: QueryList<LaneComponent> | undefined;
+
+  @HostBinding('style.height.px')
+  protected height: number = 0;
 
   constructor(
     protected  boardService: BoardService,
@@ -33,8 +35,21 @@ export class BoardComponent extends BaseComponent implements OnInit {
   ) {
     //super(boardService, dragService, keyboardService, registry,el);
     super(registry, el)
-
+    
     // this.taskService = taskService;
+  }
+  ngAfterViewInit(): void {
+    this.subscriptions = this.boardService.boards$.subscribe(boards => {
+      // set the board height basing on the childrens size.
+      let boardEl = this.el.nativeElement as HTMLElement;
+      let laneEls = boardEl.querySelectorAll('lane');
+      laneEls.forEach(laneEl => {
+        let maxHeight = laneEl.getBoundingClientRect().height + laneEl.getBoundingClientRect().top;
+        if (maxHeight > this.height) {
+          this.height = maxHeight;
+        }
+      });
+    });
   }
 
 
@@ -122,7 +137,7 @@ export class BoardComponent extends BaseComponent implements OnInit {
         if (!parent) {
           throw new Error("Cannot find parent task")
         }
-        let task = getNewTask()
+        let task = getNewTask(`Task ${this.boardService.getTasksCount() + 1}`)
         this.boardService.addAsSiblings(parent, this.boardService.lastSelectedTask, [task], "after");
         this.boardService.activateEditorOnTask(task, 0);
         this.boardService.clearSelectedTasks();
