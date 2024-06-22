@@ -66,7 +66,7 @@ export const getNewTask: ( textContent?: string | undefined ) => Task = (textCon
         stateChangeDate: undefined,
         archived: false,
         archivedDate: undefined,
-        priority: undefined,
+        priority: 1,
         status: "todo"
     }
 )

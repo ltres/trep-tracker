@@ -1,4 +1,12 @@
-<span class="priority-1" [class.active]="container.priority === 1" (click)="setPriority(1)" >↑</span>
-<span class="priority-2" [class.active]="container.priority === 2" (click)="setPriority(2)">↑↑</span>
-<span class="priority-3" [class.active]="container.priority === 3" (click)="setPriority(3)">↑↑↑</span>
-<span class="priority-4"  [class.active]="container.priority === 4" (click)="setPriority(4)">↑↑↑↑</span> 
+<div *ngIf="!open">
+    <span *ngIf="container.priority" class="priority-{{container.priority}} active" (click)="open = !open" >{{getArrows(container.priority)}}</span>
+    <span *ngIf="!container.priority" class="priority-1 translucent" (click)="open = !open" >{{getArrows(1)}}</span>
+</div>
+<div class="flex g-025" *ngIf="open">
+    <span class="selectable priority-1"  [class.active]="container.priority === 1" (click)="setPriority(1)" >{{getArrows(1)}}</span>
+    <span class="selectable priority-2" [class.active]="container.priority === 2" (click)="setPriority(2)">{{getArrows(2)}}</span>
+    <span class="selectable priority-3" [class.active]="container.priority === 3" (click)="setPriority(3)">{{getArrows(3)}}</span>
+    <span class="selectable priority-4"  [class.active]="container.priority === 4" (click)="setPriority(4)">{{getArrows(4)}}</span> 
+</div> 
+
+

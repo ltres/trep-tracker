@@ -7,7 +7,8 @@ data-consider-for-overlapping-checks="true"
 (click)="clickTask($event)" 
 
 >
-    <div *ngIf="!this.static"class="drag-handle big pointer" drag-on-this="true">⋮</div>
+    <div *ngIf="!this.static"class="drag-handle translucent pointer" drag-on-this="true">⋮</div>
+    <prioritizer [container]="task"> </prioritizer>
     <div *ngIf="this.task.status === 'todo'" class="status big pointer" (click)="toggleTaskStatus()">☐</div>
     <div *ngIf="this.task.status === 'completed'" class="status big pointer" (click)="toggleTaskStatus()">☑</div>
 
@@ -19,7 +20,6 @@ data-consider-for-overlapping-checks="true"
             [(contenteditableModel)]="task.textContent"
             (onBlur)="this.boardService.publishBoardUpdate()"
             ></div>
-            <prioritizer [container]="task"> </prioritizer>
         </div>
         
         <div class="date-wrapper translucent small flex align-items-center">

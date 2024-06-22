@@ -31,10 +31,11 @@ function createWindow () {
       nodeIntegration: true,
       contextIsolation: true
     },
+    // icon: __dirname + '/src/assets/favicon.ico',
     width: 1080, 
     height: 768,
     backgroundColor: '#161a24',
-    icon: `file://${__dirname}${relPath}/assets/logo.png`
+    icon: `${__dirname}/src/assets/icon2.jpeg`
   })
   // win.setMenu(null)
 

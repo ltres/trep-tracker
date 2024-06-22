@@ -1,4 +1,4 @@
-<div class="lane-wrapper p-x-05" [class.static-view]="displayStaticStuff() && (tasks | async)?.length === 0" data-consider-for-overlapping-checks="true">
+<div class="lane-wrapper p-x-05 p-y-025" [class.static-view]="displayStaticStuff() && (tasks | async)?.length === 0" data-consider-for-overlapping-checks="true">
   <div class="lane-toolbar flex align-items-center g-05 ">
     <div class="grow no-wrap flex align-items-center" >
       <div class="lane-title   no-wrap" 
@@ -27,7 +27,7 @@
       </lane-menu>
     </div>
 
-    <span drag-on-this="true" class="drag-handle big no-grow">⋯</span>
+    <span drag-on-this="true" class="drag-handle translucent pointer no-grow">⋯</span>
   </div>
 
   <ng-container *ngFor="let task of (tasks | async)">

@@ -5,12 +5,14 @@
     flex-wrap: nowrap;
     align-items: center;
     gap:0.25rem;
-    margin: 0 0.5rem
+    // margin: 0 0.5rem
 }
 span{
     font-size: $small-font-size;
     cursor:pointer;
-    color:$translucent-color;
+    &.selectable{
+        color:$translucent-color;
+    }
     &.priority-1.active, &.priority-1:hover{
         color:$priority-1-color
     }

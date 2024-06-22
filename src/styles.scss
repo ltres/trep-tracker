@@ -192,9 +192,7 @@ button {
 
 
 .drag-handle{
-  font-size: 150%;
-  color: $translucent-color!important;
-  cursor: pointer;
+  transform: scale(1.5);
 }
 
 .rotate{

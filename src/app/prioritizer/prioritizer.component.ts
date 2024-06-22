@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { Container } from '../../types/task';
+import { Container, Priority } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 
 @Component({
@@ -10,6 +10,7 @@ import { BoardService } from '../../service/board.service';
 })
 export class PrioritizerComponent {
   @Input() container!: Container;
+  protected open: boolean = false;
 
   constructor(private boardService: BoardService) {
     
@@ -17,12 +18,18 @@ export class PrioritizerComponent {
 
   protected priorities = [1,2,3,4,5];
 
-  setPriority(priority: 1 | 2 | 3 | 4) {
+  getArrows(number: number | undefined): string {
+    if(number === undefined) return ""
+    return "●"
+  }
+
+  setPriority(priority: Priority) {
     if( this.container.priority === priority) {
       this.container.priority = undefined
     }else{
       this.container.priority = priority;
     }
     this.boardService.publishBoardUpdate();
+    this.open = false;
   }
 }
