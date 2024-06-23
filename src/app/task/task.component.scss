@@ -26,6 +26,7 @@
     }
     &.selected{
         border-left:.15rem solid $text-color;
+        padding-left: 0.25rem;
     }
     &.archived{
         color: $archived-color;
