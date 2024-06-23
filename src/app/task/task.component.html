@@ -36,7 +36,7 @@ data-consider-for-overlapping-checks="true"
                 <div class="border-angle"></div>
                 <div *ngIf="!last" class="border-line"></div>
             </div>
-            <task [static]="static" [parent]="this.task" [task]="child"  [board]="this.board" [lane]="this.lane"></task>
+            <task class="child" [static]="static" [parent]="this.task" [task]="child"  [board]="this.board" [lane]="this.lane"></task>
         </div>
     </ng-container>
     

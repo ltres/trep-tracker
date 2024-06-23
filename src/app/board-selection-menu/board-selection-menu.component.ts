@@ -17,9 +17,8 @@ export class BoardSelectionMenuComponent implements AfterViewInit{
   }
   ngAfterViewInit(): void {
     this.boardService.boards$.subscribe(boards => {
-      setTimeout(() =>{
-        this.boards = boards
-      })
+      this.boards = boards
+
     })
   }
   addBoard() {

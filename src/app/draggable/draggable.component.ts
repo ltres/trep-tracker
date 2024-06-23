@@ -49,10 +49,11 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
     return this.object?.coordinates?.y;
   }
 
+  /*
   @HostBinding('style.position')
   private get position(): string | undefined {
     return this.isBeingDragged ? 'fixed' : undefined;
-  }
+  }*/
 
   @HostBinding('style.width.px')
   private get width(): number | undefined {
@@ -90,6 +91,7 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
 
   override ngOnDestroy(): void {
     super.ngOnDestroy();
+    if(!this.resizeObserver)return;
     this.resizeObserver?.disconnect();
     delete this.resizeObserver;
   }
@@ -103,8 +105,12 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
    */
   @HostListener('dragend', ['$event'])
   onDragEnd($event: DragEvent, parent: Container) {
+    // if(1===1)return;
     this.isBeingDragged = false;
-
+    let node = this.el.nativeElement as HTMLElement;
+    node.style.position = "";
+    node.style.zIndex = '';
+    
     if (this.static) return;
     if (!this.object) return;
     this.calcCoordinates(this.object, $event, 'relative'); // no more fixed
@@ -117,6 +123,7 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
   }
   @HostListener('drag', ['$event'])
   onDrag($event: DragEvent, parent: Container) {
+    //if(1===1)return;
     if (this.static) return;
     if (!this.object) return;
     this.calcCoordinates(this.object, $event, 'fixed');
@@ -135,6 +142,7 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
 
   @HostListener('dragstart', ['$event'])
   onDragStart($event: DragEvent) {
+    // if(1===1)return;
     this.isBeingDragged = true;
     if (this.static) return;
     if (!this.object) return;
@@ -142,8 +150,9 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
 
     this.deltaX = $event.clientX - node.getBoundingClientRect().left;
     this.deltaY = $event.clientY - node.getBoundingClientRect().top;
+    node.style.position = 'fixed';
+    node.style.zIndex = '9999';
     this.calcCoordinates(this.object, $event, 'fixed');
-
 
     //$event.stopPropagation();
     //$event.stopImmediatePropagation();
@@ -157,6 +166,7 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
     }*/
     $event.stopPropagation();
     $event.stopImmediatePropagation(); 
+    //$event.preventDefault();
     if (!this.object || !this.boardService.isTask(this.object)) return;
     this.boardService.addToSelection(this.object);
   }
@@ -195,7 +205,7 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
 
   onResize($event: ResizeObserverEntry[]) {
     if (!this.object || !this.boardService.isLane(this.object)) return;
-    if( this.object?.width === $event[0].contentRect.width ){
+    if( this.object?.width === $event[0].contentRect.width || $event[0].contentRect.width === 0){
       return
     };
     this.object.width = this.el.nativeElement.getBoundingClientRect().width;

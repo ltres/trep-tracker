@@ -6,6 +6,7 @@
     overflow-y: visible;
     position: absolute;
     display: inline-block;
+    min-width: 20rem;
     //max-width: $max-lane-width;
     z-index: 10;
 }
