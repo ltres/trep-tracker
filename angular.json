@@ -35,6 +35,10 @@
             "scripts": []
           },
           "configurations": {
+            "electrified":{
+              "deployUrl": "./",
+              "baseHref": "./"
+            },
             "production": {
               "budgets": [
                 {
@@ -56,11 +60,14 @@
               "sourceMap": true
             }
           },
-          "defaultConfiguration": "production"
+          "defaultConfiguration": "electrified"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
+            "electrified": {
+              "buildTarget": "trep-tracker:build:electrified"
+            },
             "production": {
               "buildTarget": "trep-tracker:build:production"
             },
