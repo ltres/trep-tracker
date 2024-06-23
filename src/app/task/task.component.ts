@@ -4,7 +4,7 @@ import { BoardService } from '../../service/board.service';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
 import { DraggableComponent } from '../draggable/draggable.component';
-import { setCaretPosition } from '../../utils/utils';
+import { isPlaceholder, setCaretPosition } from '../../utils/utils';
 import { RegistryService } from '../../service/registry.service';
 
 @Component({
@@ -131,11 +131,7 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
     return this.parent.children.indexOf(this.task) < this.parent.children.length - 1;
   }
 
-  destroyEditor(): void {
-  }
-
-  override ngOnDestroy(): void {
-    super.ngOnDestroy();
-    this.destroyEditor();
+  isPlaceholder(): boolean {
+    return isPlaceholder(this.task);
   }
 }

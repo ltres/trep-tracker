@@ -11,7 +11,6 @@ export interface Lane extends Container<Task>{
 export interface Task extends Container<Task>{
     _type: 'task',
     status: "completed" | "todo"
-    
 }
 
 export interface Container<T extends Container<any> = any> {

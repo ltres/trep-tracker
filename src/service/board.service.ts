@@ -1,7 +1,7 @@
 import { Injectable, Injector } from "@angular/core";
 import { Board, Lane, Container, Task, Tag, DoneTag, ArchivedTag, tagIdentifiers, getNewBoard, getNewLane, Priority } from "../types/task";
 import { BehaviorSubject, Observable, filter, map } from "rxjs";
-import { generateUUID } from "../utils/utils";
+import { generateUUID, isPlaceholder } from "../utils/utils";
 import { TagService } from "./tag.service";
 
 @Injectable({
@@ -109,7 +109,7 @@ export class BoardService {
     }
 
     getTasksCount() {
-        return this._allTasks$.getValue()?.length || 0;
+        return this._allTasks$.getValue()?.filter( t => !isPlaceholder(t) ).length || 0;
     }
 
     getLane$(lane: Lane): Observable<Lane | undefined> {
@@ -289,9 +289,7 @@ export class BoardService {
         if (!objs || objs.length === 0) {
             return;
         }
-        if (this.isLanes(objs)) {
-
-        } else if (this.isTasks(objs)) {
+        if (this.isTasks(objs)) {
             objs = this.getTopLevelTasks(objs);
         }
 
@@ -363,6 +361,11 @@ export class BoardService {
         // incoming tasks could be related one another. Keep only the top level tasks
         children = this.getTopLevelTasks(children);
 
+        // sort children basing on their in the current parent's children
+        let curParent = this.findParent(children);
+        if(curParent){
+            children = children.sort((a, b) => curParent.children.findIndex(c => c.id === a.id) - curParent.children.findIndex(c => c.id === b.id));
+        }
         // remove the child from any children set
         this._allParents$.getValue()?.forEach(p => {
             p.children = p.children.filter(c => !children.find(t => t.id === c.id));

@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { Task } from '../types/task';
 
 export function generateUUID(): string {
     return uuidv4().substring(0,6);
@@ -94,4 +95,8 @@ export function getCaretPosition(element: Node) {
         caretOffset = preCaretRange.toString().length;
     }
     return caretOffset;
+}
+
+export function isPlaceholder(task: Task){
+    return task.textContent === "";
 }

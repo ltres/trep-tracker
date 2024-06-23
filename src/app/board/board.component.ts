@@ -145,8 +145,8 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
         if (!parent) {
           throw new Error("Cannot find parent task")
         }
-        let task = getNewTask(`Task ${this.boardService.getTasksCount() + 1}`)
-        let lane = this.boardService.findParentLane([task]);
+        let task = getNewTask("")
+        let lane = this.boardService.isLane(parent) ? parent : this.boardService.findParentLane([parent]);
         if (!lane) {
           return;
         }
