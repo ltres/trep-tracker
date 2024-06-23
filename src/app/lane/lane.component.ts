@@ -69,7 +69,7 @@ export class LaneComponent extends DraggableComponent implements OnInit {
     this.boardService.addAsChild(this.lane, [task]);
     this.boardService.clearSelectedTasks();
     this.boardService.toggleTaskSelection(task);
-    this.boardService.activateEditorOnTask(task, 0);
+    this.boardService.activateEditorOnTask(this.lane, task, 0);
   }
 
   deleteLane() {

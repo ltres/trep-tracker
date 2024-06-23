@@ -12,7 +12,7 @@ export class BoardService {
     private _selectedBoard$: BehaviorSubject<Board | undefined> = new BehaviorSubject<Board | undefined>(undefined);
 
     private _boards$: BehaviorSubject<Board[]> = new BehaviorSubject<Board[]>([]);
-    private _editorActiveTask$: BehaviorSubject<{task: Task , startingCaretPosition: number | undefined} | undefined> = new BehaviorSubject<{task: Task, startingCaretPosition: number | undefined} | undefined>(undefined);
+    private _editorActiveTask$: BehaviorSubject<{lane: Lane, task: Task , startingCaretPosition: number | undefined} | undefined> = new BehaviorSubject<{lane: Lane, task: Task, startingCaretPosition: number | undefined} | undefined>(undefined);
 
     private _allLanes$: BehaviorSubject<Lane[] | undefined> = new BehaviorSubject<Lane[] | undefined>(undefined);
     private _allTasks$: BehaviorSubject<Task[] | undefined> = new BehaviorSubject<Task[] | undefined>(undefined);
@@ -122,11 +122,11 @@ export class BoardService {
         )
     }
 
-    activateEditorOnTask( task: Task, caretPosition: number | undefined) {
+    activateEditorOnTask( lane: Lane, task: Task, caretPosition: number | undefined) {
         if (this._editorActiveTask$.getValue()?.task === task) {
             return
         }
-        this._editorActiveTask$.next({task, startingCaretPosition: caretPosition});
+        this._editorActiveTask$.next({lane, task, startingCaretPosition: caretPosition});
     }
 
     toggleTaskSelection(task: Task) {
@@ -174,7 +174,7 @@ export class BoardService {
     get parents$(): Observable<Container[] | undefined> {
         return this._allParents$;
     }
-    get editorActiveTask$(): Observable<{task: Task, startingCaretPosition: number | undefined}  | undefined> {
+    get editorActiveTask$(): Observable<{lane: Lane, task: Task, startingCaretPosition: number | undefined}  | undefined> {
         return this._editorActiveTask$;
     }
     get selectedBoard(): Board | undefined {
@@ -258,7 +258,7 @@ export class BoardService {
         }
 
         // get outer parent of the tasks
-        let parent = this.findAncestor(tasks);
+        let parent = this.findParentLane(tasks);
         if (!parent) {
             return;
         }
@@ -303,7 +303,7 @@ export class BoardService {
         }
         return parents[0];
     }
-    findAncestor(objs:Container[] | undefined): Container | undefined {
+    findParentLane(objs:Container[] | undefined): Lane | undefined {
         if (!objs || objs.length === 0) {
             return;
         }
@@ -311,13 +311,14 @@ export class BoardService {
 
         while( parent != null ){
             let grandParent = this.findParent([parent]);
-            if( !grandParent ){
+            if( this.isLane(parent) ){
                 return parent;
             }
             parent = grandParent;
         }
-        return parent
+        return undefined
     }
+
 
     addAsSiblings(parent: Container, sibling: Task | undefined, tasks: Task[] | undefined, position: 'before' | 'after' = 'before') {
         if (!tasks || tasks.length === 0) {
@@ -411,7 +412,7 @@ export class BoardService {
         this.publishBoardUpdate();
     }
 
-    removeChildren(parent: Container, children: Task[] | undefined) {
+    removeChildrenAndAddAsSibling(parent: Container, children: Task[] | undefined) {
         if (!children || children.length === 0) {
             return;
         }
@@ -419,11 +420,18 @@ export class BoardService {
 
         children = this.getTopLevelTasks(children);
 
+        // sort children basing on their order in the parent's children
+        children = children.sort((a, b) => parent.children.findIndex(c => c.id === a.id) - parent.children.findIndex(c => c.id === b.id));
+
         parent.children = parent.children.filter(c => !children.find(t => t.id === c.id));
+
+
+
         // task need to become sibling of the parent. Find the parent of the parent
         let grandParent = this.findParent([parent]);
         if (grandParent) {
-            grandParent.children = grandParent.children.concat(children);
+            grandParent.children.splice(grandParent.children.findIndex(c => c.id === parent.id) + 1, 0, ...children);
+            //grandParent.children = grandParent.children.concat(children);
         }
 
         // Publish the changes

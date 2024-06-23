@@ -56,10 +56,10 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
 
   override ngOnInit(): void {
     super.ngOnInit();
-    this.subscriptions = this.boardService.editorActiveTask$.subscribe((data: { task: Task, startingCaretPosition: number | undefined } | undefined) => {
+    this.subscriptions = this.boardService.editorActiveTask$.subscribe((data: { lane: Lane, task: Task, startingCaretPosition: number | undefined } | undefined) => {
       if (!data) return;
-      let { task, startingCaretPosition } = data;
-      if (task && task.id === this.task.id) {
+      let { lane, task, startingCaretPosition } = data;
+      if (task && task.id === this.task.id && lane && this.lane.id === lane.id) {
         this.editorActive = true;
 
         setTimeout(() => {
@@ -70,9 +70,6 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
           //const editorInstance = this.editorComponent?.instance;
           //editorInstance.focus();
         }, 10)
-
-
-
       } else {
         this.editorActive = false;
       }
@@ -112,14 +109,14 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
   }
 
   activateEditorOnTask() {
-    this.boardService.activateEditorOnTask(this.task, undefined);
+    this.boardService.activateEditorOnTask(this.lane, this.task, undefined);
     this.boardService.clearSelectedTasks();
     this.boardService.toggleTaskSelection(this.task);
   }
 
   selectTask() {
     this.boardService.toggleTaskSelection(this.task);
-    this.boardService.activateEditorOnTask(this.task, undefined);
+    this.boardService.activateEditorOnTask(this.lane, this.task, undefined);
   }
 
   toggleTaskStatus() {

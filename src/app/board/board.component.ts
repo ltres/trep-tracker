@@ -96,24 +96,26 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
       }
 
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-        let nearby = e?.key === 'ArrowDown' ? this.boardService.getTaskInDirection(this.boardService.selectedTasks, "down") : this.boardService.getTaskInDirection(this.boardService.selectedTasks, "up");
+        let nearby = e?.key === 'ArrowDown' ? this.boardService.getTaskInDirection(this.boardService.selectedTasks, "down") : this.boardService.getTaskInDirection(this.boardService.selectedTasks, "up");   
         if (!nearby) {
           return;
         }
-
-
+        let lane = this.boardService.findParentLane([nearby]);
+        if (!lane) {
+          return;
+        }
         if (e.ctrlKey === true) {
           if(e.shiftKey === true) {
             // Move case
             this.boardService.switchPosition(this.boardService.selectedTasks, e.key);
           }else{
             // Select multiple case
-            this.boardService.activateEditorOnTask(nearby, caretPos);
+            this.boardService.activateEditorOnTask(lane, nearby, caretPos);
             this.boardService.addToSelection(nearby);
           }
         } else {
           // Select next/previous case
-          this.boardService.activateEditorOnTask(nearby, caretPos);
+          this.boardService.activateEditorOnTask(lane , nearby, caretPos);
           this.boardService.clearSelectedTasks();
           this.boardService.addToSelection(nearby);
         }
@@ -133,7 +135,7 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
         if (this.boardService.isLane(parent)) {
           return;
         }
-        this.boardService.removeChildren(parent, this.boardService.selectedTasks);
+        this.boardService.removeChildrenAndAddAsSibling(parent, this.boardService.selectedTasks);
       }else if(e.key === 'Enter'){
         // Create a new task
         if(!e.ctrlKey || !e.shiftKey){
@@ -144,8 +146,12 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
           throw new Error("Cannot find parent task")
         }
         let task = getNewTask(`Task ${this.boardService.getTasksCount() + 1}`)
+        let lane = this.boardService.findParentLane([task]);
+        if (!lane) {
+          return;
+        }
         this.boardService.addAsSiblings(parent, this.boardService.lastSelectedTask, [task], "after");
-        this.boardService.activateEditorOnTask(task, 0);
+        this.boardService.activateEditorOnTask(lane, task, 0);
         this.boardService.clearSelectedTasks();
         this.boardService.addToSelection(task);
       }
