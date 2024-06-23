@@ -2,7 +2,7 @@
   "name": "trep-tracker",
   "version": "0.1.0-beta",
   "type": "module",
-  "main": "./electron-forge-app.js",
+  "main": "./electron-make-app.js",
   "author": {
     "name": "Lorenzo Tres",
     "email": "lorenzo.tres@gmail.com"
@@ -11,12 +11,12 @@
   "scripts": {
     "ng": "ng",
     "start": "electron-forge start",
-    "build": "ng build --dep  --configuration electrified",
+    "build": "ng build --configuration electrified",
     "watch": "ng build --watch --configuration development",
     "electron": "concurrently \"ng serve\" \"wait-on http://localhost:4200 && electron ./electron-development-app.js\"",
     "electron-forge-test": "ng build && electron ./electron-make-app.js\"",
     "package": "electron-forge package",
-    "make": "electron-forge make"
+    "make": "ng build && electron-forge make"
   },
   "private": true,
   "dependencies": {
