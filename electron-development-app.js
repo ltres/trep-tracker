@@ -35,7 +35,7 @@ function createWindow () {
     width: 1080, 
     height: 768,
     backgroundColor: '#161a24',
-    icon: `${__dirname}/src/assets/icon2.jpeg`
+    icon: `${__dirname}/src/assets/icon/web/favicon.ico`
   })
   // win.setMenu(null)
 
