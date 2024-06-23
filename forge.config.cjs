@@ -4,12 +4,18 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 module.exports = {
   packagerConfig: {
     asar: true,
+    icon: `${__dirname}/src/assets/icon/web/favicon.ico`
   },
   rebuildConfig: {},
   makers: [
     {
       name: '@electron-forge/maker-squirrel',
-      config: {},
+      config: {
+        // An URL to an ICO file to use as the application icon (displayed in Control Panel > Programs and Features).
+        iconUrl: `${__dirname}/src/assets/icon/web/favicon.ico`,
+        // The ICO file to use as the icon for the generated Setup.exe
+        setupIcon: `${__dirname}/src/assets/icon/web/favicon.ico`
+      },
     },
     {
       name: '@electron-forge/maker-zip',
