@@ -26,6 +26,9 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
   @HostBinding('style.height.px')
   protected height: number | undefined = 0;
 
+  @HostBinding('style.width.px')
+  protected width: number | undefined = 0;
+
   constructor(
     protected  boardService: BoardService,
     protected  keyboardService: KeyboardService,
@@ -46,10 +49,15 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
       let laneEls = boardEl.querySelectorAll('lane');
       setTimeout(() => {
         this.height = 0;
+        this.width = 0;
         laneEls.forEach(laneEl => {
           let maxHeight = laneEl.getBoundingClientRect().height + laneEl.getBoundingClientRect().top + window.scrollY;
           if (maxHeight > (this.height??0)) {
             this.height = maxHeight;
+          }
+          let maxWidth = laneEl.getBoundingClientRect().width + laneEl.getBoundingClientRect().left + window.scrollX;
+          if (maxWidth > (this.width??0)) {
+            this.width = maxWidth;
           }
         });
       });
