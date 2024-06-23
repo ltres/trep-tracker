@@ -4,7 +4,7 @@ import { TaskComponent } from '../task/task.component';
 import { BoardService } from '../../service/board.service';
 import { Observable, of } from 'rxjs';
 import { LaneComponent } from '../lane/lane.component';
-import { getCaretPosition } from '../../utils/utils';
+import { getCaretPosition, isPlaceholder } from '../../utils/utils';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
 import { BaseComponent } from '../base/base.component';
@@ -77,7 +77,7 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
     super.ngOnInit();
 
     this.subscriptions = this.keyboardService.keyboardEvent$.subscribe(e => {
-      if (e?.type != 'keydown' || !e || ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Enter'].indexOf(e.key) === -1) {
+      if (e?.type != 'keydown' || !e || ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Enter', 'Backspace', 'Delete'].indexOf(e.key) === -1) {
         return
       }
       let task = this.boardService.lastSelectedTask;
@@ -150,10 +150,27 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
         if (!lane) {
           return;
         }
-        this.boardService.addAsSiblings(parent, this.boardService.lastSelectedTask, [task], "after");
+        this.boardService.addAsSiblings(parent, this.boardService.lastSelectedTask, [task], !isPlaceholder(task) && caretPos === 0 ? "before" : "after");
         this.boardService.activateEditorOnTask(lane, task, 0);
         this.boardService.clearSelectedTasks();
         this.boardService.addToSelection(task);
+      }else if(e.key === 'Backspace' || e.key === 'Delete'){
+        // delete placeholder
+        if( isPlaceholder(task) ){
+          let bottomTask = this.boardService.getTaskInDirection(this.boardService.selectedTasks, e.key === 'Delete' ? "down" : "up");
+          if (!bottomTask) {
+            return;
+          }
+          let lane = this.boardService.findParentLane([task]);
+          if (!lane) {
+            return;
+          }
+          this.boardService.deleteTask(task);
+          this.boardService.activateEditorOnTask(lane, bottomTask, 0);
+          this.boardService.clearSelectedTasks();
+          this.boardService.addToSelection(bottomTask);
+
+        }
       }
 
     });

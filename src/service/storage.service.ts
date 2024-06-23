@@ -2,13 +2,14 @@ import { Injectable } from "@angular/core";
 import { ipcRenderer } from 'electron';
 import { BoardService } from "./board.service";
 import { Subscription } from "rxjs";
+import { environment } from "../environments/environment";
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class StorageService {
-  storagePath = "C:/Users/l.tresoldi/Google Drive/trep-tracker-status";
+  storagePath = environment.statusUrl;
   initializedWithValidStatus = false;
   subscription: Subscription | undefined;
   constructor(private boardService: BoardService) {

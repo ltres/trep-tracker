@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { StorageService } from '../../service/storage.service';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'storage',
@@ -7,7 +8,7 @@ import { StorageService } from '../../service/storage.service';
   styleUrl: './storage.component.scss'
 })
 export class StorageComponent {
-  _storagePath: string = "C:/Users/l.tresoldi/Google Drive/trep-tracker-status";
+  _storagePath: string = environment.statusUrl;
 
   get storagePath(): string {
     return this._storagePath;

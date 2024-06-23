@@ -7,7 +7,7 @@ data-consider-for-overlapping-checks="true"
 (click)="clickTask($event)" 
 
 >
-    <div *ngIf="!this.static"class="drag-handle translucent pointer" drag-on-this="true">⋮</div>
+    <div *ngIf="!this.static && !isPlaceholder()"class="drag-handle translucent pointer" drag-on-this="true">⋮</div>
     <prioritizer *ngIf="!isPlaceholder()" [container]="task"> </prioritizer>
     <div *ngIf="!isPlaceholder() && this.task.status === 'todo'" class="status big pointer" (click)="toggleTaskStatus()">☐</div>
     <div *ngIf="!isPlaceholder() && this.task.status === 'completed'" class="status big pointer" (click)="toggleTaskStatus()">☑</div>

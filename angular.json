@@ -36,27 +36,25 @@
           "configurations": {
             "electrified":{
               "deployUrl": "./",
-              "baseHref": "./"
-            },
-            "production": {
-              "budgets": [
+              "baseHref": "./",
+              "outputHashing": "all",
+              "fileReplacements": [
                 {
-                  "type": "initial",
-                  "maximumWarning": "500kb",
-                  "maximumError": "1mb"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.electrified.ts"
                 }
-              ],
-              "outputHashing": "all"
+              ]
             },
             "development": {
               "optimization": false,
               "extractLicenses": false,
-              "sourceMap": true
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.development.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "electrified"
@@ -66,9 +64,6 @@
           "configurations": {
             "electrified": {
               "buildTarget": "trep-tracker:build:electrified"
-            },
-            "production": {
-              "buildTarget": "trep-tracker:build:production"
             },
             "development": {
               "buildTarget": "trep-tracker:build:development"

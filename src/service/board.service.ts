@@ -498,6 +498,15 @@ export class BoardService {
         board.children = board.children.filter(l => l.id !== lane.id);
         this._boards$.next(boards);
     }
+    deleteTask(task: Task) {
+        let boards = this._boards$.getValue();
+        let parent = this.findParent([task]);
+        if (!parent) {
+            throw new Error(`Cannot find parent for task with id ${task.id}`);
+        }
+        parent.children = parent.children.filter(c => c.id !== task.id);
+        this._boards$.next(boards);
+    }
 
     nukeArchived(lane: Lane) {
         // this._boards$.getValue();
