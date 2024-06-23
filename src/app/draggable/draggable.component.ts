@@ -1,5 +1,6 @@
 import {
   AfterContentInit,
+  AfterViewChecked,
   AfterViewInit,
   Component,
   ElementRef,
@@ -23,11 +24,11 @@ import { RegistryService } from '../../service/registry.service';
   templateUrl: './draggable.component.html',
   styleUrl: './draggable.component.scss',
 })
-export abstract class DraggableComponent extends BaseComponent implements AfterViewInit {
+export abstract class DraggableComponent extends BaseComponent implements AfterViewInit, AfterViewChecked {
   @Input() static: boolean = false;
   protected _board: Board | undefined;
 
-  private resizeObserver = new ResizeObserver(this.onResize.bind(this));
+  private resizeObserver: ResizeObserver | undefined;
   private resizeTimeout: any;
 
   private draggableEl: Element | undefined;
@@ -39,18 +40,18 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
   private deltaY: number = 0;
 
   @HostBinding('style.left.px')
-  private get left(): number {
-    return this.object?.coordinates?.x || 0;
+  private get left(): number | undefined {
+    return this.object?.coordinates?.x;
   }
 
   @HostBinding('style.top.px')
-  private get top(): number {
-    return this.object?.coordinates?.y || 0;
+  private get top(): number | undefined {
+    return this.object?.coordinates?.y;
   }
 
   @HostBinding('style.position')
   private get position(): string | undefined {
-    return this.static ? "static" : this.isBeingDragged ? 'fixed' : undefined;
+    return this.isBeingDragged ? 'fixed' : undefined;
   }
 
   @HostBinding('style.width.px')
@@ -72,6 +73,12 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
       let thisObject = parents?.find((parent) =>parent.id === this.object?.id && parent._type === this.object?._type );
     });
   }
+  ngAfterViewChecked(): void {
+    if( window.getComputedStyle( this.el.nativeElement ).resize === 'horizontal'){
+      this.resizeObserver = new ResizeObserver(this.onResize.bind(this));
+      this.resizeObserver.observe(this.el.nativeElement);
+    }
+  }
 
   ngAfterViewInit(): void {
     //super.ngOnInit();
@@ -79,13 +86,12 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
     let el = this.el.nativeElement as HTMLElement;
     this.draggableEl = el.querySelector("[drag-on-this]:not([draggable])") ?? el;
     this.draggableEl.setAttribute('draggable', 'true');
-
-    this.resizeObserver.observe(this.el.nativeElement);
   }
 
   override ngOnDestroy(): void {
     super.ngOnDestroy();
-    this.resizeObserver.disconnect();
+    this.resizeObserver?.disconnect();
+    delete this.resizeObserver;
   }
 
   abstract get board(): Board | undefined;
@@ -101,7 +107,7 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
 
     if (this.static) return;
     if (!this.object) return;
-    this.calcCoordinates(this.object, $event);
+    this.calcCoordinates(this.object, $event, 'relative'); // no more fixed
 
     this.boardService.publishBoardUpdate();
 
@@ -113,7 +119,7 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
   onDrag($event: DragEvent, parent: Container) {
     if (this.static) return;
     if (!this.object) return;
-    this.calcCoordinates(this.object, $event);
+    this.calcCoordinates(this.object, $event, 'fixed');
 
     /*
     if ($event.target instanceof Element) {
@@ -136,7 +142,7 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
 
     this.deltaX = $event.clientX - node.getBoundingClientRect().left;
     this.deltaY = $event.clientY - node.getBoundingClientRect().top;
-    //this.calcCoordinates(this.object, $event);
+    this.calcCoordinates(this.object, $event, 'fixed');
 
 
     //$event.stopPropagation();
@@ -155,15 +161,15 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
     this.boardService.addToSelection(this.object);
   }
 
-  calcCoordinates(object: Container, $event: DragEvent): void{
+  calcCoordinates(object: Container, $event: DragEvent, position: 'fixed' | 'relative'): void{
     if(!object.coordinates){
       object.coordinates = { x: 0, y: 0 }
     };
 
     let node = this.el.nativeElement as HTMLElement;
 
-    object.coordinates.x = $event.clientX  - this.deltaX // + window.scrollX;
-    object.coordinates.y = $event.clientY  - this.deltaY //+ window.scrollY;
+    object.coordinates.x = $event.clientX - this.deltaX + (position === 'relative' ? window.scrollX : 0);
+    object.coordinates.y = $event.clientY - this.deltaY + (position === 'relative' ? window.scrollY : 0);
     // console.warn( "step 1",this.object!.coordinates ); 
     /*
     if( !this.ancestors){
@@ -187,8 +193,11 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
   }
   
 
-  onResize() {
+  onResize($event: ResizeObserverEntry[]) {
     if (!this.object || !this.boardService.isLane(this.object)) return;
+    if( this.object?.width === $event[0].contentRect.width ){
+      return
+    };
     this.object.width = this.el.nativeElement.getBoundingClientRect().width;
 
     if (this.resizeTimeout) clearTimeout(this.resizeTimeout);

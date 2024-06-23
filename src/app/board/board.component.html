@@ -5,9 +5,12 @@
     [container]="this.board" 
     [contenteditableHtml]="true" 
     [(contenteditableModel)]="board.textContent" 
-    (onBlur)="this.boardService.publishBoardUpdate()"
+    (contenteditableModelChange)="this.boardService.publishBoardUpdate()"
     class="board-label"></div>
     <prioritizer [container]="board" class="m-x-025"> </prioritizer>
+  </div>
+  <div>
+    {{boardService.getTasksCount()}} tasks
   </div>
   <button (click)="addLane()" >Add lane</button>
 </div>

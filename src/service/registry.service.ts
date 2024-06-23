@@ -20,7 +20,7 @@ export class RegistryService {
             this.addToRegistry(this._draggableComponentRegistry$, component);
             
         }
-        console.info("Component added to base component registry" + (this.isDraggableComponent(component) ? " and to draggable registry" : ""), component);
+        // console.debug("Component added to base component registry" + (this.isDraggableComponent(component) ? " and to draggable registry" : ""), component);
     }
 
     componentDestroyed(component: BaseComponent) {
@@ -28,7 +28,7 @@ export class RegistryService {
         if (this.isDraggableComponent(component)) {
             this.removeFromRegistry(this._draggableComponentRegistry$, component);
         }
-        console.info("Component removed from base component registry" + (this.isDraggableComponent(component) ? " and from draggable registry" : ""), component);
+        // console.debug("Component removed from base component registry" + (this.isDraggableComponent(component) ? " and from draggable registry" : ""), component);
 
     }
 

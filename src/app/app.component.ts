@@ -13,7 +13,7 @@ import { generateUUID } from '../utils/utils';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent implements AfterContentInit {
+export class AppComponent implements AfterViewInit {
 
   title = 'trep-tracker';
   board: Board | undefined
@@ -21,13 +21,15 @@ export class AppComponent implements AfterContentInit {
 
   }
 
-  ngAfterContentInit (): void {
+  ngAfterViewInit(): void {
     if(this.boardService.boards.length === 0) {
       this.addNewBoard()
     }
     this.boardService.selectFirstBoard();
+    
     this.boardService.selectedBoard$.subscribe(board => {
-      this.board = board
+      setTimeout(() => { this.board = board })
+      //this.board = board
     })
   }
 

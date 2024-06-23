@@ -6,7 +6,7 @@
       [contenteditableHtml]="true" 
       contenteditable="true" 
       [(contenteditableModel)]="lane.textContent"
-      (onBlur)="this.boardService.publishBoardUpdate()"
+      (contenteditableModelChange)="this.boardService.publishBoardUpdate()"
       > </div> 
       <prioritizer [container]="lane" class="m-l-025"> </prioritizer>
     </div>

@@ -2,7 +2,7 @@
 
 
 :host{
-    min-width: $min-width / 2;
+    min-width: calc($min-width / 2);
     //width: 100%;
     display: inline-block;
     --ngx-editor-background-color: $editor-active-background;

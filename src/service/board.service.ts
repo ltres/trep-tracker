@@ -24,11 +24,13 @@ export class BoardService {
 
     private tagService!: TagService;
 
+    private boardUpdateCounter: number = 0;
+
     constructor(injector:Injector) {
 
         setTimeout(() => this.tagService = injector.get(TagService));
         this._boards$.subscribe(b => {
-            console.info('Boards updated');
+            console.warn('Boards updated', this.boardUpdateCounter++);
             let allTasks: Task[] = [];
             let allLanes: Lane[] = [];
             b.forEach(board => {
@@ -209,7 +211,7 @@ export class BoardService {
         if (!activeBoard) {
             throw new Error(`Cannot find board for board ${board.id}`)
         }
-        activeBoard.children = activeBoard.children.filter(l => l.children.length > 0 || l.tags.length > 0);
+        // activeBoard.children = activeBoard.children.filter(l => l.children.length > 0 || l.tags.length > 0);
 
         let newLane: Lane = getNewLane();
         newLane.coordinates = { x, y };

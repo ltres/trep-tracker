@@ -46,11 +46,11 @@ export const tagIdentifiers:{symbol: string, class:string}[] = [
         class: "tag-orange"
     },
     {
-        symbol: '#',
+        symbol: '#', 
         class: "tag-yellow"
     }
 ]
-export const tagHtmlWrapper = (kl:string) => ( ['<span tag="true" class="' + kl + '">','</span>'] )
+export const tagHtmlWrapper = (kl:string) => ( ['<span tag="true" class="' + kl + '">','<\/span>'] )
 const spaces = "\s\t\n\u00A0\u2002\u2003\u2006\u202F "
 export const tagCapturingGroup = (symbol:string) => ( `${symbol}([A-Za-z0-9\-\_]+)` );
 

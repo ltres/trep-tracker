@@ -21,6 +21,7 @@ import { LaneMenuComponent } from './lane-menu/lane-menu.component';
 import { BoardSelectionMenuComponent } from './board-selection-menu/board-selection-menu.component';
 import { PrioritizerComponent } from './prioritizer/prioritizer.component';
 import { ImporterComponent } from './importer/importer.component';
+import { FontResizerComponent } from './font-resizer/font-resizer.component';
  
 @NgModule({
     declarations: [
@@ -35,7 +36,8 @@ import { ImporterComponent } from './importer/importer.component';
          LaneMenuComponent,
          BoardSelectionMenuComponent,
          PrioritizerComponent,
-         ImporterComponent
+         ImporterComponent,
+         FontResizerComponent
         ],
     providers: [BoardService, KeyboardService, DragService, RegistryService, TagService, StorageService],
     bootstrap: [AppComponent],

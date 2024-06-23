@@ -62,7 +62,8 @@ export class TagService {
             value = value.replace(regex, `${wrappers[0]}${tagIdentifier.symbol}$1${wrappers[1]}`);
 
             // Step #3 Cleanup empty wrappers
-            value = value.replaceAll(`${wrappers[0]}${wrappers[1]}`,"");
+            regex = new RegExp(`${wrappers[0]}([^${tagIdentifier.symbol}][^<]+)${wrappers[1]}`, 'g');
+            value = value.replace(regex,"$1");
             container.textContent = value;
         }
        

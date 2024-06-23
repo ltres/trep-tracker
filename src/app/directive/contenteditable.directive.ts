@@ -4,18 +4,18 @@ import {
 } from '@angular/core';
 import { getCaretPosition, setCaretPosition } from '../../utils/utils';
 import { Container } from '../../types/task';
-import { BoardService } from '../../service/board.service';
 import { TagService } from '../../service/tag.service';
 
 @Directive({
     selector: '[contenteditableModel][container]'
 })
 export class ContenteditableDirective implements OnChanges {
-    /** Model */
     @Input() contenteditableModel: string = "";
     @Input() container!: Container;
     @Output() contenteditableModelChange = new EventEmitter();
-    @Output() onBlur = new EventEmitter();
+
+    private shouldRefresh = false;
+    private timeout: NodeJS.Timeout | undefined = undefined;
 
     /** Allow (sanitized) html */
     @Input() contenteditableHtml?: boolean = false;
@@ -37,21 +37,24 @@ export class ContenteditableDirective implements OnChanges {
 
     @HostListener('input') // input event would be sufficient, but isn't supported by IE
     @HostListener('blur')  // additional fallback
-    @HostListener('keyup') onInput(trim = false) {
+    @HostListener('keyup') 
+    onInput(trim = false) {
         let value = this.elRef.nativeElement[this.getProperty()];
 
         this.container.textContent = value;
         this.tagService.extractAndUpdateTags(this.container);
         value = this.container.textContent;
 
-        this.contenteditableModelChange.emit(value);
+        //this.contenteditableModelChange.emit(value);
+        this.shouldRefresh = true;
+        this.delayedEmitChanges(value);
     }
 
     @HostListener('blur')  // additional fallback
     onBlurred() {
-        this.onBlur.emit();
+        let value = this.elRef.nativeElement[this.getProperty()];
+        this.delayedEmitChanges(value);
     }
-
 
     @HostListener('paste') onPaste() {
         this.onInput();
@@ -64,6 +67,18 @@ export class ContenteditableDirective implements OnChanges {
                 }
             });
         }
+    }
+
+    private delayedEmitChanges(value: string){
+        if( this.timeout ){ 
+            clearTimeout(this.timeout)
+        };
+        this.timeout = setTimeout(() => {
+            if( this.shouldRefresh ){
+                this.contenteditableModelChange.emit( value );
+                this.shouldRefresh = false;
+            }
+        }, 500);
     }
 
     private refreshView() {

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostBinding, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostBinding, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { Board, Container, Lane, Task, getNewTask } from '../../types/task';
 import { TaskComponent } from '../task/task.component';
 import { BoardService } from '../../service/board.service';
@@ -24,14 +24,15 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
   @ViewChildren(LaneComponent,) laneComponents: QueryList<LaneComponent> | undefined;
 
   @HostBinding('style.height.px')
-  protected height: number = 0;
+  protected height: number | undefined = 0;
 
   constructor(
     protected  boardService: BoardService,
     protected  keyboardService: KeyboardService,
     protected override registry: RegistryService,
     protected  dragService: DragService,
-    public override el: ElementRef
+    public override el: ElementRef,
+    private cdr: ChangeDetectorRef
   ) {
     //super(boardService, dragService, keyboardService, registry,el);
     super(registry, el)
@@ -43,13 +44,18 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
       // set the board height basing on the childrens size.
       let boardEl = this.el.nativeElement as HTMLElement;
       let laneEls = boardEl.querySelectorAll('lane');
-      laneEls.forEach(laneEl => {
-        let maxHeight = laneEl.getBoundingClientRect().height + laneEl.getBoundingClientRect().top;
-        if (maxHeight > this.height) {
-          this.height = maxHeight;
-        }
+      setTimeout(() => {
+        this.height = 0;
+        laneEls.forEach(laneEl => {
+          let maxHeight = laneEl.getBoundingClientRect().height + laneEl.getBoundingClientRect().top + window.scrollY;
+          if (maxHeight > (this.height??0)) {
+            this.height = maxHeight;
+          }
+        });
       });
+      //this.cdr.detectChanges();
     });
+    //this.cdr.detectChanges();
   }
 
 
