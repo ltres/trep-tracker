@@ -78,14 +78,15 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
   addLane() {
     this.boardService.addFloatingLane(this.board, 
       this.el.nativeElement.getBoundingClientRect().width / 2 , 
-      this.el.nativeElement.getBoundingClientRect().height / 2, []);
+      this.el.nativeElement.getBoundingClientRect().height / 2, [],
+      false);
   }
 
   override ngOnInit() {
     super.ngOnInit();
 
     this.subscriptions = this.keyboardService.keyboardEvent$.subscribe(e => {
-      if (e?.type != 'keydown' || !e || ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Enter', 'Backspace', 'Delete'].indexOf(e.key) === -1) {
+      if (e?.type != 'keydown' || !e || ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Enter', 'Backspace', 'Delete', 'Shift', 'd', 'a'].indexOf(e.key) === -1) {
         return
       }
       let task = this.boardService.lastSelectedTask;
@@ -102,8 +103,13 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
       if(el) {
         caretPos = getCaretPosition(el);
       }
-
-      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      if(e.key === 'd' && e.ctrlKey === true){
+        e.preventDefault();
+        this.boardService.selectedTasks?.filter(t => !isPlaceholder(t) ).forEach(t => this.boardService.toggleTaskStatus(t) );
+      }else if(e.key === 'a' && e.ctrlKey === true){
+        e.preventDefault();
+        this.boardService.selectedTasks?.filter(t => !isPlaceholder(t) ).forEach(t => this.boardService.archive(this.board,t) );
+      }else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         let nearby = e?.key === 'ArrowDown' ? this.boardService.getTaskInDirection(this.boardService.selectedTasks, "down") : this.boardService.getTaskInDirection(this.boardService.selectedTasks, "up");   
         if (!nearby) {
           return;
@@ -112,8 +118,8 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
         if (!lane) {
           return;
         }
-        if (e.ctrlKey === true) {
-          if(e.shiftKey === true) {
+        if (e.shiftKey === true) {
+          if(e.ctrlKey === true) {
             // Move case
             this.boardService.switchPosition(this.boardService.selectedTasks, e.key);
           }else{
@@ -145,10 +151,14 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
         }
         this.boardService.removeChildrenAndAddAsSibling(parent, this.boardService.selectedTasks);
       }else if(e.key === 'Enter'){
+
+        e.stopPropagation();
+        e.stopImmediatePropagation();
         // Create a new task
+        /*
         if(!e.ctrlKey || !e.shiftKey){
           return;
-        }
+        }*/
         let parent = this.boardService.findParent(this.boardService.selectedTasks);
         if (!parent) {
           throw new Error("Cannot find parent task")

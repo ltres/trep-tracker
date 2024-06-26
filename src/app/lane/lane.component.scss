@@ -53,7 +53,9 @@
 .static-view{
     background-color: $static-background-color;
 }
-
+.archive-lane{
+    background-color: $archive-background-color;
+}
 .lane-wrapper.static-view{
     // border-right: 1px solid $lane-title-color;
 }

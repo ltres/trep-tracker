@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { Board, Lane, Container, Task, Tag, tagIdentifiers, tagHtmlWrapper, tagCapturingGroup, DoneTag, ArchivedTag } from "../types/task";
+import { Board, Lane, Container, Task, Tag, tagIdentifiers, tagHtmlWrapper, tagCapturingGroup, DoneTag, ArchivedTag, addTagsForDoneAndArchived } from "../types/task";
 import { BehaviorSubject, Observable, map } from "rxjs";
 import { generateUUID } from "../utils/utils";
 import { BoardService } from "./board.service";
@@ -73,18 +73,20 @@ export class TagService {
         let tagsToRemove = currentTags?.filter(ct => !newTags.find(t => t.tag === ct.tag));
         container.tags = newTags;
 
-        // Fix statuses depending on tags
-        if( tagsToAdd.map( t => t.tag ).indexOf( DoneTag.tag ) >= 0 && this.boardService.isTask(container) && container.status === 'todo' ){
-            container.status = 'completed';
-        }
-        if( tagsToAdd.map( t => t.tag ).indexOf( ArchivedTag.tag ) >= 0 && this.boardService.isTask(container) && !container.archived ){
-            container.archived = true;
-        }
-        if( tagsToRemove.map( t => t.tag ).indexOf( DoneTag.tag ) >= 0 && this.boardService.isTask(container) && container.status === 'completed' ){
-            container.status = 'todo';
-        }
-        if( tagsToRemove.map( t => t.tag ).indexOf( ArchivedTag.tag ) >= 0 && this.boardService.isTask(container) && container.archived ){
-            container.archived = false;
+        if(addTagsForDoneAndArchived){
+            // Fix statuses depending on tags
+            if( tagsToAdd.map( t => t.tag ).indexOf( DoneTag.tag ) >= 0 && this.boardService.isTask(container) && container.status === 'todo' ){
+                container.status = 'completed';
+            }
+            if( tagsToAdd.map( t => t.tag ).indexOf( ArchivedTag.tag ) >= 0 && this.boardService.isTask(container) && !container.archived ){
+                container.archived = true;
+            }
+            if( tagsToRemove.map( t => t.tag ).indexOf( DoneTag.tag ) >= 0 && this.boardService.isTask(container) && container.status === 'completed' ){
+                container.status = 'todo';
+            }
+            if( tagsToRemove.map( t => t.tag ).indexOf( ArchivedTag.tag ) >= 0 && this.boardService.isTask(container) && container.archived ){
+                container.archived = false;
+            }
         }
 
         if( tagsToAdd.length > 0 || tagsToRemove.length > 0 ){

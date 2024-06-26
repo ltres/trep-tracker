@@ -1,7 +1,7 @@
 import { Component, ElementRef, HostBinding, HostListener, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { Board, Container, Lane, Priority, Tag, Task, getNewTask } from '../../types/task';
+import { Board, Container, Lane, Priority, Tag, Task, archivedLaneId, getNewTask } from '../../types/task';
 import { BoardService } from '../../service/board.service';
-import { generateUUID } from '../../utils/utils';
+import { generateUUID, isArchive } from '../../utils/utils';
 import { Observable } from 'rxjs';
 import { TaskComponent } from '../task/task.component';
 import { DraggableComponent } from '../draggable/draggable.component';
@@ -17,6 +17,7 @@ import { RegistryService } from '../../service/registry.service';
   styleUrl: './lane.component.scss'
 })
 export class LaneComponent extends DraggableComponent implements OnInit {
+
   @ViewChildren(TaskComponent, { read: ElementRef }) taskComponentsElRefs: QueryList<ElementRef> | undefined;
   @ViewChildren(TaskComponent) taskComponents: QueryList<TaskComponent> | undefined;
 
@@ -59,11 +60,11 @@ export class LaneComponent extends DraggableComponent implements OnInit {
   }
 
   get tasks(): Observable<Task[] | undefined> {
-    return this.boardService.getTasks$(this.lane, this.lane.priority);
+    return this.boardService.getTasks$(this.lane, this.lane.priority, this.isArchive(this.lane) ? false : true);
   }
 
   get taggedTasks(): Observable<Task[] | undefined> {
-    return this.boardService.getTaggedTasks$(this.lane.tags, this.lane.priority);
+    return this.boardService.getTaggedTasks$(this.lane.tags, this.lane.priority, this.isArchive(this.lane) ? false : true);
   }
 
   displayStaticStuff(): boolean{
@@ -90,8 +91,11 @@ export class LaneComponent extends DraggableComponent implements OnInit {
     this.lane.showChildren = !this.lane.showChildren;
     this.boardService.publishBoardUpdate();
   }
-  nukeArchived() {
-    this.boardService.nukeArchived(this.lane);
+  archiveDones() {
+    this.boardService.archiveDones(this.board,this.lane);
+  }
+  isArchive(arg0: Lane):boolean {
+    return isArchive(arg0);
   }
 
 }

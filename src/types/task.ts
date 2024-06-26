@@ -6,6 +6,7 @@ export interface Board extends Container<Lane>{
 export interface Lane extends Container<Task>{
     _type: 'lane',
     showChildren: boolean,
+    archive: boolean,
     width: number | undefined
 }
 export interface Task extends Container<Task>{
@@ -36,8 +37,10 @@ export interface Tag{
     tag: string;
 }
 
+export const addTagsForDoneAndArchived = false
 export const DoneTag : Tag = {tag: 'Done'}
 export const ArchivedTag : Tag = {tag: 'Archived'}
+
 
 export const tagIdentifiers:{symbol: string, class:string}[] = [
     {
@@ -70,15 +73,18 @@ export const getNewTask: ( textContent?: string | undefined ) => Task = (textCon
     }
 )
 
-export const getNewLane: () => Lane = () => {
+export const archivedLaneId = "Archive";
+
+export const getNewLane: ( archive: boolean ) => Lane = (archive: boolean) => {
     let id = generateUUID();
     return {
-        id: id,
+        id:  id,
         tags: [],
         showChildren: true,
-        textContent: "Lane " + id,
+        textContent: archive ? "Archive" : "Lane " + id,
         children: [],
         _type: "lane",
+        archive: archive,
         creationDate: new Date(),
         stateChangeDate: undefined,
         priority: undefined,
@@ -87,6 +93,7 @@ export const getNewLane: () => Lane = () => {
         archivedDate: undefined
     }
 }
+
 
 export const getNewBoard: (firstLane: Lane) => Board = (firstLane: Lane) => (
     {      

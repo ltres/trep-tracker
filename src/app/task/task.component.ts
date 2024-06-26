@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, HostBinding, Input, OnDestroy, OnInit, Output, Renderer2, ViewChild, viewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostBinding, HostListener, Input, OnDestroy, OnInit, Output, Renderer2, ViewChild, viewChild } from '@angular/core';
 import { Board, Lane, Container, Task } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 import { DragService } from '../../service/drag.service';
@@ -43,12 +43,14 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
     return this.task;
   }
 
-  editorChange($event: string) {
-    // console.log($event)
-    if ($event.endsWith('<p></p>')) {
-      this.createNewTask.emit();
+  /*
+  @HostListener('document:keydown', ['$event'])
+  @HostListener('document:keyup', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if(event.key === 'Enter' && this.editorActive) {
+      event.preventDefault()
     }
-  }
+  }*/
 
   updateValue( $event: Event) {
     this.task.textContent = ($event.target as HTMLElement).innerHTML ?? '';
@@ -123,8 +125,8 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
     this.boardService.toggleTaskStatus(this.task);
   }
 
-  toggleArchived() {
-    this.boardService.toggleArchived(this.task);
+  archive() {
+    this.boardService.archive(this.board, this.task);
   }
 
   hasNextSibling(): boolean {

@@ -15,6 +15,10 @@
     opacity: 0.65;
 }
 
+.archive{
+    color:$archive-color;
+}
+
 .task-wrapper{
     display: flex;
     align-items: center;
@@ -33,7 +37,7 @@
         padding-left: 0.25rem;
     }
     &.archived{
-        color: $archived-color;
+        opacity: $translucent-opacity;
     }
 }
 

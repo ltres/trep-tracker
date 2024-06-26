@@ -1,4 +1,6 @@
-<div class="lane-wrapper p-x-05 p-y-025" [class.static-view]="displayStaticStuff() && (tasks | async)?.length === 0" data-consider-for-overlapping-checks="true">
+<div class="lane-wrapper p-x-05 p-y-025"  
+[class.archive-lane]="isArchive(lane)"
+[class.static-view]="displayStaticStuff() && (tasks | async)?.length === 0" data-consider-for-overlapping-checks="true">
   <div class="lane-toolbar flex align-items-center g-05 ">
     <div class="grow no-wrap flex align-items-center" >
       <div class="lane-title   no-wrap" 
@@ -17,13 +19,13 @@
 
       <div class="small  no-grow" (click)="menuOpen = !menuOpen; $event.stopPropagation()">☰</div>
       <lane-menu *ngIf="menuOpen" [lane]="lane" (onClose)="menuOpen = false">
-        <button class="small no-grow" (click)="nukeArchived()">☢ Nuke archived </button>
+        <button class="small no-grow" *ngIf="!displayStaticStuff() && !isArchive(lane) " (click)="archiveDones()">☢ Archive dones </button>
 
         <button class="small danger no-grow" *ngIf="(tasks | async)?.length == 0" (click)="deleteLane()">␡ Delete lane</button>
-        <button class="small no-grow" *ngIf="displayStaticStuff() && !lane.showChildren" (click)="toggleShowChildren()">☐ Show Children </button>
-        <button class="small no-grow" *ngIf="displayStaticStuff() && lane.showChildren" (click)="toggleShowChildren()"><span class="completed">☑</span> Show Children </button>
+        <button class="small no-grow" *ngIf="(displayStaticStuff() || isArchive(lane)) && !lane.showChildren" (click)="toggleShowChildren()">☐ Show Children </button>
+        <button class="small no-grow" *ngIf="(displayStaticStuff() || isArchive(lane)) && lane.showChildren" (click)="toggleShowChildren()"><span class="completed">☑</span> Show Children </button>
     
-        <button *ngIf="!displayStaticStuff()" class="small no-grow" (click)="createNewTask()"> <span *ngIf="lane.priority" class="warning">⚠</span> 🆕 New task</button>
+        <button *ngIf="!displayStaticStuff() && !isArchive(lane)" class="small no-grow" (click)="createNewTask()"> <span *ngIf="lane.priority" class="warning">⚠</span> 🆕 New task</button>
       </lane-menu>
     </div>
 

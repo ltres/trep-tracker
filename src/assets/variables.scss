@@ -3,6 +3,7 @@ $spacer-multiplier: 1;
 $background-color: hsl(223, 10%, 11%);
 $static-background-color: hsl(223, 20%, 11%);
 $non-static-background-color: hsl(223, 45%, 11%);
+$archive-background-color: hsl(41, 20%, 11%);
 $text-color: #ffffff;
 $font-size: 10px;
 $title-size: 1.2rem;
@@ -10,7 +11,7 @@ $big-font-size: 1.2rem;
 $small-font-size: 0.9rem;
 
 $border-radius: calc($font-size/2);
-
+$archive-color:hsl(54, 80%, 50%);
 $lane-padding: 0.75rem 1rem;
 
 $translucent-opacity: 0.3;

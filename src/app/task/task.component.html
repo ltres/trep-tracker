@@ -11,7 +11,7 @@ data-consider-for-overlapping-checks="true"
     <prioritizer *ngIf="!isPlaceholder()" [container]="task" class=""> </prioritizer>
     <div *ngIf="!isPlaceholder() && this.task.status === 'todo'" class="status big pointer" (click)="toggleTaskStatus()">☐</div>
     <div *ngIf="!isPlaceholder() && this.task.status === 'completed'" class="status big pointer" (click)="toggleTaskStatus()">☑</div>
-
+    <span *ngIf="!static && ( task.status === 'completed' || task.archived)" (click)="archive()" class="archive pointer">🖿</span>
     <div class="flex wrap w-100 g-025">
         <div class="grow" #editor [container]="this.task" 
         [contenteditableHtml]="true" 
@@ -20,12 +20,12 @@ data-consider-for-overlapping-checks="true"
         (contenteditableModelChange)="this.boardService.publishBoardUpdate()"
         ></div>
         
-
+        <!--
         <div *ngIf="task.status === 'completed'"class="date-wrapper translucent small flex align-items-center">
             completed {{this.task.stateChangeDate | date: 'dd-MM-yy hh:mm a'}}
-        </div>
+        </div>-->
         <div class="task-toolbar">
-            <span *ngIf="!static && task.status === 'completed'" (click)="toggleArchived()" class="archive pointer">🖿</span>
+           
         </div>
     </div>
 </div>

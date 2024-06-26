@@ -1,5 +1,5 @@
 import { Injectable, Injector } from "@angular/core";
-import { Board, Lane, Container, Task, Tag, DoneTag, ArchivedTag, tagIdentifiers, getNewBoard, getNewLane, Priority } from "../types/task";
+import { Board, Lane, Container, Task, Tag, DoneTag, ArchivedTag, tagIdentifiers, getNewBoard, getNewLane, Priority, addTagsForDoneAndArchived, archivedLaneId } from "../types/task";
 import { BehaviorSubject, Observable, filter, map } from "rxjs";
 import { generateUUID, isPlaceholder } from "../utils/utils";
 import { TagService } from "./tag.service";
@@ -51,6 +51,11 @@ export class BoardService {
         })
     }
 
+    /**
+     * Retrieves all descendants of a given container.
+     * @param container - The container whose descendants are to be retrieved.
+     * @returns An array of Container objects representing the descendants.
+     */
     getDescendants(container: Container): Container[] {
         let descendants: Container[] = [];
         for (let child of container.children) {
@@ -61,7 +66,7 @@ export class BoardService {
     }
 
     addNewBoard() {
-        let board = getNewBoard( getNewLane() )
+        let board = getNewBoard( getNewLane(false) )
 
         this._boards$.next([...this._boards$.getValue(), board]);
     }
@@ -75,10 +80,13 @@ export class BoardService {
         );
     }
 
-    getTasks$(lane: Lane, priority: Priority | undefined): Observable<Task[] | undefined> {
+    getTasks$(lane: Lane, priority: Priority | undefined, excludeArchived: boolean): Observable<Task[] | undefined> {
         return this._allLanes$.pipe(
             map(lanes => {
                 let res = lanes?.find(l => l.id === lane.id)?.children
+                if(excludeArchived){
+                    res = res?.filter( t => !t.archived );
+                }
                 if( priority ){
                     res = res?.filter( t => t.priority === priority );
                 }
@@ -87,13 +95,15 @@ export class BoardService {
         )
     }
 
-    getTaggedTasks$(tags: Tag[] | undefined, priority: Priority | undefined): Observable<Task[] | undefined> {
+    getTaggedTasks$(tags: Tag[] | undefined, priority: Priority | undefined, excludeArchived: boolean): Observable<Task[] | undefined> {
         return this._allTasks$.pipe(
             map(tasks => {
                 let res = tasks;
-
+                if(excludeArchived){
+                    res = res?.filter( t => !t.archived );
+                }
                 if(tags){
-                    res = tasks?.filter(task => 
+                    res = res?.filter(task => 
                         task.tags.filter( t => tags.find(tag => tag.tag.toLowerCase() === t.tag.toLowerCase())).length === tags.length
                     )
                 }
@@ -112,7 +122,7 @@ export class BoardService {
         return this.getDescendants(board).filter( c => this.isTask(c) && !isPlaceholder(c)).length;
     }
     getTodoCount( board: Board ): number {
-        return this.getDescendants(board).filter( c => this.isTask(c) && !isPlaceholder(c) && c.status === 'todo' ).length;
+        return this.getDescendants(board).filter( c => this.isTask(c) && !isPlaceholder(c) && c.status === 'todo'  && !c.archived ).length;
     }
 
     getLane$(lane: Lane): Observable<Lane | undefined> {
@@ -208,7 +218,7 @@ export class BoardService {
      * If a lane becomes empty after removing the task, it is also removed from the board.
      * Finally, the new floating lane is added to the board and the updated boards are emitted.
      */
-    addFloatingLane(board: Board, x: number, y: number, children: Task[] | undefined): Lane {
+    addFloatingLane(board: Board, x: number, y: number, children: Task[] | undefined, archive:boolean): Lane {
         let boards = this._boards$.getValue();
         let activeBoard = boards.find(b => b.id === board.id);
         if (!activeBoard) {
@@ -216,7 +226,7 @@ export class BoardService {
         }
         // activeBoard.children = activeBoard.children.filter(l => l.children.length > 0 || l.tags.length > 0);
 
-        let newLane: Lane = getNewLane();
+        let newLane: Lane = getNewLane( archive );
         newLane.coordinates = { x, y };
         activeBoard.children.push(newLane);
 
@@ -232,27 +242,53 @@ export class BoardService {
     toggleTaskStatus(task: Task) {
         let boards = this._boards$.getValue();
         task.status = task.status === 'completed' ? 'todo' : 'completed';
-        if(task.status === 'completed'){
-            task.textContent.indexOf(DoneTag.tag) === -1 ? task.textContent += '&nbsp;' + tagIdentifiers[0].symbol + DoneTag.tag : task.textContent;
-        }else{
-            task.textContent = task.textContent.replace(tagIdentifiers[0].symbol + DoneTag.tag, '');
+        if(addTagsForDoneAndArchived){
+            if(task.status === 'completed'){
+                task.textContent.indexOf(DoneTag.tag) === -1 ? task.textContent += '&nbsp;' + tagIdentifiers[0].symbol + DoneTag.tag : task.textContent;
+            }else{
+                task.textContent = task.textContent.replace(tagIdentifiers[0].symbol + DoneTag.tag, '');
+            }
+            this.tagService.extractAndUpdateTags(task);
         }
         task.stateChangeDate = new Date();
-        this.tagService.extractAndUpdateTags(task);
         this._boards$.next(boards);
     }
 
+    /*
     toggleArchived(task: Task) {
         let boards = this._boards$.getValue();
         task.archived = !task.archived;
-        if(task.archived){
-            task.textContent.indexOf(ArchivedTag.tag) === -1 ? task.textContent += '&nbsp;' + tagIdentifiers[0].symbol + ArchivedTag.tag : task.textContent;
-        }else{
-            task.textContent = task.textContent.replace(tagIdentifiers[0].symbol + ArchivedTag.tag, '');
+        if(addTagsForDoneAndArchived){
+            if(task.archived){
+                task.textContent.indexOf(ArchivedTag.tag) === -1 ? task.textContent += '&nbsp;' + tagIdentifiers[0].symbol + ArchivedTag.tag : task.textContent;
+            }else{
+                task.textContent = task.textContent.replace(tagIdentifiers[0].symbol + ArchivedTag.tag, '');
+            }
+            this.tagService.extractAndUpdateTags(task);
         }
+
+       
         task.archivedDate = new Date();
-        this.tagService.extractAndUpdateTags(task);
         this._boards$.next(boards);
+    } */
+    archive(board: Board, task: Task){
+        task.archived = true;
+        task.archivedDate = new Date();
+        let lane = this.findParentLane([task]);
+        if(lane){
+            lane.children = lane.children.filter( t => t.id !== task.id );
+        }
+        // add the task to the archived lane
+        let archive = board.children.find(l => l.archive );
+        if(!archive){
+            // create the archive
+            this.addFloatingLane(board, 0, 0 , [task], true);
+        }else{
+            archive.children.push(task);
+        }
+
+        this.publishBoardUpdate();
+        
     }
 
     getTaskInDirection( tasks: Task[] | undefined, direction: 'up' | 'down' | 'left' | 'right'): Task | undefined {
@@ -511,13 +547,15 @@ export class BoardService {
         this._boards$.next(boards);
     }
 
-    nukeArchived(lane: Lane) {
+    archiveDones(board: Board, lane: Lane) {
         // this._boards$.getValue();
-        
+        let descendants = this.getDescendants(lane);
+        descendants.filter( t => this.isTask(t) && !isPlaceholder(t) && t.status === 'completed').forEach(d => this.archive(board, d as Task) );
+        /*
         lane.children = lane.children.filter(t => !t.archived);
         let descendants = this.getDescendants(lane);
         descendants.forEach(d => d.children = d.children.filter(t => !t.archived));
-        
+        */
         this.publishBoardUpdate();
     }
 

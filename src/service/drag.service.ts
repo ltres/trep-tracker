@@ -63,7 +63,7 @@ export class DragService {
             if (!overlappedComponent || overlappedComponent.length === 0) {
                 // NO Overlap case:
                 draggedComponent.el.nativeElement.getBoundingClientRect();
-                this.boardService.addFloatingLane(board, event.event.clientX - deltaX + window.scrollX, event.event.clientY - deltaY + window.scrollY, [draggedObject]);
+                this.boardService.addFloatingLane(board, event.event.clientX - deltaX + window.scrollX, event.event.clientY - deltaY + window.scrollY, [draggedObject], false);
                 console.info("No overlapped component found");
                 return;
             } else {

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Task } from '../types/task';
+import { Lane, Task, archivedLaneId } from '../types/task';
 
 export function generateUUID(): string {
     return uuidv4().substring(0,6);
@@ -99,4 +99,8 @@ export function getCaretPosition(element: Node) {
 
 export function isPlaceholder(task: Task){
     return task.textContent === "";
+}
+
+export function isArchive(lane: Lane){
+    return lane.archive;
 }
