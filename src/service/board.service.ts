@@ -108,8 +108,11 @@ export class BoardService {
         )
     }
 
-    getTasksCount() {
-        return this._allTasks$.getValue()?.filter( t => !isPlaceholder(t) ).length || 0;
+    getTasksCount( board: Board ): number {
+        return this.getDescendants(board).filter( c => this.isTask(c) && !isPlaceholder(c)).length;
+    }
+    getTodoCount( board: Board ): number {
+        return this.getDescendants(board).filter( c => this.isTask(c) && !isPlaceholder(c) && c.status === 'todo' ).length;
     }
 
     getLane$(lane: Lane): Observable<Lane | undefined> {

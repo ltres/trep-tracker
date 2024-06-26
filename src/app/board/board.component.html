@@ -10,7 +10,10 @@
     <prioritizer [container]="board" class="m-x-025"> </prioritizer>
   </div>
   <div>
-    {{boardService.getTasksCount()}} tasks
+    {{boardService.getTodoCount(this.board)}} todos
+  </div>
+  <div class="translucent">
+    of {{boardService.getTasksCount(this.board)}} tasks
   </div>
   <button (click)="addLane()" >Add lane</button>
 </div>

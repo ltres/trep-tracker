@@ -150,54 +150,54 @@ button {
 @mixin generate-utility-classes($padding-values) {
   @each $padding in $padding-values {
     .p-#{str-replace($padding, ".", "")} {
-      padding: $padding * 1rem;
+      padding: $padding * 1rem * $spacer-multiplier;
     }
     .p-x-#{str-replace($padding, ".", "")} {
-      padding-left: $padding * 1rem;
-      padding-right: $padding * 1rem;
+      padding-left: $padding * 1rem * $spacer-multiplier;
+      padding-right: $padding * 1rem * $spacer-multiplier;
     }
     .p-y-#{str-replace($padding, ".", "")} {
-      padding-top: $padding * 1rem;
-      padding-bottom: $padding * 1rem;
+      padding-top: $padding * 1rem * $spacer-multiplier;
+      padding-bottom: $padding * 1rem * $spacer-multiplier;
     }
     .p-l-#{str-replace($padding, ".", "")} {
-      padding-left: $padding * 1rem;
+      padding-left: $padding * 1rem * $spacer-multiplier;
     }
     .p-r-#{str-replace($padding, ".", "")} {
-      padding-right: $padding * 1rem;
+      padding-right: $padding * 1rem * $spacer-multiplier;
     }
     .p-t-#{str-replace($padding, ".", "")} {
-      padding-top: $padding * 1rem;
+      padding-top: $padding * 1rem * $spacer-multiplier;
     }
     .p-b-#{str-replace($padding, ".", "")} {
-      padding-top: $padding * 1rem;
+      padding-top: $padding * 1rem * $spacer-multiplier;
     }
 
     .m-#{str-replace($padding, ".", "")} {
-      margin: $padding * 1rem;
+      margin: $padding * 1rem * $spacer-multiplier;
     }
     .m-x-#{str-replace($padding, ".", "")} {
-      margin-left: $padding * 1rem;
-      margin-right: $padding * 1rem;
+      margin-left: $padding * 1rem * $spacer-multiplier;
+      margin-right: $padding * 1rem * $spacer-multiplier;
     }
     .m-y-#{str-replace($padding, ".", "")} {
-      margin-top: $padding * 1rem;
-      margin-bottom: $padding * 1rem;
+      margin-top: $padding * 1rem * $spacer-multiplier;
+      margin-bottom: $padding * 1rem * $spacer-multiplier;
     }
     .m-l-#{str-replace($padding, ".", "")} {
-      margin-left: $padding * 1rem;
+      margin-left: $padding * 1rem * $spacer-multiplier;
     }
     .m-r-#{str-replace($padding, ".", "")} {
-      margin-right: $padding * 1rem;
+      margin-right: $padding * 1rem * $spacer-multiplier;
     }
     .m-t-#{str-replace($padding, ".", "")} {
-      margin-top: $padding * 1rem;
+      margin-top: $padding * 1rem * $spacer-multiplier;
     }
     .m-b-#{str-replace($padding, ".", "")} {
-      margin-bottom: $padding * 1rem;
+      margin-bottom: $padding * 1rem * $spacer-multiplier;
     }
     .g-#{str-replace($padding, ".", "")} {
-      gap: $padding * 1rem;
+      gap: $padding * 1rem * $spacer-multiplier
     }
   }
 }

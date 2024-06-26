@@ -18,6 +18,9 @@
     "package": "electron-forge package",
     "make": "ng build && electron-forge make"
   },
+  "engines": {
+    "node": ">=22"
+  },
   "private": true,
   "dependencies": {
     "@angular/animations": "^17.3.0",

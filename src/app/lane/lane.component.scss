@@ -7,11 +7,18 @@
     position: absolute;
     display: inline-block;
     min-width: 20rem;
+    
     //max-width: $max-lane-width;
     z-index: 10;
+    box-shadow: 5px 5px 13px 0px #00000073;
+    outline: 1px solid $lane-outline-color;
+    outline-offset: -1px;
+    border-radius: $border-radius;
+    background-color: $non-static-background-color;
 }
 
 .lane-wrapper{
+    padding:$lane-padding;
     // position: relative;
     display: flex;
     flex-direction: column;
@@ -21,8 +28,7 @@
     // width: 100vw;
     //height: 100vh;
     //padding: 2rem;
-    outline: 1px solid $translucent-color;
-    outline-offset: -1px;
+
 }
 
 .lane-toolbar{
@@ -46,4 +52,8 @@
 
 .static-view{
     background-color: $static-background-color;
+}
+
+.lane-wrapper.static-view{
+    // border-right: 1px solid $lane-title-color;
 }

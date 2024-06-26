@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostBinding, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Component, ElementRef, HostBinding, HostListener, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { Board, Container, Lane, Priority, Tag, Task, getNewTask } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 import { generateUUID } from '../../utils/utils';
@@ -35,6 +35,16 @@ export class LaneComponent extends DraggableComponent implements OnInit {
     super(boardService, dragService, keyboardService, registry, el );
   }
 
+  @HostListener('document:click', ['$event'])
+  setZIndex($event: any) {
+    let el = this.el.nativeElement as HTMLElement;
+    if(el.contains($event.target)) {
+      el.style.zIndex = "100";
+    } else {
+      el.style.zIndex = "";
+    }
+  }
+
   @HostBinding('style.overflow-x')
   get overflowX(): string {
     return this.menuOpen ? 'visible' : 'auto';
@@ -65,7 +75,7 @@ export class LaneComponent extends DraggableComponent implements OnInit {
   }
 
   createNewTask() {
-    let task: Task = getNewTask( `Task ${this.boardService.getTasksCount() + 1}` );
+    let task: Task = getNewTask( `Task ${this.boardService.getTasksCount(this.board) + 1}` );
     this.boardService.addAsChild(this.lane, [task]);
     this.boardService.clearSelectedTasks();
     this.boardService.toggleTaskSelection(task);

@@ -1,0 +1,38 @@
+$background-color: #161a24;
+$static-background-color: #241624;
+$text-color: #ffffff;
+$font-size: 10px;
+$title-size: 1.2rem;
+$big-font-size: 1.2rem;
+$small-font-size: 0.9rem;
+
+$main-padding:2rem;
+
+$translucent-opacity: 0.3;
+$translucent-color: rgba($text-color, $translucent-opacity);
+
+$editor-active-background:rgba(0, 0, 0, 0.4);
+$selected-background:$text-color;
+
+$completed-color:rgb(18, 187, 2);
+$archived-color:rgb(45, 85, 41);
+$danger-color:rgb(255, 0, 0);
+$warning-color:rgb(255, 238, 0);
+$tag-orange-color: rgb(255, 145, 0);
+$tag-yellow-color: rgb(200, 255, 0);
+
+
+$priority-1-color:rgb(18, 187, 2);
+$priority-2-color:rgb(251, 255, 0);;
+$priority-3-color:rgb(255, 136, 0);
+$priority-4-color:rgb(255, 0, 0);
+
+$lane-title-color:rgb(255, 0, 191);
+$scrollbar-color: #343d55;
+
+$min-width: 20rem;
+$max-lane-width: 35vw;
+$child-line-width: 1rem;
+
+$board-selection-menu-width: 5rem;
+$board-selection-menu-background-color: #111113;

@@ -109,7 +109,7 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
     this.isBeingDragged = false;
     let node = this.el.nativeElement as HTMLElement;
     node.style.position = "";
-    node.style.zIndex = '';
+    //node.style.zIndex = '';
     
     if (this.static) return;
     if (!this.object) return;
@@ -151,7 +151,7 @@ export abstract class DraggableComponent extends BaseComponent implements AfterV
     this.deltaX = $event.clientX - node.getBoundingClientRect().left;
     this.deltaY = $event.clientY - node.getBoundingClientRect().top;
     node.style.position = 'fixed';
-    node.style.zIndex = '9999';
+    node.style.zIndex = "100";
     this.calcCoordinates(this.object, $event, 'fixed');
 
     //$event.stopPropagation();
