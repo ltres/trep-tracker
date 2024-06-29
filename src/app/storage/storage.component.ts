@@ -8,7 +8,7 @@ import { environment } from '../../environments/environment';
   styleUrl: './storage.component.scss'
 })
 export class StorageComponent {
-  _storagePath: string = environment.statusUrl;
+  _storagePath: string = localStorage.getItem('storagePath') || "C:/";
 
   get storagePath(): string {
     return this._storagePath;
@@ -16,6 +16,7 @@ export class StorageComponent {
 
   set storagePath(value: string) {
     this._storagePath = value;
+    localStorage.setItem('storagePath', this._storagePath)
     this.storageService.initWithStoragePath(this.storagePath);
   }
 

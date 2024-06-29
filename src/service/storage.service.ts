@@ -9,7 +9,7 @@ import { environment } from "../environments/environment";
   providedIn: 'root'
 })
 export class StorageService {
-  storagePath = environment.statusUrl;
+  storagePath: string | undefined;
   initializedWithValidStatus = false;
   subscription: Subscription | undefined;
   constructor(private boardService: BoardService) {
@@ -18,13 +18,15 @@ export class StorageService {
 
   initWithStoragePath(storagePath: string): void {
     this.storagePath = storagePath;
-    if(!this.initializedWithValidStatus){
-      this.boardService.deserialize(this.readFile(this.storagePath))
-      this.initializedWithValidStatus = true;
+    try{
+      this.boardService.deserialize(this.readFile(this.storagePath));
+      this.boardService.selectFirstBoard();
+    }catch(e){
+      console.warn("It was not possible to deserialize the status in " + this.storagePath)
     }
     if(this.subscription) this.subscription.unsubscribe();
     this.subscription = this.boardService.boards$.subscribe(boards => {
-      this.writeFile(this.storagePath, this.boardService.serialize());
+      this.writeFile(this.storagePath!, this.boardService.serialize());
     });
   }
 
