@@ -1,0 +1,14 @@
+<div class="flex column">
+    <input #input 
+    [(ngModel)]="searchPhrase" 
+    (ngModelChange)="change()" 
+    (click)="change()"
+    (focus)="onFocus()" 
+    (blur)="onBlur()"
+
+    placeholder="Search..">
+
+    <span *ngIf="matchNumber">
+    {{matchNumber}} matches
+    </span>
+</div>

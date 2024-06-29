@@ -21,6 +21,7 @@ import { BoardSelectionMenuComponent } from './board-selection-menu/board-select
 import { PrioritizerComponent } from './prioritizer/prioritizer.component';
 import { ImporterComponent } from './importer/importer.component';
 import { FontResizerComponent } from './font-resizer/font-resizer.component';
+import { SearchComponent } from './search/search.component';
  
 @NgModule({
     declarations: [
@@ -35,7 +36,8 @@ import { FontResizerComponent } from './font-resizer/font-resizer.component';
          BoardSelectionMenuComponent,
          PrioritizerComponent,
          ImporterComponent,
-         FontResizerComponent
+         FontResizerComponent,
+         SearchComponent
         ],
     providers: [BoardService, KeyboardService, DragService, RegistryService, TagService, StorageService],
     bootstrap: [AppComponent],

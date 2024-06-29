@@ -1,5 +1,5 @@
 import { AfterViewChecked, AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostBinding, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { Board, Container, Lane, Task, getNewTask } from '../../types/task';
+import { Board, Container, Lane, Tag, Task, getNewTask } from '../../types/task';
 import { TaskComponent } from '../task/task.component';
 import { BoardService } from '../../service/board.service';
 import { Observable, of } from 'rxjs';
@@ -88,7 +88,7 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
     super.ngOnInit();
 
     this.subscriptions = this.keyboardService.keyboardEvent$.subscribe(e => {
-      if (e?.type != 'keydown' || !e || ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Enter', 'Backspace', 'Delete', 'Shift', 'd', 'a'].indexOf(e.key) === -1) {
+      if (e?.type != 'keydown' || !e || ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Enter', 'Backspace', 'Delete', 'Shift', 'd', 'a', 'f'].indexOf(e.key) === -1) {
         return
       }
       let task = this.boardService.lastSelectedTask;
@@ -111,6 +111,8 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
       }else if(e.key === 'a' && e.ctrlKey === true){
         e.preventDefault();
         this.boardService.selectedTasks?.filter(t => !isPlaceholder(t) ).forEach(t => this.boardService.archive(this.board,t) );
+      }else if(e.key === 'f' && e.ctrlKey === true){
+        this.boardService.focusSearch();
       }else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         let nearby = e?.key === 'ArrowDown' ? this.boardService.getTaskInDirection(this.boardService.selectedTasks, "down") : this.boardService.getTaskInDirection(this.boardService.selectedTasks, "up");   
         if (!nearby) {
@@ -197,7 +199,7 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
     });
   }
 
-  updateBoardTags($event: import("../../types/task").Tag[]) {
+  updateBoardTags($event: Tag[]) {
       let allOldPresent = this.board.tags.filter( oldTag => $event.map( t => t.tag.toLowerCase() ).find( r => r === oldTag.tag.toLowerCase() ) ).length === this.board.tags.length
       let allNewPresent = $event.filter( oldTag => this.board.tags.map( t => t.tag.toLowerCase() ).find( r => r === oldTag.tag.toLowerCase() ) ).length === $event.length
   

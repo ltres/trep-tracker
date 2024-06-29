@@ -8,7 +8,6 @@ import { TagService } from "./tag.service";
     providedIn: 'root'
 })
 export class BoardService {
-
     private _selectedBoard$: BehaviorSubject<Board | undefined> = new BehaviorSubject<Board | undefined>(undefined);
 
     private _boards$: BehaviorSubject<Board[]> = new BehaviorSubject<Board[]>([]);
@@ -21,6 +20,7 @@ export class BoardService {
 
     private _selectedTasks$: BehaviorSubject<Task[] | undefined> = new BehaviorSubject<Task[] | undefined>(undefined);
     private _lastSelectedTask$: BehaviorSubject<Task | undefined> = new BehaviorSubject<Task | undefined>(undefined);
+    private _focusSearch$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
     private tagService!: TagService;
 
@@ -192,6 +192,9 @@ export class BoardService {
     }
     get selectedBoard(): Board | undefined {
         return this._selectedBoard$.getValue();
+    }
+    get focusSearch$(): Observable<boolean> {
+        return this._focusSearch$;
     }
     setSelectedBoard(board: Board) {
         this._selectedBoard$.next(board);
@@ -559,6 +562,13 @@ export class BoardService {
         this.publishBoardUpdate();
     }
 
+    focusSearch() {
+        this._focusSearch$.next(true)
+    }
+    blurSearch() {
+        this._focusSearch$.next(false)
+    }
+
     serialize(): string{
         let boards = this._boards$.getValue();
         //let selectedTasks = this._selectedTasks$.getValue();
@@ -612,4 +622,6 @@ export class BoardService {
     reset() {
         this._boards$.next([]);
     }
+
+    
 }

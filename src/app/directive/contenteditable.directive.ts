@@ -86,7 +86,6 @@ export class ContenteditableDirective implements ControlValueAccessor {
                 setCaretPosition(this.elementRef.nativeElement, pos + this.caretShift);
                 this.caretShift = 0;
             }
-            console.log("write value", value)
         }
         
         //this.skipWriteValue = true
