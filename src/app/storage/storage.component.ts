@@ -8,19 +8,28 @@ import { environment } from '../../environments/environment';
   styleUrl: './storage.component.scss'
 })
 export class StorageComponent {
-  _storagePath: string = localStorage.getItem('storagePath') || "C:/";
+  _storagePath: string | null = localStorage.getItem('storagePath');
 
-  get storagePath(): string {
+  private debounce: any;
+
+  get storagePath(): string | null {
     return this._storagePath;
   }
 
   set storagePath(value: string) {
     this._storagePath = value;
-    localStorage.setItem('storagePath', this._storagePath)
-    this.storageService.initWithStoragePath(this.storagePath);
+    if( this.debounce ){
+      clearTimeout(this.debounce);
+    }
+    this.debounce = setTimeout( () => {
+      if(this.storagePath === null) return;
+      localStorage.setItem('storagePath', this._storagePath ?? "")
+      this.storageService.initWithStoragePath(this.storagePath);
+    },500)
   }
 
   constructor(private storageService: StorageService) {
+    if(this.storagePath === null) return;
     this.storageService.initWithStoragePath(this.storagePath);
   }
 }
