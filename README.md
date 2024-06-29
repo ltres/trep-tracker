@@ -6,6 +6,9 @@
 `trep-tracker` is especially useful for project managers who need to keep track of various tags related to different projects and team members. 
 It allows you to have a clear view of tasks associated with specific projects or colleagues, allowing for quick and efficient monitoring.
 
+<img src="https://github.com/ltres/trep-tracker/blob/9fcfeff31dc956c81b2eccc406e1aae2531af5a4/src/assets/readme/screen.jpg" width="750" />
+
+
 ### Features
 - **Boards**: A workspace area. You can have multiple boards, but only one can be selected at a time.
 - **Lane**: Each board contains lanes that function as tracks where tasks are inserted.
