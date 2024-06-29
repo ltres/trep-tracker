@@ -2,10 +2,9 @@
   <div class="flex">
     <label class="translucent">Board:&nbsp;</label>
     <div contenteditable="true" 
-    [container]="this.board" 
-    [contenteditableHtml]="true" 
-    [(contenteditableModel)]="board.textContent" 
-    (contenteditableModelChange)="this.boardService.publishBoardUpdate()"
+    [(ngModel)]="board.textContent"
+    (onTagsChange)="updateBoardTags($event)"
+
     class="board-label"></div>
     <prioritizer [container]="board" class="m-x-025"> </prioritizer>
   </div>

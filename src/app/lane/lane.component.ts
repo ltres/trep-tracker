@@ -18,6 +18,7 @@ import { RegistryService } from '../../service/registry.service';
 })
 export class LaneComponent extends DraggableComponent implements OnInit {
 
+
   @ViewChildren(TaskComponent, { read: ElementRef }) taskComponentsElRefs: QueryList<ElementRef> | undefined;
   @ViewChildren(TaskComponent) taskComponents: QueryList<TaskComponent> | undefined;
 
@@ -96,6 +97,15 @@ export class LaneComponent extends DraggableComponent implements OnInit {
   }
   isArchive(arg0: Lane):boolean {
     return isArchive(arg0);
+  }
+  updateLaneTags($event: Tag[]) {
+    let allOldPresent = this.lane.tags.filter( oldTag => $event.map( t => t.tag.toLowerCase() ).find( r => r === oldTag.tag.toLowerCase() ) ).length === this.lane.tags.length
+    let allNewPresent = $event.filter( oldTag => this.lane.tags.map( t => t.tag.toLowerCase() ).find( r => r === oldTag.tag.toLowerCase() ) ).length === $event.length
+
+    if(!allOldPresent || !allNewPresent){
+      this.lane.tags = $event;
+      this.boardService.publishBoardUpdate()
+    }
   }
 
 }

@@ -12,7 +12,6 @@ import { KeyboardListenerComponent } from './keyboard-listener/keyboard-listener
 import { DragService } from '../service/drag.service';
 import { RegistryService } from '../service/registry.service';
 import { ContenteditableDirective } from './directive/contenteditable.directive';
-import { TagDirective } from './directive/tag.directive';
 import { TagService } from '../service/tag.service';
 import { TagsViewerComponent } from './tags-viewer/tags-viewer.component';
 import { StorageService } from '../service/storage.service';
@@ -30,7 +29,6 @@ import { FontResizerComponent } from './font-resizer/font-resizer.component';
          LaneComponent, 
          TaskComponent, 
          ContenteditableDirective, 
-         TagDirective, 
          TagsViewerComponent,
          StorageComponent,
          LaneMenuComponent,

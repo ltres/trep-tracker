@@ -13,13 +13,13 @@ data-consider-for-overlapping-checks="true"
     <div *ngIf="!isPlaceholder() && this.task.status === 'completed'" class="status big pointer" (click)="toggleTaskStatus()">☑</div>
     <span *ngIf="!static && ( task.status === 'completed' || task.archived)" (click)="archive()" class="archive pointer">🖿</span>
     <div class="flex wrap w-100 g-025">
-        <div class="grow" #editor [container]="this.task" 
-        [contenteditableHtml]="true" 
+        <div  class="grow" #editor 
         contenteditable="true" 
-        [(contenteditableModel)]="task.textContent"
-        (contenteditableModelChange)="this.boardService.publishBoardUpdate()"
+        [preventEvents]="!editorActive"
+        [(ngModel)]="task.textContent"
+        (onTagsChange)="updateTaskTags($event)"
         ></div>
-        
+
         <!--
         <div *ngIf="task.status === 'completed'"class="date-wrapper translucent small flex align-items-center">
             completed {{this.task.stateChangeDate | date: 'dd-MM-yy hh:mm a'}}

@@ -1,9 +1,14 @@
 $spacer-multiplier: 1;
 
-$background-color: hsl(223, 10%, 11%);
-$static-background-color: hsl(223, 20%, 11%);
-$non-static-background-color: hsl(223, 45%, 11%);
-$archive-background-color: hsl(41, 20%, 11%);
+$background-color: hsl(223, 10%, 10%);
+$background-color-2: hsl(223, 10%, 15%);
+
+$frost-blur:blur(5px);
+
+$static-background-color: hsla(223, 20%, 11%, 0.6);
+$non-static-background-color: hsla(223, 45%, 11%, 0.6);
+$archive-background-color: hsla(41, 20%, 11%, 0.6);
+
 $text-color: #ffffff;
 $font-size: 10px;
 $title-size: 1.2rem;
@@ -27,8 +32,8 @@ $archived-color:rgba($completed-color, $translucent-opacity);
 $danger-color:hsl(0, 80%, 50%);
 $warning-color:hsl(56, 80%, 50%);
 
-$tag-orange-color: hsla(21, 80%, 50%, 0.55);
-$tag-yellow-color: hsla(56, 80%, 50%, 0.55);
+$tag-orange-color: hsla(21, 80%, 50%, 0.75);
+$tag-yellow-color: hsla(56, 80%, 50%, 0.75);
 
 
 $priority-1-color:hsl(115, 80%, 50%);

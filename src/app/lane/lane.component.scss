@@ -14,7 +14,7 @@
     outline: 1px solid $lane-outline-color;
     outline-offset: -1px;
     border-radius: $border-radius;
-    background-color: $non-static-background-color;
+
 }
 
 .lane-wrapper{
@@ -50,12 +50,17 @@
     font-weight: bold;
 }
 
-.static-view{
-    background-color: $static-background-color;
+.lane-wrapper{
+    backdrop-filter: $frost-blur;
+    background-color: $non-static-background-color;
+    &.static-view{
+        background-color: $static-background-color;
+    }
+    &.archive-lane{
+        background-color: $archive-background-color;
+    }
 }
-.archive-lane{
-    background-color: $archive-background-color;
-}
+
 .lane-wrapper.static-view{
     // border-right: 1px solid $lane-title-color;
 }

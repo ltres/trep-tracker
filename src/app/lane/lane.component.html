@@ -4,11 +4,9 @@
   <div class="lane-toolbar flex align-items-center g-05 ">
     <div class="grow no-wrap flex align-items-center" >
       <div class="lane-title   no-wrap" 
-      [container]="this.lane" 
-      [contenteditableHtml]="true" 
       contenteditable="true" 
-      [(contenteditableModel)]="lane.textContent"
-      (contenteditableModelChange)="this.boardService.publishBoardUpdate()"
+      [(ngModel)]="this.lane.textContent"
+      (onTagsChange)="updateLaneTags($event)"
       > </div> 
       <prioritizer [container]="lane" class="m-l-025"> </prioritizer>
     </div>

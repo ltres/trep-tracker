@@ -35,19 +35,22 @@ export type Priority = undefined | 1 | 2 | 3 | 4
 
 export interface Tag{
     tag: string;
+    type: "tag-orange" | "tag-yellow"
 }
 
 export const addTagsForDoneAndArchived = false
-export const DoneTag : Tag = {tag: 'Done'}
-export const ArchivedTag : Tag = {tag: 'Archived'}
+export const DoneTag : Tag = {tag: 'Done', type: 'tag-orange'}
+export const ArchivedTag : Tag = {tag: 'Archived', type: 'tag-yellow'}
 
 
-export const tagIdentifiers:{symbol: string, class:string}[] = [
+export const tagIdentifiers:{ type: "tag-orange" | "tag-yellow", symbol: string, class:string}[] = [
     {
+        type: "tag-orange",
         symbol: '@',
         class: "tag-orange"
     },
     {
+        type: "tag-yellow",
         symbol: '#', 
         class: "tag-yellow"
     }

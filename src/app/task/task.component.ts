@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, HostBinding, HostListener, Input, OnDestroy, OnInit, Output, Renderer2, ViewChild, viewChild } from '@angular/core';
-import { Board, Lane, Container, Task } from '../../types/task';
+import { Board, Lane, Container, Task, Tag } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
@@ -15,7 +15,6 @@ import { RegistryService } from '../../service/registry.service';
   styleUrl: './task.component.scss'
 })
 export class TaskComponent extends DraggableComponent implements OnInit, OnDestroy {
-
   @ViewChild('editor') editor: ElementRef | undefined;
   @Input() task!: Task;
   @Input() lane!: Lane;
@@ -136,4 +135,15 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
   isPlaceholder(): boolean {
     return isPlaceholder(this.task);
   }
+
+  updateTaskTags($event: Tag[]) {
+    let allOldPresent = this.task.tags.filter( oldTag => $event.map( t => t.tag.toLowerCase() ).find( r => r === oldTag.tag.toLowerCase() ) ).length === this.task.tags.length
+    let allNewPresent = $event.filter( oldTag => this.task.tags.map( t => t.tag.toLowerCase() ).find( r => r === oldTag.tag .toLowerCase()) ).length === $event.length
+
+    if(!allOldPresent || !allNewPresent){
+      this.task.tags = $event;
+      this.boardService.publishBoardUpdate()
+    }
+  }
+
 }

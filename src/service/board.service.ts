@@ -136,7 +136,7 @@ export class BoardService {
     }
 
     activateEditorOnTask( lane: Lane, task: Task, caretPosition: number | undefined) {
-        if (this._editorActiveTask$.getValue()?.task === task) {
+        if (this._editorActiveTask$.getValue()?.task.id === task.id && this._editorActiveTask$.getValue()?.lane.id === lane.id ) {
             return
         }
         this._editorActiveTask$.next({lane, task, startingCaretPosition: caretPosition});
@@ -590,6 +590,17 @@ export class BoardService {
                 }
                 if(p.archived == null){
                     p.archived = false
+                }
+                if( p.tags ){
+                    p.tags.forEach( t => {
+                        if(!t.type){
+                            if( p.textContent.toLowerCase().indexOf(`${tagIdentifiers[0].symbol}${t.tag.toLowerCase()}`) >= 0 ){
+                                t.type = tagIdentifiers[0].type
+                            }else if( p.textContent.toLowerCase().indexOf(`${tagIdentifiers[1].symbol}${t.tag.toLowerCase()}`) >= 0 ){
+                                t.type = tagIdentifiers[1].type
+                            }
+                        }
+                    })
                 }
 
             });

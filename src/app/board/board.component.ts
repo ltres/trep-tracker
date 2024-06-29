@@ -19,6 +19,7 @@ import { DraggableComponent } from '../draggable/draggable.component';
   styleUrl: './board.component.scss',
 })
 export class BoardComponent extends BaseComponent implements OnInit, AfterViewInit {
+
   @Input() board!: Board;
   @ViewChildren(LaneComponent, { read: ElementRef }) laneComponentsElRefs: QueryList<ElementRef> | undefined;
   @ViewChildren(LaneComponent,) laneComponents: QueryList<LaneComponent> | undefined;
@@ -154,6 +155,7 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
 
         e.stopPropagation();
         e.stopImmediatePropagation();
+        e.preventDefault();
         // Create a new task
         /*
         if(!e.ctrlKey || !e.shiftKey){
@@ -192,6 +194,16 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
       }
 
     });
+  }
+
+  updateBoardTags($event: import("../../types/task").Tag[]) {
+      let allOldPresent = this.board.tags.filter( oldTag => $event.map( t => t.tag.toLowerCase() ).find( r => r === oldTag.tag.toLowerCase() ) ).length === this.board.tags.length
+      let allNewPresent = $event.filter( oldTag => this.board.tags.map( t => t.tag.toLowerCase() ).find( r => r === oldTag.tag.toLowerCase() ) ).length === $event.length
+  
+      if(!allOldPresent || !allNewPresent){
+        this.board.tags = $event;
+        this.boardService.publishBoardUpdate()
+      }
   }
 
 
