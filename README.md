@@ -1,5 +1,5 @@
 # trep-tracker 
-![trep-tracker icon](src\assets\icon\ios\AppIcon-40@2x~ipad.png)
+![trep-tracker icon](https://github.com/ltres/trep-tracker/blob/2b75c545cfd54d2a2c7a49a9df2060537a59db21/src/assets/icon/ios/AppIcon-40%402x~ipad.png)
 
 `trep-tracker` is a **project manager-oriented task tracker/todo list**, designed to manage activities efficiently and focusing on task prioritization and quickness of use.
 
