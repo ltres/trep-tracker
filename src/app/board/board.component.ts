@@ -29,6 +29,7 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
 
   @HostBinding('style.width.px')
   protected width: number | undefined = 0;
+  debounce: any;
 
   constructor(
     protected  boardService: BoardService,
@@ -202,9 +203,18 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
   
       if(!allOldPresent || !allNewPresent){
         this.board.tags = $event;
-        this.boardService.publishBoardUpdate()
+        this.debounceBoardUpdate()
       }
   }
+
+  debounceBoardUpdate( ){
+    if( this.debounce ){
+        clearTimeout(this.debounce);
+    }
+    this.debounce = setTimeout( () => {
+      this.boardService.publishBoardUpdate()
+    },500)
+}
 
 
 }

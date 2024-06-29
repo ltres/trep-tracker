@@ -17,6 +17,7 @@ data-consider-for-overlapping-checks="true"
         contenteditable="true" 
         [preventEvents]="!editorActive"
         [(ngModel)]="task.textContent"
+        (ngModelChange)="debounceBoardUpdate()"
         (onTagsChange)="updateTaskTags($event)"
         ></div>
 

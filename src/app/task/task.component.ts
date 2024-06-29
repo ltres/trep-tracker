@@ -27,6 +27,7 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
 
   editorActive: boolean = false;
   selected: boolean = false;
+  debounce: any;
 
 
   constructor(
@@ -142,8 +143,17 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
 
     if(!allOldPresent || !allNewPresent){
       this.task.tags = $event;
-      this.boardService.publishBoardUpdate()
+      this.debounceBoardUpdate()
     }
+  }
+
+  debounceBoardUpdate( ){
+      if( this.debounce ){
+          clearTimeout(this.debounce);
+      }
+      this.debounce = setTimeout( () => {
+        this.boardService.publishBoardUpdate()
+      },500)
   }
 
 }

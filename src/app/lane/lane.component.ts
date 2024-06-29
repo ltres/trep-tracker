@@ -27,6 +27,7 @@ export class LaneComponent extends DraggableComponent implements OnInit {
 
 
   menuOpen = false
+  debounce: any;
 
   constructor(
     protected override boardService: BoardService,
@@ -104,8 +105,16 @@ export class LaneComponent extends DraggableComponent implements OnInit {
 
     if(!allOldPresent || !allNewPresent){
       this.lane.tags = $event;
-      this.boardService.publishBoardUpdate()
+      this.debounceBoardUpdate()
     }
   }
+  debounceBoardUpdate( ){
+    if( this.debounce ){
+        clearTimeout(this.debounce);
+    }
+    this.debounce = setTimeout( () => {
+      this.boardService.publishBoardUpdate()
+    },500)
+}
 
 }

@@ -3,6 +3,7 @@
     <label class="translucent">Board:&nbsp;</label>
     <div contenteditable="true" 
     [(ngModel)]="board.textContent"
+    (ngModelChange)="debounceBoardUpdate()"
     (onTagsChange)="updateBoardTags($event)"
 
     class="board-label"></div>

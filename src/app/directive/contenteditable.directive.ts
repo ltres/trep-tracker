@@ -16,13 +16,14 @@ import { Container, Tag } from '../../types/task';
         multi: true
     }]
 })
-export class ContenteditableDirective implements ControlValueAccessor, OnChanges {
+export class ContenteditableDirective implements ControlValueAccessor {
     @Input() ngModel!: string;
     @Input() preventEvents: boolean = false;
     @Output() ngModelChange = new EventEmitter<string>();
     @Output() onTagsChange = new EventEmitter<Tag[]>();
 
     private caretShift: number = 0;
+    private debounce: any;
 
     constructor(
         private tagService: TagService,
@@ -30,27 +31,28 @@ export class ContenteditableDirective implements ControlValueAccessor, OnChanges
     ) { }
 
 
-    @HostListener('keyup')
-    //@HostListener('blur')
-    onInteract(): void {
+    @HostListener('keyup', ['$event'])
+    // @HostListener('blur', ['$event'])
+    onInteract($event: Event): void {
         // get the current cursor position:
         //const value = this.elementRef.nativeElement.innerHTML;
         const value =  this.elementRef.nativeElement.textContent;
         let result = this.tagService.extractTags( value );
         //console.log(result);
-        if(!this.preventEvents){
-            this.onTagsChange.emit(result.tags);
-        }
+
         this.caretShift = result.caretShift;
         //this.ngModel = value;
         //this.onChange(value); // makes the ngModel effectively update by calling the writeValue
         //this.onTouched();
         //this.skipWriteValue = true;
         if(!this.preventEvents){
+            this.onTagsChange.emit(result.tags);
+        }
+        if(!this.preventEvents){
             this.ngModelChange.emit(result.taggedString); // makes the ngModel effectively update. Triggers ngOnChange
         }
-        //this.elementRef.nativeElement.innerHTML = value;
     }
+
 
     private onChange: (value: string) => void = () => {};
     private onTouched: () => void = () => {};
