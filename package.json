@@ -1,22 +1,22 @@
 {
   "name": "trep-tracker",
-  "version": "0.5.0-beta",
+  "version": "0.5.1-beta",
   "type": "module",
   "main": "./electron-make-app.js",
   "author": {
-    "name": "Lorenzo Tres",
+    "name": "Lorenzo Tresoldi LTres",
     "email": "lorenzo.tres@gmail.com"
   },
   "description": "A PM-Oriented task tracker",
   "scripts": {
     "ng": "ng",
     "start": "electron-forge start",
-    "build": "ng build --configuration electrified",
-    "watch": "ng build --watch --configuration development",
-    "electron": "concurrently \"ng serve\" \"wait-on http://localhost:4200 && electron ./electron-development-app.js\"",
-    "electron-forge-test": "ng build && electron ./electron-make-app.js\"",
-    "package": "electron-forge package",
-    "make": "ng build && electron-forge make"
+    "build": "node update-versions.cjs && ng build --configuration electrified",
+    "watch": "node update-versions.cjs && ng build --watch --configuration development",
+    "electron": "node update-versions.cjs && concurrently \"ng serve\" \"wait-on http://localhost:4200 && electron ./electron-development-app.js\"",
+    "electron-forge-test": "node update-versions.cjs && ng build && electron ./electron-make-app.js\"",
+    "package": "node update-versions.cjs && electron-forge package",
+    "make": "node update-versions.cjs && ng build && electron-forge make"
   },
   "engines": {
     "node": ">=22"
