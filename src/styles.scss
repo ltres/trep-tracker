@@ -2,6 +2,10 @@
 
 @import 'assets/jetbrains-mono/jetbrains-mono.scss';
 @import "assets/variables";
+@import "assets/mixins";
+
+
+
 html {
   background-color: $background-color;
   color: $text-color;
@@ -120,10 +124,24 @@ button {
 .align-items-center{
   align-items: center;
 }
+.justify-content-center{
+  justify-content: center;
+}
 .justify-content-end{
   justify-content: end;
 }
-
+.absolute{
+  position: absolute;
+}
+.top{
+  top: 0;
+}
+.right{
+  right: 0;
+}
+.text-align-center{
+  text-align: center;
+}
 .w-100{
   width: 100%;
 
@@ -147,61 +165,6 @@ button {
   }
 
   @return $string;
-}
-
-@mixin generate-utility-classes($padding-values) {
-  @each $padding in $padding-values {
-    .p-#{str-replace($padding, ".", "")} {
-      padding: $padding * 1rem * $spacer-multiplier;
-    }
-    .p-x-#{str-replace($padding, ".", "")} {
-      padding-left: $padding * 1rem * $spacer-multiplier;
-      padding-right: $padding * 1rem * $spacer-multiplier;
-    }
-    .p-y-#{str-replace($padding, ".", "")} {
-      padding-top: $padding * 1rem * $spacer-multiplier;
-      padding-bottom: $padding * 1rem * $spacer-multiplier;
-    }
-    .p-l-#{str-replace($padding, ".", "")} {
-      padding-left: $padding * 1rem * $spacer-multiplier;
-    }
-    .p-r-#{str-replace($padding, ".", "")} {
-      padding-right: $padding * 1rem * $spacer-multiplier;
-    }
-    .p-t-#{str-replace($padding, ".", "")} {
-      padding-top: $padding * 1rem * $spacer-multiplier;
-    }
-    .p-b-#{str-replace($padding, ".", "")} {
-      padding-top: $padding * 1rem * $spacer-multiplier;
-    }
-
-    .m-#{str-replace($padding, ".", "")} {
-      margin: $padding * 1rem * $spacer-multiplier;
-    }
-    .m-x-#{str-replace($padding, ".", "")} {
-      margin-left: $padding * 1rem * $spacer-multiplier;
-      margin-right: $padding * 1rem * $spacer-multiplier;
-    }
-    .m-y-#{str-replace($padding, ".", "")} {
-      margin-top: $padding * 1rem * $spacer-multiplier;
-      margin-bottom: $padding * 1rem * $spacer-multiplier;
-    }
-    .m-l-#{str-replace($padding, ".", "")} {
-      margin-left: $padding * 1rem * $spacer-multiplier;
-    }
-    .m-r-#{str-replace($padding, ".", "")} {
-      margin-right: $padding * 1rem * $spacer-multiplier;
-    }
-    .m-t-#{str-replace($padding, ".", "")} {
-      margin-top: $padding * 1rem * $spacer-multiplier;
-    }
-    .m-b-#{str-replace($padding, ".", "")} {
-      margin-bottom: $padding * 1rem * $spacer-multiplier;
-    }
-    .g-#{str-replace($padding, ".", "")} {
-      gap: $padding * 1rem * $spacer-multiplier
-    }
-  }
 }
 
 @include generate-utility-classes(0.25 0.5 1);
@@ -250,3 +213,4 @@ input, textarea{
   border-color: transparent;
   border: 1px solid $translucent-color;
 }
+

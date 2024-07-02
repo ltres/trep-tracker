@@ -79,3 +79,19 @@ ipcMain.on('read-file', (event, filePath) => {
 ipcMain.on('write-file', (event, { filePath, content }) => {
   console.log(filePath, content);
 });
+
+ipcMain.handle('create-file', async (event) => {
+  let extension = 'trptrk';
+  const { filePath } = await dialog.showSaveDialog({
+    title: 'Create trep-tracker status File',
+    buttonLabel: 'Create',
+    filters: [{ name: 'trep-tracker status file', extensions: [extension] }],
+    // You can set default path, filters, etc. here
+  });
+
+  if (filePath) {
+    fs.writeFileSync( filePath, '{}', 'utf-8');
+    return filePath;
+  }
+  return null;
+});

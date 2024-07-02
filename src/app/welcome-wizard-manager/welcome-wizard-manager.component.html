@@ -1,0 +1,48 @@
+<ng-template #step1>
+    <div class="title flex align-items-center justify-content-center g-1">
+        <img src="assets/icon/web/icon-192.png" alt="trep-tracker logo" class="icon logo">
+        <h1>
+            Welcome to trep-tracker
+        </h1>
+        <h3>v{{version}}</h3>
+
+    </div>
+    <div class="body">
+        <h2 class="text-align-center">
+            Choose an existing status file, or create a new one:
+        </h2>
+        <div class="buttons flex justify-content-center">
+            <button (click)="document.querySelector('#status-chooser').click()">
+                Choose existing status file
+            </button>
+            <button (click)="createNewStatusFile()">
+                Create a new status file
+            </button>
+            <input #statuschooser id="status-chooser" style="display: none;" type="file" accept=".trptrk" (change)="handleStatusFileChosen($event)">
+        </div>
+    </div>
+</ng-template>
+<ng-template #step2>
+    <div class="title flex align-items-center justify-content-center g-1">
+        <img src="assets/icon/web/icon-192.png" alt="trep-tracker logo" class="icon logo">
+        <h1>
+            Status file selected! You're good to go.
+        </h1>
+    </div>
+    <div class="body">
+        <p class="text-align-center">
+            Would you like a quick detour of the application?
+        </p>
+        <div class="buttons flex justify-content-center">
+            <button>
+                Yes please!
+            </button>
+            <button (click)="closeModal()">
+                No, I'm good
+            </button>
+        </div>
+    </div>
+</ng-template>
+<ng-template #step3>
+    test2
+</ng-template>

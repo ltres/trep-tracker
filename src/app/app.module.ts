@@ -22,6 +22,10 @@ import { PrioritizerComponent } from './prioritizer/prioritizer.component';
 import { ImporterComponent } from './importer/importer.component';
 import { FontResizerComponent } from './font-resizer/font-resizer.component';
 import { SearchComponent } from './search/search.component';
+import { ModalComponent } from './modal/modal.component';
+import { ModalService } from '../service/modal.service';
+import { WelcomeWizardManagerComponent } from './welcome-wizard-manager/welcome-wizard-manager.component';
+import { ElectronService } from '../service/electron.service';
  
 @NgModule({
     declarations: [
@@ -37,9 +41,20 @@ import { SearchComponent } from './search/search.component';
          PrioritizerComponent,
          ImporterComponent,
          FontResizerComponent,
-         SearchComponent
+         SearchComponent,
+         ModalComponent,
+         WelcomeWizardManagerComponent
         ],
-    providers: [BoardService, KeyboardService, DragService, RegistryService, TagService, StorageService],
+    providers: [
+        BoardService, 
+        KeyboardService, 
+        DragService, 
+        RegistryService, 
+        TagService, 
+        StorageService,
+        ModalService,
+        ElectronService
+    ],
     bootstrap: [AppComponent],
     imports: [
         CommonModule,

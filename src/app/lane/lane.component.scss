@@ -52,12 +52,12 @@
 
 .lane-wrapper{
     backdrop-filter: $frost-blur;
-    background-color: $non-static-background-color;
+    background-color: $lane-non-static-background-color;
     &.static-view{
-        background-color: $static-background-color;
+        background-color: $lane-static-background-color;
     }
     &.archive-lane{
-        background-color: $archive-background-color;
+        background-color: $lane-archive-background-color;
     }
 }
 

@@ -1,10 +1,12 @@
-import { app, BrowserWindow, ipcMain  } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain  } from 'electron'
 import contextMenu from 'electron-context-menu';
 import { createRequire } from "module";
 import { fileURLToPath } from 'url';
+
 const require = createRequire(import.meta.url);
 
 let path = require('path')
+const fs = require('fs');
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
@@ -41,6 +43,8 @@ function createWindow () {
 
   win.loadURL(`http://localhost:4200`)
 
+
+
   //// uncomment below to open the DevTools.
    win.webContents.openDevTools()
 
@@ -74,10 +78,34 @@ app.on('activate', function () {
   }
 })
 
+ipcMain.on('open-file-stuff', () => {
+  dialog.showOpenDialog({ 
+    properties: [ 'openFile' ] }, function ( filename ) {
+      console.log( filename.toString() );
+    }
+  );
+})
+
 ipcMain.on('read-file', (event, filePath) => {
   console.log(filePath);
 });
 
 ipcMain.on('write-file', (event, { filePath, content }) => {
   console.log(filePath, content);
+});
+
+ipcMain.handle('create-file', async (event) => {
+  let extension = 'trptrk';
+  const { filePath } = await dialog.showSaveDialog({
+    title: 'Create trep-tracker status File',
+    buttonLabel: 'Create',
+    filters: [{ name: 'trep-tracker status file', extensions: [extension] }],
+    // You can set default path, filters, etc. here
+  });
+
+  if (filePath) {
+    fs.writeFileSync( filePath, '{}', 'utf-8');
+    return filePath;
+  }
+  return null;
 });

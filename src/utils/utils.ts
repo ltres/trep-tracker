@@ -135,3 +135,11 @@ export function isPlaceholder(task: Task){
 export function isArchive(lane: Lane){
     return lane.archive;
 }
+
+export function setStatusPath(value: string) {
+    localStorage.setItem('storagePath', value)
+}
+
+export function getStatusPath(): string | null {
+    return localStorage.getItem('storagePath')
+}

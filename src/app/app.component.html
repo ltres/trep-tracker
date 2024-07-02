@@ -15,7 +15,7 @@
                 <!-- 
                 <font-resizer></font-resizer>
                 <importer *ngIf="getFirstLane()" [lane]="getFirstLane()"></importer>-->
-                <storage></storage>
+                <!-- <storage></storage> -->
             </div>
             <keyboard-listener></keyboard-listener>
             
@@ -24,3 +24,5 @@
     <board-selection-menu class="column-2 flex"></board-selection-menu>
 
 </main>
+<modal *ngIf="modalService.displayModal$ | async"></modal>
+<welcome-wizard-manager *ngIf="!hasStoragePathSet()"></welcome-wizard-manager>

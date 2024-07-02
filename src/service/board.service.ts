@@ -581,7 +581,7 @@ export class BoardService {
         let o = JSON.parse(data);
         if(!o.boards){
             console.warn('No boards found in the data');
-            this._boards$.next([]);        
+            this._boards$.next( [getNewBoard( getNewLane(false) )] );        
             this._selectedTasks$.next([]);
             this._lastSelectedTask$.next(undefined);
             this._editorActiveTask$.next(undefined);

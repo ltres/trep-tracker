@@ -2,12 +2,13 @@ $spacer-multiplier: 1;
 
 $background-color: hsl(223, 10%, 10%);
 $background-color-2: hsl(223, 10%, 15%);
+$modal-backdrop-color: rgba(0, 0, 0, 0.3);
 
 $frost-blur:blur(5px);
 
-$static-background-color: hsla(223, 20%, 11%, 0.6);
-$non-static-background-color: hsla(223, 45%, 11%, 0.6);
-$archive-background-color: hsla(41, 20%, 11%, 0.6);
+$lane-static-background-color: hsla(223, 20%, 11%, 0.6);
+$lane-non-static-background-color: hsla(223, 45%, 11%, 0.6);
+$lane-archive-background-color: hsla(41, 20%, 11%, 0.6);
 
 $text-color: #ffffff;
 $font-size: 10px;

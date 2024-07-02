@@ -1,4 +1,4 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, ipcMain } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
@@ -9,5 +9,6 @@ contextBridge.exposeInMainWorld('electron', {
   writeFile: (filePath, content) => {
     fs.writeFileSync(filePath, content, 'utf-8');
   },
+  createFile: () => ipcRenderer.invoke('create-file')
   // Additional methods can be added here
 });

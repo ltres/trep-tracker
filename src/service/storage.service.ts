@@ -3,6 +3,7 @@ import { ipcRenderer } from 'electron';
 import { BoardService } from "./board.service";
 import { Subscription } from "rxjs";
 import { environment } from "../environments/environment";
+import { getStatusPath } from "../utils/utils";
 
 
 @Injectable({
@@ -13,7 +14,7 @@ export class StorageService {
   initializedWithValidStatus = false;
   subscription: Subscription | undefined;
   constructor(private boardService: BoardService) {
-
+    
   }
 
   initWithStoragePath(storagePath: string): void {
@@ -22,7 +23,7 @@ export class StorageService {
       this.boardService.deserialize(this.readFile(this.storagePath));
       this.boardService.selectFirstBoard();
     }catch(e){
-      console.warn("It was not possible to deserialize the status in " + this.storagePath)
+      throw("It was not possible to deserialize the status in " + this.storagePath);
     }
     if(this.subscription) this.subscription.unsubscribe();
     this.subscription = this.boardService.boards$.subscribe(boards => {
@@ -53,11 +54,3 @@ export class StorageService {
   }
 }
 
-declare global {
-  interface Window {
-    electron?: {
-      readFile: (filePath: string) => string;
-      writeFile: (filePath: string, content: string) => string;
-    };
-  }
-}

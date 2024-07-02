@@ -1,0 +1,23 @@
+@import "../../assets/variables";
+@import "../../assets/mixins";
+
+:host{
+    position: fixed;
+    top:0;
+    left: 0;
+    background-color: $modal-backdrop-color;
+    width: 100vw; 
+    height: 100vh;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content{
+    position: absolute;
+    width: 30%;
+    min-width: 50rem;
+    height: auto;
+    @include lane-style;
+}
