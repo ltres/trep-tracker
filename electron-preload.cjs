@@ -9,6 +9,13 @@ contextBridge.exposeInMainWorld('electron', {
   writeFile: (filePath, content) => {
     fs.writeFileSync(filePath, content, 'utf-8');
   },
-  createFile: () => ipcRenderer.invoke('create-file')
-  // Additional methods can be added here
+  createFile: () => ipcRenderer.invoke('create-file'),
+  openAppStatus: () => ipcRenderer.invoke('open-app-status'),
+
+  onStoreAppStatusRequest: (callback) => ipcRenderer.on('store-app-status-request', callback),
+  onOpenedAppStatus: (callback) => ipcRenderer.on('opened-app-status', callback),
+
+  sendAppStatus: (status) => ipcRenderer.send('app-status-response', status),
+
+  // sendAppStatus: (status) => ipcRenderer.send('app-status-response', status)
 });

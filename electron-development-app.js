@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain  } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, Menu  } from 'electron'
 import contextMenu from 'electron-context-menu';
 import { createRequire } from "module";
 import { fileURLToPath } from 'url';
@@ -39,7 +39,41 @@ function createWindow () {
     backgroundColor: '#161a24',
     icon: `${__dirname}/src/assets/icon/web/favicon.ico`
   })
-  // win.setMenu(null)
+
+  let template = [
+    {
+      label: 'File',
+      submenu: [
+        {
+          label: 'Open status file',
+          click: async () => {
+            debugger;
+            console.log('open-app-status');
+
+            let filePath = await getStatusFilePath();
+            console.log('open-app-status', filePath);
+
+            if( filePath ){
+              console.log('open-app-status', filePath);
+              win.webContents.send('opened-app-status', filePath);
+            }
+          }
+        },
+        {
+          label: 'Save status as..',
+          click: () => {
+            win.webContents.send('store-app-status-request');
+          }
+        }
+      ]
+    },
+    // ... other menu items ...
+  ];
+
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+
+  // win.setMenu(Menu);
 
   win.loadURL(`http://localhost:4200`)
 
@@ -94,7 +128,7 @@ ipcMain.on('write-file', (event, { filePath, content }) => {
   console.log(filePath, content);
 });
 
-ipcMain.handle('create-file', async (event) => {
+async function createStatusFile( fileContent ){
   let extension = 'trptrk';
   const { filePath } = await dialog.showSaveDialog({
     title: 'Create trep-tracker status File',
@@ -104,8 +138,44 @@ ipcMain.handle('create-file', async (event) => {
   });
 
   if (filePath) {
-    fs.writeFileSync( filePath, '{}', 'utf-8');
+    fs.writeFileSync( filePath, fileContent ?? '{}', 'utf-8');
     return filePath;
   }
   return null;
+}
+
+async function getStatusFilePath( fileContent ){
+  let extension = 'trptrk';
+  const { filePaths } = await dialog.showOpenDialog({
+    title: 'Open trep-tracker status File',
+    buttonLabel: 'Open',
+    filters: [{ name: 'trep-tracker status file', extensions: [extension] }],
+    // You can set default path, filters, etc. here
+  });
+
+  if (filePaths && filePaths[0]) {
+    return filePaths[0];
+  }
+  return null;
+}
+
+ipcMain.handle('create-file', async (event) => {
+  console.log('Creating file..:');
+  return await createStatusFile( "{}" );
 });
+
+ipcMain.handle('open-app-status', async (event) => {
+  console.log('open-app-status..:');
+  return await getStatusFilePath();
+});
+
+
+
+ipcMain.on('app-status-response', async (event, status) => {
+  console.log('Received app status:', status);
+  return await createStatusFile( status );
+});
+
+ipcMain.handle('store-app-status-request',  async (event) => {
+  console.log('store-app-status-request', status);
+})

@@ -12,13 +12,12 @@
             Choose an existing status file, or create a new one:
         </h2>
         <div class="buttons flex justify-content-center">
-            <button (click)="document.querySelector('#status-chooser').click()">
+            <button (click)="openStatusFile()">
                 Choose existing status file
             </button>
             <button (click)="createNewStatusFile()">
                 Create a new status file
             </button>
-            <input #statuschooser id="status-chooser" style="display: none;" type="file" accept=".trptrk" (change)="handleStatusFileChosen($event)">
         </div>
     </div>
 </ng-template>
@@ -31,14 +30,11 @@
     </div>
     <div class="body">
         <p class="text-align-center">
-            Would you like a quick detour of the application?
+            All set!
         </p>
         <div class="buttons flex justify-content-center">
-            <button>
-                Yes please!
-            </button>
             <button (click)="closeModal()">
-                No, I'm good
+                Let's start tracking
             </button>
         </div>
     </div>

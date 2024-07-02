@@ -1,25 +1,36 @@
 import { Injectable } from '@angular/core';
+import { BoardService } from './board.service';
+import { StorageService } from './storage.service';
 
 // @ts-ignore
 @Injectable({
   providedIn: 'root'
 })
 export class ElectronService {
-
-  private electron: typeof Electron | undefined;
-  // @ts-ignore
-  private fs: typeof fs | undefined;
-
-  constructor() {
-
+  constructor(
+    private storageService: StorageService,
+    private boardService: BoardService
+  ) {
+    window.electron.onOpenedAppStatus(( event, filePath) => {
+      console.log("Opened app status");
+      this.storageService.initWithStoragePath(filePath);
+    })
+    window.electron.onStoreAppStatusRequest(() => {
+      window.electron.sendAppStatus(this.boardService.serialize());
+    })
   }
 
-  isElectron(): boolean {
-    return true
+  openAppStatus(): Promise<string> {
+    return window.electron.openAppStatus();
   }
 
   createStatusFile(): Promise<string> {
     return window.electron.createFile();
   }
+
+  sendAppStatus( status: Object ): void {
+    window.electron.sendAppStatus(status);
+  }
+
 }
 

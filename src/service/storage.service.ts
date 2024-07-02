@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable, NgZone } from "@angular/core";
 import { ipcRenderer } from 'electron';
 import { BoardService } from "./board.service";
 import { Subscription } from "rxjs";
@@ -13,15 +13,24 @@ export class StorageService {
   storagePath: string | undefined;
   initializedWithValidStatus = false;
   subscription: Subscription | undefined;
-  constructor(private boardService: BoardService) {
+  constructor(
+    private boardService: BoardService,
+    private zone: NgZone
+  ) {
     
   }
 
   initWithStoragePath(storagePath: string): void {
     this.storagePath = storagePath;
     try{
-      this.boardService.deserialize(this.readFile(this.storagePath));
-      this.boardService.selectFirstBoard();
+      let file = this.readFile(this.storagePath);
+
+      this.zone.run(() => {
+        // Electron fix
+        this.boardService.deserialize(file);
+        this.boardService.selectFirstBoard();
+      })
+
     }catch(e){
       throw("It was not possible to deserialize the status in " + this.storagePath);
     }
@@ -31,7 +40,7 @@ export class StorageService {
     });
   }
 
-  readFile(filePath: string): any {
+  readFile(filePath: string): string {
     if (window.electron) {
       try{
         return window.electron.readFile(filePath);

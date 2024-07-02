@@ -22,6 +22,8 @@ body {
 * {
   scrollbar-color: $scrollbar-color $background-color;
   scrollbar-width: thin;
+  margin: 0;
+  padding: 0;
 }
 
 .floating-label {
@@ -154,6 +156,11 @@ button {
 }
 .no-wrap{
   white-space: nowrap;
+}
+
+.logo{
+  width: 4rem;
+  height: auto;
 }
 
 @function str-replace($string, $search, $replace: '') {

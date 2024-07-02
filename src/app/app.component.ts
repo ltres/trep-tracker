@@ -7,6 +7,7 @@ import { Board, Lane, getNewBoard, getNewLane } from '../types/task';
 import { generateUUID, getStatusPath } from '../utils/utils';
 import { ModalService } from '../service/modal.service';
 import { StorageService } from '../service/storage.service';
+import { ElectronService } from '../service/electron.service';
 
 @Component({
   selector: 'app-root',
@@ -21,7 +22,8 @@ export class AppComponent implements AfterViewInit {
   constructor(
     private boardService: BoardService,
     protected modalService: ModalService,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private electronService: ElectronService
   ) {
     if( getStatusPath() !== null ){
       this.storageService.initWithStoragePath(getStatusPath()!);

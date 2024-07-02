@@ -23,7 +23,7 @@ export class WelcomeWizardManagerComponent implements AfterViewInit {
     private modalService: ModalService,
     private storageService: StorageService,
     private electronService: ElectronService
-  ) { 
+  ) {
     this.document = document;
   }
 
@@ -38,37 +38,32 @@ export class WelcomeWizardManagerComponent implements AfterViewInit {
 
   createNewStatusFile() {
     this.electronService.createStatusFile()
-      .then(filePath => {     
+      .then(filePath => {
         console.log('Status file created at:', filePath);
         this.handleStatusFileChosen(filePath);
       })
       .catch(error => console.error('Error creating status file:', error));
   }
 
-  handleStatusFileChosen($event: Event | string) {
-    let filePath: string | undefined = "";
-    if(typeof $event === 'string'){
-      filePath = $event;
-    }else{
-      const fileInput = $event.target as HTMLInputElement;
-      const file = fileInput.files?.[0];
-      filePath = file?.path;
-    }
-
-    if(filePath){
-      try{
-        this.storageService.initWithStoragePath(filePath);
-        setStatusPath(filePath);
-        this.nextStep();
-      }catch(e){
-        alert(e);
-      }
-    }
-
+  async openStatusFile() {
+    let path = await this.electronService.openAppStatus()
+    this.handleStatusFileChosen(path);
   }
+
+
+  handleStatusFileChosen(filePath: string) {
+    try {
+      this.storageService.initWithStoragePath(filePath);
+      setStatusPath(filePath);
+      this.nextStep();
+    } catch (e) {
+      alert(e);
+    }
+  }
+
   nextStep() {
     this.selectedStepIndex++;
-    if(!this.steps) return;
+    if (!this.steps) return;
     this.modalService.setModalContent(this.steps?.toArray()[this.selectedStepIndex]);
   }
 
