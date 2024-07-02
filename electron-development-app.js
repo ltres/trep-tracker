@@ -76,6 +76,7 @@ function createWindow () {
   // win.setMenu(Menu);
 
   win.loadURL(`http://localhost:4200`)
+  // win.loadURL(`file://${__dirname}${relPath}/index.html`)
 
 
 

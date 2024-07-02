@@ -20,11 +20,11 @@ export class ElectronService {
     })
   }
 
-  openAppStatus(): Promise<string> {
+  openAppStatus(): Promise<string | undefined> {
     return window.electron.openAppStatus();
   }
 
-  createStatusFile(): Promise<string> {
+  createStatusFile(): Promise<string | undefined> {
     return window.electron.createFile();
   }
 

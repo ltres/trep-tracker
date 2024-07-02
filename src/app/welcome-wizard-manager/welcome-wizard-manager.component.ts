@@ -40,6 +40,7 @@ export class WelcomeWizardManagerComponent implements AfterViewInit {
     this.electronService.createStatusFile()
       .then(filePath => {
         console.log('Status file created at:', filePath);
+        if(!filePath) throw("No file selected");
         this.handleStatusFileChosen(filePath);
       })
       .catch(error => console.error('Error creating status file:', error));
@@ -47,6 +48,7 @@ export class WelcomeWizardManagerComponent implements AfterViewInit {
 
   async openStatusFile() {
     let path = await this.electronService.openAppStatus()
+    if(!path) throw("No file selected");
     this.handleStatusFileChosen(path);
   }
 
