@@ -9,13 +9,9 @@
 }
 span{
     font-size: $small-font-size;
-    cursor:pointer;
-    &.selectable{
-        color:$translucent-color;
-    }
+
     &.priority-1.active, &.priority-1:hover{
-        color:$priority-1-color;
-        
+        color:$priority-1-color; 
     }
     &.priority-2.active, &.priority-2:hover{
         color:$priority-2-color;
@@ -29,5 +25,6 @@ span{
         color:$priority-4-color;
         //transform: scale(1.5);
     }
+
 }
 

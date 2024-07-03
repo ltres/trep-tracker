@@ -1,0 +1,17 @@
+<div *ngIf="!isPlaceholder()" class="flex align-items-center">
+    <div class="flex align-items-center" *ngIf="!open">
+        <span [tooltip]="getTooltip(task.status)" class="pointer status big status-{{task.status}} active" (click)="open = !open" >{{getSymbol(task.status)}}</span>
+    </div>
+    <div class="flex align-items-center g-025" *ngIf="open">
+        <span *ngFor="let status of getAvailableStatuses()" 
+        [tooltip]="getTooltip(status)"
+        class="selectable status big status-{{status}}"  
+        [class.active]="task.status === status" 
+        (click)="updateStatus(status)" >{{getSymbol(status)}}</span>
+        
+        
+        <span [tooltip]="'close'"class="selectable archive" (click)="open = !open">🗙</span> 
+    </div> 
+
+    <span [tooltip]="'archive'" *ngIf="!staticLane && ( task.status === 'completed' || task.archived)" class="selectable big archive" (click)="archive()">📂</span> 
+</div>

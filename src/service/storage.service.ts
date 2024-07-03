@@ -3,7 +3,7 @@ import { ipcRenderer } from 'electron';
 import { BoardService } from "./board.service";
 import { Subscription } from "rxjs";
 import { environment } from "../environments/environment";
-import { getStatusPath } from "../utils/utils";
+import { getStatusPath, setStatusPath } from "../utils/utils";
 
 
 @Injectable({
@@ -29,6 +29,8 @@ export class StorageService {
         // Electron fix
         this.boardService.deserialize(file);
         this.boardService.selectFirstBoard();
+        if(!this.storagePath) throw("No storage path");
+        setStatusPath(this.storagePath);
       })
 
     }catch(e){

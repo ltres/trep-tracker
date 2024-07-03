@@ -28,17 +28,11 @@
     &.editor-active{
         background-color: $editor-active-background;   
     }
-    &.completed{
-        color:$completed-color;
-        --ngx-editor-text-color: $completed-color;
-    }
     &.selected{
         border-left:.15rem solid $text-color;
         padding-left: 0.25rem;
     }
-    &.archived{
-        opacity: $translucent-opacity;
-    }
+
 }
 
 .editor-wrapper{

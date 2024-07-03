@@ -24,7 +24,7 @@ export class KeyboardService {
       if(e.key === 'd' && e.ctrlKey === true){
         // Mark as Done selected tasks
         e.preventDefault();
-        this.boardService.selectedTasks?.filter(t => !isPlaceholder(t) ).forEach(t => this.boardService.toggleTaskStatus(t) );
+        this.boardService.selectedTasks?.filter(t => !isPlaceholder(t) ).forEach(t => this.boardService.nextStatus(t) );
       }else if(e.key === 'a' && e.ctrlKey === true){
         // Archive tasks
         let board = this.boardService.selectedBoard;

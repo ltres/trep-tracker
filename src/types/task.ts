@@ -11,8 +11,29 @@ export interface Lane extends Container<Task>{
 }
 export interface Task extends Container<Task>{
     _type: 'task',
-    status: "completed" | "todo"
+    status: TaskStatus
 }
+
+export const TaskStatuses = {
+    todo : {
+        icon: "☐"
+    },
+    "in-progress": {
+        icon: "🛠️",
+    },
+    delegated: {
+        icon: "👦🏼",
+    },
+    waiting: {
+        icon: "⏳",
+    },
+    completed: {
+        icon: "✅",
+    }
+}
+
+export type TaskStatus = keyof typeof TaskStatuses;
+
 
 export interface Container<T extends Container<any> = any> {
     id: string;
@@ -35,15 +56,14 @@ export type Priority = undefined | 1 | 2 | 3 | 4
 
 export interface Tag{
     tag: string;
-    type: "tag-orange" | "tag-yellow"
+    type: string
 }
 
 export const addTagsForDoneAndArchived = false
-export const DoneTag : Tag = {tag: 'Done', type: 'tag-orange'}
-export const ArchivedTag : Tag = {tag: 'Archived', type: 'tag-yellow'}
 
 
-export const tagIdentifiers:{ type: "tag-orange" | "tag-yellow", symbol: string, class:string}[] = [
+
+export const tagIdentifiers:{ type: string, symbol: string, class:string}[] = [
     {
         type: "tag-orange",
         symbol: '@',
@@ -53,10 +73,14 @@ export const tagIdentifiers:{ type: "tag-orange" | "tag-yellow", symbol: string,
         type: "tag-yellow",
         symbol: '#', 
         class: "tag-yellow"
+    },
+    {
+        type: "tag-green",
+        symbol: '!', 
+        class: "tag-green"
     }
 ]
 export const tagHtmlWrapper = (kl:string) => ( ['<span tag="true" class="' + kl + '">','<\/span>'] )
-const spaces = "\s\t\n\u00A0\u2002\u2003\u2006\u202F "
 export const tagCapturingGroup = (symbol:string) => ( `${symbol}([A-Za-z0-9\-\_]+)` );
 
 

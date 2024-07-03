@@ -56,9 +56,12 @@ p {
   padding: 0 !important;
   margin: 0 !important
 }
-
+.standard{
+  font-size: $font-size;
+}
 .big {
   font-size: $big-font-size;
+  line-height: $big-font-size * 1.1;
 }
 .small{
   font-size:$small-font-size;
@@ -96,6 +99,15 @@ p {
 .pointer{
   cursor: pointer;
 }
+
+.selectable{
+  opacity: $translucent-opacity;
+  cursor: pointer;
+}
+.active,.selectable:hover{
+  opacity: 1;
+}
+
 .relative{
   position: relative;
 
@@ -183,9 +195,23 @@ button {
   color: $warning-color
 
 }
+
+.todo{
+  color: $todo-color
+}
 .completed{
   color: $completed-color
 }
+.in-progress{
+  color: $in-progress-color
+}
+.waiting{
+  color: $waiting-color
+}
+.delegated{
+  color: $delegated-color
+}
+
 
 
 .drag-handle{
@@ -209,6 +235,9 @@ button {
 }
 .tag-yellow{
   color: $tag-yellow-color;
+}
+.tag-green{
+  color: $tag-green-color;
 }
 
 input, textarea{

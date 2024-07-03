@@ -121,9 +121,7 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
     this.boardService.activateEditorOnTask(this.lane, this.task, undefined);
   }
 
-  toggleTaskStatus() {
-    this.boardService.toggleTaskStatus(this.task);
-  }
+
 
   archive() {
     this.boardService.archive(this.board, this.task);

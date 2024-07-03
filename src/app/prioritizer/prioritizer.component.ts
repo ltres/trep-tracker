@@ -20,17 +20,13 @@ export class PrioritizerComponent {
 
   protected priorities = [1,2,3,4,5];
 
-  getArrows(number: number | undefined): string {
+  getSymbol(number: number | undefined): string {
     if(number === undefined) return ""
     return "●"
   }
 
-  setPriority(priority: Priority) {
-    if( this.container.priority === priority) {
-      this.container.priority = undefined
-    }else{
-      this.container.priority = priority;
-    }
+  setPriority(priority: Priority | undefined) {
+    this.container.priority = priority;
     this.boardService.publishBoardUpdate();
     this.open = false;
   }

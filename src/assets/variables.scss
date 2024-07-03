@@ -13,7 +13,7 @@ $lane-archive-background-color: hsla(41, 20%, 11%, 0.6);
 $text-color: #ffffff;
 $font-size: 10px;
 $title-size: 1.2rem;
-$big-font-size: 1.2rem;
+$big-font-size: 1.4rem;
 $small-font-size: 0.9rem;
 
 $border-radius: calc($font-size/2);
@@ -28,13 +28,19 @@ $lane-outline-color: rgba($text-color, 0.1);;
 $editor-active-background:rgba(0, 0, 0, 0.4);
 $selected-background:$text-color;
 
+$todo-color:$text-color;
 $completed-color:hsl(115, 80%, 50%);
+$in-progress-color:hsl(51, 80%, 50%);
+$delegated-color:hsl(51, 80%, 50%);
+$waiting-color:hsl(51, 80%, 50%);
+
 $archived-color:rgba($completed-color, $translucent-opacity);
 $danger-color:hsl(0, 80%, 50%);
 $warning-color:hsl(56, 80%, 50%);
 
-$tag-orange-color: hsla(21, 80%, 50%, 0.75);
-$tag-yellow-color: hsla(56, 80%, 50%, 0.75);
+$tag-orange-color: rgb(241, 134, 255);
+$tag-yellow-color: rgb(255, 137, 58);
+$tag-green-color: rgb(255, 97, 97);
 
 
 $priority-1-color:hsl(115, 80%, 50%);

@@ -1,7 +1,7 @@
 import { Injectable, Injector } from "@angular/core";
-import { Board, Lane, Container, Task, Tag, DoneTag, ArchivedTag, tagIdentifiers, getNewBoard, getNewLane, Priority, addTagsForDoneAndArchived, archivedLaneId } from "../types/task";
+import { Board, Lane, Container, Task, Tag,tagIdentifiers, getNewBoard, getNewLane, Priority, addTagsForDoneAndArchived, archivedLaneId, TaskStatus } from "../types/task";
 import { BehaviorSubject, Observable, filter, map } from "rxjs";
-import { generateUUID, isPlaceholder } from "../utils/utils";
+import { generateUUID, getNextStatus, isPlaceholder } from "../utils/utils";
 import { TagService } from "./tag.service";
 
 @Injectable({
@@ -242,20 +242,22 @@ export class BoardService {
         return newLane;
     }
 
-    toggleTaskStatus(task: Task) {
+    nextStatus(task: Task) {
         let boards = this._boards$.getValue();
-        task.status = task.status === 'completed' ? 'todo' : 'completed';
-        if(addTagsForDoneAndArchived){
-            if(task.status === 'completed'){
-                task.textContent.indexOf(DoneTag.tag) === -1 ? task.textContent += '&nbsp;' + tagIdentifiers[0].symbol + DoneTag.tag : task.textContent;
-            }else{
-                task.textContent = task.textContent.replace(tagIdentifiers[0].symbol + DoneTag.tag, '');
-            }
-            this.tagService.extractAndUpdateTags(task);
-        }
+        task.status = getNextStatus(task);
+
         task.stateChangeDate = new Date();
         this._boards$.next(boards);
     }
+
+    updateStatus(task: Task, status: TaskStatus) {
+        let boards = this._boards$.getValue();
+        task.status = status;
+
+        task.stateChangeDate = new Date();
+        this._boards$.next(boards);
+    }
+
 
     /*
     toggleArchived(task: Task) {
@@ -422,7 +424,7 @@ export class BoardService {
         // remove custom coordinates from children
         children.forEach(c => {
             delete c.coordinates;
-            this.tagService.extractAndUpdateTags(c);
+            //this.tagService.extractAndUpdateTags(c);
         })
         
 
