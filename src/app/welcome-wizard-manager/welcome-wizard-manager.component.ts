@@ -56,7 +56,7 @@ export class WelcomeWizardManagerComponent implements AfterViewInit {
   handleStatusFileChosen(filePath: string) {
     try {
       this.storageService.initWithStoragePath(filePath);
-      setStatusPath(filePath);
+      //setStatusPath(filePath);
       this.nextStep();
     } catch (e) {
       alert(e);
