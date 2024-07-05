@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, HostBinding, HostListener, Input, OnDestroy, OnInit, Output, Renderer2, ViewChild, viewChild } from '@angular/core';
-import { Board, Lane, Container, Task, Tag } from '../../types/task';
+import { Board, Lane, Container, Task, Tag, Status, Priority } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
@@ -15,6 +15,7 @@ import { RegistryService } from '../../service/registry.service';
   styleUrl: './task.component.scss'
 })
 export class TaskComponent extends DraggableComponent implements OnInit, OnDestroy {
+
   @ViewChild('editor') editor: ElementRef | undefined;
   @Input() task!: Task;
   @Input() lane!: Lane;
@@ -123,8 +124,8 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
 
 
 
-  archive() {
-    this.boardService.archive(this.board, this.task);
+  toggleArchive() {
+    this.boardService.toggleArchive(this.board, this.task);
   }
 
   hasNextSibling(): boolean {
@@ -153,5 +154,13 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
         this.boardService.publishBoardUpdate()
       },500)
   }
+  updateStatus($event: Status) {
+    this.boardService.updateStatus(this.task, $event);
+  }
+  updatePriority($event: Priority | undefined) {
+    this.task.priority = $event; 
+    this.boardService.publishBoardUpdate()
+  }
+  
 
 }

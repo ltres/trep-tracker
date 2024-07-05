@@ -1,8 +1,9 @@
 import { Injectable, Injector } from "@angular/core";
-import { Board, Lane, Container, Task, Tag,tagIdentifiers, getNewBoard, getNewLane, Priority, addTagsForDoneAndArchived, archivedLaneId, TaskStatus } from "../types/task";
+import { Board, Lane, Container, Task, Tag,tagIdentifiers, getNewBoard, getNewLane, Priority, addTagsForDoneAndArchived, archivedLaneId, Status } from "../types/task";
 import { BehaviorSubject, Observable, filter, map } from "rxjs";
 import { generateUUID, getNextStatus, isPlaceholder } from "../utils/utils";
 import { TagService } from "./tag.service";
+import { stat } from "original-fs";
 
 @Injectable({
     providedIn: 'root'
@@ -80,7 +81,7 @@ export class BoardService {
         );
     }
 
-    getTasks$(lane: Lane, priority: Priority | undefined, excludeArchived: boolean): Observable<Task[] | undefined> {
+    getTasks$(lane: Lane, priority: Priority | undefined, status: Status | undefined, excludeArchived: boolean): Observable<Task[] | undefined> {
         return this._allLanes$.pipe(
             map(lanes => {
                 let res = lanes?.find(l => l.id === lane.id)?.children
@@ -90,12 +91,15 @@ export class BoardService {
                 if( priority ){
                     res = res?.filter( t => t.priority === priority );
                 }
+                if( status ){
+                    res = res?.filter( t => t.status === status );
+                }
                 return res;
             })
         )
     }
 
-    getTaggedTasks$(tags: Tag[] | undefined, priority: Priority | undefined, excludeArchived: boolean): Observable<Task[] | undefined> {
+    getTaggedTasks$(tags: Tag[] | undefined, priority: Priority | undefined, status: Status | undefined, excludeArchived: boolean): Observable<Task[] | undefined> {
         return this._allTasks$.pipe(
             map(tasks => {
                 let res = tasks;
@@ -109,6 +113,9 @@ export class BoardService {
                 }
                 if( priority ){
                     res = res?.filter( t => t.priority === priority );
+                }
+                if( status ){
+                    res = res?.filter( t => t.status === status );
                 }
 
                 res = res?.sort((a, b) => (b.priority ?? 0) - ( a.priority ?? 0 ));
@@ -250,11 +257,11 @@ export class BoardService {
         this._boards$.next(boards);
     }
 
-    updateStatus(task: Task, status: TaskStatus) {
+    updateStatus(container: Container, status: Status) {
         let boards = this._boards$.getValue();
-        task.status = status;
+        container.status = status;
 
-        task.stateChangeDate = new Date();
+        container.stateChangeDate = new Date();
         this._boards$.next(boards);
     }
 
@@ -276,24 +283,37 @@ export class BoardService {
         task.archivedDate = new Date();
         this._boards$.next(boards);
     } */
-    archive(board: Board, task: Task){
-        task.archived = true;
-        task.archivedDate = new Date();
-        let lane = this.findParentLane([task]);
-        if(lane){
-            lane.children = lane.children.filter( t => t.id !== task.id );
-        }
-        // add the task to the archived lane
+    toggleArchive(board: Board, task: Task){
+        task.archived = !task.archived;
+        task.archivedDate = task.archived ? new Date() : task.archivedDate;
         let archive = board.children.find(l => l.archive );
-        if(!archive){
-            // create the archive
-            this.addFloatingLane(board, 0, 0 , [task], true);
+        if(task.archived){
+            let lane = this.findParentLane([task]);
+            if(lane){
+                lane.children = lane.children.filter( t => t.id !== task.id );
+            }
+            // add the task to the archived lane
+            
+            if(!archive){
+                // create the archive
+                this.addFloatingLane(board, 0, 0 , [task], true);
+            }else{
+                archive.children.push(task);
+            }
         }else{
-            archive.children.push(task);
+            // send the task back to the original lane
+            let lane = this._allParents$.getValue()?.find( p => p.id === task.createdLaneId );
+            if(lane){
+                lane.children.push(task);
+            }else{
+                console.warn(`Cannot find lane with id ${task.createdLaneId}`);
+                let lane = this.addFloatingLane(board, 0, 0, [task], false);
+                task.createdLaneId = lane.id;
+            }
+            archive?.children.splice(archive.children.findIndex( t => t.id === task.id ), 1);
         }
 
-        this.publishBoardUpdate();
-        
+        this.publishBoardUpdate();       
     }
 
     getTaskInDirection( tasks: Task[] | undefined, direction: 'up' | 'down' | 'left' | 'right'): Task | undefined {
@@ -555,7 +575,7 @@ export class BoardService {
     archiveDones(board: Board, lane: Lane) {
         // this._boards$.getValue();
         let descendants = this.getDescendants(lane);
-        descendants.filter( t => this.isTask(t) && !isPlaceholder(t) && t.status === 'completed').forEach(d => this.archive(board, d as Task) );
+        descendants.filter( t => this.isTask(t) && !isPlaceholder(t) && t.status === 'completed').forEach(d => this.toggleArchive(board, d as Task) );
         /*
         lane.children = lane.children.filter(t => !t.archived);
         let descendants = this.getDescendants(lane);
@@ -593,16 +613,22 @@ export class BoardService {
 
 
             this._boards$.next(o.boards);
+            
             this.parents?.forEach(p => {
+
                 if(!p.creationDate){
                     p.creationDate = new Date();
                 }
-                if(p.priority == null){
+                if(p.priority == null){ 
                     p.priority = undefined;
                 }
                 if(p.archived == null){
                     p.archived = false
                 }
+                if( this.isTask(p) && !p.createdLaneId ){                  
+                    p.createdLaneId = o.boards[0].children[0].id;
+                }
+
                 if( p.tags ){
                     p.tags.forEach( t => {
                         if(!t.type){

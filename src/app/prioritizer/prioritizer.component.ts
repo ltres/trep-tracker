@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, Input } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, Output } from '@angular/core';
 import { Container, Priority } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 
@@ -10,6 +10,8 @@ import { BoardService } from '../../service/board.service';
 })
 export class PrioritizerComponent {
   @Input() container!: Container;
+  @Output() onPrioritySelected = new EventEmitter<Priority | undefined>();
+
   protected open: boolean = false;
 
   constructor(
@@ -27,7 +29,8 @@ export class PrioritizerComponent {
 
   setPriority(priority: Priority | undefined) {
     this.container.priority = priority;
-    this.boardService.publishBoardUpdate();
+    this.onPrioritySelected.emit(priority);
+    //this.boardService.publishBoardUpdate();
     this.open = false;
   }
 

@@ -26,7 +26,7 @@ import { ModalComponent } from './modal/modal.component';
 import { ModalService } from '../service/modal.service';
 import { WelcomeWizardManagerComponent } from './welcome-wizard-manager/welcome-wizard-manager.component';
 import { ElectronService } from '../service/electron.service';
-import { TaskStatusComponent } from './task-status/task-status.component';
+import { StatusComponent } from './task-status/status.component';
 import { TooltipDirective } from './directive/tooltip.directive';
  
 @NgModule({
@@ -46,7 +46,7 @@ import { TooltipDirective } from './directive/tooltip.directive';
          SearchComponent,
          ModalComponent,
          WelcomeWizardManagerComponent,
-         TaskStatusComponent,
+         StatusComponent,
          TooltipDirective
         ],
     providers: [

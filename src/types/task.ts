@@ -11,10 +11,10 @@ export interface Lane extends Container<Task>{
 }
 export interface Task extends Container<Task>{
     _type: 'task',
-    status: TaskStatus
+    createdLaneId: string
 }
 
-export const TaskStatuses = {
+export const Statuses = {
     todo : {
         icon: "☐"
     },
@@ -32,7 +32,7 @@ export const TaskStatuses = {
     }
 }
 
-export type TaskStatus = keyof typeof TaskStatuses;
+export type Status = keyof typeof Statuses;
 
 
 export interface Container<T extends Container<any> = any> {
@@ -42,7 +42,8 @@ export interface Container<T extends Container<any> = any> {
     tags: Tag[];
     _type: string,
     creationDate: Date,
-    priority: Priority,
+    priority: Priority | undefined,
+    status: Status | undefined,
     stateChangeDate: Date | undefined,
     archived: boolean,
     archivedDate: Date | undefined,
@@ -52,7 +53,7 @@ export interface Container<T extends Container<any> = any> {
     },
 }
 
-export type Priority = undefined | 1 | 2 | 3 | 4
+export type Priority = 1 | 2 | 3 | 4
 
 export interface Tag{
     tag: string;
@@ -84,9 +85,10 @@ export const tagHtmlWrapper = (kl:string) => ( ['<span tag="true" class="' + kl 
 export const tagCapturingGroup = (symbol:string) => ( `${symbol}([A-Za-z0-9\-\_]+)` );
 
 
-export const getNewTask: ( textContent?: string | undefined ) => Task = (textContent?: string | undefined) => (
+export const getNewTask: ( lane: Lane, textContent?: string | undefined ) => Task = ( lane: Lane, textContent?: string | undefined) => (
      {
         id: generateUUID(),
+        createdLaneId: lane.id,
         textContent: textContent ?? "",
         children: [],
         tags: [],
@@ -110,6 +112,7 @@ export const getNewLane: ( archive: boolean ) => Lane = (archive: boolean) => {
         showChildren: true,
         textContent: archive ? "Archive" : "Lane " + id,
         children: [],
+        status: undefined,
         _type: "lane",
         archive: archive,
         creationDate: new Date(),
@@ -128,6 +131,7 @@ export const getNewBoard: (firstLane: Lane) => Board = (firstLane: Lane) => (
             _type: "board",
             textContent: "Board",
             tags: [],
+            status: undefined,
             priority: undefined,
             children: [firstLane],
             creationDate: new Date(),

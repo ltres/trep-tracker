@@ -8,8 +8,11 @@ data-consider-for-overlapping-checks="true"
 
 >
     <div *ngIf="!this.static && !isPlaceholder()"class="drag-handle translucent pointer" drag-on-this="true">⋮</div>
-    <prioritizer *ngIf="!isPlaceholder()" [container]="task" class=""> </prioritizer>
-    <task-status [task]="task" [board]="board" [staticLane]="static" class="m-x-025"></task-status>
+    <prioritizer *ngIf="!isPlaceholder()" (onPrioritySelected)="updatePriority($event)" [container]="task" class=""> </prioritizer>
+    <status [container]="task" [board]="board" [staticLane]="static" 
+    (onStatusSelected)="updateStatus($event)"
+    (onArchiveToggle)="toggleArchive()"  
+    class="m-x-025"></status>
     <div class="flex wrap w-100 g-025">
         <div  class="grow" #editor 
         contenteditable="true" 

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Lane, Task, TaskStatus, archivedLaneId } from '../types/task';
+import { Lane, Task, Status, archivedLaneId } from '../types/task';
 
 export function generateUUID(): string {
     return uuidv4().substring(0,6);
@@ -144,7 +144,7 @@ export function getStatusPath(): string | null {
     return localStorage.getItem('storagePath')
 }
 
-export function getNextStatus(t: Task): TaskStatus{
+export function getNextStatus(t: Task): Status{
     if(t.status === "todo") return "in-progress";
     if(t.status === "in-progress") return "completed";
     if(t.status === "completed") return "todo";

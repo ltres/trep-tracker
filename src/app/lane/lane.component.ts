@@ -1,5 +1,5 @@
 import { Component, ElementRef, HostBinding, HostListener, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { Board, Container, Lane, Priority, Tag, Task, archivedLaneId, getNewTask } from '../../types/task';
+import { Board, Container, Lane, Priority, Status, Tag, Task, archivedLaneId, getNewTask } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 import { generateUUID, isArchive } from '../../utils/utils';
 import { Observable } from 'rxjs';
@@ -35,13 +35,13 @@ export class LaneComponent extends DraggableComponent implements OnInit {
     protected override keyboardService: KeyboardService,
     protected override registry: RegistryService,
     public override el: ElementRef) {
-    super(boardService, dragService, keyboardService, registry, el );
+    super(boardService, dragService, keyboardService, registry, el);
   }
 
   @HostListener('document:click', ['$event'])
   setZIndex($event: any) {
     let el = this.el.nativeElement as HTMLElement;
-    if(el.contains($event.target)) {
+    if (el.contains($event.target)) {
       el.style.zIndex = "100";
     } else {
       el.style.zIndex = "";
@@ -62,23 +62,23 @@ export class LaneComponent extends DraggableComponent implements OnInit {
   }
 
   get tasks(): Observable<Task[] | undefined> {
-    return this.boardService.getTasks$(this.lane, this.lane.priority, this.isArchive(this.lane) ? false : true);
+    return this.boardService.getTasks$(this.lane, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false : true);
   }
 
   get taggedTasks(): Observable<Task[] | undefined> {
-    return this.boardService.getTaggedTasks$(this.lane.tags, this.lane.priority, this.isArchive(this.lane) ? false : true);
+    return this.boardService.getTaggedTasks$(this.lane.tags, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false : true);
   }
 
-  displayStaticStuff(): boolean{
-    return this.isTagged() || ( this.lane.priority !== undefined && this.lane.children.length === 0 );
+  displayStaticStuff(): boolean {
+    return this.isTagged() || (this.lane.priority !== undefined && this.lane.children.length === 0);
   }
 
   isTagged(): boolean {
-    return this.lane.tags? this.lane.tags.length > 0 : false;
+    return this.lane.tags ? this.lane.tags.length > 0 : false;
   }
 
   createNewTask() {
-    let task: Task = getNewTask( `Task ${this.boardService.getTasksCount(this.board) + 1}` );
+    let task: Task = getNewTask(this.lane,`Task ${this.boardService.getTasksCount(this.board) + 1}`);
     this.boardService.addAsChild(this.lane, [task]);
     this.boardService.clearSelectedTasks();
     this.boardService.toggleTaskSelection(task);
@@ -94,27 +94,35 @@ export class LaneComponent extends DraggableComponent implements OnInit {
     this.boardService.publishBoardUpdate();
   }
   archiveDones() {
-    this.boardService.archiveDones(this.board,this.lane);
+    this.boardService.archiveDones(this.board, this.lane);
   }
-  isArchive(arg0: Lane):boolean {
+  isArchive(arg0: Lane): boolean {
     return isArchive(arg0);
   }
   updateLaneTags($event: Tag[]) {
-    let allOldPresent = this.lane.tags.filter( oldTag => $event.map( t => t.tag.toLowerCase() ).find( r => r === oldTag.tag.toLowerCase() ) ).length === this.lane.tags.length
-    let allNewPresent = $event.filter( oldTag => this.lane.tags.map( t => t.tag.toLowerCase() ).find( r => r === oldTag.tag.toLowerCase() ) ).length === $event.length
+    let allOldPresent = this.lane.tags.filter(oldTag => $event.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === this.lane.tags.length
+    let allNewPresent = $event.filter(oldTag => this.lane.tags.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === $event.length
 
-    if(!allOldPresent || !allNewPresent){
+    if (!allOldPresent || !allNewPresent) {
       this.lane.tags = $event;
       this.debounceBoardUpdate()
     }
   }
-  debounceBoardUpdate( ){
-    if( this.debounce ){
-        clearTimeout(this.debounce);
+  debounceBoardUpdate() {
+    if (this.debounce) {
+      clearTimeout(this.debounce);
     }
-    this.debounce = setTimeout( () => {
+    this.debounce = setTimeout(() => {
       this.boardService.publishBoardUpdate()
-    },500)
-}
+    }, 500)
+  }
+  updateStatus($event: Status) {
+    this.boardService.updateStatus(this.lane, $event);
+  }
+  updatePriority($event: Priority | undefined) {
+    this.lane.priority = $event;
+    this.boardService.publishBoardUpdate()
+  }
+
 
 }

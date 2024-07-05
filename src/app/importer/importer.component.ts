@@ -23,7 +23,7 @@ export class ImporterComponent {
       line = line.trim();
       
       if(line.length == 0){ continue; }
-      let task: Task = getNewTask( line );
+      let task: Task = getNewTask( this.lane, line );
       this.boardService.addAsChild(this.lane, [task]);
     }
   }

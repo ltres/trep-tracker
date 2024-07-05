@@ -30,7 +30,7 @@ export class KeyboardService {
         let board = this.boardService.selectedBoard;
         if(!board)return;
         e.preventDefault();
-        this.boardService.selectedTasks?.filter(t => !isPlaceholder(t) ).forEach(t => this.boardService.archive(board,t) );
+        this.boardService.selectedTasks?.filter(t => !isPlaceholder(t) ).forEach(t => this.boardService.toggleArchive(board,t) );
       }else if(e.key === 'f' && e.ctrlKey === true){
         // Focus search input
         this.boardService.focusSearch();
@@ -90,10 +90,10 @@ export class KeyboardService {
           return;
         }*/
         let parent = this.boardService.findParent(this.boardService.selectedTasks);
-        if (!parent) {
+        if (!parent || !this.boardService.isLane(parent)) {
           throw new Error("Cannot find parent task")
         }
-        let task = getNewTask("")
+        let task = getNewTask(parent,"")
         let lane = this.boardService.isLane(parent) ? parent : this.boardService.findParentLane([parent]);
         if (!lane) {
           return;

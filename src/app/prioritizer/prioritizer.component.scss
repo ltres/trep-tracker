@@ -9,7 +9,9 @@
 }
 span{
     font-size: $small-font-size;
-
+    &.cancel{
+        color: $text-color;
+    }
     &.priority-1.active, &.priority-1:hover{
         color:$priority-1-color; 
     }

@@ -3,11 +3,12 @@
     <span *ngIf="!container.priority" class="selectable priority-1" (click)="open = !open" >{{getSymbol(1)}}</span>
 </div>
 <div class="flex align-items-center g-025" *ngIf="open">
+    <span [tooltip]="'close'" class="selectable cancel" (click)="setPriority(undefined)">🗙</span> 
     <span [tooltip]="'Priority 1'" class="selectable priority-1"  [class.active]="container.priority === 1" (click)="setPriority(1)" >{{getSymbol(1)}}</span>
     <span [tooltip]="'Priority 2'" class="selectable priority-2" [class.active]="container.priority === 2" (click)="setPriority(2)">{{getSymbol(2)}}</span>
     <span [tooltip]="'Priority 3'" class="selectable priority-3" [class.active]="container.priority === 3" (click)="setPriority(3)">{{getSymbol(3)}}</span>
     <span [tooltip]="'Priority 4'" class="selectable priority-4"  [class.active]="container.priority === 4" (click)="setPriority(4)">{{getSymbol(4)}}</span> 
-    <span [tooltip]="'close'" class="selectable cancel" (click)="setPriority(undefined)">🗙</span> 
+    
 </div> 
 
 
