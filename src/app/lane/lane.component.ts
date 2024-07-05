@@ -62,11 +62,11 @@ export class LaneComponent extends DraggableComponent implements OnInit {
   }
 
   get tasks(): Observable<Task[] | undefined> {
-    return this.boardService.getTasks$(this.lane, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false : true);
+    return this.boardService.getTasks$(this.lane, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? "archivedDate" : undefined, 'desc');
   }
 
   get taggedTasks(): Observable<Task[] | undefined> {
-    return this.boardService.getTaggedTasks$(this.lane.tags, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false : true);
+    return this.boardService.getTaggedTasks$(this.lane.tags, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? "archivedDate" : undefined, 'desc');
   }
 
   displayStaticStuff(): boolean {

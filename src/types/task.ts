@@ -41,12 +41,12 @@ export interface Container<T extends Container<any> = any> {
     children: T[];
     tags: Tag[];
     _type: string,
-    creationDate: Date,
+    creationDate: ISODateString,
     priority: Priority | undefined,
     status: Status | undefined,
-    stateChangeDate: Date | undefined,
+    stateChangeDate: ISODateString | undefined,
     archived: boolean,
-    archivedDate: Date | undefined,
+    archivedDate: ISODateString | undefined,
     coordinates?: {
         x: number,
         y: number
@@ -59,6 +59,8 @@ export interface Tag{
     tag: string;
     type: string
 }
+
+export type ISODateString = `${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`
 
 export const addTagsForDoneAndArchived = false
 
@@ -93,7 +95,7 @@ export const getNewTask: ( lane: Lane, textContent?: string | undefined ) => Tas
         children: [],
         tags: [],
         _type: "task",
-        creationDate: new Date(),
+        creationDate: new Date().toISOString() as ISODateString ,
         stateChangeDate: undefined,
         archived: false,
         archivedDate: undefined,
@@ -115,7 +117,7 @@ export const getNewLane: ( archive: boolean ) => Lane = (archive: boolean) => {
         status: undefined,
         _type: "lane",
         archive: archive,
-        creationDate: new Date(),
+        creationDate: new Date().toISOString() as ISODateString,
         stateChangeDate: undefined,
         priority: undefined,
         width: undefined,
@@ -134,7 +136,7 @@ export const getNewBoard: (firstLane: Lane) => Board = (firstLane: Lane) => (
             status: undefined,
             priority: undefined,
             children: [firstLane],
-            creationDate: new Date(),
+            creationDate: new Date().toISOString() as ISODateString,
             stateChangeDate: undefined,
             archived: false,
             archivedDate: undefined       

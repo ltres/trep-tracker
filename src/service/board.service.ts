@@ -1,5 +1,5 @@
 import { Injectable, Injector } from "@angular/core";
-import { Board, Lane, Container, Task, Tag,tagIdentifiers, getNewBoard, getNewLane, Priority, addTagsForDoneAndArchived, archivedLaneId, Status } from "../types/task";
+import { Board, Lane, Container, Task, Tag, tagIdentifiers, getNewBoard, getNewLane, Priority, addTagsForDoneAndArchived, archivedLaneId, Status, ISODateString } from "../types/task";
 import { BehaviorSubject, Observable, filter, map } from "rxjs";
 import { generateUUID, getNextStatus, isPlaceholder } from "../utils/utils";
 import { TagService } from "./tag.service";
@@ -12,7 +12,7 @@ export class BoardService {
     private _selectedBoard$: BehaviorSubject<Board | undefined> = new BehaviorSubject<Board | undefined>(undefined);
 
     private _boards$: BehaviorSubject<Board[]> = new BehaviorSubject<Board[]>([]);
-    private _editorActiveTask$: BehaviorSubject<{lane: Lane, task: Task , startingCaretPosition: number | undefined} | undefined> = new BehaviorSubject<{lane: Lane, task: Task, startingCaretPosition: number | undefined} | undefined>(undefined);
+    private _editorActiveTask$: BehaviorSubject<{ lane: Lane, task: Task, startingCaretPosition: number | undefined } | undefined> = new BehaviorSubject<{ lane: Lane, task: Task, startingCaretPosition: number | undefined } | undefined>(undefined);
 
     private _allLanes$: BehaviorSubject<Lane[] | undefined> = new BehaviorSubject<Lane[] | undefined>(undefined);
     private _allTasks$: BehaviorSubject<Task[] | undefined> = new BehaviorSubject<Task[] | undefined>(undefined);
@@ -27,7 +27,7 @@ export class BoardService {
 
     private boardUpdateCounter: number = 0;
 
-    constructor(injector:Injector) {
+    constructor(injector: Injector) {
 
         setTimeout(() => this.tagService = injector.get(TagService));
         this._boards$.subscribe(b => {
@@ -67,7 +67,7 @@ export class BoardService {
     }
 
     addNewBoard() {
-        let board = getNewBoard( getNewLane(false) )
+        let board = getNewBoard(getNewLane(false))
 
         this._boards$.next([...this._boards$.getValue(), board]);
     }
@@ -81,55 +81,63 @@ export class BoardService {
         );
     }
 
-    getTasks$(lane: Lane, priority: Priority | undefined, status: Status | undefined, excludeArchived: boolean): Observable<Task[] | undefined> {
+    getTasks$(lane: Lane, priority: Priority | undefined, status: Status | undefined, sort: keyof Task | undefined, sortOrder?: 'asc' | 'desc'): Observable<Task[] | undefined> {
         return this._allLanes$.pipe(
             map(lanes => {
                 let res = lanes?.find(l => l.id === lane.id)?.children
-                if(excludeArchived){
-                    res = res?.filter( t => !t.archived );
+
+                if (priority) {
+                    res = res?.filter(t => t.priority === priority);
                 }
-                if( priority ){
-                    res = res?.filter( t => t.priority === priority );
+                if (status) {
+                    res = res?.filter(t => t.status === status);
                 }
-                if( status ){
-                    res = res?.filter( t => t.status === status );
+
+                const regex = /[\-\.\:TZ]/g;
+                if (sort) {
+                    if (sortOrder === 'asc') {
+                        res = res?.sort((b, a) => (Number(b[sort]?.toString().replace(regex, "")) ?? 0) - (Number(a[sort]?.toString().replace(regex, "")) ?? 0));
+                    } else {
+                        res = res?.sort((a, b) => (Number(b[sort]?.toString().replace(regex, "")) ?? 0) - (Number(a[sort]?.toString().replace(regex, "")) ?? 0));
+                    }
                 }
                 return res;
             })
         )
     }
 
-    getTaggedTasks$(tags: Tag[] | undefined, priority: Priority | undefined, status: Status | undefined, excludeArchived: boolean): Observable<Task[] | undefined> {
+    getTaggedTasks$(tags: Tag[] | undefined, priority: Priority | undefined, status: Status | undefined, sort: keyof Task | undefined, sortOrder?: 'asc' | 'desc'): Observable<Task[] | undefined> {
         return this._allTasks$.pipe(
             map(tasks => {
                 let res = tasks;
-                if(excludeArchived){
-                    res = res?.filter( t => !t.archived );
-                }
-                if(tags){
-                    res = res?.filter(task => 
-                        task.tags.filter( t => tags.find(tag => tag.tag.toLowerCase() === t.tag.toLowerCase())).length === tags.length
+
+                if (tags) {
+                    res = res?.filter(task =>
+                        task.tags.filter(t => tags.find(tag => tag.tag.toLowerCase() === t.tag.toLowerCase())).length === tags.length
                     )
                 }
-                if( priority ){
-                    res = res?.filter( t => t.priority === priority );
+                if (priority) {
+                    res = res?.filter(t => t.priority === priority);
                 }
-                if( status ){
-                    res = res?.filter( t => t.status === status );
+                if (status) {
+                    res = res?.filter(t => t.status === status); 
+                }
+                if (sort) {
+                    res = res?.sort((a, b) => (Number(b[sort]) ?? 0) - (Number(a[sort]) ?? 0));
                 }
 
-                res = res?.sort((a, b) => (b.priority ?? 0) - ( a.priority ?? 0 ));
+                res = res?.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
 
                 return res;
             })
         )
     }
 
-    getTasksCount( board: Board ): number {
-        return this.getDescendants(board).filter( c => this.isTask(c) && !isPlaceholder(c)).length;
+    getTasksCount(board: Board): number {
+        return this.getDescendants(board).filter(c => this.isTask(c) && !isPlaceholder(c)).length;
     }
-    getTodoCount( board: Board ): number {
-        return this.getDescendants(board).filter( c => this.isTask(c) && !isPlaceholder(c) && c.status === 'todo'  && !c.archived ).length;
+    getTodoCount(board: Board): number {
+        return this.getDescendants(board).filter(c => this.isTask(c) && !isPlaceholder(c) && c.status === 'todo' && !c.archived).length;
     }
 
     getLane$(lane: Lane): Observable<Lane | undefined> {
@@ -142,11 +150,11 @@ export class BoardService {
         )
     }
 
-    activateEditorOnTask( lane: Lane, task: Task, caretPosition: number | undefined) {
-        if (this._editorActiveTask$.getValue()?.task.id === task.id && this._editorActiveTask$.getValue()?.lane.id === lane.id ) {
+    activateEditorOnTask(lane: Lane, task: Task, caretPosition: number | undefined) {
+        if (this._editorActiveTask$.getValue()?.task.id === task.id && this._editorActiveTask$.getValue()?.lane.id === lane.id) {
             return
         }
-        this._editorActiveTask$.next({lane, task, startingCaretPosition: caretPosition});
+        this._editorActiveTask$.next({ lane, task, startingCaretPosition: caretPosition });
     }
 
     toggleTaskSelection(task: Task) {
@@ -194,7 +202,7 @@ export class BoardService {
     get parents$(): Observable<Container[] | undefined> {
         return this._allParents$;
     }
-    get editorActiveTask$(): Observable<{lane: Lane, task: Task, startingCaretPosition: number | undefined}  | undefined> {
+    get editorActiveTask$(): Observable<{ lane: Lane, task: Task, startingCaretPosition: number | undefined } | undefined> {
         return this._editorActiveTask$;
     }
     get selectedBoard(): Board | undefined {
@@ -207,7 +215,7 @@ export class BoardService {
         this._selectedBoard$.next(board);
     }
     get boards(): Board[] {
-        return this._boards$.getValue();  
+        return this._boards$.getValue();
     }
     get parents(): Container[] | undefined {
         return this._allParents$.getValue();
@@ -228,7 +236,7 @@ export class BoardService {
      * If a lane becomes empty after removing the task, it is also removed from the board.
      * Finally, the new floating lane is added to the board and the updated boards are emitted.
      */
-    addFloatingLane(board: Board, x: number, y: number, children: Task[] | undefined, archive:boolean): Lane {
+    addFloatingLane(board: Board, x: number, y: number, children: Task[] | undefined, archive: boolean): Lane {
         let boards = this._boards$.getValue();
         let activeBoard = boards.find(b => b.id === board.id);
         if (!activeBoard) {
@@ -236,7 +244,7 @@ export class BoardService {
         }
         // activeBoard.children = activeBoard.children.filter(l => l.children.length > 0 || l.tags.length > 0);
 
-        let newLane: Lane = getNewLane( archive );
+        let newLane: Lane = getNewLane(archive);
         newLane.coordinates = { x, y };
         activeBoard.children.push(newLane);
 
@@ -253,7 +261,7 @@ export class BoardService {
         let boards = this._boards$.getValue();
         task.status = getNextStatus(task);
 
-        task.stateChangeDate = new Date();
+        task.stateChangeDate = new Date().toISOString() as ISODateString;
         this._boards$.next(boards);
     }
 
@@ -261,7 +269,7 @@ export class BoardService {
         let boards = this._boards$.getValue();
         container.status = status;
 
-        container.stateChangeDate = new Date();
+        container.stateChangeDate = new Date().toISOString() as ISODateString;
         this._boards$.next(boards);
     }
 
@@ -283,40 +291,40 @@ export class BoardService {
         task.archivedDate = new Date();
         this._boards$.next(boards);
     } */
-    toggleArchive(board: Board, task: Task){
+    toggleArchive(board: Board, task: Task) {
         task.archived = !task.archived;
-        task.archivedDate = task.archived ? new Date() : task.archivedDate;
-        let archive = board.children.find(l => l.archive );
-        if(task.archived){
+        task.archivedDate = task.archived ? new Date().toISOString() as ISODateString : task.archivedDate;
+        let archive = board.children.find(l => l.archive);
+        if (task.archived) {
             let lane = this.findParentLane([task]);
-            if(lane){
-                lane.children = lane.children.filter( t => t.id !== task.id );
+            if (lane) {
+                lane.children = lane.children.filter(t => t.id !== task.id);
             }
             // add the task to the archived lane
-            
-            if(!archive){
+
+            if (!archive) {
                 // create the archive
-                this.addFloatingLane(board, 0, 0 , [task], true);
-            }else{
+                this.addFloatingLane(board, 0, 0, [task], true);
+            } else {
                 archive.children.push(task);
             }
-        }else{
+        } else {
             // send the task back to the original lane
-            let lane = this._allParents$.getValue()?.find( p => p.id === task.createdLaneId );
-            if(lane){
+            let lane = this._allParents$.getValue()?.find(p => p.id === task.createdLaneId);
+            if (lane) {
                 lane.children.push(task);
-            }else{
+            } else {
                 console.warn(`Cannot find lane with id ${task.createdLaneId}`);
                 let lane = this.addFloatingLane(board, 0, 0, [task], false);
                 task.createdLaneId = lane.id;
             }
-            archive?.children.splice(archive.children.findIndex( t => t.id === task.id ), 1);
+            archive?.children.splice(archive.children.findIndex(t => t.id === task.id), 1);
         }
 
-        this.publishBoardUpdate();       
+        this.publishBoardUpdate();
     }
 
-    getTaskInDirection( tasks: Task[] | undefined, direction: 'up' | 'down' | 'left' | 'right'): Task | undefined {
+    getTaskInDirection(tasks: Task[] | undefined, direction: 'up' | 'down' | 'left' | 'right'): Task | undefined {
         if (!tasks || tasks.length === 0) {
             return;
         }
@@ -330,14 +338,14 @@ export class BoardService {
         // get all the tasks in the lane, including descendants, in an ordered array
         let orderedLinearizedTasks = this.getDescendants(parent).filter(c => this.isTask(c)) as Task[];
         let index = 0;
-        if( direction === 'up' || direction === 'left' ){
+        if (direction === 'up' || direction === 'left') {
             // Get smalles index from the tasks
             index = orderedLinearizedTasks.length - 1;
             for (let toCheck of tasks) {
                 let internalIdx = orderedLinearizedTasks.findIndex(t => t.id === toCheck.id);
                 index = internalIdx < index ? internalIdx : index;
             }
-        }else{
+        } else {
             // Get bigger index from the tasks
             index = 0;
             for (let toCheck of tasks) {
@@ -365,15 +373,15 @@ export class BoardService {
         }
         return parents[0];
     }
-    findParentLane(objs:Container[] | undefined): Lane | undefined {
+    findParentLane(objs: Container[] | undefined): Lane | undefined {
         if (!objs || objs.length === 0) {
             return;
         }
         let parent = this.findParent(objs);
 
-        while( parent != null ){
+        while (parent != null) {
             let grandParent = this.findParent([parent]);
-            if( this.isLane(parent) ){
+            if (this.isLane(parent)) {
                 return parent;
             }
             parent = grandParent;
@@ -427,7 +435,7 @@ export class BoardService {
 
         // sort children basing on their in the current parent's children
         let curParent = this.findParent(children);
-        if(curParent){
+        if (curParent) {
             children = children.sort((a, b) => curParent.children.findIndex(c => c.id === a.id) - curParent.children.findIndex(c => c.id === b.id));
         }
         // remove the child from any children set
@@ -446,12 +454,12 @@ export class BoardService {
             delete c.coordinates;
             //this.tagService.extractAndUpdateTags(c);
         })
-        
+
 
         // Publish the changes
         this._boards$.next(boards);
     }
-    switchPosition(selectedTasks: Task[] | undefined, direction: 'ArrowUp'| 'ArrowDown') {
+    switchPosition(selectedTasks: Task[] | undefined, direction: 'ArrowUp' | 'ArrowDown') {
         if (!selectedTasks || selectedTasks.length === 0) {
             return;
         }
@@ -463,17 +471,17 @@ export class BoardService {
         selectedTasks = this.getTopLevelTasks(selectedTasks);
 
         let parent = this.findParent(selectedTasks);
-        if(!parent){
+        if (!parent) {
             throw new Error(`Cannot find parent of the selected tasks`);
         }
         let siblings = parent?.children || [];
 
-        let index = selectedTasks.map( sel => siblings.findIndex( s => s.id === sel.id )).sort()[0];
+        let index = selectedTasks.map(sel => siblings.findIndex(s => s.id === sel.id)).sort()[0];
 
-        if( direction === "ArrowUp" && index > 0 ){
-            parent.children.splice(index - 1, selectedTasks.length + 1, ...selectedTasks.concat( siblings[index - 1] ) );
-        }else if( direction === "ArrowDown" && index < siblings.length - 1 ){
-            parent.children.splice(index, selectedTasks.length + 1, ...[siblings[index + selectedTasks.length]].concat( selectedTasks ) );
+        if (direction === "ArrowUp" && index > 0) {
+            parent.children.splice(index - 1, selectedTasks.length + 1, ...selectedTasks.concat(siblings[index - 1]));
+        } else if (direction === "ArrowDown" && index < siblings.length - 1) {
+            parent.children.splice(index, selectedTasks.length + 1, ...[siblings[index + selectedTasks.length]].concat(selectedTasks));
         }
 
         this.publishBoardUpdate();
@@ -551,7 +559,7 @@ export class BoardService {
     }
 
     deleteLane(lane: Lane) {
-        if(lane.children.length > 0){
+        if (lane.children.length > 0) {
             throw new Error(`Cannot delete lane with children`);
         }
         let boards = this._boards$.getValue();
@@ -575,7 +583,7 @@ export class BoardService {
     archiveDones(board: Board, lane: Lane) {
         // this._boards$.getValue();
         let descendants = this.getDescendants(lane);
-        descendants.filter( t => this.isTask(t) && !isPlaceholder(t) && t.status === 'completed').forEach(d => this.toggleArchive(board, d as Task) );
+        descendants.filter(t => this.isTask(t) && !isPlaceholder(t) && t.status === 'completed').forEach(d => this.toggleArchive(board, d as Task));
         /*
         lane.children = lane.children.filter(t => !t.archived);
         let descendants = this.getDescendants(lane);
@@ -591,50 +599,48 @@ export class BoardService {
         this._focusSearch$.next(false)
     }
 
-    serialize(): string{
+    serialize(): string {
         let boards = this._boards$.getValue();
         //let selectedTasks = this._selectedTasks$.getValue();
         //let lastSelectedTask = this._lastSelectedTask$.getValue();
         //let editorActiveTask = this._editorActiveTask$.getValue();
 
-        return JSON.stringify({boards});
+        return JSON.stringify({ boards });
     }
-    deserialize(data: string): void{
+    deserialize(data: string): void {
         let o = JSON.parse(data);
-        if(!o.boards){
+        if (!o.boards) {
             console.warn('No boards found in the data');
-            this._boards$.next( [getNewBoard( getNewLane(false) )] );        
+            this._boards$.next([getNewBoard(getNewLane(false))]);
             this._selectedTasks$.next([]);
             this._lastSelectedTask$.next(undefined);
             this._editorActiveTask$.next(undefined);
-        }else{
+        } else {
             // fixes to existing data and new fields
-            
+
 
 
             this._boards$.next(o.boards);
-            
+
             this.parents?.forEach(p => {
 
-                if(!p.creationDate){
-                    p.creationDate = new Date();
+                if (!p.creationDate) {
+                    p.creationDate = new Date().toISOString() as ISODateString;
                 }
-                if(p.priority == null){ 
+                if (p.priority == null) {
                     p.priority = undefined;
                 }
-                if(p.archived == null){
+                if (p.archived == null) {
                     p.archived = false
                 }
-                if( this.isTask(p) && !p.createdLaneId ){                  
-                    p.createdLaneId = o.boards[0].children[0].id;
-                }
 
-                if( p.tags ){
-                    p.tags.forEach( t => {
-                        if(!t.type){
-                            if( p.textContent.toLowerCase().indexOf(`${tagIdentifiers[0].symbol}${t.tag.toLowerCase()}`) >= 0 ){
+
+                if (p.tags) {
+                    p.tags.forEach(t => {
+                        if (!t.type) {
+                            if (p.textContent.toLowerCase().indexOf(`${tagIdentifiers[0].symbol}${t.tag.toLowerCase()}`) >= 0) {
                                 t.type = tagIdentifiers[0].type
-                            }else if( p.textContent.toLowerCase().indexOf(`${tagIdentifiers[1].symbol}${t.tag.toLowerCase()}`) >= 0 ){
+                            } else if (p.textContent.toLowerCase().indexOf(`${tagIdentifiers[1].symbol}${t.tag.toLowerCase()}`) >= 0) {
                                 t.type = tagIdentifiers[1].type
                             }
                         }
@@ -642,6 +648,14 @@ export class BoardService {
                 }
 
             });
+            
+            this.parents?.forEach(p => {
+                if (this.isTask(p) && !p.createdLaneId) {
+                    let parentLane = this.findParentLane([p]) // can be archive;
+                    let board = this._boards$.getValue().find(b => b.children.find(l => l.id === parentLane?.id));
+                    p.createdLaneId = board?.children[0].id ?? '';
+                }
+            }); 
             //this._selectedTasks$.next(o.selectedTasks ?? []);
             //this._lastSelectedTask$.next(o.lastSelectedTask ?? []);
             //this._editorActiveTask$.next(o.editorActiveTask ?? []);
@@ -651,5 +665,5 @@ export class BoardService {
         this._boards$.next([]);
     }
 
-    
+
 }

@@ -22,10 +22,13 @@ data-consider-for-overlapping-checks="true"
         (onTagsChange)="updateTaskTags($event)"
         ></div>
 
-        <!--
-        <div *ngIf="task.status === 'completed'"class="date-wrapper translucent small flex align-items-center">
+        
+        <div *ngIf="task.archived"class="date-wrapper translucent small flex align-items-center">
+            archived {{this.task.archivedDate | date: 'dd-MM-yy hh:mm a'}}
+        </div>
+        <div *ngIf="!task.archived && task.status === 'completed'"class="date-wrapper translucent small flex align-items-center">
             completed {{this.task.stateChangeDate | date: 'dd-MM-yy hh:mm a'}}
-        </div>-->
+        </div>
         <div class="task-toolbar">
            
         </div>
