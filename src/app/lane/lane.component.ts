@@ -17,8 +17,6 @@ import { RegistryService } from '../../service/registry.service';
   styleUrl: './lane.component.scss'
 })
 export class LaneComponent extends DraggableComponent implements OnInit {
-
-
   @ViewChildren(TaskComponent, { read: ElementRef }) taskComponentsElRefs: QueryList<ElementRef> | undefined;
   @ViewChildren(TaskComponent) taskComponents: QueryList<TaskComponent> | undefined;
 
@@ -62,11 +60,11 @@ export class LaneComponent extends DraggableComponent implements OnInit {
   }
 
   get tasks(): Observable<Task[] | undefined> {
-    return this.boardService.getTasks$(this.lane, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? "archivedDate" : undefined, 'desc');
+    return this.boardService.getTasks$(this.lane, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false: true, this.isArchive(this.lane) ? "archived" : undefined, 'desc');
   }
 
   get taggedTasks(): Observable<Task[] | undefined> {
-    return this.boardService.getTaggedTasks$(this.lane.tags, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? "archivedDate" : undefined, 'desc');
+    return this.boardService.getTaggedTasks$(this.lane.tags, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false: true, this.isArchive(this.lane) ? "archived" : undefined, 'desc');
   }
 
   displayStaticStuff(): boolean {
@@ -117,7 +115,7 @@ export class LaneComponent extends DraggableComponent implements OnInit {
     }, 500)
   }
   updateStatus($event: Status) {
-    this.boardService.updateStatus(this.lane, $event);
+    this.boardService.updateStatus(this.board, this.lane, $event);
   }
   updatePriority($event: Priority | undefined) {
     this.lane.priority = $event;

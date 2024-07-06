@@ -20,7 +20,7 @@ export class KeyboardService {
       if (e?.type != 'keydown' || !e || ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Enter', 'Backspace', 'Delete', 'Shift', 'd', 'a', 'f'].indexOf(e.key) === -1) {
         return
       }
-
+      /*
       if(e.key === 'd' && e.ctrlKey === true){
         // Mark as Done selected tasks
         e.preventDefault();
@@ -30,8 +30,9 @@ export class KeyboardService {
         let board = this.boardService.selectedBoard;
         if(!board)return;
         e.preventDefault();
-        this.boardService.selectedTasks?.filter(t => !isPlaceholder(t) ).forEach(t => this.boardService.toggleArchive(board,t) );
-      }else if(e.key === 'f' && e.ctrlKey === true){
+        this.boardService.selectedTasks?.filter(t => !isPlaceholder(t) ).forEach(t => this.boardService.evaluateArchiveMove(board,t) );
+      }else */
+      if(e.key === 'f' && e.ctrlKey === true){
         // Focus search input
         this.boardService.focusSearch();
       }else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {

@@ -1,7 +1,7 @@
 import { Injectable, Injector } from "@angular/core";
-import { Board, Lane, Container, Task, Tag, tagIdentifiers, getNewBoard, getNewLane, Priority, addTagsForDoneAndArchived, archivedLaneId, Status, ISODateString } from "../types/task";
+import { Board, Lane, Container, Task, Tag, tagIdentifiers, getNewBoard, getNewLane, Priority, addTagsForDoneAndArchived, archivedLaneId, Status, ISODateString, StateChangeDate } from "../types/task";
 import { BehaviorSubject, Observable, filter, map } from "rxjs";
-import { generateUUID, getNextStatus, isPlaceholder } from "../utils/utils";
+import { generateUUID, getNextStatus, isPlaceholder, setDateSafe } from "../utils/utils";
 import { TagService } from "./tag.service";
 import { stat } from "original-fs";
 
@@ -81,7 +81,7 @@ export class BoardService {
         );
     }
 
-    getTasks$(lane: Lane, priority: Priority | undefined, status: Status | undefined, sort: keyof Task | undefined, sortOrder?: 'asc' | 'desc'): Observable<Task[] | undefined> {
+    getTasks$(lane: Lane, priority: Priority | undefined, status: Status | undefined, excldeArchived: boolean, sort: keyof StateChangeDate | undefined, sortOrder?: 'asc' | 'desc'): Observable<Task[] | undefined> {
         return this._allLanes$.pipe(
             map(lanes => {
                 let res = lanes?.find(l => l.id === lane.id)?.children
@@ -92,13 +92,16 @@ export class BoardService {
                 if (status) {
                     res = res?.filter(t => t.status === status);
                 }
+                if(excldeArchived){
+                    res = res?.filter(t => t.status !== 'archived');
+                }
 
                 const regex = /[\-\.\:TZ]/g;
                 if (sort) {
-                    if (sortOrder === 'asc') {
-                        res = res?.sort((b, a) => (Number(b[sort]?.toString().replace(regex, "")) ?? 0) - (Number(a[sort]?.toString().replace(regex, "")) ?? 0));
+                    if (sortOrder === 'desc') {
+                        res = res?.sort((b, a) => (Number(a.dates[sort]?.enter?.toString().replace(regex, "")) ?? 0) - (Number(b.dates[sort]?.enter?.toString().replace(regex, "")) ?? 0));
                     } else {
-                        res = res?.sort((a, b) => (Number(b[sort]?.toString().replace(regex, "")) ?? 0) - (Number(a[sort]?.toString().replace(regex, "")) ?? 0));
+                        res = res?.sort((a, b) => (Number(a.dates[sort]?.enter?.toString().replace(regex, "")) ?? 0) - (Number(b.dates[sort]?.enter?.toString().replace(regex, "")) ?? 0));
                     }
                 }
                 return res;
@@ -106,7 +109,7 @@ export class BoardService {
         )
     }
 
-    getTaggedTasks$(tags: Tag[] | undefined, priority: Priority | undefined, status: Status | undefined, sort: keyof Task | undefined, sortOrder?: 'asc' | 'desc'): Observable<Task[] | undefined> {
+    getTaggedTasks$(tags: Tag[] | undefined, priority: Priority | undefined, status: Status | undefined, excldeArchived: boolean, sort: keyof StateChangeDate | undefined, sortOrder?: 'asc' | 'desc'): Observable<Task[] | undefined> {
         return this._allTasks$.pipe(
             map(tasks => {
                 let res = tasks;
@@ -122,8 +125,16 @@ export class BoardService {
                 if (status) {
                     res = res?.filter(t => t.status === status); 
                 }
+                if(excldeArchived){
+                    res = res?.filter(t => t.status !== 'archived');
+                }
+                const regex = /[\-\.\:TZ]/g;
                 if (sort) {
-                    res = res?.sort((a, b) => (Number(b[sort]) ?? 0) - (Number(a[sort]) ?? 0));
+                    if (sortOrder === 'desc') {
+                        res = res?.sort((b, a) => (Number(a.dates[sort]?.enter?.toString().replace(regex, "")) ?? 0) - (Number(b.dates[sort]?.enter?.toString().replace(regex, "")) ?? 0));
+                    } else {
+                        res = res?.sort((a, b) => (Number(a.dates[sort]?.enter?.toString().replace(regex, "")) ?? 0) - (Number(b.dates[sort]?.enter?.toString().replace(regex, "")) ?? 0));
+                    }
                 }
 
                 res = res?.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
@@ -137,7 +148,7 @@ export class BoardService {
         return this.getDescendants(board).filter(c => this.isTask(c) && !isPlaceholder(c)).length;
     }
     getTodoCount(board: Board): number {
-        return this.getDescendants(board).filter(c => this.isTask(c) && !isPlaceholder(c) && c.status === 'todo' && !c.archived).length;
+        return this.getDescendants(board).filter(c => this.isTask(c) && !isPlaceholder(c) && c.status === 'todo').length;
     }
 
     getLane$(lane: Lane): Observable<Lane | undefined> {
@@ -257,45 +268,26 @@ export class BoardService {
         return newLane;
     }
 
-    nextStatus(task: Task) {
+    updateStatus(board: Board, container: Container, status: Status) {
+        let involvesArchive = container.status === 'archived' || status === 'archived';
         let boards = this._boards$.getValue();
-        task.status = getNextStatus(task);
-
-        task.stateChangeDate = new Date().toISOString() as ISODateString;
-        this._boards$.next(boards);
-    }
-
-    updateStatus(container: Container, status: Status) {
-        let boards = this._boards$.getValue();
-        container.status = status;
-
-        container.stateChangeDate = new Date().toISOString() as ISODateString;
-        this._boards$.next(boards);
-    }
-
-
-    /*
-    toggleArchived(task: Task) {
-        let boards = this._boards$.getValue();
-        task.archived = !task.archived;
-        if(addTagsForDoneAndArchived){
-            if(task.archived){
-                task.textContent.indexOf(ArchivedTag.tag) === -1 ? task.textContent += '&nbsp;' + tagIdentifiers[0].symbol + ArchivedTag.tag : task.textContent;
-            }else{
-                task.textContent = task.textContent.replace(tagIdentifiers[0].symbol + ArchivedTag.tag, '');
-            }
-            this.tagService.extractAndUpdateTags(task);
+        if(container.status){
+            setDateSafe(container, container.status, 'leave', new Date());
         }
-
-       
-        task.archivedDate = new Date();
+        container.status = status;
+        setDateSafe(container, container.status, 'enter', new Date());
+        if( this.isTask(container) && involvesArchive ){
+            this.evaluateArchiveMove(board, container);
+        }
         this._boards$.next(boards);
-    } */
-    toggleArchive(board: Board, task: Task) {
-        task.archived = !task.archived;
-        task.archivedDate = task.archived ? new Date().toISOString() as ISODateString : task.archivedDate;
-        let archive = board.children.find(l => l.archive);
-        if (task.archived) {
+    }
+
+    /**
+     * Evaluates the move of a task to/from the archive lane.
+     */
+    private evaluateArchiveMove(board: Board, task: Task) {
+        let archive = board.children.find(l => l.isArchive);
+        if (task.status === 'archived') {
             let lane = this.findParentLane([task]);
             if (lane) {
                 lane.children = lane.children.filter(t => t.id !== task.id);
@@ -320,8 +312,6 @@ export class BoardService {
             }
             archive?.children.splice(archive.children.findIndex(t => t.id === task.id), 1);
         }
-
-        this.publishBoardUpdate();
     }
 
     getTaskInDirection(tasks: Task[] | undefined, direction: 'up' | 'down' | 'left' | 'right'): Task | undefined {
@@ -583,7 +573,8 @@ export class BoardService {
     archiveDones(board: Board, lane: Lane) {
         // this._boards$.getValue();
         let descendants = this.getDescendants(lane);
-        descendants.filter(t => this.isTask(t) && !isPlaceholder(t) && t.status === 'completed').forEach(d => this.toggleArchive(board, d as Task));
+        descendants.filter(t => this.isTask(t) && !isPlaceholder(t) && t.status === 'completed')
+        .forEach(d => this.updateStatus(board, d, 'archived'));
         /*
         lane.children = lane.children.filter(t => !t.archived);
         let descendants = this.getDescendants(lane);
@@ -618,21 +609,48 @@ export class BoardService {
         } else {
             // fixes to existing data and new fields
 
-
-
             this._boards$.next(o.boards);
 
             this.parents?.forEach(p => {
-
-                if (!p.creationDate) {
+                if (!p.creationDate) { 
                     p.creationDate = new Date().toISOString() as ISODateString;
                 }
-                if (p.priority == null) {
+                if (typeof p.priority == 'undefined') {
                     p.priority = undefined;
                 }
-                if (p.archived == null) {
-                    p.archived = false
+                if(!p.dates){
+                    p.dates = {};
                 }
+                // @ts-ignore
+                if(this.isLane(p) && typeof p.isArchive === 'undefined'){
+                    // @ts-ignore
+                    p.isArchive = p.archive ?? false;
+                }
+                // @ts-ignore
+                if(this.isTask(p) && p.archived ){ 
+                    p.status = 'archived'; 
+                    // @ts-ignore
+                    p.dates.archived = { enter: p.archivedDate ?? new Date().toISOString() as ISODateString };
+                }
+                // @ts-ignore
+                //delete p.archived;
+                // @ts-ignore
+                if( p.stateChangeDate && p.status && p.status !=='archived' ){ 
+                    // @ts-ignore
+                    p.dates[p.status] = { enter: p.stateChangeDate ?? new Date().toISOString() as ISODateString };
+                    // @ts-ignore
+                    delete p.stateChangeDate;
+                }
+                if( this.isTask(p) && p.creationDate && (!p.dates['todo'] || !p.dates['todo'].enter) ){
+                    if(!p.dates['todo']){
+                        p.dates['todo'] = {};
+                    }
+                    p.dates['todo']['enter'] = p.creationDate;
+                }
+                //delete p.stateChangeDate;
+                // @ts-ignore
+                // delete p.archivedDate;
+
 
 
                 if (p.tags) {

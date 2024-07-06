@@ -6,13 +6,37 @@ export interface Board extends Container<Lane>{
 export interface Lane extends Container<Task>{
     _type: 'lane',
     showChildren: boolean,
-    archive: boolean,
+    isArchive: boolean,
     width: number | undefined
 }
 export interface Task extends Container<Task>{
     _type: 'task',
-    createdLaneId: string
+    createdLaneId: string,
 }
+
+export interface Container<T extends Container<any> = any> {
+    id: string;
+    _type: string,
+    textContent: string;
+    children: T[];
+    tags: Tag[];
+    creationDate: ISODateString,
+    priority: Priority | undefined,
+    status: Status | undefined,
+    dates: StateChangeDate
+    coordinates?: {
+        x: number,
+        y: number
+    },
+}
+
+
+export interface Tag{
+    tag: string;
+    type: string
+}
+
+export type Priority = 1 | 2 | 3 | 4
 
 export const Statuses = {
     todo : {
@@ -29,44 +53,26 @@ export const Statuses = {
     },
     completed: {
         icon: "✅",
+    },
+    archived: {
+        icon: "📂",
     }
 }
 
 export type Status = keyof typeof Statuses;
 
-
-export interface Container<T extends Container<any> = any> {
-    id: string;
-    textContent: string;
-    children: T[];
-    tags: Tag[];
-    _type: string,
-    creationDate: ISODateString,
-    priority: Priority | undefined,
-    status: Status | undefined,
-    stateChangeDate: ISODateString | undefined,
-    archived: boolean,
-    archivedDate: ISODateString | undefined,
-    coordinates?: {
-        x: number,
-        y: number
-    },
-}
-
-export type Priority = 1 | 2 | 3 | 4
-
-export interface Tag{
-    tag: string;
-    type: string
-}
+export type StateChangeDate = {
+    [keyStatus in Status]?: {
+        enter?: ISODateString,
+        leave?: ISODateString
+    };
+};
 
 export type ISODateString = `${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`
 
 export const addTagsForDoneAndArchived = false
 
-
-
-export const tagIdentifiers:{ type: string, symbol: string, class:string}[] = [
+export const tagIdentifiers: { type: string, symbol: string, class:string }[] = [
     {
         type: "tag-orange",
         symbol: '@',
@@ -94,6 +100,9 @@ export const getNewTask: ( lane: Lane, textContent?: string | undefined ) => Tas
         textContent: textContent ?? "",
         children: [],
         tags: [],
+        dates: {
+
+        },
         _type: "task",
         creationDate: new Date().toISOString() as ISODateString ,
         stateChangeDate: undefined,
@@ -116,7 +125,8 @@ export const getNewLane: ( archive: boolean ) => Lane = (archive: boolean) => {
         children: [],
         status: undefined,
         _type: "lane",
-        archive: archive,
+        dates: {},
+        isArchive: archive,
         creationDate: new Date().toISOString() as ISODateString,
         stateChangeDate: undefined,
         priority: undefined,
@@ -135,6 +145,7 @@ export const getNewBoard: (firstLane: Lane) => Board = (firstLane: Lane) => (
             tags: [],
             status: undefined,
             priority: undefined,
+            dates: {},
             children: [firstLane],
             creationDate: new Date().toISOString() as ISODateString,
             stateChangeDate: undefined,

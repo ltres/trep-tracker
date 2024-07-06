@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, HostBinding, HostListener, Input, OnDestroy, OnInit, Output, Renderer2, ViewChild, viewChild } from '@angular/core';
-import { Board, Lane, Container, Task, Tag, Status, Priority } from '../../types/task';
+import { Board, Lane, Container, Task, Tag, Status, Priority, ISODateString, StateChangeDate } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
@@ -15,6 +15,8 @@ import { RegistryService } from '../../service/registry.service';
   styleUrl: './task.component.scss'
 })
 export class TaskComponent extends DraggableComponent implements OnInit, OnDestroy {
+
+
 
   @ViewChild('editor') editor: ElementRef | undefined;
   @Input() task!: Task;
@@ -122,12 +124,6 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
     this.boardService.activateEditorOnTask(this.lane, this.task, undefined);
   }
 
-
-
-  toggleArchive() {
-    this.boardService.toggleArchive(this.board, this.task);
-  }
-
   hasNextSibling(): boolean {
     return this.parent.children.indexOf(this.task) < this.parent.children.length - 1;
   }
@@ -155,11 +151,19 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
       },500)
   }
   updateStatus($event: Status) {
-    this.boardService.updateStatus(this.task, $event);
+    this.boardService.updateStatus(this.board, this.task, $event);
   }
   updatePriority($event: Priority | undefined) {
     this.task.priority = $event; 
     this.boardService.publishBoardUpdate()
+  }
+  getToday(): ISODateString {
+    return new Date().toISOString() as ISODateString;
+  }
+
+  parseDate(arg0: ISODateString | undefined): Date | undefined {
+    if(!arg0) return undefined;
+    return new Date(arg0);
   }
   
 

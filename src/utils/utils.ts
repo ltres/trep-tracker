@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Lane, Task, Status, archivedLaneId } from '../types/task';
+import { Lane, Task, Status, archivedLaneId, ISODateString, Container } from '../types/task';
 
 export function generateUUID(): string {
     return uuidv4().substring(0,6);
@@ -133,7 +133,7 @@ export function isPlaceholder(task: Task){
 }
 
 export function isArchive(lane: Lane){
-    return lane.archive;
+    return lane.isArchive;
 }
 
 export function setStatusPath(value: string) {
@@ -147,6 +147,13 @@ export function getStatusPath(): string | null {
 export function getNextStatus(t: Task): Status{
     if(t.status === "todo") return "in-progress";
     if(t.status === "in-progress") return "completed";
-    if(t.status === "completed") return "todo";
+    if(t.status === "completed") return "archived";
     return 'todo'
+}
+
+export function setDateSafe( container: Container, status: Status, enterOrLeave: 'enter' | 'leave', date: Date){ 
+    if( !container.dates[status] ){
+        container.dates[status] = {};
+    }
+    container.dates[status]![enterOrLeave] = date.toISOString() as ISODateString;
 }

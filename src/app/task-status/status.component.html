@@ -13,9 +13,4 @@
         (click)="updateStatus(status)" >{{getSymbol(status)}}</span>
     </div> 
 
-    <span [tooltip]="'archive'" 
-    *ngIf="!staticLane && isTask(container) && ( container.status === 'completed' || container.archived )" 
-    [class.active]="container.archived"
-    [class.selectable]="!container.archived"
-    class="pointer big archive" (click)="toggleArchive()">📂</span> 
 </div>

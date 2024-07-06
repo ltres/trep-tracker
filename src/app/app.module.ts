@@ -28,6 +28,7 @@ import { WelcomeWizardManagerComponent } from './welcome-wizard-manager/welcome-
 import { ElectronService } from '../service/electron.service';
 import { StatusComponent } from './task-status/status.component';
 import { TooltipDirective } from './directive/tooltip.directive';
+import { TimeBarComponent } from './time-bar/time-bar.component';
  
 @NgModule({
     declarations: [
@@ -47,7 +48,8 @@ import { TooltipDirective } from './directive/tooltip.directive';
          ModalComponent,
          WelcomeWizardManagerComponent,
          StatusComponent,
-         TooltipDirective
+         TooltipDirective,
+         TimeBarComponent
         ],
     providers: [
         BoardService, 

@@ -16,20 +16,12 @@ export class StatusComponent {
   @Input() staticLane!: boolean;
   @Input() allowUndefinedStatus = false;
 
-
   @Output() onStatusSelected = new EventEmitter<Status>();
-  @Output() onArchiveToggle = new EventEmitter<boolean>();
 
   protected open = false;
 
   constructor(private boardService: BoardService) { }
 
-  toggleArchive() {
-    if(this.boardService.isTask(this.container)){
-      //this.boardService.archive(this.board, this.container)
-      this.onArchiveToggle.emit(!this.container.archived);
-    }
-  }
   updateStatus(status: Status) {
     this.onStatusSelected.emit(status); 
     //this.boardService.updateStatus(this.container, status);
