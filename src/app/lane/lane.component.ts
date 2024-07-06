@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostBinding, HostListener, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostBinding, HostListener, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { Board, Container, Lane, Priority, Status, Tag, Task, archivedLaneId, getNewTask } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 import { generateUUID, isArchive } from '../../utils/utils';
@@ -14,7 +14,8 @@ import { RegistryService } from '../../service/registry.service';
   //standalone: true,
   // imports: [],
   templateUrl: './lane.component.html',
-  styleUrl: './lane.component.scss'
+  styleUrl: './lane.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LaneComponent extends DraggableComponent implements OnInit {
   @ViewChildren(TaskComponent, { read: ElementRef }) taskComponentsElRefs: QueryList<ElementRef> | undefined;
@@ -32,8 +33,12 @@ export class LaneComponent extends DraggableComponent implements OnInit {
     protected override dragService: DragService,
     protected override keyboardService: KeyboardService,
     protected override registry: RegistryService,
-    public override el: ElementRef) {
+    public override el: ElementRef,
+    private cdr: ChangeDetectorRef) {
     super(boardService, dragService, keyboardService, registry, el);
+    this.boardService.boards$.subscribe( boards => {
+      cdr.detectChanges();
+    });
   }
 
   @HostListener('document:click', ['$event'])

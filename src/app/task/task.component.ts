@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, HostBinding, HostListener, Input, OnDestroy, OnInit, Output, Renderer2, ViewChild, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostBinding, HostListener, Input, OnDestroy, OnInit, Output, Renderer2, ViewChild, viewChild } from '@angular/core';
 import { Board, Lane, Container, Task, Tag, Status, Priority, ISODateString, StateChangeDate } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 import { DragService } from '../../service/drag.service';
@@ -12,12 +12,10 @@ import { RegistryService } from '../../service/registry.service';
   //standalone: true,
   //imports: [NgxEditorModule,],
   templateUrl: './task.component.html',
-  styleUrl: './task.component.scss'
+  styleUrl: './task.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TaskComponent extends DraggableComponent implements OnInit, OnDestroy {
-
-
-
   @ViewChild('editor') editor: ElementRef | undefined;
   @Input() task!: Task;
   @Input() lane!: Lane;
@@ -38,22 +36,19 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
     protected override dragService: DragService,
     protected override keyboardService: KeyboardService,
     protected override registry: RegistryService,
-    public override el: ElementRef) {
+    public override el: ElementRef,
+    protected cdr: ChangeDetectorRef,
+  ) {
     super(boardService, dragService, keyboardService, registry, el);
+    this.boardService.boards$.subscribe( boards => {
+      cdr.detectChanges();
+    });
   }
 
   override get object(): Container | undefined {
     return this.task;
   }
 
-  /*
-  @HostListener('document:keydown', ['$event'])
-  @HostListener('document:keyup', ['$event'])
-  handleKeyboardEvent(event: KeyboardEvent) {
-    if(event.key === 'Enter' && this.editorActive) {
-      event.preventDefault()
-    }
-  }*/
 
   updateValue( $event: Event) {
     this.task.textContent = ($event.target as HTMLElement).innerHTML ?? '';
@@ -85,6 +80,7 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
       } else {
         this.selected = false;
       }
+      this.cdr.detectChanges();
     })
   }
 
@@ -148,7 +144,7 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
       }
       this.debounce = setTimeout( () => {
         this.boardService.publishBoardUpdate()
-      },500)
+      },10)
   }
   updateStatus($event: Status) {
     this.boardService.updateStatus(this.board, this.task, $event);

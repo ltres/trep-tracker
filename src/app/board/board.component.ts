@@ -1,4 +1,4 @@
-import { AfterViewChecked, AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostBinding, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostBinding, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { Board, Container, Lane, Tag, Task, getNewTask } from '../../types/task';
 import { TaskComponent } from '../task/task.component';
 import { BoardService } from '../../service/board.service';
@@ -17,6 +17,7 @@ import { DraggableComponent } from '../draggable/draggable.component';
   //imports: [TaskComponent],
   templateUrl: './board.component.html',
   styleUrl: './board.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BoardComponent extends BaseComponent implements OnInit, AfterViewInit {
 
@@ -41,7 +42,9 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
   ) {
     //super(boardService, dragService, keyboardService, registry,el);
     super(registry, el)
-    
+    this.boardService.boards$.subscribe( boards => {
+      cdr.detectChanges();
+    });
     // this.taskService = taskService;
   }
   ngAfterViewInit(): void {
