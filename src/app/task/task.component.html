@@ -7,11 +7,13 @@ data-consider-for-overlapping-checks="true"
 (click)="clickTask($event)" 
 
 >
-    <div *ngIf="!this.static && !isPlaceholder()"class="drag-handle translucent pointer" drag-on-this="true">⋮</div>
+    <div *ngIf="!isStaticLane() && !isPlaceholder()"class="drag-handle translucent pointer" drag-on-this="true">⋮</div>
+    <!--
     <prioritizer *ngIf="!isPlaceholder()" (onPrioritySelected)="updatePriority($event)" [container]="task" class=""> </prioritizer>
-    <status [container]="task" [board]="board" [staticLane]="static" 
+    <status [container]="task" [board]="board" [staticLane]="isStaticLane()" 
     (onStatusSelected)="updateStatus($event)"
     class="m-x-025"></status>
+-->
     <div class="flex wrap w-100 g-025">
         <div  class="grow" #editor 
         contenteditable="true" 
@@ -23,7 +25,7 @@ data-consider-for-overlapping-checks="true"
 
         
         <div *ngIf="task.status === 'archived'" class="date-wrapper translucent small flex align-items-center">
-           <time-bar [container]="task"></time-bar> {{ parseDate(this.task.dates.archived?.enter) | date: 'dd-MM-yy hh:mm a'}}
+           <!--<time-bar [container]="task"></time-bar> -->{{ parseDate(this.task.dates.archived?.enter) | date: 'dd-MM-yy hh:mm a'}}
         </div>
         <div *ngIf="task.status === 'completed'"class="date-wrapper translucent small flex align-items-center">
             completed {{ parseDate(this.task.dates.completed?.enter) | date: 'dd-MM-yy hh:mm a'}}
@@ -34,13 +36,13 @@ data-consider-for-overlapping-checks="true"
     </div>
 </div>
 <div *ngIf="showChildren" class="task-children-wrapper g-025 ">
-    <ng-container *ngFor="let child of this.task.children; let last = last">
+    <ng-container *ngFor="let child of this.task.children; let last = last;trackBy: trackBy">
         <div class="flex" >
             <div class="line">
                 <div class="border-angle"></div>
                 <div *ngIf="!last" class="border-line"></div>
             </div>
-            <task class="child" [static]="static" [parent]="this.task" [task]="child"  [board]="this.board" [lane]="this.lane"></task>
+            <task draggableDir class="child" [static]="isStaticLane()" [parent]="this.task" [task]="child"  [board]="this.board" [lane]="this.lane"></task>
         </div>
     </ng-container>
     

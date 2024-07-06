@@ -1,6 +1,6 @@
 <div class="lane-wrapper p-x-05 p-y-025"  
 [class.archive-lane]="isArchive(lane)"
-[class.static-view]="displayStaticStuff() && (tasks | async)?.length === 0" data-consider-for-overlapping-checks="true">
+[class.static-view]="isStatic() && (tasks | async)?.length === 0" data-consider-for-overlapping-checks="true">
   <div class="lane-toolbar flex align-items-center g-05 ">
     <div class="grow no-wrap flex align-items-center g-05" >
       <div class="lane-title   no-wrap" 
@@ -17,41 +17,44 @@
       [allowUndefinedStatus]="true"
       [container]="lane" 
       [board]="board" 
-      [staticLane]="displayStaticStuff()" > </status>
+      [staticLane]="isStatic()" > </status>
     </div>
     <div class="grow"></div>
-    <span class="small no-grow" *ngIf="displayStaticStuff() && lane.showChildren" (click)="toggleShowChildren()"><span class="completed">☑</span></span>
-    <span class="small no-grow" *ngIf="displayStaticStuff() && !lane.showChildren" (click)="toggleShowChildren()">☐</span>
+    <span class="small no-grow" *ngIf="isStatic() && lane.showChildren" (click)="toggleShowChildren()"><span class="completed">☑</span></span>
+    <span class="small no-grow" *ngIf="isStatic() && !lane.showChildren" (click)="toggleShowChildren()">☐</span>
     <div class="no-grow relative flex align-items-center">
 
       <div class="small  no-grow" (click)="menuOpen = !menuOpen; $event.stopPropagation()">☰</div>
       <lane-menu *ngIf="menuOpen" [lane]="lane" (onClose)="menuOpen = false">
-        <button class="small no-grow" *ngIf="!displayStaticStuff() && !isArchive(lane) " (click)="archiveDones()">☢ Archive dones </button>
+        <button class="small no-grow" *ngIf="!isStatic() && !isArchive(lane) " (click)="archiveDones()">☢ Archive dones </button>
 
         <button class="small danger no-grow" *ngIf="(tasks | async)?.length == 0" (click)="deleteLane()">␡ Delete lane</button>
-        <button class="small no-grow" *ngIf="(displayStaticStuff() || isArchive(lane)) && !lane.showChildren" (click)="toggleShowChildren()">☐ Show Children </button>
-        <button class="small no-grow" *ngIf="(displayStaticStuff() || isArchive(lane)) && lane.showChildren" (click)="toggleShowChildren()"><span class="completed">☑</span> Show Children </button>
+        <button class="small no-grow" *ngIf="(isStatic() || isArchive(lane)) && !lane.showChildren" (click)="toggleShowChildren()">☐ Show Children </button>
+        <button class="small no-grow" *ngIf="(isStatic() || isArchive(lane)) && lane.showChildren" (click)="toggleShowChildren()"><span class="completed">☑</span> Show Children </button>
     
-        <button *ngIf="!displayStaticStuff() && !isArchive(lane)" class="small no-grow" (click)="createNewTask()"> <span *ngIf="lane.priority" class="warning">⚠</span> 🆕 New task</button>
+        <button *ngIf="!isStatic() && !isArchive(lane)" class="small no-grow" (click)="createNewTask()"> <span *ngIf="lane.priority" class="warning">⚠</span> 🆕 New task</button>
       </lane-menu>
     </div>
 
     <span drag-on-this="true" class="drag-handle translucent pointer no-grow">⋯</span>
   </div>
 
-  <ng-container *ngFor="let task of (tasks | async)">
+  <ng-container *ngFor="let task of (tasks | async);trackBy: trackBy">
     <task [task]="task" [parent]="lane" [board]="board" [lane]="lane"  (createNewTask)="createNewTask()"></task>
   </ng-container>
 
-  <ng-container *ngIf="displayStaticStuff()">
+  <ng-container *ngIf="isStatic()">
     <div class="static-view flex column">
-        <task *ngFor="let task of (taggedTasks | async)" [static]="true" [showChildren]="lane.showChildren" [task]="task" [parent]="lane" [board]="board" [lane]="lane"></task>
+        <task *ngFor="let task of (taggedTasks | async);trackBy: trackBy" [static]="true" 
+        draggableDir
+        [showChildren]="lane.showChildren" [task]="task" 
+        [parent]="lane" [board]="board" [lane]="lane"></task>
     </div>
   </ng-container>
 
   <!-- <p class="floating-label">Lane: {{lane.id}}</p> -->
 
-  <div *ngIf="!displayStaticStuff()" class="lane-toolbar flex g-05">
+  <div *ngIf="!isStatic()" class="lane-toolbar flex g-05">
     <div class="grow"></div><button class="small no-grow" (click)="createNewTask()">
       <span *ngIf="lane.priority" class="warning">⚠</span>
       New task

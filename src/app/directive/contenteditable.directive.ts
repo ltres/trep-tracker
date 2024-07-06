@@ -63,7 +63,7 @@ export class ContenteditableDirective implements ControlValueAccessor {
         if( !changes['ngModel'] || this.elementRef.nativeElement.innerHTML === changes['ngModel'].currentValue || changes['ngModel'].isFirstChange() ){
             return;
         }
-        console.log("model changed", changes)
+        // console.log("model changed", changes)
         /*
         this.elementRef.nativeElement.innerHTML = changes['ngModel'].currentValue;
         setTimeout( () => {

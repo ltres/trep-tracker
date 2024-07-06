@@ -1,4 +1,4 @@
-import { AfterContentChecked, AfterContentInit, AfterViewChecked, AfterViewInit, Component, Inject, OnInit } from '@angular/core';
+import { AfterContentChecked, AfterContentInit, AfterViewChecked, AfterViewInit, ApplicationRef, Component, Inject, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { BoardComponent } from './board/board.component';
 import { BoardService } from '../service/board.service';
@@ -22,9 +22,14 @@ export class AppComponent implements AfterViewInit {
   constructor(
     private boardService: BoardService,
     protected modalService: ModalService,
-    @Inject('StorageServiceAbstract') private storageService: StorageServiceAbstract
+    @Inject('StorageServiceAbstract') private storageService: StorageServiceAbstract,
+    private appRef: ApplicationRef
   ) {
     storageService.init();  
+    this.appRef.tick = (...args) => {
+      //console.log('Change detection cycle', new Error().stack);
+      return Object.getPrototypeOf(this.appRef).tick.apply(this.appRef, args);
+    };
   }
 
   ngAfterViewInit(): void {

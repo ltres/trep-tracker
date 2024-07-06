@@ -2,15 +2,18 @@ import { Injectable } from "@angular/core";
 import { BehaviorSubject, Observable, Subject, map } from "rxjs";
 import { cursorIsInside, generateUUID, overlaps } from "../utils/utils";
 import { BoardService } from "./board.service";
-import { DraggableComponent } from "../app/draggable/draggable.component";
 import { RegistryService } from "./registry.service";
+import { DraggableDirective } from "../app/directive/draggable.directive";
+import { BaseComponent } from "../app/base/base.component";
+import { BoardComponent } from "../app/board/board.component";
+import { Board } from "../types/task";
 
 @Injectable({
     providedIn: 'root'
 })
 export class DragService {
-    private _dragEndEvent$: BehaviorSubject<{ draggedComponent: DraggableComponent, event: DragEvent, deltaX: number, deltaY: number } | undefined> 
-    = new BehaviorSubject<{ draggedComponent: DraggableComponent, event: DragEvent, deltaX: number, deltaY: number  } | undefined>(undefined);
+    private _dragEndEvent$: BehaviorSubject<{ draggedComponent: BaseComponent, event: DragEvent, deltaX: number, deltaY: number, board: Board } | undefined> 
+    = new BehaviorSubject<{ draggedComponent: BaseComponent, event: DragEvent, deltaX: number, deltaY: number, board: Board  } | undefined>(undefined);
 
     constructor(
         private boardService: BoardService,
@@ -23,7 +26,7 @@ export class DragService {
             console.info("Drag end event", event);
             let { draggedComponent } = event;
             let { object: draggedObject } = draggedComponent;
-            let { board } = draggedComponent;
+            let { board } = event;
             let {deltaX, deltaY} = event;
             if (!draggedObject || !board) {
                 console.warn("Dragged component has no object");
@@ -100,11 +103,11 @@ export class DragService {
         });
     }
 
-    publishDragEvent(draggable: DraggableComponent, event: DragEvent, deltaX: number, deltaY: number ) {
-        this._dragEndEvent$.next({ draggedComponent: draggable, event, deltaX, deltaY});
+    publishDragEvent(draggable: BaseComponent, event: DragEvent, deltaX: number, deltaY: number, board: Board ) {
+        this._dragEndEvent$.next({ draggedComponent: draggable, event, deltaX, deltaY, board});
     }
 
-    get dragEndEvent$(): Observable<{ draggedComponent: DraggableComponent, event: DragEvent } | undefined> {
+    get dragEndEvent$(): Observable<{ draggedComponent: BaseComponent, event: DragEvent } | undefined> {
         return this._dragEndEvent$;
     }
 }

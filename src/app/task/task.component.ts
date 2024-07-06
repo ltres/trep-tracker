@@ -1,11 +1,11 @@
-import { Component, ElementRef, EventEmitter, HostBinding, HostListener, Input, OnDestroy, OnInit, Output, Renderer2, ViewChild, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostBinding, HostListener, Input, OnChanges, OnDestroy, OnInit, Output, Renderer2, SimpleChanges, ViewChild, viewChild } from '@angular/core';
 import { Board, Lane, Container, Task, Tag, Status, Priority, ISODateString, StateChangeDate } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
-import { DraggableComponent } from '../draggable/draggable.component';
-import { isPlaceholder, setCaretPosition } from '../../utils/utils';
+import { hashCode, isPlaceholder, isStatic, setCaretPosition } from '../../utils/utils';
 import { RegistryService } from '../../service/registry.service';
+import { BaseComponent } from '../base/base.component';
 
 @Component({
   selector: 'task[task][lane][parent][board]',
@@ -14,16 +14,14 @@ import { RegistryService } from '../../service/registry.service';
   templateUrl: './task.component.html',
   styleUrl: './task.component.scss'
 })
-export class TaskComponent extends DraggableComponent implements OnInit, OnDestroy {
-
-
-
+export class TaskComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges {
   @ViewChild('editor') editor: ElementRef | undefined;
   @Input() task!: Task;
+
   @Input() lane!: Lane;
   @Input() parent!: Container;
-
   @Input() board!: Board;
+
   @Input() showChildren: boolean = true;
   
   @Output() createNewTask: EventEmitter<void> = new EventEmitter();
@@ -34,12 +32,16 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
 
 
   constructor(
-    protected override boardService: BoardService,
-    protected override dragService: DragService,
-    protected override keyboardService: KeyboardService,
+    protected boardService: BoardService,
+    protected dragService: DragService,
+    protected keyboardService: KeyboardService,
     protected override registry: RegistryService,
     public override el: ElementRef) {
-    super(boardService, dragService, keyboardService, registry, el);
+    super(registry, el);
+  }
+  override ngOnChanges(changes: SimpleChanges): void {
+    super.ngOnChanges(changes);
+    console.log('changes', changes) ;
   }
 
   override get object(): Container | undefined {
@@ -97,20 +99,18 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
  * Otherwise, create another floating lane
  * @param $event 
  */
-  override onDragEnd($event: DragEvent) {
-    super.onDragEnd($event, this.task);
+  dragEnd($event: DragEvent) {
     this.boardService.clearSelectedTasks();
     this.boardService.toggleTaskSelection(this.task);
   }
 
-  override onDragStart($event: DragEvent) {
+  onDragStart($event: DragEvent) {
     if (!this.editorActive && !this.selected) {
       this.boardService.clearSelectedTasks();
     }
     if (!this.selected) {
       this.boardService.toggleTaskSelection(this.task);
     }
-    super.onDragStart($event);
   }
 
   activateEditorOnTask() {
@@ -148,7 +148,7 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
       }
       this.debounce = setTimeout( () => {
         this.boardService.publishBoardUpdate()
-      },500)
+      },10)
   }
   updateStatus($event: Status) {
     this.boardService.updateStatus(this.board, this.task, $event);
@@ -166,5 +166,11 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
     return new Date(arg0);
   }
   
+  isStaticLane(): boolean {
+    return isStatic(this.lane)
+  }
+  trackBy(index: number, task: Task): number {
+    return hashCode(task.id);
+  }
 
 }

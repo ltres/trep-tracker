@@ -4,12 +4,11 @@ import { TaskComponent } from '../task/task.component';
 import { BoardService } from '../../service/board.service';
 import { Observable, of } from 'rxjs';
 import { LaneComponent } from '../lane/lane.component';
-import { getCaretPosition, isPlaceholder } from '../../utils/utils';
+import { getCaretPosition, hashCode, isPlaceholder } from '../../utils/utils';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
 import { BaseComponent } from '../base/base.component';
 import { RegistryService } from '../../service/registry.service';
-import { DraggableComponent } from '../draggable/draggable.component';
 
 @Component({
   selector: 'board',
@@ -32,16 +31,19 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
   debounce: any;
 
   constructor(
-    protected  boardService: BoardService,
-    protected  keyboardService: KeyboardService,
+    protected boardService: BoardService,
+    protected keyboardService: KeyboardService,
     protected override registry: RegistryService,
-    protected  dragService: DragService,
+    protected dragService: DragService,
     public override el: ElementRef,
     private cdr: ChangeDetectorRef
   ) {
     //super(boardService, dragService, keyboardService, registry,el);
     super(registry, el)
-    
+    this.cdr.detectChanges = (...args) => {
+      console.log('Change detection triggered', new Error().stack);
+      return Object.getPrototypeOf(this.cdr).detectChanges.apply(this.cdr, args);
+    };
     // this.taskService = taskService;
   }
   ngAfterViewInit(): void {
@@ -54,11 +56,11 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
         this.width = 0;
         laneEls.forEach(laneEl => {
           let maxHeight = laneEl.getBoundingClientRect().height + laneEl.getBoundingClientRect().top + window.scrollY;
-          if (maxHeight > (this.height??0)) {
+          if (maxHeight > (this.height ?? 0)) {
             this.height = maxHeight;
           }
           let maxWidth = laneEl.getBoundingClientRect().width + laneEl.getBoundingClientRect().left + window.scrollX;
-          if (maxWidth > (this.width??0)) {
+          if (maxWidth > (this.width ?? 0)) {
             this.width = maxWidth;
           }
         });
@@ -77,30 +79,34 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
   }
 
   addLane() {
-    this.boardService.addFloatingLane(this.board, 
-      this.el.nativeElement.getBoundingClientRect().width / 2 , 
+    this.boardService.addFloatingLane(this.board,
+      this.el.nativeElement.getBoundingClientRect().width / 2,
       this.el.nativeElement.getBoundingClientRect().height / 2, [],
       false);
   }
 
   updateBoardTags($event: Tag[]) {
-      let allOldPresent = this.board.tags.filter( oldTag => $event.map( t => t.tag.toLowerCase() ).find( r => r === oldTag.tag.toLowerCase() ) ).length === this.board.tags.length
-      let allNewPresent = $event.filter( oldTag => this.board.tags.map( t => t.tag.toLowerCase() ).find( r => r === oldTag.tag.toLowerCase() ) ).length === $event.length
-  
-      if(!allOldPresent || !allNewPresent){
-        this.board.tags = $event;
-        this.debounceBoardUpdate()
-      }
+    let allOldPresent = this.board.tags.filter(oldTag => $event.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === this.board.tags.length
+    let allNewPresent = $event.filter(oldTag => this.board.tags.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === $event.length
+
+    if (!allOldPresent || !allNewPresent) {
+      this.board.tags = $event;
+      this.debounceBoardUpdate()
+    }
   }
 
-  debounceBoardUpdate( ){
-    if( this.debounce ){
-        clearTimeout(this.debounce);
+  debounceBoardUpdate() {
+    if (this.debounce) {
+      clearTimeout(this.debounce);
     }
-    this.debounce = setTimeout( () => {
+    this.debounce = setTimeout(() => {
       this.boardService.publishBoardUpdate()
-    },500)
-}
+    }, 500)
+  }
+
+  trackBy(index: number, lane: Lane): number {
+    return hashCode(lane.id);
+  }
 
 
 }

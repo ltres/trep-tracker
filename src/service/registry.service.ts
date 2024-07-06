@@ -1,8 +1,8 @@
 
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, } from "rxjs";
-import { DraggableComponent } from "../app/draggable/draggable.component";
 import { BaseComponent } from "../app/base/base.component";
+import { DraggableDirective } from "../app/directive/draggable.directive";
 
 /**
  * Service responsible for managing the registry of draggable and base components.
@@ -11,7 +11,7 @@ import { BaseComponent } from "../app/base/base.component";
     providedIn: 'root'
 })
 export class RegistryService {
-    private _draggableComponentRegistry$: BehaviorSubject<DraggableComponent[]> = new BehaviorSubject<DraggableComponent[]>([]);
+    private _draggableComponentRegistry$: BehaviorSubject<BaseComponent[]> = new BehaviorSubject<BaseComponent[]>([]);
     private _baseComponentRegistry$: BehaviorSubject<BaseComponent[]> = new BehaviorSubject<BaseComponent[]>([]);
 
     componentInitialized(component: BaseComponent) {
@@ -32,13 +32,13 @@ export class RegistryService {
 
     }
 
-    addToDraggableRegistry(draggable: DraggableComponent) {
+    addToDraggableRegistry(draggable: BaseComponent) {
         let registry = this._draggableComponentRegistry$.getValue();
         registry.push(draggable);
         this._draggableComponentRegistry$.next(registry);
     }
 
-    removeFromDraggableRegistry(draggable: DraggableComponent) {
+    removeFromDraggableRegistry(draggable: BaseComponent) {
         let registry = this._draggableComponentRegistry$.getValue();
         let index = registry.findIndex(d => d === draggable);
         if (index === -1) {
@@ -60,8 +60,8 @@ export class RegistryService {
         registry.next(curVal);
     }
 
-    private isDraggableComponent(component: BaseComponent): component is DraggableComponent {
-        return (component as DraggableComponent).object !== undefined;
+    private isDraggableComponent(component: BaseComponent): component is BaseComponent {
+        return (component as BaseComponent).object !== undefined;
     }
 
     private addToRegistry<T extends BaseComponent>(registry: BehaviorSubject<T[]>, component: T) {
@@ -74,7 +74,7 @@ export class RegistryService {
         registry.next(curVal);
     }
 
-    get draggableComponentRegistry(): DraggableComponent[] {
+    get draggableComponentRegistry(): BaseComponent[] {
         return this._draggableComponentRegistry$.getValue();
     }
 

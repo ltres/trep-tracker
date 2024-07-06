@@ -1,13 +1,13 @@
-import { Component, ElementRef, HostBinding, HostListener, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostBinding, HostListener, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { Board, Container, Lane, Priority, Status, Tag, Task, archivedLaneId, getNewTask } from '../../types/task';
 import { BoardService } from '../../service/board.service';
-import { generateUUID, isArchive } from '../../utils/utils';
+import { generateUUID, hashCode, isArchive, isStatic } from '../../utils/utils';
 import { Observable } from 'rxjs';
 import { TaskComponent } from '../task/task.component';
-import { DraggableComponent } from '../draggable/draggable.component';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
 import { RegistryService } from '../../service/registry.service';
+import { BaseComponent } from '../base/base.component';
 
 @Component({
   selector: 'lane[lane][board]',
@@ -15,25 +15,26 @@ import { RegistryService } from '../../service/registry.service';
   // imports: [],
   templateUrl: './lane.component.html',
   styleUrl: './lane.component.scss'
+
 })
-export class LaneComponent extends DraggableComponent implements OnInit {
+export class LaneComponent extends BaseComponent implements OnInit {
   @ViewChildren(TaskComponent, { read: ElementRef }) taskComponentsElRefs: QueryList<ElementRef> | undefined;
   @ViewChildren(TaskComponent) taskComponents: QueryList<TaskComponent> | undefined;
 
   @Input() lane!: Lane;
   @Input() board!: Board;
 
-
   menuOpen = false
   debounce: any;
 
   constructor(
-    protected override boardService: BoardService,
-    protected override dragService: DragService,
-    protected override keyboardService: KeyboardService,
+    protected boardService: BoardService,
+    protected dragService: DragService,
+    protected keyboardService: KeyboardService,
     protected override registry: RegistryService,
-    public override el: ElementRef) {
-    super(boardService, dragService, keyboardService, registry, el);
+    public override el: ElementRef,
+    public cdr: ChangeDetectorRef) {
+    super(registry, el);
   }
 
   @HostListener('document:click', ['$event'])
@@ -57,6 +58,10 @@ export class LaneComponent extends DraggableComponent implements OnInit {
 
   override ngOnInit(): void {
     super.ngOnInit();
+    this.cdr.detectChanges = (...args) => {
+      console.log('Change detection triggered', new Error().stack);
+      return Object.getPrototypeOf(this.cdr).detectChanges.apply(this.cdr, args);
+    };
   }
 
   get tasks(): Observable<Task[] | undefined> {
@@ -67,8 +72,8 @@ export class LaneComponent extends DraggableComponent implements OnInit {
     return this.boardService.getTaggedTasks$(this.lane.tags, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false: true, this.isArchive(this.lane) ? "archived" : undefined, 'desc');
   }
 
-  displayStaticStuff(): boolean {
-    return this.isTagged() || (this.lane.priority !== undefined && this.lane.children.length === 0);
+  isStatic(): boolean {
+    return isStatic(this.lane)
   }
 
   isTagged(): boolean {
@@ -121,6 +126,8 @@ export class LaneComponent extends DraggableComponent implements OnInit {
     this.lane.priority = $event;
     this.boardService.publishBoardUpdate()
   }
-
+  trackBy(index: number, task: Task): number {
+    return hashCode(task.id);
+  }
 
 }

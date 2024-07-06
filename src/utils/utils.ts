@@ -161,3 +161,19 @@ export function setDateSafe( container: Container, status: Status, enterOrLeave:
 export function formatDate( date : ISODateString){
     return new Date(date).toLocaleDateString();
 }
+
+export function isStatic(lane: Lane): boolean {
+    let isTagged = lane.tags ? lane.tags.length > 0 : false;
+    let cond = lane.priority !== undefined || lane.status !== undefined;
+    let cond2 =  lane.children.length === 0
+    return isTagged || cond || cond2;
+}
+export function hashCode(str:string):number {
+    let hash = 0;
+    for (let i = 0, len = str.length; i < len; i++) {
+        let chr = str.charCodeAt(i);
+        hash = (hash << 5) - hash + chr;
+        hash |= 0; // Convert to 32bit integer
+    }
+    return hash;
+}

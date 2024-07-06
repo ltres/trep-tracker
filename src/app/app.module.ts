@@ -29,6 +29,7 @@ import { StatusComponent } from './task-status/status.component';
 import { TooltipDirective } from './directive/tooltip.directive';
 import { TimeBarComponent } from './time-bar/time-bar.component';
 import { environment } from '../environments/environment';
+import { DraggableDirective } from './directive/draggable.directive';
  
 @NgModule({
     declarations: [
@@ -48,7 +49,8 @@ import { environment } from '../environments/environment';
          WelcomeWizardManagerComponent,
          StatusComponent,
          TooltipDirective,
-         TimeBarComponent
+         TimeBarComponent,
+         DraggableDirective
         ],
     providers: [
         BoardService, 
