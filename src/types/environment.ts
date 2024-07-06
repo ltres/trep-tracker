@@ -1,3 +1,5 @@
+import { StorageServiceAbstract } from "./storage";
+
 export interface Environment {
-    version: string;
+    storage: StorageServiceAbstract,
 };

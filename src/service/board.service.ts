@@ -1,9 +1,11 @@
-import { Injectable, Injector } from "@angular/core";
+import { Inject, Injectable, Injector } from "@angular/core";
 import { Board, Lane, Container, Task, Tag, tagIdentifiers, getNewBoard, getNewLane, Priority, addTagsForDoneAndArchived, archivedLaneId, Status, ISODateString, StateChangeDate } from "../types/task";
 import { BehaviorSubject, Observable, filter, map } from "rxjs";
 import { generateUUID, getNextStatus, isPlaceholder, setDateSafe } from "../utils/utils";
 import { TagService } from "./tag.service";
 import { stat } from "original-fs";
+import { StorageService } from "./storage.service";
+import { StorageServiceAbstract } from "../types/storage";
 
 @Injectable({
     providedIn: 'root'
@@ -26,17 +28,20 @@ export class BoardService {
     private tagService!: TagService;
 
     private boardUpdateCounter: number = 0;
+    storageService!: StorageServiceAbstract;
 
-    constructor(injector: Injector) {
-
+    constructor(
+        injector: Injector,
+    ) {
         setTimeout(() => this.tagService = injector.get(TagService));
+        setTimeout(() => this.storageService = injector.get("StorageServiceAbstract"));
         this._boards$.subscribe(b => {
             console.warn('Boards updated', this.boardUpdateCounter++);
-            let allTasks: Task[] = [];
+            let allTasks: Task[] = []; 
             let allLanes: Lane[] = [];
             b.forEach(board => {
                 board.children.forEach(lane => {
-                    allTasks = allTasks.concat(lane.children);
+                    allTasks = allTasks.concat(lane.children); 
                     lane.children.forEach(task => {
                         allTasks = allTasks.concat(this.getDescendants(task).filter(t => this.isTask(t)) as Task[]);
                     })
@@ -49,6 +54,10 @@ export class BoardService {
             this._allTasks$.next(allTasks);
             this._allLanes$.next(allLanes);
             this._allParents$.next([...allTasks, ...allLanes, ...this.boards]);
+
+            // Store status:
+            let status = this.serialize();
+            this.storageService.writeToStatusFile(status);
         })
     }
 
@@ -634,18 +643,20 @@ export class BoardService {
                 }
                 // @ts-ignore
                 //delete p.archived;
-                // @ts-ignore
+                // @ts-ignore 
                 if( p.stateChangeDate && p.status && p.status !=='archived' ){ 
                     // @ts-ignore
                     p.dates[p.status] = { enter: p.stateChangeDate ?? new Date().toISOString() as ISODateString };
                     // @ts-ignore
-                    delete p.stateChangeDate;
+                    //delete p.stateChangeDate;
                 }
                 if( this.isTask(p) && p.creationDate && (!p.dates['todo'] || !p.dates['todo'].enter) ){
                     if(!p.dates['todo']){
                         p.dates['todo'] = {};
                     }
                     p.dates['todo']['enter'] = p.creationDate;
+                    // @ts-ignore
+                    p.dates['todo']['leave'] = p.stateChangeDate;
                 }
                 //delete p.stateChangeDate;
                 // @ts-ignore

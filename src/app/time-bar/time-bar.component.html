@@ -1,1 +1,8 @@
-[{{getBars(10)}}]
+<div class="bars flex column">
+    <div class="bar grow {{date}}-background" 
+    [tooltip]="getTooltip(date)"
+    *ngFor="let date of getDates()" 
+    [style.width]="getWidth(date)" >
+        
+    </div>
+</div>

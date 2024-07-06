@@ -31,6 +31,8 @@ export class TooltipDirective {
   @HostListener('mouseleave')
   onMouseLeave() {
     this.element.nativeElement.style.position = 'unset';
+    this.element.nativeElement.style.overflowX = '';
+
     (this.element.nativeElement as HTMLElement).removeChild(this.element.nativeElement.querySelector('.tooltip'));
 
   }

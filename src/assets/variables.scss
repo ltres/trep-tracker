@@ -33,8 +33,8 @@ $completed-color:hsl(115, 80%, 50%);
 $in-progress-color:hsl(51, 80%, 50%);
 $delegated-color:hsl(167, 90%, 50%);
 $waiting-color:hsl(197, 85%, 50%);
+$archived-color:hsl(115, 81%, 37%);
 
-$archived-color:rgba($completed-color, $translucent-opacity);
 $danger-color:hsl(0, 80%, 50%);
 $warning-color:hsl(56, 80%, 50%);
 
@@ -57,3 +57,6 @@ $child-line-width: 1rem;
 
 $board-selection-menu-width: 5rem;
 $board-selection-menu-background-color: #111113;
+
+$time-bar-width:10rem;
+$time-bars-height:0.5rem;

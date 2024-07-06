@@ -15,7 +15,6 @@ import { ContenteditableDirective } from './directive/contenteditable.directive'
 import { TagService } from '../service/tag.service';
 import { TagsViewerComponent } from './tags-viewer/tags-viewer.component';
 import { StorageService } from '../service/storage.service';
-import { StorageComponent } from './storage/storage.component';
 import { LaneMenuComponent } from './lane-menu/lane-menu.component';
 import { BoardSelectionMenuComponent } from './board-selection-menu/board-selection-menu.component';
 import { PrioritizerComponent } from './prioritizer/prioritizer.component';
@@ -29,6 +28,7 @@ import { ElectronService } from '../service/electron.service';
 import { StatusComponent } from './task-status/status.component';
 import { TooltipDirective } from './directive/tooltip.directive';
 import { TimeBarComponent } from './time-bar/time-bar.component';
+import { environment } from '../environments/environment';
  
 @NgModule({
     declarations: [
@@ -38,7 +38,6 @@ import { TimeBarComponent } from './time-bar/time-bar.component';
          TaskComponent, 
          ContenteditableDirective, 
          TagsViewerComponent,
-         StorageComponent,
          LaneMenuComponent,
          BoardSelectionMenuComponent,
          PrioritizerComponent,
@@ -57,9 +56,11 @@ import { TimeBarComponent } from './time-bar/time-bar.component';
         DragService, 
         RegistryService, 
         TagService, 
-        StorageService,
         ModalService,
-        ElectronService
+        {
+            provide: 'StorageServiceAbstract',
+            useClass: environment.storageService
+          }
     ],
     bootstrap: [AppComponent],
     imports: [

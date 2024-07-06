@@ -1,5 +1,6 @@
-import { Environment } from "../types/environment";
+import { ElectronService } from "../service/electron.service";
 
-export const environment: Environment = {
-    version: '0.5.1-beta'
+export const environment = {
+    storageService: ElectronService,
+    version: '0.8.0-beta',
 };

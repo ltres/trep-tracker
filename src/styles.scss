@@ -198,18 +198,40 @@ button {
 .todo{
   color: $todo-color
 }
+.todo-background{
+  background-color: $todo-color
+}
 .completed{
   color: $completed-color
+}
+.completed-background{
+  background-color: $completed-color
 }
 .in-progress{
   color: $in-progress-color
 }
+.in-progress-background{
+  background-color: $in-progress-color
+}
 .waiting{
   color: $waiting-color
+}
+.waiting-background{
+  background-color: $waiting-color
 }
 .delegated{
   color: $delegated-color
 }
+.delegated-background{
+  background-color: $delegated-color
+}
+.archived{
+  color: $archived-color
+}
+.archived-background{
+  background-color: $archived-color
+}
+
 
 
 

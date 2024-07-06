@@ -1,0 +1,9 @@
+@import "../../assets/variables";
+
+.bars{
+    width: $time-bar-width;
+    // height: 1rem;
+}
+.bar{
+    height: $time-bars-height;
+}

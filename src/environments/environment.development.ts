@@ -1,5 +1,7 @@
+import { StorageService } from "../service/storage.service";
 import { Environment } from "../types/environment";
 
-export const environment: Environment = {
-    version: '0.5.1-beta'
+export const environment = {
+    storageService: StorageService,
+    version: '0.8.0-beta',
 };

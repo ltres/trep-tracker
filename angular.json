@@ -37,7 +37,9 @@
             "electrified":{
               "deployUrl": "./",
               "baseHref": "./",
-              "outputHashing": "all",
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",

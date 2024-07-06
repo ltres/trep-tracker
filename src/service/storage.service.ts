@@ -1,67 +1,64 @@
-import { Injectable, NgZone } from "@angular/core";
+import { Injectable, Injector, NgZone } from "@angular/core";
 import { ipcRenderer } from 'electron';
 import { BoardService } from "./board.service";
 import { Subscription } from "rxjs";
 import { environment } from "../environments/environment";
 import { getStatusPath, setStatusPath } from "../utils/utils";
+import { StorageServiceAbstract } from "../types/storage";
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class StorageService {
+export class StorageService extends StorageServiceAbstract {
   storagePath: string | undefined;
-  initializedWithValidStatus = false;
+  statusOpened = false;
   subscription: Subscription | undefined;
   constructor(
     private boardService: BoardService,
     private zone: NgZone
-  ) {
-    
+  ) { 
+    super();
+   }
+  isStatusPresent(): boolean {
+    return this.statusOpened;
   }
 
-  initWithStoragePath(storagePath: string): void {
-    this.storagePath = storagePath;
-    try{
-      let file = this.readFile(this.storagePath);
+  init() {
+    console.warn('Nothing to init in non-electron context'); 
+  }
 
-      this.zone.run(() => {
-        // Electron fix
-        this.boardService.deserialize(file);
+  openAppStatus(fileEvent?: Event): Promise<string | undefined> {
+    if (!fileEvent || fileEvent === null) throw ("No file selected");
+    let target = fileEvent.target as HTMLInputElement;
+    if (!target.files || target.files.length === 0) throw ("No file selected");
+    const file = target.files[0]; // Get the first file
+
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload =  (loadEvent) => {
+        const fileContent = loadEvent.target!.result;
+        this.boardService.deserialize(fileContent as string);
         this.boardService.selectFirstBoard();
-        if(!this.storagePath) throw("No storage path");
-        setStatusPath(this.storagePath);
-      })
+        resolve(fileContent as string);
+        this.statusOpened = true;
+      };
 
-    }catch(e){
-      throw("It was not possible to deserialize the status in " + this.storagePath);
-    }
-    if(this.subscription) this.subscription.unsubscribe();
-    this.subscription = this.boardService.boards$.subscribe(boards => {
-      this.writeFile(this.storagePath!, this.boardService.serialize());
+      reader.onerror = function () {
+        console.error("Could not read the file");
+      };
+
+      reader.readAsText(file);
     });
+
+  }
+  createStatusFile(): Promise<string | undefined> {
+    throw new Error("Cannot createStatusFile in non-electron environment");
+  }
+  writeToStatusFile(status: Object): void {
+    throw new Error("Cannot saveToStatus in non-electron environment");
   }
 
-  readFile(filePath: string): string {
-    if (window.electron) {
-      try{
-        return window.electron.readFile(filePath);
-      }catch(e){
-        console.warn("Error reading file", e);
-        return "{}";
-      }
-    } else {
-      return JSON.parse(localStorage.getItem("trep-tracker-status") ?? "{}");
-    }
-  }
-
-  writeFile(filePath: string, content: string): void {
-    if (window.electron) {
-      window.electron.writeFile(filePath, content);
-    } else {
-      localStorage.setItem("trep-tracker-status", content);
-    }
-    
-  }
 }
 

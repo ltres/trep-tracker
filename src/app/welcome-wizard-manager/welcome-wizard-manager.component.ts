@@ -1,11 +1,8 @@
-import { NgClass } from '@angular/common';
-import { AfterViewInit, Component, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
-import { View } from 'electron';
+import { AfterViewInit, Component, Inject, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
 import { ModalService } from '../../service/modal.service';
 import { environment } from '../../environments/environment';
-import { StorageService } from '../../service/storage.service';
-import { setStatusPath } from '../../utils/utils';
-import { ElectronService } from '../../service/electron.service';
+
+import { StorageServiceAbstract } from '../../types/storage';
 
 @Component({
   selector: 'welcome-wizard-manager',
@@ -13,16 +10,15 @@ import { ElectronService } from '../../service/electron.service';
   styleUrls: ['./welcome-wizard-manager.component.scss']
 })
 export class WelcomeWizardManagerComponent implements AfterViewInit {
-
   @ViewChildren(TemplateRef) steps: QueryList<TemplateRef<any>> | null = null;
   selectedStepIndex = 0;
   version = environment.version
   document: any;
+  isElectron = window.electron !== undefined;
 
   constructor(
     private modalService: ModalService,
-    private storageService: StorageService,
-    private electronService: ElectronService
+    @Inject('StorageServiceAbstract') private storageService: StorageServiceAbstract
   ) {
     this.document = document;
   }
@@ -37,30 +33,19 @@ export class WelcomeWizardManagerComponent implements AfterViewInit {
   }
 
   createNewStatusFile() {
-    this.electronService.createStatusFile()
+    this.storageService.createStatusFile()
       .then(filePath => {
         console.log('Status file created at:', filePath);
         if(!filePath) throw("No file selected");
-        this.handleStatusFileChosen(filePath);
+        //this.handleStatusFileChosen(filePath);
       })
       .catch(error => console.error('Error creating status file:', error));
   }
 
-  async openStatusFile() {
-    let path = await this.electronService.openAppStatus()
+  async openStatusFile(event?: Event) {
+    let path = await this.storageService.openAppStatus(event)
     if(!path) throw("No file selected");
-    this.handleStatusFileChosen(path);
-  }
-
-
-  handleStatusFileChosen(filePath: string) {
-    try {
-      this.storageService.initWithStoragePath(filePath);
-      //setStatusPath(filePath);
-      this.nextStep();
-    } catch (e) {
-      alert(e);
-    }
+    //this.handleStatusFileChosen(path);
   }
 
   nextStep() {

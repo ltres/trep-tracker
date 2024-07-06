@@ -11,13 +11,19 @@
         <h2 class="text-align-center">
             Choose an existing status file, or create a new one:
         </h2>
-        <div class="buttons flex justify-content-center">
+        <div *ngIf="isElectron" class="buttons flex justify-content-center">
             <button (click)="openStatusFile()">
                 Choose existing status file
             </button>
             <button (click)="createNewStatusFile()">
                 Create a new status file
             </button>
+        </div>
+        <div *ngIf="!isElectron" class="buttons flex justify-content-center">
+            <button (click)="document.querySelector('#status-chooser').click()">
+                Choose existing status file
+            </button>
+            <input id="status-chooser" type="file" #fileInput (change)="openStatusFile($event)" accept=".trptrk" hidden>
         </div>
     </div>
 </ng-template>

@@ -157,3 +157,7 @@ export function setDateSafe( container: Container, status: Status, enterOrLeave:
     }
     container.dates[status]![enterOrLeave] = date.toISOString() as ISODateString;
 }
+
+export function formatDate( date : ISODateString){
+    return new Date(date).toLocaleDateString();
+}

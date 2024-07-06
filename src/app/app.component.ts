@@ -1,4 +1,4 @@
-import { AfterContentChecked, AfterContentInit, AfterViewChecked, AfterViewInit, Component, OnInit } from '@angular/core';
+import { AfterContentChecked, AfterContentInit, AfterViewChecked, AfterViewInit, Component, Inject, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { BoardComponent } from './board/board.component';
 import { BoardService } from '../service/board.service';
@@ -7,7 +7,7 @@ import { Board, Lane, getNewBoard, getNewLane } from '../types/task';
 import { generateUUID, getStatusPath } from '../utils/utils';
 import { ModalService } from '../service/modal.service';
 import { StorageService } from '../service/storage.service';
-import { ElectronService } from '../service/electron.service';
+import { StorageServiceAbstract } from '../types/storage';
 
 @Component({
   selector: 'app-root',
@@ -22,12 +22,9 @@ export class AppComponent implements AfterViewInit {
   constructor(
     private boardService: BoardService,
     protected modalService: ModalService,
-    private storageService: StorageService,
-    private electronService: ElectronService
+    @Inject('StorageServiceAbstract') private storageService: StorageServiceAbstract
   ) {
-    if( getStatusPath() !== null ){
-      this.storageService.initWithStoragePath(getStatusPath()!);
-    }
+    storageService.init();  
   }
 
   ngAfterViewInit(): void {
@@ -60,7 +57,7 @@ export class AppComponent implements AfterViewInit {
   }
 
   hasStoragePathSet() {
-    return getStatusPath() !== null;
+    return this.storageService.isStatusPresent();
   }
 
 }
