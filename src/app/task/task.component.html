@@ -22,8 +22,9 @@ data-consider-for-overlapping-checks="true"
         ></div>
 
         
-        <div *ngIf="task.status === 'archived'" class="date-wrapper translucent small flex align-items-center">
-           <time-bar [container]="task"></time-bar> {{ parseDate(this.task.dates.archived?.enter) | date: 'dd-MM-yy hh:mm a'}}
+        <div *ngIf="task.status === 'archived'" class="date-wrapper translucent small flex column align-items-start">
+           <time-bar [container]="task"></time-bar> 
+           <span>archived on {{parseDate(this.task.dates.archived?.enter) | date: 'dd-MM-yy hh:mm a'}}</span>
         </div>
         <div *ngIf="task.status === 'completed'"class="date-wrapper translucent small flex align-items-center">
             completed {{ parseDate(this.task.dates.completed?.enter) | date: 'dd-MM-yy hh:mm a'}}
