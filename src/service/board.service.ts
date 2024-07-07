@@ -303,26 +303,49 @@ export class BoardService {
         if (task.status === 'archived') {
             let lane = this.findParentLane([task]);
             if (lane) {
+                // Removal from the original lane
                 lane.children = lane.children.filter(t => t.id !== task.id);
             }
-            // add the task to the archived lane
-
             if (!archive) {
                 // create the archive
-                this.addFloatingLane(board, 0, 0, [task], true);
-            } else {
-                archive.children.push(task);
+                archive = this.addFloatingLane(board, 0, 0, undefined, true);
             }
+            // Check if the task is already displayed in the archive lane (can be a descendant of an archived task)
+            let descendants = this.getDescendants(archive);
+            if (descendants.find(t => t.id === task.id)) {
+                // Do not add it
+                console.warn(`Task with id ${task.id} is already in the archive, as a descendant of an archived task.`);
+                return;
+            }
+            // Check if the task has any descendants that are already in the archive lane, and remove them
+            let descendantsToRemove = this.getDescendants(task).filter(t => t.status === 'archived');
+            descendantsToRemove.forEach(d => {
+                archive!.children = archive!.children.filter(t => t.id !== d.id);
+            })
+
+            // add the task to the archived lane
+            archive.children.push(task);
         } else {
+            // Check if it is a first level task in the archive
+            if (!archive?.children.find(t => t.id === task.id)) {
+                // do not do anything
+                console.warn(`Task with id ${task.id} is not a first level task in the archive.`);
+                return;
+            }
             // send the task back to the original lane
+            // Identify the original lane
             let lane = this._allParents$.getValue()?.find(p => p.id === task.createdLaneId);
             if (lane) {
+                // add the task to the original lane
                 lane.children.push(task);
             } else {
                 console.warn(`Cannot find lane with id ${task.createdLaneId}`);
                 let lane = this.addFloatingLane(board, 0, 0, [task], false);
                 task.createdLaneId = lane.id;
             }
+
+
+            // remove the task from the archive
             archive?.children.splice(archive.children.findIndex(t => t.id === task.id), 1);
         }
     }
@@ -369,6 +392,10 @@ export class BoardService {
         }
 
         let parents = this._allParents$.getValue()?.filter(p => p.children.length > 0 && p.children.find(c => objs.find(o => o.id === c.id)));
+        // filter out duplicate parents
+        if(parents){
+            parents = parents?.filter((p, index) => parents!.findIndex(p2 => p2.id === p.id) === index);
+        }
 
         if (!parents || parents?.length !== 1) {
             console.info('findParent: objs.length !== 1', objs);
@@ -611,6 +638,12 @@ export class BoardService {
 
         return JSON.stringify({ boards });
     }
+    
+    /**
+     * Deserializes the given data and updates the state of the board service.
+     * Performs an update on the status basing on the iteration on the app.
+
+     */
     deserialize(data: string): void {
         let o = JSON.parse(data);
         if (!o.boards) {
@@ -666,6 +699,20 @@ export class BoardService {
                 // @ts-ignore
                 // delete p.archivedDate;
 
+                // Archive fix
+                if( this.isLane(p) && p.isArchive ){
+                    // Case for archived tasks that are children of archived tasks. They should be moved to the archive lane.
+                    let descendants = this.getDescendants(p);
+                    let archivedFirstLevel = p.children.filter(c => c.status === 'archived');
+                    archivedFirstLevel.forEach(a => {
+                        let findInDescendants = descendants.filter(d => d.id === a.id);
+                        if(findInDescendants.length > 1){
+                            // this is a task that is a child of an archived task. Remove from direct descendants.
+                            p.children = p.children.filter(c => c.id !== a.id);
+                        }
+                    });
+                }
+
 
 
                 if (p.tags) {
@@ -689,6 +736,9 @@ export class BoardService {
                     p.createdLaneId = board?.children[0].id ?? '';
                 }
             }); 
+
+            
+
             //this._selectedTasks$.next(o.selectedTasks ?? []);
             //this._lastSelectedTask$.next(o.lastSelectedTask ?? []);
             //this._editorActiveTask$.next(o.editorActiveTask ?? []);
