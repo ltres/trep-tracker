@@ -57,6 +57,10 @@ export class BoardService {
 
             // Store status:
             let status = this.serialize();
+            if(!this.storageService){
+                console.warn('Storage service still not ready..')
+                return;
+            }
             this.storageService.writeToStatusFile(status);
         })
     }

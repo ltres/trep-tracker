@@ -40,9 +40,7 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
     protected cdr: ChangeDetectorRef,
   ) {
     super(boardService, dragService, keyboardService, registry, el);
-    this.boardService.boards$.subscribe( boards => {
-      cdr.detectChanges();
-    });
+
   }
 
   override get object(): Container | undefined {
@@ -56,6 +54,9 @@ export class TaskComponent extends DraggableComponent implements OnInit, OnDestr
 
   override ngOnInit(): void {
     super.ngOnInit();
+    this.boardService.boards$.subscribe( boards => {
+      this.cdr.detectChanges(); // core for the change detection
+    });
     this.subscriptions = this.boardService.editorActiveTask$.subscribe((data: { lane: Lane, task: Task, startingCaretPosition: number | undefined } | undefined) => {
       if (!data) return;
       let { lane, task, startingCaretPosition } = data;

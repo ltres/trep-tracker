@@ -36,8 +36,12 @@ export class LaneComponent extends DraggableComponent implements OnInit {
     public override el: ElementRef,
     private cdr: ChangeDetectorRef) {
     super(boardService, dragService, keyboardService, registry, el);
-    this.boardService.boards$.subscribe( boards => {
-      cdr.detectChanges();
+
+  }
+  override ngOnInit(): void {
+    super.ngOnInit();
+    this.boardService.boards$.subscribe(boards => {
+      this.cdr.detectChanges();
     });
   }
 
@@ -60,16 +64,14 @@ export class LaneComponent extends DraggableComponent implements OnInit {
     return this.lane;
   }
 
-  override ngOnInit(): void {
-    super.ngOnInit();
-  }
+
 
   get tasks(): Observable<Task[] | undefined> {
-    return this.boardService.getTasks$(this.lane, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false: true, this.isArchive(this.lane) ? "archived" : undefined, 'desc');
+    return this.boardService.getTasks$(this.lane, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false : true, this.isArchive(this.lane) ? "archived" : undefined, 'desc');
   }
 
   get taggedTasks(): Observable<Task[] | undefined> {
-    return this.boardService.getTaggedTasks$(this.lane.tags, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false: true, this.isArchive(this.lane) ? "archived" : undefined, 'desc');
+    return this.boardService.getTaggedTasks$(this.lane.tags, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false : true, this.isArchive(this.lane) ? "archived" : undefined, 'desc');
   }
 
   displayStaticStuff(): boolean {
@@ -81,7 +83,7 @@ export class LaneComponent extends DraggableComponent implements OnInit {
   }
 
   createNewTask() {
-    let task: Task = getNewTask(this.lane,`Task ${this.boardService.getTasksCount(this.board) + 1}`);
+    let task: Task = getNewTask(this.lane, `Task ${this.boardService.getTasksCount(this.board) + 1}`);
     this.boardService.addAsChild(this.lane, [task]);
     this.boardService.clearSelectedTasks();
     this.boardService.toggleTaskSelection(task);

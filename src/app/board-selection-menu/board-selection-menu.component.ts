@@ -1,4 +1,4 @@
-import { AfterContentChecked, AfterViewInit, Component } from '@angular/core';
+import { AfterContentChecked, AfterContentInit, AfterViewInit, Component } from '@angular/core';
 import { BoardService } from '../../service/board.service';
 import { Board } from '../../types/task';
 
@@ -8,17 +8,15 @@ import { Board } from '../../types/task';
   templateUrl: './board-selection-menu.component.html',
   styleUrl: './board-selection-menu.component.scss'
 })
-export class BoardSelectionMenuComponent implements AfterViewInit{
+export class BoardSelectionMenuComponent implements AfterContentInit{
 
   boards: Board[] | undefined
 
-  constructor(protected boardService: BoardService) {
-    
-  }
-  ngAfterViewInit(): void {
+  constructor(protected boardService: BoardService) { }
+
+  ngAfterContentInit(): void {
     this.boardService.boards$.subscribe(boards => {
       this.boards = boards
-
     })
   }
   addBoard() {

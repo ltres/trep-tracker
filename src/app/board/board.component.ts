@@ -33,20 +33,24 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
   debounce: any;
 
   constructor(
-    protected  boardService: BoardService,
-    protected  keyboardService: KeyboardService,
+    protected boardService: BoardService,
+    protected keyboardService: KeyboardService,
     protected override registry: RegistryService,
-    protected  dragService: DragService,
+    protected dragService: DragService,
     public override el: ElementRef,
     private cdr: ChangeDetectorRef
   ) {
     //super(boardService, dragService, keyboardService, registry,el);
     super(registry, el)
-    this.boardService.boards$.subscribe( boards => {
-      cdr.detectChanges();
-    });
+
     // this.taskService = taskService;
   }
+  override ngOnInit(): void {
+    this.boardService.boards$.subscribe(boards => {
+      this.cdr.detectChanges();
+    });
+  }
+
   ngAfterViewInit(): void {
     this.subscriptions = this.boardService.boards$.subscribe(boards => {
       // set the board height basing on the childrens size.
@@ -57,11 +61,11 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
         this.width = 0;
         laneEls.forEach(laneEl => {
           let maxHeight = laneEl.getBoundingClientRect().height + laneEl.getBoundingClientRect().top + window.scrollY;
-          if (maxHeight > (this.height??0)) {
+          if (maxHeight > (this.height ?? 0)) {
             this.height = maxHeight;
           }
           let maxWidth = laneEl.getBoundingClientRect().width + laneEl.getBoundingClientRect().left + window.scrollX;
-          if (maxWidth > (this.width??0)) {
+          if (maxWidth > (this.width ?? 0)) {
             this.width = maxWidth;
           }
         });
@@ -80,30 +84,30 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
   }
 
   addLane() {
-    this.boardService.addFloatingLane(this.board, 
-      this.el.nativeElement.getBoundingClientRect().width / 2 , 
+    this.boardService.addFloatingLane(this.board,
+      this.el.nativeElement.getBoundingClientRect().width / 2,
       this.el.nativeElement.getBoundingClientRect().height / 2, [],
       false);
   }
 
   updateBoardTags($event: Tag[]) {
-      let allOldPresent = this.board.tags.filter( oldTag => $event.map( t => t.tag.toLowerCase() ).find( r => r === oldTag.tag.toLowerCase() ) ).length === this.board.tags.length
-      let allNewPresent = $event.filter( oldTag => this.board.tags.map( t => t.tag.toLowerCase() ).find( r => r === oldTag.tag.toLowerCase() ) ).length === $event.length
-  
-      if(!allOldPresent || !allNewPresent){
-        this.board.tags = $event;
-        this.debounceBoardUpdate()
-      }
+    let allOldPresent = this.board.tags.filter(oldTag => $event.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === this.board.tags.length
+    let allNewPresent = $event.filter(oldTag => this.board.tags.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === $event.length
+
+    if (!allOldPresent || !allNewPresent) {
+      this.board.tags = $event;
+      this.debounceBoardUpdate()
+    }
   }
 
-  debounceBoardUpdate( ){
-    if( this.debounce ){
-        clearTimeout(this.debounce);
+  debounceBoardUpdate() {
+    if (this.debounce) {
+      clearTimeout(this.debounce);
     }
-    this.debounce = setTimeout( () => {
+    this.debounce = setTimeout(() => {
       this.boardService.publishBoardUpdate()
-    },500)
-}
+    }, 500)
+  }
 
 
 }
