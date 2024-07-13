@@ -29,6 +29,9 @@ import { StatusComponent } from './task-status/status.component';
 import { TooltipDirective } from './directive/tooltip.directive';
 import { TimeBarComponent } from './time-bar/time-bar.component';
 import { environment } from '../environments/environment';
+import { AiAdvisorComponent } from './ai-advisor/ai-advisor.component';
+import { MarkdownModule } from 'ngx-markdown';
+import { LogoComponent } from './dumb/logo/logo.component';
 import { DraggableDirective } from './directive/draggable.directive';
  
 @NgModule({
@@ -50,6 +53,8 @@ import { DraggableDirective } from './directive/draggable.directive';
          StatusComponent,
          TooltipDirective,
          TimeBarComponent,
+         AiAdvisorComponent,
+         LogoComponent,
          DraggableDirective
         ],
     providers: [
@@ -62,7 +67,11 @@ import { DraggableDirective } from './directive/draggable.directive';
         {
             provide: 'StorageServiceAbstract',
             useClass: environment.storageService
-          }
+        },
+        {
+            provide: 'AiServiceI',
+            useClass: environment.aiService
+        }
     ],
     bootstrap: [AppComponent],
     imports: [
@@ -71,6 +80,7 @@ import { DraggableDirective } from './directive/draggable.directive';
         FormsModule,
         ReactiveFormsModule,
         KeyboardListenerComponent,
+        MarkdownModule.forRoot()
     ]
 })
 export class AppModule { }

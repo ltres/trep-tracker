@@ -3,6 +3,7 @@
 @import 'assets/jetbrains-mono/jetbrains-mono.scss';
 @import "assets/variables";
 @import "assets/mixins";
+@import "assets/animations";
 
 
 
@@ -12,7 +13,12 @@ html {
   font-family: 'JetBrains Mono';
   font-size: $font-size
 }
-
+a{
+  color: $text-color;
+}
+input{
+  width: 100%;
+}
 body {
   margin: 0;
   padding: 0;
@@ -22,7 +28,7 @@ body {
   }
 }
 
-* {
+*:not(ol):not(ul):not(li) {
   scrollbar-color: $scrollbar-color $background-color;
   scrollbar-width: thin;
   margin: 0;
@@ -118,6 +124,7 @@ button {
   border: none;
   border-radius: 0;
   padding: 0.2rem 0.5rem;
+  display: block;
   font: inherit;
   cursor: pointer;
   outline: none;
@@ -145,6 +152,9 @@ button {
 }
 .justify-content-center{
   justify-content: center;
+}
+.justify-content-between{
+  justify-content: space-between;
 }
 .justify-content-end{
   justify-content: end;
@@ -175,10 +185,7 @@ button {
   white-space: nowrap;
 }
 
-.logo{
-  width: 4rem;
-  height: auto;
-}
+
 
 @function str-replace($string, $search, $replace: '') {
   $string: #{$string};
@@ -277,3 +284,22 @@ input, textarea{
   border: 1px solid $translucent-color;
 }
 
+.chevron-down:after{
+  content: "❯";
+  display: inline-block;
+  transform: rotate(90deg);
+}
+.chevron-up:after{
+  content: "❯";
+  display: inline-block;
+  transform: rotate(-90deg);
+}
+
+.loading::after{
+  content:"🌐";
+  display: inline-block;
+  position: absolute;
+  top:-2rem;
+  right: 0;
+  animation: pulse 1s ease 0s infinite normal forwards;
+}
