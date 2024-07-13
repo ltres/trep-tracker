@@ -26,38 +26,30 @@ import { RegistryService } from '../../service/registry.service';
 })
 export class DraggableDirective implements AfterViewInit, AfterViewChecked {
   @Input() static: boolean = false;
-
-  protected coordinates: { x: number; y: number } = {
-    x: 0,
-    y: 0
+  @Input() draggableDir!: { 
+    coordinates?: { x: number; y: number } | undefined, 
+    width?: number | undefined
   };
-
-  protected _width: number = 0;
-
-  protected _board: Board | undefined;
 
   private resizeObserver: ResizeObserver | undefined;
   private resizeTimeout: any;
-
   private draggableEl: Element | undefined;
-
   private isBeingDragged: boolean = false;
-
   private deltaX: number = 0;
   private deltaY: number = 0;
 
   @HostBinding('style.left.px')
   private get left(): number | undefined {
-    return this.coordinates.x;
+    return this.draggableDir.coordinates?.x;
   }
 
   @HostBinding('style.top.px')
   private get top(): number | undefined {
-    return this.coordinates.y;
+    return this.draggableDir.coordinates?.y;
   }
 
   @Output() onDragEnd: EventEmitter<DragEvent> = new EventEmitter();
-  @Output() onResize: EventEmitter<number> = new EventEmitter();
+  @Output() onResize: EventEmitter<number | string | undefined> = new EventEmitter();
 
   /*
   @HostBinding('style.position')
@@ -65,25 +57,27 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
     return this.isBeingDragged ? 'fixed' : undefined;
   }*/
 
-  @HostBinding('style.width.px')
-  private get width(): number | undefined {
-    return this._width;
+  @HostBinding('style.width')
+  private get width(): number | string | undefined {
+    return this.draggableDir.width ? this.draggableDir.width + "px" : "auto";
   }
-  private set width(value: number) {
-    this._width = value;
+  private set width(value: number ) {
+    this.draggableDir.width = value;
   }
 
   constructor(
     public el: ElementRef,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private dragService: DragService,
+    private boardService: BoardService
   ) {
 
   }
 
   ngAfterViewChecked(): void {
     if (window.getComputedStyle(this.el.nativeElement).resize === 'horizontal' && !this.resizeObserver) {
-      //this.resizeObserver = new ResizeObserver(this.resize.bind(this));
-      //this.resizeObserver.observe(this.el.nativeElement);
+      this.resizeObserver = new ResizeObserver(this.resize.bind(this));
+      this.resizeObserver.observe(this.el.nativeElement);
     }
   }
 
@@ -115,7 +109,10 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
       node.style.position = "";
 
       if (this.static) return;
-      this.calcCoordinates($event, 'relative'); // no more fixed
+       // no more fixed
+      this.draggableDir.coordinates = this.calcCoordinates($event, 'relative');
+      this.boardService.publishBoardUpdate()
+
       this.onDragEnd.emit($event);
       $event.stopPropagation();
       $event.stopImmediatePropagation();
@@ -126,7 +123,7 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
     this.ngZone.runOutsideAngular(() => {
       //if(1===1)return;
       if (this.static) return;
-      this.calcCoordinates($event, 'fixed');
+      this.draggableDir.coordinates = this.calcCoordinates($event, 'fixed');
       $event.stopPropagation();
       $event.stopImmediatePropagation();
     });
@@ -145,16 +142,20 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
       this.deltaY = $event.clientY - node.getBoundingClientRect().top;
       node.style.position = 'fixed';
       node.style.zIndex = "100";
-      this.calcCoordinates($event, 'fixed');
+      this.draggableDir.coordinates = this.calcCoordinates($event, 'fixed');
+
+      
 
       $event.stopPropagation();
       $event.stopImmediatePropagation();
     });
   }
 
-  calcCoordinates($event: DragEvent, position: 'fixed' | 'relative'): void {
-    this.coordinates.x = $event.clientX - this.deltaX + (position === 'relative' ? window.scrollX : 0);
-    this.coordinates.y = $event.clientY - this.deltaY + (position === 'relative' ? window.scrollY : 0);
+  calcCoordinates($event: DragEvent, position: 'fixed' | 'relative'): { x:number, y:number } {
+    return {
+      x: $event.clientX - this.deltaX + (position === 'relative' ? window.scrollX : 0), 
+      y: $event.clientY - this.deltaY + (position === 'relative' ? window.scrollY : 0)
+    }
   }
 
 
@@ -167,6 +168,7 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
     if (this.resizeTimeout) clearTimeout(this.resizeTimeout);
     this.resizeTimeout = setTimeout(() => {
       this.onResize.emit(this.width);
+      this.boardService.publishBoardUpdate();
     }, 500);
   }
 }

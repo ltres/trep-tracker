@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostBinding, HostListener, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostBinding, HostListener, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { Board, Container, Lane, Priority, Status, Tag, Task, archivedLaneId, getNewTask } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 import { generateUUID, hashCode, isArchive, isStatic } from '../../utils/utils';
@@ -34,7 +34,7 @@ export class LaneComponent extends BaseComponent implements OnInit {
     protected override registry: RegistryService,
     public override el: ElementRef,
     private cdr: ChangeDetectorRef) {
-    super(boardService, dragService, keyboardService, registry, el);
+    super(registry, el);
 
   }
   override ngOnInit(): void {
@@ -61,14 +61,6 @@ export class LaneComponent extends BaseComponent implements OnInit {
 
   override get object(): Container | undefined {
     return this.lane;
-  }
-
-  override ngOnInit(): void {
-    super.ngOnInit();
-    this.cdr.detectChanges = (...args) => {
-      console.log('Change detection triggered', new Error().stack);
-      return Object.getPrototypeOf(this.cdr).detectChanges.apply(this.cdr, args);
-    };
   }
 
   get tasks(): Observable<Task[] | undefined> {

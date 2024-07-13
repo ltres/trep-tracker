@@ -19,7 +19,7 @@
   <button (click)="addLane()" >Add lane</button>
 </div>
 <ng-container *ngFor="let lane of lanes$ | async;trackBy: trackBy">
-  <lane [lane]="lane" [board]="this.board" draggableDir></lane>
+  <lane [lane]="lane" [board]="this.board" [draggableDir]="lane"></lane>
 </ng-container>  
 
 

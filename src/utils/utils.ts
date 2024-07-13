@@ -165,7 +165,7 @@ export function formatDate( date : ISODateString){
 export function isStatic(lane: Lane): boolean {
     let isTagged = lane.tags ? lane.tags.length > 0 : false;
     let cond = lane.priority !== undefined || lane.status !== undefined;
-    let cond2 =  lane.children.length === 0
+    let cond2 =  false; //lane.children.length === 0
     return isTagged || cond || cond2;
 }
 export function hashCode(str:string):number {

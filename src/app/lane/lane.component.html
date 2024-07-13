@@ -46,7 +46,7 @@
   <ng-container *ngIf="isStatic()">
     <div class="static-view flex column">
         <task *ngFor="let task of (taggedTasks | async);trackBy: trackBy" [static]="true" 
-        draggableDir
+        [draggableDir]="task"
         [showChildren]="lane.showChildren" [task]="task" 
         [parent]="lane" [board]="board" [lane]="lane"></task>
     </div>
