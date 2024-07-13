@@ -301,12 +301,15 @@ export class BoardService {
         return newLane;
     }
 
-    updateStatus(board: Board, container: Container, status: Status | Status[]) {
+    updateStatus(board: Board, container: Container, status: Status | Status[] | undefined) {
         let boards = this._boards$.getValue();
-        status = Array.isArray(status) ? status : [status];
+        status = status && Array.isArray(status) ? status : (status ? [status] : undefined);
         if( this.isLane(container) ){
             container.status = status;
         }else{
+            if(!status){
+                throw new Error(`Cannot update status of a task to undefined`);
+            }
             for (let s of status) {
                 if(container.status){
                     setDateSafe(container, s, 'leave', new Date());

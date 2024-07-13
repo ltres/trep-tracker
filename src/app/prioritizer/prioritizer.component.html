@@ -6,7 +6,7 @@
             {{getSymbol(priority)}}
         </span>
     </ng-container>
-    <span *ngIf="priorities.length === 0" class="selectable priority-1" (click)="open = !open" >{{getSymbol(1)}}</span>
+    <span *ngIf="!priorities || priorities.length === 0" class="selectable priority-1" (click)="open = !open" >{{getSymbol(1)}}</span>
 </div>
 <div class="flex align-items-center g-025" *ngIf="open">
     <span [tooltip]="'close'" class="selectable cancel" (click)="cancelAndClose()">🗙</span> 

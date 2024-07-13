@@ -20,7 +20,7 @@ export class StatusComponent implements AfterViewInit {
 
   @Output() onStatusSelected = new EventEmitter<Status[]>();
 
-  protected states: Status[] = [];
+  protected states: Status[] | undefined = [];
 
   protected open = false;
 
@@ -32,7 +32,7 @@ export class StatusComponent implements AfterViewInit {
 
   toggleStatus(status: Status) {
     if (this.multipleSelectable) {
-      this.states = this.states.includes(status) ? this.states.filter(s => s !== status) : [...this.states, status];
+      this.states = this.states?.includes(status) ? this.states.filter(s => s !== status) : (this.states ? [...this.states, status]: [status]);
     } else {
       this.states = [status];
     }
@@ -62,7 +62,7 @@ export class StatusComponent implements AfterViewInit {
   }
   cancelAndClose() {
     if (this.allowEmpty) {
-      this.states = [];
+      this.states = undefined;
     }
     this.onStatusSelected.emit(this.states);
     
@@ -75,7 +75,7 @@ export class StatusComponent implements AfterViewInit {
   isArray(arg0: any) {
     return Array.isArray(arg0);
   }
-  hasStatus(_t26: Status) {
-    return this.states.includes(_t26);
+  hasStatus(_t26: Status): boolean {
+    return this.states ? this.states.includes(_t26): false;
   }
 }

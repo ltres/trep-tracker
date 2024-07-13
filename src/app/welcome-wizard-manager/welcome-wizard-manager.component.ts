@@ -12,7 +12,7 @@ import { StorageServiceAbstract } from '../../types/storage';
 export class WelcomeWizardManagerComponent implements AfterViewInit {
   @ViewChildren(TemplateRef) steps: QueryList<TemplateRef<any>> | null = null;
   selectedStepIndex = 0;
-  version = environment.version
+  version = document.querySelector('body')?.getAttribute('data-version') || 'vUnknown';
   document: any;
   isElectron = window.electron !== undefined;
 

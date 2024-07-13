@@ -4,6 +4,5 @@ import { ElectronService } from "../service/electron.service";
 
 export const environment = {
     storageService: ElectronService,
-    aiService: ChatGPTService,
-    version: '0.8.0-beta',
+    aiService: ChatGPTService
 };

@@ -6,6 +6,5 @@ import { ChatGPTService } from "../service/chat-gpt.service";
 
 export const environment = {
     storageService: StorageService,
-    aiService: ChatGPTService,
-    version: '0.8.0-beta',
+    aiService: ChatGPTService
 };

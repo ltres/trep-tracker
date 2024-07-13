@@ -16,7 +16,7 @@ export class PrioritizerComponent implements AfterViewInit{
 
   @Output() onPrioritySelected = new EventEmitter<Priority[]>();
   
-  protected priorities: Priority[] = [];
+  protected priorities: Priority[] | undefined = [];
   protected open: boolean = false;
 
   constructor(
@@ -34,7 +34,7 @@ export class PrioritizerComponent implements AfterViewInit{
 
   togglePriority(priority: Priority) {
     if(this.multipleSelectable){
-      this.priorities = this.priorities.includes(priority) ? this.priorities.filter(p => p !== priority) : [...this.priorities, priority];
+      this.priorities = this.priorities?.includes(priority) ? this.priorities.filter(p => p !== priority) : ( this.priorities ? [...this.priorities, priority] : [priority]);
     }else{
       this.priorities = [priority];
     }
@@ -44,12 +44,12 @@ export class PrioritizerComponent implements AfterViewInit{
   }
   cancelAndClose(){
     if(this.allowEmpty){
-      this.priorities = [];
+      this.priorities = undefined;
     }
     this.onPrioritySelected.emit(this.priorities);
     this.open = false;
   }
   priorityPresent(arg0: Priority): boolean {
-    return this.priorities.includes(arg0);
+    return this.priorities ? this.priorities.includes(arg0): false;
   }
 }
