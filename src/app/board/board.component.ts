@@ -1,4 +1,4 @@
-import { AfterViewChecked, AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostBinding, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostBinding, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { Board, Container, Lane, Tag, Task, getNewTask } from '../../types/task';
 import { TaskComponent } from '../task/task.component';
 import { BoardService } from '../../service/board.service';
@@ -16,6 +16,7 @@ import { RegistryService } from '../../service/registry.service';
   //imports: [TaskComponent],
   templateUrl: './board.component.html',
   styleUrl: './board.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BoardComponent extends BaseComponent implements OnInit, AfterViewInit {
 
@@ -40,12 +41,15 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
   ) {
     //super(boardService, dragService, keyboardService, registry,el);
     super(registry, el)
-    this.cdr.detectChanges = (...args) => {
-      console.log('Change detection triggered', new Error().stack);
-      return Object.getPrototypeOf(this.cdr).detectChanges.apply(this.cdr, args);
-    };
+    
     // this.taskService = taskService;
   }
+  override ngOnInit(): void {
+    this.boardService.boards$.subscribe(boards => {
+      this.cdr.detectChanges();
+    });
+  }
+
   ngAfterViewInit(): void {
     this.subscriptions = this.boardService.boards$.subscribe(boards => {
       // set the board height basing on the childrens size.

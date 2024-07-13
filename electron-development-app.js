@@ -47,7 +47,6 @@ function createWindow () {
         {
           label: 'Open status file',
           click: async () => {
-            debugger;
             console.log('open-app-status');
 
             let filePath = await getStatusFilePath();
@@ -63,6 +62,17 @@ function createWindow () {
           label: 'Save status as..',
           click: () => {
             win.webContents.send('store-app-status-request');
+          }
+        }
+      ]
+    },
+    {
+      label: 'Dev',
+      submenu: [
+        {
+          label: 'Reload',
+          click: async () => {
+            win.reload();
           }
         }
       ]

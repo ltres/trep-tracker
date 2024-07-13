@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostBinding, HostListener, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostBinding, HostListener, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { Board, Container, Lane, Priority, Status, Tag, Task, archivedLaneId, getNewTask } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 import { generateUUID, hashCode, isArchive, isStatic } from '../../utils/utils';
@@ -14,8 +14,8 @@ import { BaseComponent } from '../base/base.component';
   //standalone: true,
   // imports: [],
   templateUrl: './lane.component.html',
-  styleUrl: './lane.component.scss'
-
+  styleUrl: './lane.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LaneComponent extends BaseComponent implements OnInit {
   @ViewChildren(TaskComponent, { read: ElementRef }) taskComponentsElRefs: QueryList<ElementRef> | undefined;
@@ -33,8 +33,15 @@ export class LaneComponent extends BaseComponent implements OnInit {
     protected keyboardService: KeyboardService,
     protected override registry: RegistryService,
     public override el: ElementRef,
-    public cdr: ChangeDetectorRef) {
-    super(registry, el);
+    private cdr: ChangeDetectorRef) {
+    super(boardService, dragService, keyboardService, registry, el);
+
+  }
+  override ngOnInit(): void {
+    super.ngOnInit();
+    this.boardService.boards$.subscribe(boards => {
+      this.cdr.detectChanges();
+    });
   }
 
   @HostListener('document:click', ['$event'])
@@ -65,11 +72,11 @@ export class LaneComponent extends BaseComponent implements OnInit {
   }
 
   get tasks(): Observable<Task[] | undefined> {
-    return this.boardService.getTasks$(this.lane, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false: true, this.isArchive(this.lane) ? "archived" : undefined, 'desc');
+    return this.boardService.getTasks$(this.lane, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false : true, this.isArchive(this.lane) ? "archived" : undefined, 'desc');
   }
 
   get taggedTasks(): Observable<Task[] | undefined> {
-    return this.boardService.getTaggedTasks$(this.lane.tags, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false: true, this.isArchive(this.lane) ? "archived" : undefined, 'desc');
+    return this.boardService.getTaggedTasks$(this.lane.tags, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false : true, this.isArchive(this.lane) ? "archived" : undefined, 'desc');
   }
 
   isStatic(): boolean {
@@ -81,7 +88,7 @@ export class LaneComponent extends BaseComponent implements OnInit {
   }
 
   createNewTask() {
-    let task: Task = getNewTask(this.lane,`Task ${this.boardService.getTasksCount(this.board) + 1}`);
+    let task: Task = getNewTask(this.lane, `Task ${this.boardService.getTasksCount(this.board) + 1}`);
     this.boardService.addAsChild(this.lane, [task]);
     this.boardService.clearSelectedTasks();
     this.boardService.toggleTaskSelection(task);

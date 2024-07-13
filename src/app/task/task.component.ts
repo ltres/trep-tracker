@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostBinding, HostListener, Input, OnChanges, OnDestroy, OnInit, Output, Renderer2, SimpleChanges, ViewChild, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostBinding, HostListener, Input, OnChanges, OnDestroy, OnInit, Output, Renderer2, SimpleChanges, ViewChild, viewChild } from '@angular/core';
 import { Board, Lane, Container, Task, Tag, Status, Priority, ISODateString, StateChangeDate } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 import { DragService } from '../../service/drag.service';
@@ -12,7 +12,8 @@ import { BaseComponent } from '../base/base.component';
   //standalone: true,
   //imports: [NgxEditorModule,],
   templateUrl: './task.component.html',
-  styleUrl: './task.component.scss'
+  styleUrl: './task.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TaskComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges {
   @ViewChild('editor') editor: ElementRef | undefined;
@@ -36,26 +37,17 @@ export class TaskComponent extends BaseComponent implements OnInit, OnDestroy, O
     protected dragService: DragService,
     protected keyboardService: KeyboardService,
     protected override registry: RegistryService,
-    public override el: ElementRef) {
-    super(registry, el);
-  }
-  override ngOnChanges(changes: SimpleChanges): void {
-    super.ngOnChanges(changes);
-    console.log('changes', changes) ;
+    public override el: ElementRef,
+    protected cdr: ChangeDetectorRef,
+  ) {
+    super(boardService, dragService, keyboardService, registry, el);
+
   }
 
   override get object(): Container | undefined {
     return this.task;
   }
 
-  /*
-  @HostListener('document:keydown', ['$event'])
-  @HostListener('document:keyup', ['$event'])
-  handleKeyboardEvent(event: KeyboardEvent) {
-    if(event.key === 'Enter' && this.editorActive) {
-      event.preventDefault()
-    }
-  }*/
 
   updateValue( $event: Event) {
     this.task.textContent = ($event.target as HTMLElement).innerHTML ?? '';
@@ -63,6 +55,9 @@ export class TaskComponent extends BaseComponent implements OnInit, OnDestroy, O
 
   override ngOnInit(): void {
     super.ngOnInit();
+    this.boardService.boards$.subscribe( boards => {
+      this.cdr.detectChanges(); // core for the change detection
+    });
     this.subscriptions = this.boardService.editorActiveTask$.subscribe((data: { lane: Lane, task: Task, startingCaretPosition: number | undefined } | undefined) => {
       if (!data) return;
       let { lane, task, startingCaretPosition } = data;
@@ -87,6 +82,7 @@ export class TaskComponent extends BaseComponent implements OnInit, OnDestroy, O
       } else {
         this.selected = false;
       }
+      this.cdr.detectChanges();
     })
   }
 
