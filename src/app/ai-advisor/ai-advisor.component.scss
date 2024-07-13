@@ -1,0 +1,13 @@
+@import "../../assets/variables";
+:host{
+    position:fixed;
+    bottom:0;
+    right:0;
+    background-color: $ai-background-color;
+    z-index: 1000;
+    padding:1rem;
+    box-shadow: 5px 5px 13px 0px #00000073;
+    outline: 1px solid $lane-outline-color;
+    outline-offset: -1px;
+    border-radius: $border-radius;
+}

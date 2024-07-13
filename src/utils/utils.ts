@@ -2,14 +2,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { Lane, Task, Status, archivedLaneId, ISODateString, Container } from '../types/task';
 
 export function generateUUID(): string {
-    return uuidv4().substring(0,6);
+    return uuidv4().substring(0, 6);
 }
 
 
 export function overlaps(DOMRect: DOMRect | undefined, DOMRect2: DOMRect | undefined): boolean {
-    if(!DOMRect || !DOMRect2)return false;
-    return DOMRect.x < DOMRect2.x + DOMRect2.width && DOMRect.x + DOMRect.width > DOMRect2.x 
-    && DOMRect.y < DOMRect2.y + DOMRect2.height && DOMRect.y + DOMRect.height > DOMRect2.y;
+    if (!DOMRect || !DOMRect2) return false;
+    return DOMRect.x < DOMRect2.x + DOMRect2.width && DOMRect.x + DOMRect.width > DOMRect2.x
+        && DOMRect.y < DOMRect2.y + DOMRect2.height && DOMRect.y + DOMRect.height > DOMRect2.y;
 }
 
 export function cursorIsInside(event: DragEvent, DOMRect: DOMRect | undefined): boolean {
@@ -18,12 +18,12 @@ export function cursorIsInside(event: DragEvent, DOMRect: DOMRect | undefined): 
         DOMRect.y < event.clientY && event.clientY < DOMRect.y + DOMRect.height;
 }
 
-export function setCaretPosition( editableDiv: HTMLElement, position: number,) {
+export function setCaretPosition(editableDiv: HTMLElement, position: number,) {
 
     // Create a range and a selection object
     const range = document.createRange();
     const selection = window.getSelection();
-    if(!selection){
+    if (!selection) {
         console.warn("No selection found");
         return;
     }
@@ -52,7 +52,7 @@ export function setCaretPosition( editableDiv: HTMLElement, position: number,) {
     let offset: number = 0;
 
     for (let i = 0; i < textNodes.length; i++) {
-        if ((charCount + (textNodes[i]?.textContent?.length ?? 0))  >= position) {
+        if ((charCount + (textNodes[i]?.textContent?.length ?? 0)) >= position) {
             node = textNodes[i];
             offset = position - charCount;
             break;
@@ -71,10 +71,10 @@ export function setCaretPosition( editableDiv: HTMLElement, position: number,) {
     }
 }
 
-export function getCaretPosition2(): number{
-    try{
+export function getCaretPosition2(): number {
+    try {
         return window.getSelection()?.getRangeAt(0).endOffset ?? 0;
-    }catch(e){
+    } catch (e) {
         return 0;
     }
 }
@@ -83,12 +83,12 @@ export function getCaretPosition(element: Node) {
     var caretOffset = 0;
     if (typeof window.getSelection != "undefined") {
         var range: Range | undefined;
-        try{
+        try {
             range = window.getSelection()?.getRangeAt(0);
-        }catch(e){
+        } catch (e) {
             return 0;
         }
-        if(!range)return 0;
+        if (!range) return 0;
         var preCaretRange = range.cloneRange();
         preCaretRange.selectNodeContents(element);
         preCaretRange.setEnd(range.endContainer, range.endOffset);
@@ -115,7 +115,7 @@ export function getCaretCharacterOffsetWithin(element: HTMLElement) {
             caretOffset = preCaretRange.toString().length;
         }
         // @ts-ignore
-    } else if ( (sel = doc.selection) && sel.type != "Control") {
+    } else if ((sel = doc.selection) && sel.type != "Control") {
         var textRange = sel.createRange();
         // @ts-ignore
         var preCaretTextRange = doc.body.createTextRange();
@@ -128,11 +128,11 @@ export function getCaretCharacterOffsetWithin(element: HTMLElement) {
 
 
 
-export function isPlaceholder(task: Task){
+export function isPlaceholder(task: Task) {
     return task.textContent === "";
 }
 
-export function isArchive(lane: Lane){
+export function isArchive(lane: Lane) {
     return lane.isArchive;
 }
 
@@ -144,20 +144,78 @@ export function getStatusPath(): string | null {
     return localStorage.getItem('storagePath')
 }
 
-export function getNextStatus(t: Task): Status{
-    if(t.status === "todo") return "in-progress";
-    if(t.status === "in-progress") return "completed";
-    if(t.status === "completed") return "archived";
+export function getNextStatus(t: Task): Status {
+    if (t.status === "todo") return "in-progress";
+    if (t.status === "in-progress") return "completed";
+    if (t.status === "completed") return "archived";
     return 'todo'
 }
 
-export function setDateSafe( container: Container, status: Status, enterOrLeave: 'enter' | 'leave', date: Date){ 
-    if( !container.dates[status] ){
+export function setDateSafe(container: Container, status: Status, enterOrLeave: 'enter' | 'leave', date: Date) {
+    if (!container.dates[status]) {
         container.dates[status] = {};
     }
     container.dates[status]![enterOrLeave] = date.toISOString() as ISODateString;
 }
 
-export function formatDate( date : ISODateString){
+export function formatDate(date: ISODateString) {
     return new Date(date).toLocaleDateString();
+}
+
+export function removeEntry(
+    obj: any,
+    keyToRemove?: string,
+    condition?: (key: string, value: any) => boolean
+): void {
+    if (Array.isArray(obj)) {
+        for (const item of obj) {
+            removeEntry(item, keyToRemove, condition);
+        }
+    } else if (obj !== null && typeof obj === 'object') {
+        for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                const shouldRemove = (keyToRemove && key === keyToRemove) ||
+                    (condition && condition(key, obj[key]));
+
+                if (shouldRemove) {
+                    delete obj[key];
+                } else if (Array.isArray(obj[key])) {
+                    if( condition && condition(key, obj[key]) ){
+                        delete obj[key];
+                    }
+                    for (const item of obj[key]){
+                        if( condition && condition(key, item) ){
+                            obj[key] = obj[key].filter((i: any) => i !== item);
+                        }
+                    }
+                    removeEntry(obj[key], keyToRemove, condition);
+                } else if (typeof obj[key] === 'object') {
+                    removeEntry(obj[key], keyToRemove, condition);
+                }
+            }
+        }
+    }
+}
+
+export function removeEntry2(obj: Record<string, any>, keyToRemove?: string, conditionForValue?: (value: string | object) => boolean): void {
+    if (obj == null || typeof obj !== 'object') {
+        return;
+    }
+
+    for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            if ((keyToRemove && key === keyToRemove) || !keyToRemove) {
+                if (conditionForValue) {
+                    if (conditionForValue(obj[key])) {
+                        delete obj[key];
+                        continue;
+                    }
+                } else {
+                    delete obj[key];
+                }
+            } else if (typeof obj[key] === 'object') {
+                removeEntry(obj[key], keyToRemove, conditionForValue);
+            }
+        }
+    }
 }

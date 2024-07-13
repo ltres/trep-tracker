@@ -10,6 +10,7 @@
     padding: $lane-padding;
 }
 
+
 @mixin generate-utility-classes($padding-values) {
     @each $padding in $padding-values {
         .p-#{str-replace($padding, ".", "")} {
@@ -74,6 +75,15 @@
 
         .g-#{str-replace($padding, ".", "")} {
             gap: $padding * 1rem * $spacer-multiplier
+        }
+    }
+}
+
+@mixin generate-logo-sizes($sizes) {
+    @each $size in $sizes {
+        .logo-#{$size} {
+            width: $size * 1rem;
+            height: auto;
         }
     }
 }

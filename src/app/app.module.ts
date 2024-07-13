@@ -29,6 +29,9 @@ import { StatusComponent } from './task-status/status.component';
 import { TooltipDirective } from './directive/tooltip.directive';
 import { TimeBarComponent } from './time-bar/time-bar.component';
 import { environment } from '../environments/environment';
+import { AiAdvisorComponent } from './ai-advisor/ai-advisor.component';
+import { MarkdownModule } from 'ngx-markdown';
+import { LogoComponent } from './dumb/logo/logo.component';
  
 @NgModule({
     declarations: [
@@ -48,7 +51,9 @@ import { environment } from '../environments/environment';
          WelcomeWizardManagerComponent,
          StatusComponent,
          TooltipDirective,
-         TimeBarComponent
+         TimeBarComponent,
+         AiAdvisorComponent,
+         LogoComponent
         ],
     providers: [
         BoardService, 
@@ -60,7 +65,11 @@ import { environment } from '../environments/environment';
         {
             provide: 'StorageServiceAbstract',
             useClass: environment.storageService
-          }
+        },
+        {
+            provide: 'AiServiceI',
+            useClass: environment.aiService
+        }
     ],
     bootstrap: [AppComponent],
     imports: [
@@ -69,6 +78,7 @@ import { environment } from '../environments/environment';
         FormsModule,
         ReactiveFormsModule,
         KeyboardListenerComponent,
+        MarkdownModule.forRoot()
     ]
 })
 export class AppModule { }
