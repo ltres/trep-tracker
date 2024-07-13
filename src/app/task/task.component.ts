@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostBinding, HostListener, Input, OnChanges, OnDestroy, OnInit, Output, Renderer2, SimpleChanges, ViewChild, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, forwardRef, HostBinding, HostListener, Input, OnChanges, OnDestroy, OnInit, Output, Renderer2, SimpleChanges, ViewChild, viewChild } from '@angular/core';
 import { Board, Lane, Container, Task, Tag, Status, Priority, ISODateString, StateChangeDate } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
 import { hashCode, isPlaceholder, isStatic, setCaretPosition } from '../../utils/utils';
-import { RegistryService } from '../../service/registry.service';
-import { BaseComponent } from '../base/base.component';
+import { ContainerComponentRegistryService } from '../../service/registry.service';
+import { ContainerComponent } from '../base/base.component';
 
 @Component({
   selector: 'task[task][lane][parent][board]',
@@ -13,9 +13,12 @@ import { BaseComponent } from '../base/base.component';
   //imports: [NgxEditorModule,],
   templateUrl: './task.component.html',
   styleUrl: './task.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    {provide: ContainerComponent, useExisting: forwardRef(() => TaskComponent)}
+  ]
 })
-export class TaskComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges {
+export class TaskComponent extends ContainerComponent implements OnInit, OnDestroy {
   @ViewChild('editor') editor: ElementRef | undefined;
   @Input() task!: Task;
 
@@ -36,7 +39,7 @@ export class TaskComponent extends BaseComponent implements OnInit, OnDestroy, O
     protected boardService: BoardService,
     protected dragService: DragService,
     protected keyboardService: KeyboardService,
-    protected override registry: RegistryService,
+    protected override registry: ContainerComponentRegistryService,
     public override el: ElementRef,
     protected cdr: ChangeDetectorRef,
   ) {
@@ -44,7 +47,7 @@ export class TaskComponent extends BaseComponent implements OnInit, OnDestroy, O
 
   }
 
-  override get object(): Container | undefined {
+  override get container(): Container {
     return this.task;
   }
 

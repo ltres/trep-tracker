@@ -10,7 +10,7 @@ import { LaneComponent } from './lane/lane.component';
 import { KeyboardService } from '../service/keyboard.service';
 import { KeyboardListenerComponent } from './keyboard-listener/keyboard-listener.component';
 import { DragService } from '../service/drag.service';
-import { RegistryService } from '../service/registry.service';
+import { ContainerComponentRegistryService } from '../service/registry.service';
 import { ContenteditableDirective } from './directive/contenteditable.directive';
 import { TagService } from '../service/tag.service';
 import { TagsViewerComponent } from './tags-viewer/tags-viewer.component';
@@ -56,7 +56,7 @@ import { DraggableDirective } from './directive/draggable.directive';
         BoardService, 
         KeyboardService, 
         DragService, 
-        RegistryService, 
+        ContainerComponentRegistryService, 
         TagService, 
         ModalService,
         {

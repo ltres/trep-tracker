@@ -2,31 +2,44 @@ import { Injectable } from "@angular/core";
 import { BehaviorSubject, Observable, Subject, map } from "rxjs";
 import { cursorIsInside, generateUUID, overlaps } from "../utils/utils";
 import { BoardService } from "./board.service";
-import { RegistryService } from "./registry.service";
+import { ContainerComponentRegistryService } from "./registry.service";
 import { DraggableDirective } from "../app/directive/draggable.directive";
-import { BaseComponent } from "../app/base/base.component";
+import { ContainerComponent } from "../app/base/base.component";
 import { BoardComponent } from "../app/board/board.component";
-import { Board } from "../types/task";
+import { Board, Container } from "../types/task";
 
 @Injectable({
     providedIn: 'root'
 })
 export class DragService {
-    private _dragEndEvent$: BehaviorSubject<{ draggedComponent: BaseComponent, event: DragEvent, deltaX: number, deltaY: number, board: Board } | undefined> 
-    = new BehaviorSubject<{ draggedComponent: BaseComponent, event: DragEvent, deltaX: number, deltaY: number, board: Board  } | undefined>(undefined);
+    private _dragEndEvent$: BehaviorSubject<{ 
+        dragged: Container,
+        component: ContainerComponent,
+        event: DragEvent, 
+        deltaX: number, 
+        deltaY: number, 
+        board: Board 
+    } | undefined> 
+    = new BehaviorSubject<{ 
+        dragged: Container, 
+        component: ContainerComponent,
+        event: DragEvent, 
+        deltaX: number, 
+        deltaY: number, 
+        board: Board  } | undefined>(undefined);
 
     constructor(
         private boardService: BoardService,
-        private registryService: RegistryService
+        private registryService: ContainerComponentRegistryService
     ) {
         this._dragEndEvent$.subscribe(event => {
             if (!event) {
                 return;
             }
             console.info("Drag end event", event);
-            let { draggedComponent } = event;
-            let { object: draggedObject } = draggedComponent;
-            let { board } = event;
+            let draggedObject = event.dragged;
+            let board = event.board;
+            let draggedComponent = event.component
             let {deltaX, deltaY} = event;
             if (!draggedObject || !board) {
                 console.warn("Dragged component has no object");
@@ -37,19 +50,19 @@ export class DragService {
                 return
             }
             // look for overlapped component in the registry
-            let registry = this.registryService.draggableComponentRegistry
+            let registry = this.registryService.componentRegistry
             let overlappedComponent = registry
             .sort((a, b) => {
-                if (this.boardService.isTask(a.object) && !this.boardService.isTask(b.object)) {
+                if (this.boardService.isTask(a.container) && !this.boardService.isTask(b.container)) {
                     return -1;
                 }
-                if (this.boardService.isTask(b.object) && !this.boardService.isTask(a.object)) {
+                if (this.boardService.isTask(b.container) && !this.boardService.isTask(a.container)) {
                     return 1;
                 }
-                if (this.boardService.isLane(a.object) && !this.boardService.isLane(b.object)) {
+                if (this.boardService.isLane(a.container) && !this.boardService.isLane(b.container)) {
                     return -1;
                 }
-                if (this.boardService.isLane(b.object) && !this.boardService.isLane(a.object)) {
+                if (this.boardService.isLane(b.container) && !this.boardService.isLane(a.container)) {
                     return 1;
                 }
                 return 0;
@@ -73,16 +86,16 @@ export class DragService {
                 // Overlap case:
                 // we have a collection of overlapped components, sort them task first and take the first one
                 overlappedComponent = overlappedComponent.sort((a, b) => {
-                    if (this.boardService.isTask(a.object) && !this.boardService.isTask(b.object)) {
+                    if (this.boardService.isTask(a.container) && !this.boardService.isTask(b.container)) {
                         return -1;
                     }
-                    if (!this.boardService.isTask(a.object) && this.boardService.isTask(b.object)) {
+                    if (!this.boardService.isTask(a.container) && this.boardService.isTask(b.container)) {
                         return 1;
                     }
                     return 0;
                 }); 
  
-                let { object: overlappedObject } = overlappedComponent[0];
+                let { container: overlappedObject } = overlappedComponent[0];
                 if (!overlappedObject) {
                     console.info("Overlapped component has no object");
                     return;
@@ -103,11 +116,11 @@ export class DragService {
         });
     }
 
-    publishDragEvent(draggable: BaseComponent, event: DragEvent, deltaX: number, deltaY: number, board: Board ) {
-        this._dragEndEvent$.next({ draggedComponent: draggable, event, deltaX, deltaY, board});
+    publishDragEvent(dragged: Container, component: ContainerComponent, event: DragEvent, deltaX: number, deltaY: number, board: Board ) {
+        this._dragEndEvent$.next({ dragged, component, event, deltaX, deltaY, board});
     }
 
-    get dragEndEvent$(): Observable<{ draggedComponent: BaseComponent, event: DragEvent } | undefined> {
+    get dragEndEvent$(): Observable<{ dragged: Container, event: DragEvent } | undefined> {
         return this._dragEndEvent$;
     }
 }

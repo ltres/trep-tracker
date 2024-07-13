@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostBinding, HostListener, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, HostBinding, HostListener, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { Board, Container, Lane, Priority, Status, Tag, Task, archivedLaneId, getNewTask } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 import { generateUUID, hashCode, isArchive, isStatic } from '../../utils/utils';
@@ -6,8 +6,8 @@ import { Observable } from 'rxjs';
 import { TaskComponent } from '../task/task.component';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
-import { RegistryService } from '../../service/registry.service';
-import { BaseComponent } from '../base/base.component';
+import { ContainerComponentRegistryService } from '../../service/registry.service';
+import { ContainerComponent } from '../base/base.component';
 
 @Component({
   selector: 'lane[lane][board]',
@@ -15,9 +15,12 @@ import { BaseComponent } from '../base/base.component';
   // imports: [],
   templateUrl: './lane.component.html',
   styleUrl: './lane.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    {provide: ContainerComponent, useExisting: forwardRef(() => LaneComponent)}
+  ]
 })
-export class LaneComponent extends BaseComponent implements OnInit {
+export class LaneComponent extends ContainerComponent implements OnInit {
   @ViewChildren(TaskComponent, { read: ElementRef }) taskComponentsElRefs: QueryList<ElementRef> | undefined;
   @ViewChildren(TaskComponent) taskComponents: QueryList<TaskComponent> | undefined;
 
@@ -25,13 +28,15 @@ export class LaneComponent extends BaseComponent implements OnInit {
   @Input() board!: Board;
 
   menuOpen = false
+  draggingInside = false
+
   debounce: any;
 
   constructor(
     protected boardService: BoardService,
     protected dragService: DragService,
     protected keyboardService: KeyboardService,
-    protected override registry: RegistryService,
+    protected override registry: ContainerComponentRegistryService,
     public override el: ElementRef,
     private cdr: ChangeDetectorRef) {
     super(registry, el);
@@ -56,10 +61,10 @@ export class LaneComponent extends BaseComponent implements OnInit {
 
   @HostBinding('style.overflow-x')
   get overflowX(): string {
-    return this.menuOpen ? 'visible' : 'auto';
+    return this.menuOpen || this.draggingInside ? 'visible' : 'auto';
   }
 
-  override get object(): Container | undefined {
+  override get container(): Container {
     return this.lane;
   }
 

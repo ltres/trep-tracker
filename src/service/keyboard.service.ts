@@ -2,7 +2,7 @@ import { Component, Injectable } from "@angular/core";
 
 import { BehaviorSubject, Observable } from "rxjs";
 import { BoardService } from "./board.service";
-import { RegistryService } from "./registry.service";
+import { ContainerComponentRegistryService } from "./registry.service";
 import { Task, getNewTask } from "../types/task";
 import { getCaretPosition, isPlaceholder } from "../utils/utils";
 
@@ -14,7 +14,7 @@ export class KeyboardService {
 
   constructor(
     private boardService: BoardService,
-    private registry: RegistryService
+    private registry: ContainerComponentRegistryService
   ){
     this._keyboardEvent$.subscribe(e => {
       if (e?.type != 'keydown' || !e || ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Enter', 'Backspace', 'Delete', 'Shift', 'd', 'a', 'f'].indexOf(e.key) === -1) {
@@ -131,8 +131,8 @@ export class KeyboardService {
       throw new Error("Cannot find lane or task")
     }
     let el: Node | undefined;
-    this.registry.baseComponentRegistry.forEach(c => {
-      if (c.object && c.object.id === task.id && c.object._type === task._type) {
+    this.registry.componentRegistry.forEach(c => {
+      if (c.container && c.container.id === task.id && c.container._type === task._type) {
         el = c.el.nativeElement;
       }
     });

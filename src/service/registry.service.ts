@@ -1,7 +1,7 @@
 
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, } from "rxjs";
-import { BaseComponent } from "../app/base/base.component";
+import { ContainerComponent } from "../app/base/base.component";
 import { DraggableDirective } from "../app/directive/draggable.directive";
 
 /**
@@ -10,46 +10,18 @@ import { DraggableDirective } from "../app/directive/draggable.directive";
 @Injectable({
     providedIn: 'root'
 })
-export class RegistryService {
-    private _draggableComponentRegistry$: BehaviorSubject<BaseComponent[]> = new BehaviorSubject<BaseComponent[]>([]);
-    private _baseComponentRegistry$: BehaviorSubject<BaseComponent[]> = new BehaviorSubject<BaseComponent[]>([]);
+export class ContainerComponentRegistryService {
+    private _componentRegistry$: BehaviorSubject<ContainerComponent[]> = new BehaviorSubject<ContainerComponent[]>([]);
 
-    componentInitialized(component: BaseComponent) {
-        this.addToRegistry(this._baseComponentRegistry$, component);
-        if (this.isDraggableComponent(component)) {
-            this.addToRegistry(this._draggableComponentRegistry$, component);
-            
-        }
-        // console.debug("Component added to base component registry" + (this.isDraggableComponent(component) ? " and to draggable registry" : ""), component);
+    componentInitialized(component: ContainerComponent) {
+        this.addToRegistry(this._componentRegistry$, component);
     }
 
-    componentDestroyed(component: BaseComponent) {
-        this.removeFromRegistry(this._baseComponentRegistry$, component);
-        if (this.isDraggableComponent(component)) {
-            this.removeFromRegistry(this._draggableComponentRegistry$, component);
-        }
-        // console.debug("Component removed from base component registry" + (this.isDraggableComponent(component) ? " and from draggable registry" : ""), component);
-
+    componentDestroyed(component: ContainerComponent) {
+        this.removeFromRegistry(this._componentRegistry$, component);
     }
 
-    addToDraggableRegistry(draggable: BaseComponent) {
-        let registry = this._draggableComponentRegistry$.getValue();
-        registry.push(draggable);
-        this._draggableComponentRegistry$.next(registry);
-    }
-
-    removeFromDraggableRegistry(draggable: BaseComponent) {
-        let registry = this._draggableComponentRegistry$.getValue();
-        let index = registry.findIndex(d => d === draggable);
-        if (index === -1) {
-            console.warn("Component not found in registry");
-            return;
-        }
-        registry.splice(index, 1);
-        this._draggableComponentRegistry$.next(registry);
-    }
-
-    private removeFromRegistry<T extends BaseComponent>(registry: BehaviorSubject<T[]>, component: T) {
+    private removeFromRegistry<T extends ContainerComponent>(registry: BehaviorSubject<T[]>, component: T) {
         let curVal = registry.getValue();
         let index = curVal.findIndex(c => c === component);
         if (index === -1) {
@@ -60,11 +32,7 @@ export class RegistryService {
         registry.next(curVal);
     }
 
-    private isDraggableComponent(component: BaseComponent): component is BaseComponent {
-        return (component as BaseComponent).object !== undefined;
-    }
-
-    private addToRegistry<T extends BaseComponent>(registry: BehaviorSubject<T[]>, component: T) {
+    private addToRegistry<T extends ContainerComponent>(registry: BehaviorSubject<T[]>, component: T) {
         let curVal = registry.getValue();
         if (curVal.find(c => c === component)) {
             console.warn("Component already in registry");
@@ -74,12 +42,8 @@ export class RegistryService {
         registry.next(curVal);
     }
 
-    get draggableComponentRegistry(): BaseComponent[] {
-        return this._draggableComponentRegistry$.getValue();
-    }
-
-    get baseComponentRegistry(): BaseComponent[] {
-        return this._baseComponentRegistry$.getValue();
+    get componentRegistry(): ContainerComponent[] {
+        return this._componentRegistry$.getValue();
     }
 
 }

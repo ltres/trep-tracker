@@ -43,7 +43,15 @@ data-consider-for-overlapping-checks="true"
                 <div class="border-angle"></div>
                 <div *ngIf="!last" class="border-line"></div>
             </div>
-            <task [draggableDir]="task" class="child" [static]="isStaticLane()" [parent]="this.task" [task]="child"  [board]="this.board" [lane]="this.lane"></task>
+            <task 
+            [draggableDir]="task"
+            [containerEl]="el.nativeElement"
+            class="child" 
+            [static]="isStaticLane()" 
+            [parent]="this.task" 
+            [task]="child"  
+            [board]="this.board" 
+            [lane]="this.lane"></task>
         </div>
     </ng-container>
     

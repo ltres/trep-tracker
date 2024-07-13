@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Container } from '../../types/task';
-import { RegistryService } from '../../service/registry.service';
+import { ContainerComponentRegistryService } from '../../service/registry.service';
 
 // A base compoent whose data model is a Container
 // This component is responsible for managing subscriptions and unsubscribing them
@@ -13,19 +13,16 @@ import { RegistryService } from '../../service/registry.service';
   templateUrl: './base.component.html',
   styleUrl: './base.component.scss'
 })
-export abstract class BaseComponent implements OnInit, OnDestroy, OnChanges{
-  protected _object: Container | undefined;
+export abstract class ContainerComponent implements OnInit, OnDestroy{
+  protected _container!: Container;
   protected _subscriptions: Subscription[] = [];
   
   constructor(
-    protected registry: RegistryService,
+    protected registry: ContainerComponentRegistryService,
     public el: ElementRef
   ) { } 
-  ngOnChanges(changes: SimpleChanges): void {
-    console.log('changes', changes) ;
-  }
 
-  abstract get object(): Container | undefined;
+  abstract get container(): Container | undefined;
 
   set subscriptions(subscriptions: Subscription) {
     this._subscriptions.push(subscriptions);

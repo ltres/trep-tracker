@@ -26,10 +26,7 @@ export class AppComponent implements AfterViewInit {
     private appRef: ApplicationRef
   ) {
     storageService.init();  
-    this.appRef.tick = (...args) => {
-      //console.log('Change detection cycle', new Error().stack);
-      return Object.getPrototypeOf(this.appRef).tick.apply(this.appRef, args);
-    };
+
   }
 
   ngAfterViewInit(): void {

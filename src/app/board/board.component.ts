@@ -1,4 +1,4 @@
-import { AfterViewChecked, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostBinding, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, HostBinding, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { Board, Container, Lane, Tag, Task, getNewTask } from '../../types/task';
 import { TaskComponent } from '../task/task.component';
 import { BoardService } from '../../service/board.service';
@@ -7,8 +7,8 @@ import { LaneComponent } from '../lane/lane.component';
 import { getCaretPosition, hashCode, isPlaceholder } from '../../utils/utils';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
-import { BaseComponent } from '../base/base.component';
-import { RegistryService } from '../../service/registry.service';
+import { ContainerComponent } from '../base/base.component';
+import { ContainerComponentRegistryService } from '../../service/registry.service';
 
 @Component({
   selector: 'board',
@@ -16,9 +16,12 @@ import { RegistryService } from '../../service/registry.service';
   //imports: [TaskComponent],
   templateUrl: './board.component.html',
   styleUrl: './board.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    {provide: ContainerComponent, useExisting: forwardRef(() => BoardComponent)}
+  ]
 })
-export class BoardComponent extends BaseComponent implements OnInit, AfterViewInit {
+export class BoardComponent extends ContainerComponent implements OnInit, AfterViewInit {
 
   @Input() board!: Board;
   @ViewChildren(LaneComponent, { read: ElementRef }) laneComponentsElRefs: QueryList<ElementRef> | undefined;
@@ -34,7 +37,7 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
   constructor(
     protected boardService: BoardService,
     protected keyboardService: KeyboardService,
-    protected override registry: RegistryService,
+    protected override registry: ContainerComponentRegistryService,
     protected dragService: DragService,
     public override el: ElementRef,
     private cdr: ChangeDetectorRef
@@ -78,7 +81,7 @@ export class BoardComponent extends BaseComponent implements OnInit, AfterViewIn
     return this.boardService.getLanes$(this.board);
   }
 
-  override get object(): Container<any> | undefined {
+  override get container(): Container<any>{
     return this.board
   }
 
