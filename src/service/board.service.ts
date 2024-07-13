@@ -392,9 +392,10 @@ export class BoardService {
         }
 
         let parents = this._allParents$.getValue()?.filter(p => p.children.length > 0 && p.children.find(c => objs.find(o => o.id === c.id)));
-        // filter out duplicate parents
+        // filter out duplicate parents and archive
         if(parents){
             parents = parents?.filter((p, index) => parents!.findIndex(p2 => p2.id === p.id) === index);
+            parents = parents?.filter(p => !this.isLane(p) || !p.isArchive);
         }
 
         if (!parents || parents?.length !== 1) {
