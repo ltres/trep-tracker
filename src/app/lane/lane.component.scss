@@ -58,6 +58,11 @@
         background-color: $lane-archive-background-color;
     }
 }
+.non-static-island{
+    background-color: $lane-non-static-background-color!important;
+    outline: 1px solid $lane-outline-color;
+    outline-offset: -1px;
+}
 
 .lane-wrapper.static-view{
     // border-right: 1px solid $lane-title-color;

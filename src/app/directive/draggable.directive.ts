@@ -61,7 +61,7 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
 
   @HostBinding('style.width')
   private get width(): number | string | undefined {
-    return this.boardService.isLane(this.draggableDir) && this.draggableDir.width ? this.draggableDir.width + "px" : "auto";
+    return this.boardService.isLane(this.draggableDir) && this.draggableDir.width ? this.draggableDir.width + "px" : "100%";
   }
   private set width(value: number ) {
     this.boardService.isLane(this.draggableDir) ? this.draggableDir.width = value : undefined;

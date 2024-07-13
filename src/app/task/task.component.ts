@@ -21,10 +21,10 @@ import { ContainerComponent } from '../base/base.component';
 export class TaskComponent extends ContainerComponent implements OnInit, OnDestroy {
   @ViewChild('editor') editor: ElementRef | undefined;
   @Input() task!: Task;
-
   @Input() lane!: Lane;
   @Input() parent!: Container;
   @Input() board!: Board;
+  @Input() staticView: boolean = false;
 
   @Input() showChildren: boolean = true;
   
@@ -165,8 +165,8 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     return new Date(arg0);
   }
   
-  isStaticLane(): boolean {
-    return isStatic(this.lane)
+  isStaticView(): boolean {
+    return this.staticView;
   }
   trackBy(index: number, task: Task): number {
     return hashCode(task.id);

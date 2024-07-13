@@ -40,7 +40,7 @@
     <span drag-on-this="true" class="drag-handle translucent pointer no-grow">⋯</span>
   </div>
 
-  <ng-container *ngFor="let task of (tasks | async);trackBy: trackBy">
+  <div *ngFor="let task of (tasks | async);trackBy: trackBy" [class.non-static-island]="isStatic()">
     <task 
     [task]="task" 
     [parent]="lane" 
@@ -51,19 +51,17 @@
     (onDragStart)="draggingInside=true"
     (onDragEnd)="draggingInside=false"
     (createNewTask)="createNewTask()"></task>
-  </ng-container>
+  </div>
 
-  <ng-container *ngIf="isStatic()">
+  <div *ngIf="isStatic()">
     <div class="static-view flex column">
         <task *ngFor="let task of (staticTasks | async);trackBy: trackBy" 
-
-        
+        [staticView]="true"       
         [showChildren]="lane.showChildren" [task]="task" 
         [parent]="lane" [board]="board" [lane]="lane"
-
         ></task>
     </div>
-  </ng-container>
+  </div>
 
   <!-- <p class="floating-label">Lane: {{lane.id}}</p> -->
 

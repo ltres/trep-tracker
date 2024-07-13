@@ -7,10 +7,10 @@ data-consider-for-overlapping-checks="true"
 (click)="clickTask($event)" 
 
 >
-    <div *ngIf="!isStaticLane() && !isPlaceholder()"class="drag-handle translucent pointer" drag-on-this="true">⋮</div>
+    <div *ngIf="!isStaticView() && !isPlaceholder()"class="drag-handle translucent pointer" drag-on-this="true">⋮</div>
 
     <prioritizer *ngIf="!isPlaceholder()" (onPrioritySelected)="updatePriority($event)" [container]="task" class=""> </prioritizer>
-    <status [container]="task" [board]="board" [staticLane]="isStaticLane()" 
+    <status [container]="task" [board]="board" [staticLane]="isStaticView()" 
     (onStatusSelected)="updateStatus($event)"
     class="m-x-025"></status>
 
@@ -48,7 +48,7 @@ data-consider-for-overlapping-checks="true"
             [draggableDir]="task"
             [containerEl]="el.nativeElement"
             class="child" 
-            [static]="isStaticLane()" 
+            [staticView]="isStaticView()" 
             [parent]="this.task" 
             [task]="child"  
             [board]="this.board" 
