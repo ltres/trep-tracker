@@ -181,7 +181,7 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
 
 
   resize($event: ResizeObserverEntry[]) {
-    if (this.width === $event[0].contentRect.width || $event[0].contentRect.width === 0) {
+    if (this.width?.toString().indexOf($event[0].contentRect.width.toString()) === 0 || $event[0].contentRect.width === 0) {
       return
     };
     this.width = this.el.nativeElement.getBoundingClientRect().width;
