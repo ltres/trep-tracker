@@ -7,11 +7,13 @@ export interface Lane extends Container<Task>{
     _type: 'lane',
     showChildren: boolean,
     isArchive: boolean,
-    width: number | undefined
+    width: number | undefined,
 }
 export interface Task extends Container<Task>{
     _type: 'task',
     createdLaneId: string,
+    priority: Priority,
+    status: Status,
 }
 
 export interface Container<T extends Container<any> = any> {
@@ -21,8 +23,8 @@ export interface Container<T extends Container<any> = any> {
     children: T[];
     tags: Tag[];
     creationDate: ISODateString,
-    priority: Priority | undefined,
-    status: Status | undefined,
+    priority: Priority | Priority[] | undefined,
+    status: Status | Status[] | undefined,
     dates: StateChangeDate
     coordinates?: {
         x: number,
@@ -45,6 +47,9 @@ export const Statuses = {
     "in-progress": {
         icon: "🛠️",
     },
+    "to-be-delegated": {
+        icon: "🙇",
+    },
     delegated: {
         icon: "👦🏼",
     },
@@ -53,6 +58,9 @@ export const Statuses = {
     },
     completed: {
         icon: "✅",
+    },
+    discarded: {
+        icon: "🗑️",
     },
     archived: {
         icon: "📂",

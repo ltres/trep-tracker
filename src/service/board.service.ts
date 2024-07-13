@@ -94,16 +94,24 @@ export class BoardService {
         );
     }
 
-    getTasks$(lane: Lane, priority: Priority | undefined, status: Status | undefined, excldeArchived: boolean, sort: keyof StateChangeDate | undefined, sortOrder?: 'asc' | 'desc'): Observable<Task[] | undefined> {
+    getTasks$(lane: Lane, priority: Priority | Priority[] | undefined, status: Status | Status[] | undefined, excldeArchived: boolean, sort: keyof StateChangeDate | undefined, sortOrder?: 'asc' | 'desc'): Observable<Task[] | undefined> {
         return this._allLanes$.pipe(
             map(lanes => {
                 let res = lanes?.find(l => l.id === lane.id)?.children
 
                 if (priority) {
-                    res = res?.filter(t => t.priority === priority);
+                    if(Array.isArray(priority)){
+                        res = res?.filter(t => priority.includes(t.priority));
+                    }else{
+                        res = res?.filter(t => t.priority === priority);
+                    }
                 }
                 if (status) {
-                    res = res?.filter(t => t.status === status);
+                    if(Array.isArray(status)){
+                        res = res?.filter(t => status.includes(t.status));
+                    }else{
+                        res = res?.filter(t => t.status === status);
+                    }
                 }
                 if(excldeArchived){
                     res = res?.filter(t => t.status !== 'archived');
@@ -122,7 +130,7 @@ export class BoardService {
         )
     }
 
-    getStaticTasks$(board: Board,tags: Tag[] | undefined, priority: Priority | undefined, status: Status | undefined, excldeArchived: boolean, sort: keyof StateChangeDate | undefined, sortOrder?: 'asc' | 'desc'): Observable<Task[] | undefined> {
+    getStaticTasks$(board: Board,tags: Tag[] | undefined, priority: Priority | Priority[] | undefined, status: Status | Status[] | undefined, excldeArchived: boolean, sort: keyof StateChangeDate | undefined, sortOrder?: 'asc' | 'desc'): Observable<Task[] | undefined> {
         return this._boards$.pipe(
             map(boards => { 
                 let b = boards.find(b => b.id === board.id);
@@ -137,10 +145,18 @@ export class BoardService {
                     )
                 }
                 if (priority) {
-                    res = res?.filter(t => t.priority === priority);
+                    if(Array.isArray(priority)){
+                        res = res?.filter(t => priority.includes(t.priority));
+                    }else{
+                        res = res?.filter(t => t.priority === priority);
+                    }
                 }
                 if (status) {
-                    res = res?.filter(t => t.status === status); 
+                    if(Array.isArray(status)){
+                        res = res?.filter(t => status.includes(t.status));
+                    }else{
+                        res = res?.filter(t => t.status === status);
+                    }
                 }
                 if(excldeArchived){
                     res = res?.filter(t => t.status !== 'archived');
@@ -285,17 +301,24 @@ export class BoardService {
         return newLane;
     }
 
-    updateStatus(board: Board, container: Container, status: Status) {
-        let involvesArchive = container.status === 'archived' || status === 'archived';
+    updateStatus(board: Board, container: Container, status: Status | Status[]) {
         let boards = this._boards$.getValue();
-        if(container.status){
-            setDateSafe(container, container.status, 'leave', new Date());
+        status = Array.isArray(status) ? status : [status];
+        if( this.isLane(container) ){
+            container.status = status;
+        }else{
+            for (let s of status) {
+                if(container.status){
+                    setDateSafe(container, s, 'leave', new Date());
+                }
+                container.status = s;
+                setDateSafe(container, s, 'enter', new Date());
+                if( this.isTask(container) ){
+                    this.evaluateArchiveMove(board, container);
+                }
+            }
         }
-        container.status = status;
-        setDateSafe(container, container.status, 'enter', new Date());
-        if( this.isTask(container) && involvesArchive ){
-            this.evaluateArchiveMove(board, container);
-        }
+
         this._boards$.next(boards);
     }
 

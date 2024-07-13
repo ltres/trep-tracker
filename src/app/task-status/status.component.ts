@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { Board, Container, Task, Status, Statuses } from '../../types/task';
 import { isPlaceholder } from '../../utils/utils';
 import { BoardService } from '../../service/board.service';
@@ -8,28 +8,41 @@ import { BoardService } from '../../service/board.service';
   templateUrl: './status.component.html',
   styleUrl: './status.component.scss'
 })
-export class StatusComponent {
-
+export class StatusComponent implements AfterViewInit {
 
   @Input() container!: Container;
   @Input() board!: Board;
   @Input() staticLane!: boolean;
-  @Input() allowUndefinedStatus = false;
 
-  @Output() onStatusSelected = new EventEmitter<Status>();
+  @Input() multipleSelectable: boolean = false;
+  @Input() allowEmpty: boolean = false;
+
+
+  @Output() onStatusSelected = new EventEmitter<Status[]>();
+
+  protected states: Status[] = [];
 
   protected open = false;
 
   constructor(private boardService: BoardService) { }
 
-  updateStatus(status: Status) {
-    this.onStatusSelected.emit(status); 
+  ngAfterViewInit(): void {
+    this.states = Array.isArray(this.container.status) ? this.container.status : [this.container.status ?? 'todo'];
+  }
+
+  toggleStatus(status: Status) {
+    if (this.multipleSelectable) {
+      this.states = this.states.includes(status) ? this.states.filter(s => s !== status) : [...this.states, status];
+    } else {
+      this.states = [status];
+    }
+    this.onStatusSelected.emit(this.states);
     //this.boardService.updateStatus(this.container, status);
     this.open = false;
   }
 
   isPlaceholder(): boolean {
-    if(this.boardService.isTask(this.container)){
+    if (this.boardService.isTask(this.container)) {
       return isPlaceholder(this.container);
     }
     return false;
@@ -40,7 +53,7 @@ export class StatusComponent {
   }
 
   getSymbol(arg0: Status | undefined): string {
-    if(!arg0) return '▫';
+    if (!arg0) return '▫';
     return Statuses[arg0].icon;
   }
 
@@ -48,14 +61,21 @@ export class StatusComponent {
     return arg0.toLowerCase().replaceAll('-', ' ');
   }
   cancelAndClose() {
-    if(this.allowUndefinedStatus){
-      this.onStatusSelected.emit(undefined);
+    if (this.allowEmpty) {
+      this.states = [];
     }
+    this.onStatusSelected.emit(this.states);
+    
     this.open = false;
   }
 
   isTask(arg0: Container<any>) {
     return this.boardService.isTask(arg0);
   }
-
+  isArray(arg0: any) {
+    return Array.isArray(arg0);
+  }
+  hasStatus(_t26: Status) {
+    return this.states.includes(_t26);
+  }
 }

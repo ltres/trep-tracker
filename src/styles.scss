@@ -244,6 +244,19 @@ button {
 .archived-background{
   background-color: $archived-color
 }
+.to-be-delegated{
+  color: $to-be-delegated-color
+}
+.to-be-delegated-background{
+  background-color: $to-be-delegated-color
+}
+.discarded{
+  color: $discarded-color;
+  text-decoration: line-through;
+}
+.discarded-background{
+  background-color: $discarded-color
+}
 
 
 

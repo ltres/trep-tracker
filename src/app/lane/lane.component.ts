@@ -21,6 +21,7 @@ import { ContainerComponent } from '../base/base.component';
   ]
 })
 export class LaneComponent extends ContainerComponent implements OnInit {
+
   @ViewChildren(TaskComponent, { read: ElementRef }) taskComponentsElRefs: QueryList<ElementRef> | undefined;
   @ViewChildren(TaskComponent) taskComponents: QueryList<TaskComponent> | undefined;
 
@@ -61,7 +62,7 @@ export class LaneComponent extends ContainerComponent implements OnInit {
 
   @HostBinding('style.overflow-x')
   get overflowX(): string {
-    return this.menuOpen || this.draggingInside ? 'visible' : 'auto';
+    return this.menuOpen ? 'visible' : 'auto';
   }
 
   override get container(): Container {
@@ -125,15 +126,21 @@ export class LaneComponent extends ContainerComponent implements OnInit {
       this.boardService.publishBoardUpdate()
     }, 500)
   }
-  updateStatus($event: Status) {
+  updateStatus($event: Status[]) {
     this.boardService.updateStatus(this.board, this.lane, $event);
   }
-  updatePriority($event: Priority | undefined) {
-    this.lane.priority = $event;
-    this.boardService.publishBoardUpdate()
-  }
+
   trackBy(index: number, task: Task): number {
     return hashCode(task.id);
+  }
+  togglePriority(prio: Priority[]) {
+    if (prio.length === 0) {
+      this.lane.priority = undefined;
+    }else{
+      this.lane.priority = prio;
+    }
+    this.boardService.publishBoardUpdate()
+
   }
 
 }

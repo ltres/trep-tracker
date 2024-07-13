@@ -1,16 +1,19 @@
 <div *ngIf="!isPlaceholder()" class="flex align-items-center">
     <div class="flex align-items-center" *ngIf="!open">
-        <span *ngIf="container.status" [tooltip]="getTooltip(container.status)" class="pointer status big status-{{container.status}} active" (click)="open = !open" >{{getSymbol(container.status)}}</span>
-        <span *ngIf="!container.status"[tooltip]="getTooltip('No status')" class="pointer status big status-undefined selectable" (click)="open = !open" >{{getSymbol(undefined)}}</span>
-
+        <ng-container *ngIf="states">
+            <span *ngFor="let status of states" [tooltip]="getTooltip(status)" class="pointer status big status-{{container.status}} active" (click)="open = !open" >
+                {{getSymbol(status)}}
+            </span>
+        </ng-container>
+        <span *ngIf="states.length === 0" [tooltip]="getTooltip('No status')" class="pointer status big status-undefined selectable" (click)="open = !open" >{{getSymbol(undefined)}}</span>
     </div>
     <div class="flex align-items-center g-025" *ngIf="open">
         <span [tooltip]="'close'"class="selectable cancel" (click)="cancelAndClose()">🗙</span> 
         <span *ngFor="let status of getAvailableStatuses()" 
         [tooltip]="getTooltip(status)"
         class="selectable status big status-{{status}}"  
-        [class.active]="container.status === status" 
-        (click)="updateStatus(status)" >{{getSymbol(status)}}</span>
+        [class.active]="hasStatus(status)" 
+        (click)="toggleStatus(status)" >{{getSymbol(status)}}</span>
     </div> 
 
 </div>

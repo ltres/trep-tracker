@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, HostListener, Input, Output } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { Container, Priority } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 
@@ -8,31 +8,48 @@ import { BoardService } from '../../service/board.service';
   templateUrl: './prioritizer.component.html',
   styleUrl: './prioritizer.component.scss'
 })
-export class PrioritizerComponent {
-  @Input() container!: Container;
-  @Output() onPrioritySelected = new EventEmitter<Priority | undefined>();
+export class PrioritizerComponent implements AfterViewInit{
 
+  @Input() container!: Container;
+  @Input() multipleSelectable: boolean = false;
+  @Input() allowEmpty: boolean = false;
+
+  @Output() onPrioritySelected = new EventEmitter<Priority[]>();
+  
+  protected priorities: Priority[] = [];
   protected open: boolean = false;
 
   constructor(
     private eRef: ElementRef,
     private boardService: BoardService) {
-    
   }
-
-  protected priorities = [1,2,3,4,5];
+  ngAfterViewInit(): void {
+    this.priorities = Array.isArray(this.container.priority) ? this.container.priority : (this.container.priority ? [this.container.priority] : []);
+  }
 
   getSymbol(number: number | undefined): string {
     if(number === undefined) return ""
     return "●"
   }
 
-  setPriority(priority: Priority | undefined) {
-    this.container.priority = priority;
-    this.onPrioritySelected.emit(priority);
+  togglePriority(priority: Priority) {
+    if(this.multipleSelectable){
+      this.priorities = this.priorities.includes(priority) ? this.priorities.filter(p => p !== priority) : [...this.priorities, priority];
+    }else{
+      this.priorities = [priority];
+    }
+    this.onPrioritySelected.emit(this.priorities);
     //this.boardService.publishBoardUpdate();
     this.open = false;
   }
-
-  
+  cancelAndClose(){
+    if(this.allowEmpty){
+      this.priorities = [];
+    }
+    this.onPrioritySelected.emit(this.priorities);
+    this.open = false;
+  }
+  priorityPresent(arg0: Priority): boolean {
+    return this.priorities.includes(arg0);
+  }
 }

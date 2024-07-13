@@ -12,10 +12,13 @@
       > </div> 
       <prioritizer 
       [container]="lane" 
-      (onPrioritySelected)="lane.priority = $event; boardService.publishBoardUpdate()"> </prioritizer>
+      [allowEmpty]="true"
+      [multipleSelectable]="true"
+      (onPrioritySelected)="togglePriority($event)"> </prioritizer>
       <status 
       (onStatusSelected)="updateStatus($event)" 
-      [allowUndefinedStatus]="true"
+      [allowEmpty]="true"
+      [multipleSelectable]="true"
       [container]="lane" 
       [board]="board" 
       [staticLane]="isStatic()" > </status>
