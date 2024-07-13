@@ -68,12 +68,14 @@ export class LaneComponent extends ContainerComponent implements OnInit {
     return this.lane;
   }
 
+  // Lane's self children, eventually filtered by priority, status.
   get tasks(): Observable<Task[] | undefined> {
     return this.boardService.getTasks$(this.lane, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false : true, this.isArchive(this.lane) ? "archived" : undefined, 'desc');
   }
 
-  get taggedTasks(): Observable<Task[] | undefined> {
-    return this.boardService.getTaggedTasks$(this.lane.tags, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false : true, this.isArchive(this.lane) ? "archived" : undefined, 'desc');
+  // Statically displayed tasks, eventually filtered by priority, status.
+  get staticTasks(): Observable<Task[] | undefined> {
+    return this.boardService.getStaticTasks$(this.board, this.lane.tags, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false : true, this.isArchive(this.lane) ? "archived" : undefined, 'desc');
   }
 
   isStatic(): boolean {

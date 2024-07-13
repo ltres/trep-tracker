@@ -122,10 +122,14 @@ export class BoardService {
         )
     }
 
-    getTaggedTasks$(tags: Tag[] | undefined, priority: Priority | undefined, status: Status | undefined, excldeArchived: boolean, sort: keyof StateChangeDate | undefined, sortOrder?: 'asc' | 'desc'): Observable<Task[] | undefined> {
-        return this._allTasks$.pipe(
-            map(tasks => {
-                let res = tasks;
+    getStaticTasks$(board: Board,tags: Tag[] | undefined, priority: Priority | undefined, status: Status | undefined, excldeArchived: boolean, sort: keyof StateChangeDate | undefined, sortOrder?: 'asc' | 'desc'): Observable<Task[] | undefined> {
+        return this._boards$.pipe(
+            map(boards => { 
+                let b = boards.find(b => b.id === board.id);
+                if (!b) {
+                    throw new Error(`Cannot find board with id ${board.id}`);
+                }
+                let res = this.getDescendants(b).filter(c => this.isTask(c)) as Task[];
 
                 if (tags) {
                     res = res?.filter(task =>

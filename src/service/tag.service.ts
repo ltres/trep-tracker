@@ -1,35 +1,43 @@
 import { Injectable } from "@angular/core";
 import { Board, Lane, Container, Task, Tag, tagIdentifiers, tagHtmlWrapper, tagCapturingGroup, addTagsForDoneAndArchived } from "../types/task";
-import { BehaviorSubject, Observable, filter, map } from "rxjs";
-import { generateUUID } from "../utils/utils";
+import { BehaviorSubject, Observable, filter, map, of } from "rxjs";
+import { generateUUID, isStatic } from "../utils/utils";
 import { BoardService } from "./board.service";
 
 @Injectable({
     providedIn: 'root'
 })
 export class TagService {
-    private _tags$: BehaviorSubject<Tag[]> = new BehaviorSubject<Tag[]>([]);
+    private _tags$: BehaviorSubject<{board:Board, tags: Tag[]}[]> = new BehaviorSubject<{board:Board, tags: Tag[]}[]>([]);
 
     constructor(private boardService: BoardService) {
-        this.boardService.parents$.subscribe(parents => {
-            let tags:Tag[] = parents?.filter( p => !this.boardService.isLane(p) || (this.boardService.isLane(p) && p.tags.length === 0) ) //exclude static lanes
-            .reduce((acc, parent) => { return acc.concat(parent.tags ?? []) }, [] as Tag[]) ?? [];
-            this._tags$.next( tags.map(t => ( { tag: t.tag.toLowerCase(), type: t.type } ) ).reduce( (acc,tag) => {
-                if( acc.map( t => t.tag ).indexOf(tag.tag) < 0 ){
-                    // unique tag
-                    return acc.concat(tag);
-                }else{
-                    return acc;
-                }
-            } , [] as Tag[] ) );
+        this.boardService.boards$.subscribe(boards => {
+            this._tags$.next([]);
+            for( let board of boards ){
+                let tags: Tag[] = board.tags ?? [];
+                this.boardService.getDescendants(board).forEach( container => {
+                    if( this.boardService.isLane(container) && !isStatic(container) ){
+                        return;
+                    }
+                    tags = tags.concat( container.tags ?? [] );
+                });
+                // Lowercase all tags and remove duplicates
+                tags = tags.map(t => ( { tag: t.tag.toLowerCase(), type: t.type } ) ).reduce( (acc,tag) => {
+                    if( acc.map( t => t.tag ).indexOf(tag.tag) < 0 ){
+                        // unique tag
+                        return acc.concat(tag);
+                    }else{
+                        return acc;
+                    }
+                } , [] as Tag[] )
+                this._tags$.next( [...this._tags$.getValue(), {board, tags}] );
+            }
         });
     }
 
-    get tags$(): Observable<Tag[]> {
-        return this._tags$;
-    }
-
     get uniqueTagsAndNumerosity$(): Observable<{tag: string, numerosity: number}[]> {
+        return of([{tag: "TODO", numerosity: 1}]);
+        /*
         return this._tags$.pipe(
             map(tags => {
                 let tagMap = new Map<string, number>();
@@ -39,12 +47,12 @@ export class TagService {
                 });
                 return Array.from(tagMap.entries()).map(([tag, numerosity]) => ({tag, numerosity})).sort((a, b) => b.numerosity - a.numerosity);
             })
-        );
+        );*/
     }
         /**
      * Updates the tags of a container data model.
      */
-        extractTags(extractFrom: string): { taggedString: string, tags: Tag[], caretShift: number } {
+        extractTags(extractFrom: string, board: Board): { taggedString: string, tags: Tag[], caretShift: number } {
             let extracted = 0;
             let value = extractFrom;
             //value = value.replace(/^[\n\s]+/, '');
@@ -52,7 +60,7 @@ export class TagService {
             value = value.replaceAll("&nbsp;<", '<'); // "a <span tag="true" class="tag-orange">@l&nbsp;</span>"
             value = value.replaceAll("&nbsp;", ' ');
     
-            let allTags = this._tags$.getValue();
+            let allTags = this._tags$.getValue().find(t => t.board.id === board.id)?.tags ?? [];
     
             const tags: { tag: string, type: string}[] = [];
             for( let tagIdentifier of tagIdentifiers){

@@ -6,10 +6,10 @@ import {
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, NgModel } from '@angular/forms';
 import { generateUUID, getCaretCharacterOffsetWithin, getCaretPosition, setCaretPosition } from '../../utils/utils';
 import { TagService } from '../../service/tag.service';
-import { Container, Tag } from '../../types/task';
+import { Board, Container, Tag } from '../../types/task';
 
 @Directive({
-    selector: '[contenteditable][ngModel]',
+    selector: '[contenteditable][ngModel][board]',
     providers: [{
         provide: NG_VALUE_ACCESSOR,
         useExisting: forwardRef(() => ContenteditableDirective),
@@ -19,6 +19,7 @@ import { Container, Tag } from '../../types/task';
 export class ContenteditableDirective implements ControlValueAccessor {
     @Input() ngModel!: string;
     @Input() preventEvents: boolean = false;
+    @Input() board!: Board;
     @Output() ngModelChange = new EventEmitter<string>();
     @Output() onTagsChange = new EventEmitter<Tag[]>();
 
@@ -37,7 +38,7 @@ export class ContenteditableDirective implements ControlValueAccessor {
         // get the current cursor position:
         //const value = this.elementRef.nativeElement.innerHTML;
         const value =  this.elementRef.nativeElement.textContent;
-        let result = this.tagService.extractTags( value );
+        let result = this.tagService.extractTags( value, this.board );
         //console.log(result);
 
         this.caretShift = result.caretShift;

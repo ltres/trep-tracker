@@ -6,6 +6,7 @@
       <div class="lane-title   no-wrap" 
       contenteditable="true" 
       [(ngModel)]="this.lane.textContent"
+      [board]="board"
       (ngModelChange)="debounceBoardUpdate()"
       (onTagsChange)="updateLaneTags($event)"
       > </div> 
@@ -54,7 +55,7 @@
 
   <ng-container *ngIf="isStatic()">
     <div class="static-view flex column">
-        <task *ngFor="let task of (taggedTasks | async);trackBy: trackBy" 
+        <task *ngFor="let task of (staticTasks | async);trackBy: trackBy" 
 
         
         [showChildren]="lane.showChildren" [task]="task" 

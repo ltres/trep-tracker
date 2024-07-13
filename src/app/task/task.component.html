@@ -18,6 +18,7 @@ data-consider-for-overlapping-checks="true"
         <div  class="grow" #editor 
         contenteditable="true" 
         [preventEvents]="!editorActive"
+        [board]="board"
         [(ngModel)]="task.textContent"
         (ngModelChange)="debounceBoardUpdate()"
         (onTagsChange)="updateTaskTags($event)"
