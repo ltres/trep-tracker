@@ -19,15 +19,31 @@ module.exports = {
     },
     {
       name: '@electron-forge/maker-zip',
+      config: {
+        // An URL to an ICO file to use as the application icon (displayed in Control Panel > Programs and Features).
+        iconUrl: `${__dirname}/src/assets/icon/web/favicon.ico`,
+        // The ICO file to use as the icon for the generated Setup.exe
+        setupIcon: `${__dirname}/src/assets/icon/web/favicon.ico`
+      },
       platforms: ['darwin'],
     },
     {
       name: '@electron-forge/maker-deb',
-      config: {},
+      config: {
+        // An URL to an ICO file to use as the application icon (displayed in Control Panel > Programs and Features).
+        iconUrl: `${__dirname}/src/assets/icon/web/favicon.ico`,
+        // The ICO file to use as the icon for the generated Setup.exe
+        setupIcon: `${__dirname}/src/assets/icon/web/favicon.ico`
+      },
     },
     {
       name: '@electron-forge/maker-rpm',
-      config: {},
+      config: {
+        // An URL to an ICO file to use as the application icon (displayed in Control Panel > Programs and Features).
+        iconUrl: `${__dirname}/src/assets/icon/web/favicon.ico`,
+        // The ICO file to use as the icon for the generated Setup.exe
+        setupIcon: `${__dirname}/src/assets/icon/web/favicon.ico`
+      },
     },
   ],
   plugins: [
