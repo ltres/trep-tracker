@@ -24,7 +24,7 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - name: Running npm run build-github-pages..
-      run: npm run build-github-pages -- --base-href="https://ltres.github.io/trep-tracker/browser"
+      run: npm run build-github-pages -- --base-href="https://ltres.github.io/trep-tracker/browser/"
 
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v2
