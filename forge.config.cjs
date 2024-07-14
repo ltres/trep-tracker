@@ -74,7 +74,8 @@ module.exports = {
           owner: 'ltres',
           name: 'trep-tracker'
         },
-        prerelease: true
+        prerelease: true,
+        draft: false
       }
     }
   ]

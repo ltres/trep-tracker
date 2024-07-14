@@ -11,13 +11,8 @@ const fs = require('fs');
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
 
-
-
 let win;
-
 let relPath = "/dist/trep-tracker/browser"
-
-
 
 require('electron-reload')(__dirname, {
   electron: path.join(__dirname, 'node_modules/.bin/electron.cmd')
@@ -75,7 +70,7 @@ function createWindow () {
           }
         }
       ]
-    },
+    }
     // ... other menu items ...
   ];
 

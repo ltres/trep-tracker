@@ -59,6 +59,23 @@ function createWindow () {
         }
       ]
     },
+    {
+      label: 'Dev',
+      submenu: [
+        {
+          label: 'Reload',
+          click: async () => {
+            win.reload();
+          }
+        },
+        {
+          label: 'Open dev tools',
+          click: async () => {
+            win.webContents.openDevTools()
+          }
+        }
+      ]
+    }
     // ... other menu items ...
   ];
 
@@ -73,7 +90,7 @@ function createWindow () {
 
 
   //// uncomment below to open the DevTools.
-  // win.webContents.openDevTools()
+  win.webContents.openDevTools()
 
   // Event when the window is closed.
   win.on('closed', function () {
