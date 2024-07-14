@@ -176,3 +176,5 @@ ipcMain.on('app-status-response', async (event, status) => {
 ipcMain.handle('store-app-status-request',  async (event) => {
   console.log('store-app-status-request', status);
 })
+
+if (require('electron-squirrel-startup') === true) app.quit();

@@ -11,14 +11,16 @@
   "scripts": {
     "ng": "ng",
     "build-github-pages": "ng build --configuration github-pages",
-    "start": "node update-versions.cjs && ng serve --configuration development",
+    "start": "electron-forge start",
     "build": "node update-versions.cjs && ng build --configuration electrified",
     "watch": "node update-versions.cjs && ng build --watch --configuration development",
     "electron": "node update-versions.cjs && concurrently \"ng serve --configuration electrified\" \"wait-on http://localhost:4200 && electron ./electron-development-app.js\"",
     "electron-forge-test": "node update-versions.cjs && ng build && electron ./electron-make-app.js\"",
-    "package": "node update-versions.cjs && electron-forge package",
-    "make": "node update-versions.cjs && ng build && electron-forge make"
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "publish": "electron-forge publish --auth-token"
   },
+  "productName": "trep-tracker",
   "engines": {
     "node": ">=22"
   },
@@ -55,11 +57,11 @@
     "@electron-forge/maker-zip": "^7.4.0",
     "@electron-forge/plugin-auto-unpack-natives": "^7.4.0",
     "@electron-forge/plugin-fuses": "^7.4.0",
+    "@electron-forge/publisher-github": "^7.4.0",
     "@electron/fuses": "^1.8.0",
     "@types/uuid": "^9.0.8",
     "concurrently": "^8.2.2",
     "electron": "^31.0.0",
-    "electron-builder": "^24.13.3",
     "electron-reload": "^2.0.0-alpha.1",
     "typescript": "~5.4.2",
     "wait-on": "^7.2.0"

@@ -1,6 +1,6 @@
 const { FusesPlugin } = require('@electron-forge/plugin-fuses');
 const { FuseV1Options, FuseVersion } = require('@electron/fuses');
-const { build } = require('electron-builder');
+const path = require('path');
 
 module.exports = {
   packagerConfig: {
@@ -8,63 +8,44 @@ module.exports = {
     icon: `${__dirname}/src/assets/icon/web/favicon.ico`
   },
   rebuildConfig: {},
-  build: {
-    appId: "com.trep-tracker",
-    productName: "trep-tracker",
-    files: [
-      "dist/**/*",
-      "package.json"
-    ],
-    mac: {
-      "category": "public.app-category.utilities"
-    },
-    win: {
-      "target": [
-        "nsis"
-      ]
-    },
-    linux: {
-      "target": [
-        "AppImage"
-      ]
-    }
-  },
   makers: [
     {
       name: '@electron-forge/maker-squirrel',
       config: {
-        // An URL to an ICO file to use as the application icon (displayed in Control Panel > Programs and Features).
+        bin: 'Electron Starter',
         iconUrl: `${__dirname}/src/assets/icon/web/favicon.ico`,
-        // The ICO file to use as the icon for the generated Setup.exe
-        setupIcon: `${__dirname}/src/assets/icon/web/favicon.ico`
+        setupIcon: `${__dirname}/src/assets/icon/web/favicon.ico`,
+        icon: `${__dirname}/src/assets/icon/web/favicon.ico`,
       },
     },
     {
       name: '@electron-forge/maker-zip',
       config: {
-        // An URL to an ICO file to use as the application icon (displayed in Control Panel > Programs and Features).
+        bin: 'Electron Starter',
         iconUrl: `${__dirname}/src/assets/icon/web/favicon.ico`,
-        // The ICO file to use as the icon for the generated Setup.exe
-        setupIcon: `${__dirname}/src/assets/icon/web/favicon.ico`
+        setupIcon: `${__dirname}/src/assets/icon/web/favicon.ico`,
+        icon: `${__dirname}/src/assets/icon/web/favicon.ico`,
       },
       platforms: ['darwin'],
     },
     {
       name: '@electron-forge/maker-deb',
       config: {
-        // An URL to an ICO file to use as the application icon (displayed in Control Panel > Programs and Features).
+        bin: 'Electron Starter',
         iconUrl: `${__dirname}/src/assets/icon/web/favicon.ico`,
-        // The ICO file to use as the icon for the generated Setup.exe
-        setupIcon: `${__dirname}/src/assets/icon/web/favicon.ico`
+        setupIcon: `${__dirname}/src/assets/icon/web/favicon.ico`,
+        options: {
+          icon: `${__dirname}/src/assets/icon/web/favicon.ico`,
+        },
       },
     },
     {
       name: '@electron-forge/maker-rpm',
       config: {
-        // An URL to an ICO file to use as the application icon (displayed in Control Panel > Programs and Features).
+        bin: 'Electron Starter',
         iconUrl: `${__dirname}/src/assets/icon/web/favicon.ico`,
-        // The ICO file to use as the icon for the generated Setup.exe
-        setupIcon: `${__dirname}/src/assets/icon/web/favicon.ico`
+        setupIcon: `${__dirname}/src/assets/icon/web/favicon.ico`,
+        icon: `${__dirname}/src/assets/icon/web/favicon.ico`,
       },
     },
   ],
@@ -85,4 +66,16 @@ module.exports = {
       [FuseV1Options.OnlyLoadAppFromAsar]: true,
     }),
   ],
+  publishers: [
+    {
+      name: '@electron-forge/publisher-github',
+      config: {
+        repository: {
+          owner: 'delimitertech',
+          name: 'electron-starter'
+        },
+        prerelease: true
+      }
+    }
+  ]
 };
