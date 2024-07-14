@@ -24,11 +24,11 @@
       [staticLane]="isStatic()" > </status>
     </div>
     <div class="grow"></div>
-    <span class="small no-grow" *ngIf="isStatic() && lane.showChildren" (click)="toggleShowChildren()"><span class="completed">☑</span></span>
-    <span class="small no-grow" *ngIf="isStatic() && !lane.showChildren" (click)="toggleShowChildren()">☐</span>
+    <span [tooltip]="'Show child tasks'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" *ngIf="isStatic() && lane.showChildren" (click)="toggleShowChildren()"><span class="completed">☑</span></span>
+    <span [tooltip]="'Show child tasks'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" *ngIf="isStatic() && !lane.showChildren" (click)="toggleShowChildren()">☐</span>
     <div class="no-grow relative flex align-items-center">
 
-      <div class="small  no-grow" (click)="menuOpen = !menuOpen; $event.stopPropagation()">☰</div>
+      <div [tooltip]="'Lane menu'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small  no-grow" (click)="menuOpen = !menuOpen; $event.stopPropagation()">☰</div>
       <lane-menu *ngIf="menuOpen" [lane]="lane" (onClose)="menuOpen = false">
         <button class="small no-grow" *ngIf="!isStatic() && !isArchive(lane) " (click)="archiveDones()">☢ Archive dones </button>
 
@@ -40,7 +40,7 @@
       </lane-menu>
     </div>
 
-    <span drag-on-this="true" class="drag-handle translucent pointer no-grow">⋯</span>
+    <span [tooltip]="'Drag'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" drag-on-this="true" class="drag-handle translucent pointer no-grow">⋯</span>
   </div>
 
   <div *ngFor="let task of (tasks | async);trackBy: trackBy" [class.non-static-island]="isStatic()">

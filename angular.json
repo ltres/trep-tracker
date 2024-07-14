@@ -57,6 +57,18 @@
                   "with": "src/environments/environment.development.ts"
                 }
               ]
+            },
+            "github-pages": {
+              "optimization": true,
+              "outputHashing": "all",
+              "extractLicenses": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.github-pages.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "electrified"
@@ -69,6 +81,9 @@
             },
             "development": {
               "buildTarget": "trep-tracker:build:development"
+            },
+            "github-pages": {
+              "buildTarget": "trep-tracker:build:github-pages"
             }
           },
           "defaultConfiguration": "development"

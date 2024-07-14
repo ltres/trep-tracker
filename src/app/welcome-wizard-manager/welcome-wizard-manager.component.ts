@@ -48,7 +48,6 @@ export class WelcomeWizardManagerComponent implements AfterViewInit {
   async openStatusFile(event?: Event) {
     let fileContent = await this.storageService.openStatus(event);
     if(!fileContent) throw("No file selected");
-    this.boardService.deserialize(fileContent);
     this.closeModal();
   }
 

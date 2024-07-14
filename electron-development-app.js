@@ -20,8 +20,7 @@ let relPath = "/dist/trep-tracker/browser"
 
 
 require('electron-reload')(__dirname, {
-  electron: path.join(__dirname, 'node_modules/.bin/electron.cmd'),
-  hardResetMethod: 'exit'
+  electron: path.join(__dirname, 'node_modules/.bin/electron.cmd')
 });
 
 function createWindow () {
@@ -179,7 +178,7 @@ ipcMain.handle('open-app-status', async (event) => {
   console.log('open-app-status..:');
   let path = await getStatusFilePath();
   if( path ){
-    return fs.readFileSync( path, 'utf-8');
+    return {path, content:fs.readFileSync( path, 'utf-8')};
   }else{
     return null;
   }

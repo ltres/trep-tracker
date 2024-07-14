@@ -63,6 +63,7 @@ export class LocalFileStorageService extends StorageServiceAbstract {
   }
 
   override writeToStatus(status: Object): void {
+    if( JSON.stringify(status) === this.status) return;
     localStorage.setItem("TrepTrackerStatus", JSON.stringify(status));
   }
 

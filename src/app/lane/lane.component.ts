@@ -29,6 +29,8 @@ export class LaneComponent extends ContainerComponent implements OnInit {
   @Input() board!: Board;
 
   menuOpen = false
+  hoveringTooltip = false
+
   draggingInside = false
 
   debounce: any;
@@ -62,7 +64,7 @@ export class LaneComponent extends ContainerComponent implements OnInit {
 
   @HostBinding('style.overflow-x')
   get overflowX(): string {
-    return this.menuOpen ? 'visible' : 'auto';
+    return this.menuOpen || this.hoveringTooltip ? 'visible' : 'auto';
   }
 
   override get container(): Container {
@@ -127,7 +129,7 @@ export class LaneComponent extends ContainerComponent implements OnInit {
     }, 500)
   }
   updateStatus($event: Status[] | undefined) {
-    this.lane.status = undefined;
+    this.lane.status = $event;
     this.boardService.updateStatus(this.board, this.lane, $event);
   }
 

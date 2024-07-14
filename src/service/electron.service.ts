@@ -47,11 +47,17 @@ export class ElectronService extends StorageServiceAbstract{
 
   override writeToStatus(status: Object): void {
     if(!this.storagePath) throw("No storage path configured");
+    if( JSON.stringify(status) === this.status) return;
     this.writeSystemFile(this.storagePath, JSON.stringify(status));
   }
 
-  override openStatus(): Promise<string | undefined> {
-    return window.electron.openAppStatus();
+  override async openStatus(): Promise<string | undefined> {
+    let {path, content} = await window.electron.openAppStatus();
+    this.storagePath = path;
+    this.status = content;
+    setStatusPath(this.storagePath);
+    this.statusChangeOutsideApp.next(content);
+    return content;
   }
 
   override async createNewStatus(): Promise<boolean> {

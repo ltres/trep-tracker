@@ -5,7 +5,7 @@ interface Window {
     writeFile: (filePath: string, content: string) => string;
     onStoreAppStatusRequest: ( callback: () => void ) => void;
     onOpenedAppStatus: ( callback: ( event, status) => void ) => void;
-    openAppStatus: () => Promise<string>;
+    openAppStatus: () => Promise<{path:string, content:string}>;
     sendAppStatus: (status: any) => void;
   },
   find: (searchTerm: string) => boolean;

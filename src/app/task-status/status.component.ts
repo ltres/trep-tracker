@@ -27,7 +27,7 @@ export class StatusComponent implements AfterViewInit {
   constructor(private boardService: BoardService) { }
 
   ngAfterViewInit(): void {
-    this.states = Array.isArray(this.container.status) ? this.container.status : [this.container.status ?? 'todo'];
+    this.states = Array.isArray(this.container.status) ? this.container.status : (this.container.status ? [this.container.status] : undefined);
   }
 
   toggleStatus(status: Status) {
@@ -35,6 +35,11 @@ export class StatusComponent implements AfterViewInit {
       this.states = this.states?.includes(status) ? this.states.filter(s => s !== status) : (this.states ? [...this.states, status]: [status]);
     } else {
       this.states = [status];
+    }
+    if(this.states.length === 0 && this.allowEmpty) {
+      this.states = undefined;
+    }else if(this.states.length === 0 && !this.allowEmpty){
+      throw new Error('Invalid status');
     }
     this.onStatusSelected.emit(this.states);
     //this.boardService.updateStatus(this.container, status);

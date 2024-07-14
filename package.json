@@ -1,6 +1,6 @@
 {
   "name": "trep-tracker",
-  "version": "0.11.0-beta",
+  "version": "0.12.0-beta",
   "type": "module",
   "main": "./electron-make-app.js",
   "author": {
@@ -10,7 +10,7 @@
   "description": "A PM-Oriented task tracker",
   "scripts": {
     "ng": "ng",
-    "build-github-pages": "ng build --configuration development",
+    "build-github-pages": "ng build --configuration github-pages",
     "start": "node update-versions.cjs && ng serve --configuration development",
     "build": "node update-versions.cjs && ng build --configuration electrified",
     "watch": "node update-versions.cjs && ng build --watch --configuration development",

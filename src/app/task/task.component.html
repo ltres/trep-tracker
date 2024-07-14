@@ -7,7 +7,7 @@ data-consider-for-overlapping-checks="true"
 (click)="clickTask($event)" 
 
 >
-    <div *ngIf="!isStaticView() && !isPlaceholder()"class="drag-handle translucent pointer" drag-on-this="true">⋮</div>
+    <div [tooltip]="'Drag'" *ngIf="!isStaticView() && !isPlaceholder()"class="drag-handle translucent pointer" drag-on-this="true">⋮</div>
 
     <prioritizer *ngIf="!isPlaceholder()" (onPrioritySelected)="$event ? updatePriority($event) : undefined" [container]="task" class=""> </prioritizer>
     <status [container]="task" [board]="board" [staticLane]="isStaticView()" 
