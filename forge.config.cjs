@@ -71,8 +71,8 @@ module.exports = {
       name: '@electron-forge/publisher-github',
       config: {
         repository: {
-          owner: 'delimitertech',
-          name: 'electron-starter'
+          owner: 'ltres',
+          name: 'trep-tracker'
         },
         prerelease: true
       }
