@@ -59,6 +59,7 @@
     "@types/uuid": "^9.0.8",
     "concurrently": "^8.2.2",
     "electron": "^31.0.0",
+    "electron-builder": "^24.13.3",
     "electron-reload": "^2.0.0-alpha.1",
     "typescript": "~5.4.2",
     "wait-on": "^7.2.0"

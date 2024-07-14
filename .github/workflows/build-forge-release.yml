@@ -2,7 +2,6 @@ name: Electron-forge packages release
 
 on:
   push:
-    branches: [ "master" ]
     tags:
       - 'v*'
 
@@ -22,8 +21,19 @@ jobs:
         node-version: '22'
     - name: Install dependencies
       run: npm ci
-    - name: Build/release Electron app
-      uses: samuelmeuli/action-electron-builder@v1
+    - name: Build Electron app
+      run: npm run make
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
       with:
-        github_token: ${{ secrets.github_token }}
-        release: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        files: |
+          out/**/*.deb
+          out/**/*.rpm
+          out/**/*.dmg
+          out/**/*.exe
+          out/**/*.zip
+          out/**/*.nupkg
+          out/**/*.AppImage
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

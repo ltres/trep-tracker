@@ -1,5 +1,6 @@
 const { FusesPlugin } = require('@electron-forge/plugin-fuses');
 const { FuseV1Options, FuseVersion } = require('@electron/fuses');
+const { build } = require('electron-builder');
 
 module.exports = {
   packagerConfig: {
@@ -7,6 +8,27 @@ module.exports = {
     icon: `${__dirname}/src/assets/icon/web/favicon.ico`
   },
   rebuildConfig: {},
+  build: {
+    appId: "com.trep-tracker",
+    productName: "trep-tracker",
+    files: [
+      "dist/**/*",
+      "package.json"
+    ],
+    mac: {
+      "category": "public.app-category.utilities"
+    },
+    win: {
+      "target": [
+        "nsis"
+      ]
+    },
+    linux: {
+      "target": [
+        "AppImage"
+      ]
+    }
+  },
   makers: [
     {
       name: '@electron-forge/maker-squirrel',
