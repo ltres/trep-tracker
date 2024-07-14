@@ -1,4 +1,4 @@
-name: Node.js CI
+name: Build and release web version for GitHub Pages
 
 on:
   push:
