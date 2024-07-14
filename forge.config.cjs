@@ -20,13 +20,13 @@ module.exports = {
     },
     {
       name: '@electron-forge/maker-zip',
+      platforms: ['darwin', 'linux', 'win32'],
       config: {
         bin: 'trep-tracker',
         iconUrl: `${__dirname}/src/assets/icon/web/favicon.ico`,
         setupIcon: `${__dirname}/src/assets/icon/web/favicon.ico`,
         icon: `${__dirname}/src/assets/icon/web/favicon.ico`,
-      },
-      platforms: ['darwin'],
+      }
     },
     {
       name: '@electron-forge/maker-deb',
