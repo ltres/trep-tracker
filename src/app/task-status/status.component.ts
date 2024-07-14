@@ -8,8 +8,7 @@ import { BoardService } from '../../service/board.service';
   templateUrl: './status.component.html',
   styleUrl: './status.component.scss'
 })
-export class StatusComponent implements AfterViewInit {
-
+export class StatusComponent {
   @Input() container!: Container;
   @Input() board!: Board;
   @Input() staticLane!: boolean;
@@ -17,31 +16,29 @@ export class StatusComponent implements AfterViewInit {
   @Input() multipleSelectable: boolean = false;
   @Input() allowEmpty: boolean = false;
 
-
-  @Output() onStatusSelected = new EventEmitter<Status[]>();
-
-  protected states: Status[] | undefined = [];
+  @Output() onStatusSelected = new EventEmitter<Status[] | Status | undefined>();
 
   protected open = false;
 
   constructor(private boardService: BoardService) { }
 
-  ngAfterViewInit(): void {
-    this.states = Array.isArray(this.container.status) ? this.container.status : (this.container.status ? [this.container.status] : undefined);
+  get states(): Status[] {
+    return Array.isArray(this.container.status) ? this.container.status : (this.container.status ? [this.container.status] : []);
   }
 
   toggleStatus(status: Status) {
     if (this.multipleSelectable) {
-      this.states = this.states?.includes(status) ? this.states.filter(s => s !== status) : (this.states ? [...this.states, status]: [status]);
+      let states = this.container.status as Status[] | undefined;
+      states = states?.includes(status) ? states.filter(s => s !== status) : (states ? [...states, status]: [status]);
+      if(states.length === 0 && this.allowEmpty) {
+        states = undefined;
+      }
+      this.container.status = states
     } else {
-      this.states = [status];
+      this.container.status = status;
     }
-    if(this.states.length === 0 && this.allowEmpty) {
-      this.states = undefined;
-    }else if(this.states.length === 0 && !this.allowEmpty){
-      throw new Error('Invalid status');
-    }
-    this.onStatusSelected.emit(this.states);
+
+    this.onStatusSelected.emit(this.container.status);
     //this.boardService.updateStatus(this.container, status);
     this.open = false;
   }
@@ -67,9 +64,9 @@ export class StatusComponent implements AfterViewInit {
   }
   cancelAndClose() {
     if (this.allowEmpty) {
-      this.states = undefined;
+      this.container.status = undefined;
     }
-    this.onStatusSelected.emit(this.states);
+    this.onStatusSelected.emit(this.container.status);
     
     this.open = false;
   }
@@ -80,7 +77,7 @@ export class StatusComponent implements AfterViewInit {
   isArray(arg0: any) {
     return Array.isArray(arg0);
   }
-  hasStatus(_t26: Status): boolean {
-    return this.states ? this.states.includes(_t26): false;
+  hasStatus(toCheck: Status): boolean {
+    return Array.isArray(this.container.status) ? this.container.status.includes(toCheck) : this.container.status === toCheck;
   }
 }

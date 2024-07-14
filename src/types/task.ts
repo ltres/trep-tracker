@@ -7,6 +7,8 @@ export interface Lane extends Container<Task>{
     _type: 'lane',
     showChildren: boolean,
     isArchive: boolean,
+    priority: Priority[] | undefined,
+    status: Status[] | undefined,
     width: number | undefined,
 }
 export interface Task extends Container<Task>{

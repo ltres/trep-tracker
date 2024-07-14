@@ -128,16 +128,16 @@ export class LaneComponent extends ContainerComponent implements OnInit {
       this.boardService.publishBoardUpdate()
     }, 500)
   }
-  updateStatus($event: Status[] | undefined) {
-    this.lane.status = $event;
+  updateStatus($event: Status[] | Status | undefined) {
+    this.lane.status = Array.isArray($event) ? $event : ($event ? [$event] : undefined);
     this.boardService.updateStatus(this.board, this.lane, $event);
   }
 
   trackBy(index: number, task: Task): number {
     return hashCode(task.id);
   }
-  togglePriority(prio: Priority[] | undefined) {
-    this.lane.priority = prio;
+  togglePriority(prio: Priority[] | Priority | undefined) {
+    this.lane.priority = Array.isArray(prio) ? prio : (prio ? [prio] : undefined);
     this.boardService.publishBoardUpdate()
 
   }

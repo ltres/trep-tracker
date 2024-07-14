@@ -8,23 +8,18 @@ import { BoardService } from '../../service/board.service';
   templateUrl: './prioritizer.component.html',
   styleUrl: './prioritizer.component.scss'
 })
-export class PrioritizerComponent implements AfterViewInit{
+export class PrioritizerComponent{
 
   @Input() container!: Container;
   @Input() multipleSelectable: boolean = false;
   @Input() allowEmpty: boolean = false;
 
-  @Output() onPrioritySelected = new EventEmitter<Priority[]>();
+  @Output() onPrioritySelected = new EventEmitter<Priority[] | Priority | undefined>();
   
-  protected priorities: Priority[] | undefined = [];
   protected open: boolean = false;
 
-  constructor(
-    private eRef: ElementRef,
-    private boardService: BoardService) {
-  }
-  ngAfterViewInit(): void {
-    this.priorities = Array.isArray(this.container.priority) ? this.container.priority : (this.container.priority ? [this.container.priority] : []);
+  get priorities(): Priority[] {
+    return Array.isArray(this.container.priority) ? this.container.priority : (this.container.priority ? [this.container.priority] : []);
   }
 
   getSymbol(number: number | undefined): string {
@@ -33,20 +28,25 @@ export class PrioritizerComponent implements AfterViewInit{
   }
 
   togglePriority(priority: Priority) {
-    if(this.multipleSelectable){
-      this.priorities = this.priorities?.includes(priority) ? this.priorities.filter(p => p !== priority) : ( this.priorities ? [...this.priorities, priority] : [priority]);
-    }else{
-      this.priorities = [priority];
+    if (this.multipleSelectable) {
+      let priorities = this.container.priority as Priority[] | undefined;
+      priorities = priorities?.includes(priority) ? priorities.filter(s => s !== priority) : (priorities ? [...priorities, priority]: [priority]);
+      if(priorities.length === 0 && this.allowEmpty) {
+        priorities = undefined;
+      }
+      this.container.priority = priorities
+    } else {
+      this.container.priority = priority;
     }
-    this.onPrioritySelected.emit(this.priorities);
+    this.onPrioritySelected.emit(this.container.priority);
     //this.boardService.publishBoardUpdate();
     this.open = false;
   }
   cancelAndClose(){
     if(this.allowEmpty){
-      this.priorities = undefined;
+      this.container.priority = undefined;
     }
-    this.onPrioritySelected.emit(this.priorities);
+    this.onPrioritySelected.emit(this.container.priority);
     this.open = false;
   }
   priorityPresent(arg0: Priority): boolean {

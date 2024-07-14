@@ -149,17 +149,17 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
         this.boardService.publishBoardUpdate()
       },10)
   }
-  updateStatus($event: Status[]) {
-    if($event.length != 1){
+  updateStatus($event: Status[] | Status | undefined) {
+    if(Array.isArray($event) || $event === undefined){
       throw new Error("Only one status can be set at a time")
     }
-    this.boardService.updateStatus(this.board, this.task, $event[0]);
+    this.boardService.updateStatus(this.board, this.task, $event);
   }
-  updatePriority($event: Priority[]) {
-    if($event.length != 1){
+  updatePriority($event: Priority[] | Priority | undefined) {
+    if(Array.isArray($event) || $event === undefined){
       throw new Error("Only one priority can be set at a time")
     }
-    this.task.priority = $event[0]; 
+    this.task.priority = $event; 
     this.boardService.publishBoardUpdate()
   }
   getToday(): ISODateString {
