@@ -6,6 +6,11 @@
 `trep-tracker` is especially useful for project managers who need to keep track of various tags related to different projects and team members. 
 It allows you to have a clear view of tasks associated with specific projects or colleagues, allowing for quick and efficient monitoring.
 
+## Try it live: https://ltres.github.io/trep-tracker/browser/
+The above is a browser-based version, intended to showcase the functionalities that `trep-tracker` offers. 
+If you like what you see, consider downloading the distributed package to run it natively on your system, for an overall better experience.
+
+### Screenshot
 <img src="https://github.com/ltres/trep-tracker/blob/7f9b0119a8e8ab75c54adeb950f09dd62f7f3e8b/src/assets/readme/trep-tracker.PNG" width="850" />
 
 ### Who should use `trep-tracker`
