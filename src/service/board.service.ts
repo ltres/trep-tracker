@@ -1,10 +1,8 @@
-import { Inject, Injectable, Injector } from "@angular/core";
+import {  Inject, Injectable, Injector, NgZone } from "@angular/core";
 import { Board, Lane, Container, Task, Tag, tagIdentifiers, getNewBoard, getNewLane, Priority, addTagsForDoneAndArchived, archivedLaneId, Status, ISODateString, StateChangeDate } from "../types/task";
-import { BehaviorSubject, Observable, filter, map } from "rxjs";
-import { generateUUID, getNextStatus, isPlaceholder, setDateSafe } from "../utils/utils";
+import { BehaviorSubject, Observable, map } from "rxjs";
+import { isPlaceholder, setDateSafe } from "../utils/utils";
 import { TagService } from "./tag.service";
-import { stat } from "original-fs";
-import { LocalFileStorageService } from "./local-file-storage.service";
 import { StorageServiceAbstract } from "../types/storage";
 
 @Injectable({
@@ -28,13 +26,28 @@ export class BoardService {
     private tagService!: TagService;
 
     private boardUpdateCounter: number = 0;
-    storageService!: StorageServiceAbstract;
 
     constructor(
         injector: Injector,
+        zone: NgZone,
+        @Inject('StorageServiceAbstract') private storageService: StorageServiceAbstract
     ) {
         setTimeout(() => this.tagService = injector.get(TagService));
-        setTimeout(() => this.storageService = injector.get("StorageServiceAbstract"));
+
+        let latestStatus = this.storageService.getStatus();
+        if( latestStatus !== null ){
+            this.deserialize(latestStatus);
+        }
+        this.storageService.getStatusChangeOutsideAppObservable().subscribe(status => {
+            if( status !== null ){
+                zone.run(() => {
+                    this.deserialize(status);
+                });
+            }else{
+                throw new Error(`Cannot read status from storage after change`);
+            }
+        });
+
         this._boards$.subscribe(b => {
             console.warn('Boards updated', this.boardUpdateCounter++);
             let allTasks: Task[] = []; 
@@ -56,12 +69,7 @@ export class BoardService {
             this._allParents$.next([...allTasks, ...allLanes, ...this.boards]);
 
             // Store status:
-            let status = this.serialize();
-            if(!this.storageService){
-                console.warn('Storage service still not ready..')
-                return;
-            }
-            this.storageService.writeToStatus(status);
+            this.storageService.writeToStatus({ boards:b });
         })
     }
 
@@ -661,14 +669,6 @@ export class BoardService {
         this._focusSearch$.next(false)
     }
 
-    serialize(): string {
-        let boards = this._boards$.getValue();
-        //let selectedTasks = this._selectedTasks$.getValue();
-        //let lastSelectedTask = this._lastSelectedTask$.getValue();
-        //let editorActiveTask = this._editorActiveTask$.getValue();
-
-        return JSON.stringify({ boards });
-    }
     
     /**
      * Deserializes the given data and updates the state of the board service.
@@ -768,13 +768,16 @@ export class BoardService {
                 }
             }); 
 
-            
-            this.selectFirstBoard();
-
             //this._selectedTasks$.next(o.selectedTasks ?? []);
             //this._lastSelectedTask$.next(o.lastSelectedTask ?? []);
             //this._editorActiveTask$.next(o.editorActiveTask ?? []);
         }
+        
+        if(this._boards$.getValue().length === 0){
+            this.addNewBoard();
+        }
+        this.selectFirstBoard();
+
     }
     reset() {
         this._boards$.next([]);

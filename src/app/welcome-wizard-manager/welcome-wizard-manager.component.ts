@@ -36,9 +36,9 @@ export class WelcomeWizardManagerComponent implements AfterViewInit {
   createNewStatusFile() {
     this.storageService.createNewStatus()
       .then(filePath => {
-        console.log('Status file created at:', filePath);
+        console.log('Status file created');
         if(!filePath) throw("No file selected");
-        //this.handleStatusFileChosen(filePath);
+        this.closeModal();
       })
       .catch(error => console.error('Error creating status file:', error));
   }

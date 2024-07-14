@@ -1,9 +1,5 @@
 import { Injectable, Injector, NgZone } from "@angular/core";
-import { ipcRenderer } from 'electron';
-import { BoardService } from "./board.service";
-import { Subscription } from "rxjs";
-import { environment } from "../environments/environment";
-import { getStatusPath, setStatusPath } from "../utils/utils";
+import { Observable, Subject, Subscription } from "rxjs";
 import { StorageServiceAbstract } from "../types/storage";
 
 
@@ -11,22 +7,23 @@ import { StorageServiceAbstract } from "../types/storage";
   providedIn: 'root'
 })
 export class LocalFileStorageService extends StorageServiceAbstract {
-  storagePath: string | undefined;
-  statusOpened = false;
-  subscription: Subscription | undefined;
+  status: string | null = null;
+  private statusChangeOutsideApp: Subject<string | null> = new Subject<string | null>();
+
   constructor() {
     super();
+    this.status = localStorage.getItem("TrepTrackerStatus");
   }
-  override isStatusLocationConfigured(): boolean {
-    return this.statusOpened;
+  override isStatusPresent(): boolean {
+    return this.status !== null;
   }
 
-  override getStatusLocation(): string | undefined {
-    return this.storagePath;
+  override getStatus(): string | null {
+    return this.status;
   }
 
   override openStatus(event?: Event): Promise<string | undefined> {
-    if(!event){
+    if (!event) {
       throw new Error("Event is required to open status file");
     }
 
@@ -35,9 +32,8 @@ export class LocalFileStorageService extends StorageServiceAbstract {
 
       reader.onload = (loadEvent) => {
         const fileContent = loadEvent.target!.result;
+        this.status = fileContent as string;
         resolve(fileContent as string);
-        this.statusOpened = true;
-        this.storagePath = file.path ?? file.name;
       };
 
       reader.onerror = function () {
@@ -51,13 +47,19 @@ export class LocalFileStorageService extends StorageServiceAbstract {
     });
   }
 
-  override createNewStatus(): Promise<string | undefined> {
-    throw new Error("Cannot createStatusFile in non-electron environment");
-  }
-  
-  override writeToStatus(status: Object): void {
-    throw new Error("Cannot saveToStatus in non-electron environment");
+  override async createNewStatus(): Promise<boolean> {
+    localStorage.removeItem("TrepTrackerStatus");
+    this.status = "{}";
+    this.statusChangeOutsideApp.next(this.status);
+    return true;
   }
 
+  override writeToStatus(status: Object): void {
+    localStorage.setItem("TrepTrackerStatus", JSON.stringify(status));
+  }
+
+  override getStatusChangeOutsideAppObservable(): Observable<string | null> {
+    return this.statusChangeOutsideApp.asObservable();
+  }
 }
 

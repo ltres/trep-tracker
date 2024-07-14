@@ -25,5 +25,5 @@
     <board-selection-menu class="column-2 flex"></board-selection-menu>
 
 </main>
-<welcome-wizard-manager *ngIf="!hasStoragePathSet()"></welcome-wizard-manager>
+<welcome-wizard-manager *ngIf="!isStatusPresent()"></welcome-wizard-manager>
 <modal *ngIf="displayModal"></modal>

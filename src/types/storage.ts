@@ -1,15 +1,16 @@
+import { Observable } from "rxjs";
 
 
 export abstract class StorageServiceAbstract {
     /**
      * True if a status is present
      */
-    abstract isStatusLocationConfigured(): boolean;
+    abstract isStatusPresent(): boolean;
 
     /**
-     * Returns the current status location
+     * Returns the current status
      * */
-    abstract getStatusLocation(): string | undefined;
+    abstract getStatus(): string | null;
 
     /**
      * Reads the status file and returns the content.
@@ -18,14 +19,19 @@ export abstract class StorageServiceAbstract {
     abstract openStatus(event?:Event): Promise<string | undefined>
 
     /**
-     * Creates a new status. Returns the path to the new status file.
+     * Creates a new status. Returns true when finished.
      */
-    abstract createNewStatus(): Promise<string | undefined>
+    abstract createNewStatus(): Promise<boolean>
 
     /**
      * Writes the status object to the current status location
      * @param status 
      */
     abstract writeToStatus(status: Object): void
+
+    /**
+     * Returns an observable that emits the status content when it changes outside the Angular app
+     */
+    abstract getStatusChangeOutsideAppObservable(): Observable<string | null>
 
 }

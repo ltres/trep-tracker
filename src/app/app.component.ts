@@ -1,12 +1,9 @@
-import { AfterContentChecked, AfterContentInit, AfterViewChecked, AfterViewInit, ApplicationRef, Component, Inject, OnInit } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { BoardComponent } from './board/board.component';
+import { AfterViewInit, ApplicationRef, Component, Inject, OnInit } from '@angular/core';
+
 import { BoardService } from '../service/board.service';
 import { Observable } from 'rxjs';
-import { Board, Lane, getNewBoard, getNewLane } from '../types/task';
-import { generateUUID, getStatusPath } from '../utils/utils';
+import { Board, Lane} from '../types/task';
 import { ModalService } from '../service/modal.service';
-import { LocalFileStorageService } from '../service/local-file-storage.service';
 import { StorageServiceAbstract } from '../types/storage';
 
 @Component({
@@ -27,12 +24,7 @@ export class AppComponent implements AfterViewInit {
     private appRef: ApplicationRef
   ) { }
 
-  ngAfterViewInit(): void {
-    if(this.boardService.boards.length === 0) {
-      this.addNewBoard()
-    }
-    this.boardService.selectFirstBoard();
-    
+  ngAfterViewInit(): void {    
     this.boardService.selectedBoard$.subscribe(board => {
       setTimeout(() => { this.board = board })
       //this.board = board
@@ -46,21 +38,12 @@ export class AppComponent implements AfterViewInit {
     return this.board?.children.find(child => child.tags.length === 0);
   }
 
-  reset(){
-    this.boardService.reset();
-    this.addNewBoard()
-  }
-
-  addNewBoard() {
-    this.boardService.addNewBoard()
-  }
-
   get boards$(): Observable<Board[]> {
     return this.boardService.boards$;
   }
 
-  hasStoragePathSet() {
-    return this.storageService.isStatusLocationConfigured();
+  isStatusPresent() {
+    return this.storageService.isStatusPresent();
   }
 
 }

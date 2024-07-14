@@ -1,8 +1,6 @@
 import { Injectable, Injector, NgZone } from '@angular/core';
-import { BoardService } from './board.service';
-import { LocalFileStorageService } from './local-file-storage.service';
 import { StorageServiceAbstract } from '../types/storage';
-import { Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
 import { getStatusPath, setStatusPath } from '../utils/utils';
 
 // @ts-ignore
@@ -10,12 +8,12 @@ import { getStatusPath, setStatusPath } from '../utils/utils';
   providedIn: 'root'
 })
 export class ElectronService extends StorageServiceAbstract{
-  storagePath: string | undefined;
-  initializedWithValidStatus = false;
+  storagePath: string | null = null;
   subscription: Subscription | undefined;
+  status = "{}";
+  private statusChangeOutsideApp: Subject<string | null> = new Subject<string | null>();
 
   constructor(
-    private boardService: BoardService,
     private zone: NgZone
   ) {
     super();
@@ -26,54 +24,55 @@ export class ElectronService extends StorageServiceAbstract{
     /**Electron callbacks */
     window.electron.onOpenedAppStatus(( event, filePath) => {
       console.log("Opened app status");
-      this.initWithStoragePath(filePath);
+      let statusContent = this.initWithStoragePath(filePath);
+      this.status = statusContent;
+      this.statusChangeOutsideApp.next(statusContent);
     })
     window.electron.onStoreAppStatusRequest(() => {
-      window.electron.sendAppStatus(this.boardService.serialize());
+      window.electron.sendAppStatus(this.status);
     })
 
+    this.storagePath = getStatusPath();
     if(this.storagePath){
       this.initWithStoragePath(this.storagePath);
     }
   }
-  isStatusLocationConfigured(): boolean {
-    return this.storagePath !== undefined;
+  override getStatus(): string | null {
+    return this.status;
   }
-  override getStatusLocation(): string | undefined {
-    return this.storagePath;
+
+  override isStatusPresent(): boolean {
+    return this.storagePath !== undefined && this.storagePath !== null;
   }
-  override writeToStatus(status: string): void {
-    this.writeSystemFile(this.storagePath!, status);
+
+  override writeToStatus(status: Object): void {
+    if(!this.storagePath) throw("No storage path configured");
+    this.writeSystemFile(this.storagePath, JSON.stringify(status));
   }
 
   override openStatus(): Promise<string | undefined> {
     return window.electron.openAppStatus();
   }
 
-  override createNewStatus(): Promise<string | undefined> {
-    return window.electron.createFile();
+  override async createNewStatus(): Promise<boolean> {
+    this.storagePath = await window.electron.createFile();
+    return true;
   }
 
-  private initWithStoragePath(storagePath: string): void {
+  private initWithStoragePath(storagePath: string): string {
     this.storagePath = storagePath;
     try{
-      let file = this.readSystemFile(this.storagePath);
-
+      this.status = this.readSystemFile(this.storagePath);
       this.zone.run(() => {
         // Electron fix
-        this.boardService.deserialize(file);
-        this.boardService.selectFirstBoard();
+
         if(!this.storagePath) throw("No storage path");
         setStatusPath(this.storagePath);
       })
-
+      return this.status;
     }catch(e){
       throw("It was not possible to deserialize the status in " + this.storagePath);
     }
-    if(this.subscription) this.subscription.unsubscribe();
-    this.subscription = this.boardService.boards$.subscribe(boards => {
-      this.writeSystemFile(this.storagePath!, this.boardService.serialize());
-    });
   }
 
   private readSystemFile(filePath: string): string {
@@ -90,10 +89,12 @@ export class ElectronService extends StorageServiceAbstract{
   }
 
   private writeSystemFile(filePath: string, content: string): void {
+    this.status = content;
     window.electron.writeFile(filePath, content);
   }
 
-
-
+  override getStatusChangeOutsideAppObservable(): Observable<string | null> {
+    return this.statusChangeOutsideApp.asObservable();
+  }
 }
 

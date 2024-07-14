@@ -159,9 +159,13 @@ ipcMain.handle('create-file', async (event) => {
 
 ipcMain.handle('open-app-status', async (event) => {
   console.log('open-app-status..:');
-  return await getStatusFilePath();
+  let path = await getStatusFilePath();
+  if( path ){
+    return fs.readFileSync( path, 'utf-8');
+  }else{
+    return null;
+  }
 });
-
 
 
 ipcMain.on('app-status-response', async (event, status) => {
