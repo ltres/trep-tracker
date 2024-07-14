@@ -3,6 +3,7 @@ import { ModalService } from '../../service/modal.service';
 import { environment } from '../../environments/environment';
 
 import { StorageServiceAbstract } from '../../types/storage';
+import { BoardService } from '../../service/board.service';
 
 @Component({
   selector: 'welcome-wizard-manager',
@@ -18,13 +19,13 @@ export class WelcomeWizardManagerComponent implements AfterViewInit {
 
   constructor(
     private modalService: ModalService,
+    private boardService: BoardService,
     @Inject('StorageServiceAbstract') private storageService: StorageServiceAbstract
   ) {
     this.document = document;
   }
 
   ngAfterViewInit(): void {
-    console.log(this.steps);
     // wizard management: start the modal passing the first step as content
     if (this.steps?.first) {
       this.modalService.setModalContent(this.steps?.first);
@@ -33,7 +34,7 @@ export class WelcomeWizardManagerComponent implements AfterViewInit {
   }
 
   createNewStatusFile() {
-    this.storageService.createStatusFile()
+    this.storageService.createNewStatus()
       .then(filePath => {
         console.log('Status file created at:', filePath);
         if(!filePath) throw("No file selected");
@@ -43,9 +44,10 @@ export class WelcomeWizardManagerComponent implements AfterViewInit {
   }
 
   async openStatusFile(event?: Event) {
-    let path = await this.storageService.openAppStatus(event)
-    if(!path) throw("No file selected");
-    //this.handleStatusFileChosen(path);
+    let fileContent = await this.storageService.openStatus(event);
+    if(!fileContent) throw("No file selected");
+    this.boardService.deserialize(fileContent);
+    this.closeModal();
   }
 
   nextStep() {

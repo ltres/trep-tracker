@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
 import { Board, Lane, getNewBoard, getNewLane } from '../types/task';
 import { generateUUID, getStatusPath } from '../utils/utils';
 import { ModalService } from '../service/modal.service';
-import { StorageService } from '../service/storage.service';
+import { LocalFileStorageService } from '../service/local-file-storage.service';
 import { StorageServiceAbstract } from '../types/storage';
 
 @Component({
@@ -19,15 +19,13 @@ import { StorageServiceAbstract } from '../types/storage';
 export class AppComponent implements AfterViewInit {
   title = 'trep-tracker';
   board: Board | undefined
+  displayModal = false;
   constructor(
     private boardService: BoardService,
     protected modalService: ModalService,
-    @Inject('StorageServiceAbstract') private storageService: StorageServiceAbstract,
+    @Inject('StorageServiceAbstract') protected storageService: StorageServiceAbstract,
     private appRef: ApplicationRef
-  ) {
-    storageService.init();  
-
-  }
+  ) { }
 
   ngAfterViewInit(): void {
     if(this.boardService.boards.length === 0) {
@@ -39,6 +37,9 @@ export class AppComponent implements AfterViewInit {
       setTimeout(() => { this.board = board })
       //this.board = board
     })
+    this.modalService.displayModal$.subscribe(display => {
+      setTimeout(() => { this.displayModal = display; })    
+    });
   }
 
   getFirstLane(): Lane | undefined {
@@ -59,7 +60,7 @@ export class AppComponent implements AfterViewInit {
   }
 
   hasStoragePathSet() {
-    return this.storageService.isStatusPresent();
+    return this.storageService.isStatusLocationConfigured();
   }
 
 }

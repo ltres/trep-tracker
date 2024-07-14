@@ -1,4 +1,4 @@
-import { AfterContentChecked, AfterContentInit, AfterViewInit, Component } from '@angular/core';
+import { AfterContentInit, Component } from '@angular/core';
 import { BoardService } from '../../service/board.service';
 import { Board } from '../../types/task';
 
@@ -16,7 +16,7 @@ export class BoardSelectionMenuComponent implements AfterContentInit{
 
   ngAfterContentInit(): void {
     this.boardService.boards$.subscribe(boards => {
-      this.boards = boards
+      setTimeout(() => { this.boards = boards })
     })
   }
   addBoard() {

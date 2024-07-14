@@ -25,5 +25,5 @@
     <board-selection-menu class="column-2 flex"></board-selection-menu>
 
 </main>
-<modal *ngIf="modalService.displayModal$ | async"></modal>
 <welcome-wizard-manager *ngIf="!hasStoragePathSet()"></welcome-wizard-manager>
+<modal *ngIf="displayModal"></modal>

@@ -4,7 +4,7 @@ import { BehaviorSubject, Observable, filter, map } from "rxjs";
 import { generateUUID, getNextStatus, isPlaceholder, setDateSafe } from "../utils/utils";
 import { TagService } from "./tag.service";
 import { stat } from "original-fs";
-import { StorageService } from "./storage.service";
+import { LocalFileStorageService } from "./local-file-storage.service";
 import { StorageServiceAbstract } from "../types/storage";
 
 @Injectable({
@@ -61,7 +61,7 @@ export class BoardService {
                 console.warn('Storage service still not ready..')
                 return;
             }
-            this.storageService.writeToStatusFile(status);
+            this.storageService.writeToStatus(status);
         })
     }
 
@@ -769,6 +769,7 @@ export class BoardService {
             }); 
 
             
+            this.selectFirstBoard();
 
             //this._selectedTasks$.next(o.selectedTasks ?? []);
             //this._lastSelectedTask$.next(o.lastSelectedTask ?? []);

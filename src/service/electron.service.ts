@@ -1,6 +1,6 @@
 import { Injectable, Injector, NgZone } from '@angular/core';
 import { BoardService } from './board.service';
-import { StorageService } from './storage.service';
+import { LocalFileStorageService } from './local-file-storage.service';
 import { StorageServiceAbstract } from '../types/storage';
 import { Subscription } from 'rxjs';
 import { getStatusPath, setStatusPath } from '../utils/utils';
@@ -16,15 +16,14 @@ export class ElectronService extends StorageServiceAbstract{
 
   constructor(
     private boardService: BoardService,
-
     private zone: NgZone
   ) {
     super();
-
     if(!window.electron) {
       console.log("Electron not available");
       return;
     }
+    /**Electron callbacks */
     window.electron.onOpenedAppStatus(( event, filePath) => {
       console.log("Opened app status");
       this.initWithStoragePath(filePath);
@@ -32,23 +31,33 @@ export class ElectronService extends StorageServiceAbstract{
     window.electron.onStoreAppStatusRequest(() => {
       window.electron.sendAppStatus(this.boardService.serialize());
     })
+
+    if(this.storagePath){
+      this.initWithStoragePath(this.storagePath);
+    }
   }
-  isStatusPresent(): boolean {
+  isStatusLocationConfigured(): boolean {
     return this.storagePath !== undefined;
   }
-  init() {
-    let path = getStatusPath();
-    if(path){
-      this.initWithStoragePath(path);
-    }else{
-      
-    }
+  override getStatusLocation(): string | undefined {
+    return this.storagePath;
+  }
+  override writeToStatus(status: string): void {
+    this.writeSystemFile(this.storagePath!, status);
+  }
+
+  override openStatus(): Promise<string | undefined> {
+    return window.electron.openAppStatus();
+  }
+
+  override createNewStatus(): Promise<string | undefined> {
+    return window.electron.createFile();
   }
 
   private initWithStoragePath(storagePath: string): void {
     this.storagePath = storagePath;
     try{
-      let file = this.readFile(this.storagePath);
+      let file = this.readSystemFile(this.storagePath);
 
       this.zone.run(() => {
         // Electron fix
@@ -63,11 +72,11 @@ export class ElectronService extends StorageServiceAbstract{
     }
     if(this.subscription) this.subscription.unsubscribe();
     this.subscription = this.boardService.boards$.subscribe(boards => {
-      this.writeFile(this.storagePath!, this.boardService.serialize());
+      this.writeSystemFile(this.storagePath!, this.boardService.serialize());
     });
   }
 
-  private readFile(filePath: string): string {
+  private readSystemFile(filePath: string): string {
     if (window.electron) {
       try{
         return window.electron.readFile(filePath);
@@ -76,29 +85,15 @@ export class ElectronService extends StorageServiceAbstract{
         return "{}";
       }
     } else {
-      return JSON.parse(localStorage.getItem("trep-tracker-status") ?? "{}");
+      throw new Error("Electron not available");
     }
   }
 
-  private writeFile(filePath: string, content: string): void {
+  private writeSystemFile(filePath: string, content: string): void {
     window.electron.writeFile(filePath, content);
   }
 
-  writeToStatusFile(status: string): void {
-    this.writeFile(this.storagePath!, status);
-  }
 
-  openAppStatus(): Promise<string | undefined> {
-    return window.electron.openAppStatus();
-  }
-
-  createStatusFile(): Promise<string | undefined> {
-    return window.electron.createFile();
-  }
-
-  sendAppStatus( status: Object ): void {
-    window.electron.sendAppStatus(status);
-  }
 
 }
 

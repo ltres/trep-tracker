@@ -14,7 +14,7 @@ import { ContainerComponentRegistryService } from '../service/registry.service';
 import { ContenteditableDirective } from './directive/contenteditable.directive';
 import { TagService } from '../service/tag.service';
 import { TagsViewerComponent } from './tags-viewer/tags-viewer.component';
-import { StorageService } from '../service/storage.service';
+import { LocalFileStorageService } from '../service/local-file-storage.service';
 import { LaneMenuComponent } from './lane-menu/lane-menu.component';
 import { BoardSelectionMenuComponent } from './board-selection-menu/board-selection-menu.component';
 import { PrioritizerComponent } from './prioritizer/prioritizer.component';

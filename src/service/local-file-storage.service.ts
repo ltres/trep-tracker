@@ -10,53 +10,52 @@ import { StorageServiceAbstract } from "../types/storage";
 @Injectable({
   providedIn: 'root'
 })
-export class StorageService extends StorageServiceAbstract {
+export class LocalFileStorageService extends StorageServiceAbstract {
   storagePath: string | undefined;
   statusOpened = false;
   subscription: Subscription | undefined;
-  constructor(
-    private boardService: BoardService,
-    private zone: NgZone
-  ) { 
+  constructor() {
     super();
-   }
-  isStatusPresent(): boolean {
+  }
+  override isStatusLocationConfigured(): boolean {
     return this.statusOpened;
   }
 
-  init() {
-    console.warn('Nothing to init in non-electron context'); 
+  override getStatusLocation(): string | undefined {
+    return this.storagePath;
   }
 
-  openAppStatus(fileEvent?: Event): Promise<string | undefined> {
-    if (!fileEvent || fileEvent === null) throw ("No file selected");
-    let target = fileEvent.target as HTMLInputElement;
-    if (!target.files || target.files.length === 0) throw ("No file selected");
-    const file = target.files[0]; // Get the first file
+  override openStatus(event?: Event): Promise<string | undefined> {
+    if(!event){
+      throw new Error("Event is required to open status file");
+    }
 
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
 
-      reader.onload =  (loadEvent) => {
+      reader.onload = (loadEvent) => {
         const fileContent = loadEvent.target!.result;
-        this.boardService.deserialize(fileContent as string);
-        this.boardService.selectFirstBoard();
         resolve(fileContent as string);
         this.statusOpened = true;
+        this.storagePath = file.path ?? file.name;
       };
 
       reader.onerror = function () {
         console.error("Could not read the file");
       };
+      let target = event.target as HTMLInputElement;
+      if (!target?.files || target.files.length === 0) throw ("No file selected");
+      const file = target.files[0]; // Get the first file
 
       reader.readAsText(file);
     });
-
   }
-  createStatusFile(): Promise<string | undefined> {
+
+  override createNewStatus(): Promise<string | undefined> {
     throw new Error("Cannot createStatusFile in non-electron environment");
   }
-  writeToStatusFile(status: Object): void {
+  
+  override writeToStatus(status: Object): void {
     throw new Error("Cannot saveToStatus in non-electron environment");
   }
 
