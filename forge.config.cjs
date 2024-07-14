@@ -12,7 +12,7 @@ module.exports = {
     {
       name: '@electron-forge/maker-squirrel',
       config: {
-        bin: 'Electron Starter',
+        bin: 'trep-tracker',
         iconUrl: `${__dirname}/src/assets/icon/web/favicon.ico`,
         setupIcon: `${__dirname}/src/assets/icon/web/favicon.ico`,
         icon: `${__dirname}/src/assets/icon/web/favicon.ico`,
@@ -21,7 +21,7 @@ module.exports = {
     {
       name: '@electron-forge/maker-zip',
       config: {
-        bin: 'Electron Starter',
+        bin: 'trep-tracker',
         iconUrl: `${__dirname}/src/assets/icon/web/favicon.ico`,
         setupIcon: `${__dirname}/src/assets/icon/web/favicon.ico`,
         icon: `${__dirname}/src/assets/icon/web/favicon.ico`,
@@ -31,7 +31,7 @@ module.exports = {
     {
       name: '@electron-forge/maker-deb',
       config: {
-        bin: 'Electron Starter',
+        bin: 'trep-tracker',
         iconUrl: `${__dirname}/src/assets/icon/web/favicon.ico`,
         setupIcon: `${__dirname}/src/assets/icon/web/favicon.ico`,
         options: {
@@ -42,7 +42,7 @@ module.exports = {
     {
       name: '@electron-forge/maker-rpm',
       config: {
-        bin: 'Electron Starter',
+        bin: 'trep-tracker',
         iconUrl: `${__dirname}/src/assets/icon/web/favicon.ico`,
         setupIcon: `${__dirname}/src/assets/icon/web/favicon.ico`,
         icon: `${__dirname}/src/assets/icon/web/favicon.ico`,
