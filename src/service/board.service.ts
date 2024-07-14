@@ -69,7 +69,9 @@ export class BoardService {
             this._allParents$.next([...allTasks, ...allLanes, ...this.boards]);
 
             // Store status:
-            this.storageService.writeToStatus({ boards:b });
+            if(storageService.isStatusPresent()){
+                this.storageService.writeToStatus({ boards:b });
+            }
         })
     }
 
@@ -685,92 +687,88 @@ export class BoardService {
             this._editorActiveTask$.next(undefined);
         } else {
             // fixes to existing data and new fields
-
-            this._boards$.next(o.boards);
-
-            this.parents?.forEach(p => {
-                if (!p.creationDate) { 
-                    p.creationDate = new Date().toISOString() as ISODateString;
-                }
-                if (typeof p.priority == 'undefined') {
-                    p.priority = undefined;
-                }
-                if(!p.dates){
-                    p.dates = {};
-                }
-                // @ts-ignore
-                if(this.isLane(p) && typeof p.isArchive === 'undefined'){
-                    // @ts-ignore
-                    p.isArchive = p.archive ?? false;
-                }
-                // @ts-ignore
-                if(this.isTask(p) && p.archived ){ 
-                    p.status = 'archived'; 
-                    // @ts-ignore
-                    p.dates.archived = { enter: p.archivedDate ?? new Date().toISOString() as ISODateString };
-                }
-                // @ts-ignore
-                //delete p.archived;
-                // @ts-ignore 
-                if( p.stateChangeDate && p.status && p.status !=='archived' ){ 
-                    // @ts-ignore
-                    p.dates[p.status] = { enter: p.stateChangeDate ?? new Date().toISOString() as ISODateString };
-                    // @ts-ignore
-                    //delete p.stateChangeDate;
-                }
-                if( this.isTask(p) && p.creationDate && (!p.dates['todo'] || !p.dates['todo'].enter) ){
-                    if(!p.dates['todo']){
-                        p.dates['todo'] = {};
+            for( let board of o.boards ){
+                let des = this.getDescendants(board);
+                des.forEach(p => {
+                    if (!p.creationDate) { 
+                        p.creationDate = new Date().toISOString() as ISODateString;
                     }
-                    p.dates['todo']['enter'] = p.creationDate;
+                    if (typeof p.priority == 'undefined') {
+                        p.priority = undefined;
+                    }
+                    if(!p.dates){
+                        p.dates = {};
+                    }
                     // @ts-ignore
-                    p.dates['todo']['leave'] = p.stateChangeDate;
-                }
-                //delete p.stateChangeDate;
-                // @ts-ignore
-                // delete p.archivedDate;
-
-                // Archive fix
-                if( this.isLane(p) && p.isArchive ){
-                    // Case for archived tasks that are children of archived tasks. They should be moved to the archive lane.
-                    let descendants = this.getDescendants(p);
-                    let archivedFirstLevel = p.children.filter(c => c.status === 'archived');
-                    archivedFirstLevel.forEach(a => {
-                        let findInDescendants = descendants.filter(d => d.id === a.id);
-                        if(findInDescendants.length > 1){
-                            // this is a task that is a child of an archived task. Remove from direct descendants.
-                            p.children = p.children.filter(c => c.id !== a.id);
+                    if(this.isLane(p) && typeof p.isArchive === 'undefined'){
+                        // @ts-ignore
+                        p.isArchive = p.archive ?? false;
+                    }
+                    // @ts-ignore
+                    if(this.isTask(p) && p.archived ){ 
+                        p.status = 'archived'; 
+                        // @ts-ignore
+                        p.dates.archived = { enter: p.archivedDate ?? new Date().toISOString() as ISODateString };
+                    }
+                    // @ts-ignore
+                    //delete p.archived;
+                    // @ts-ignore 
+                    if( p.stateChangeDate && p.status && p.status !=='archived' ){ 
+                        // @ts-ignore
+                        p.dates[p.status] = { enter: p.stateChangeDate ?? new Date().toISOString() as ISODateString };
+                        // @ts-ignore
+                        //delete p.stateChangeDate;
+                    }
+                    if( this.isTask(p) && p.creationDate && (!p.dates['todo'] || !p.dates['todo'].enter) ){
+                        if(!p.dates['todo']){
+                            p.dates['todo'] = {};
                         }
-                    });
-                }
-
-
-
-                if (p.tags) {
-                    p.tags.forEach(t => {
-                        if (!t.type) {
-                            if (p.textContent.toLowerCase().indexOf(`${tagIdentifiers[0].symbol}${t.tag.toLowerCase()}`) >= 0) {
-                                t.type = tagIdentifiers[0].type
-                            } else if (p.textContent.toLowerCase().indexOf(`${tagIdentifiers[1].symbol}${t.tag.toLowerCase()}`) >= 0) {
-                                t.type = tagIdentifiers[1].type
+                        p.dates['todo']['enter'] = p.creationDate;
+                        // @ts-ignore
+                        p.dates['todo']['leave'] = p.stateChangeDate;
+                    }
+                    //delete p.stateChangeDate;
+                    // @ts-ignore
+                    // delete p.archivedDate;
+    
+                    // Archive fix
+                    if( this.isLane(p) && p.isArchive ){
+                        // Case for archived tasks that are children of archived tasks. They should be moved to the archive lane.
+                        let descendants = this.getDescendants(p);
+                        let archivedFirstLevel = p.children.filter(c => c.status === 'archived');
+                        archivedFirstLevel.forEach(a => {
+                            let findInDescendants = descendants.filter(d => d.id === a.id);
+                            if(findInDescendants.length > 1){
+                                // this is a task that is a child of an archived task. Remove from direct descendants.
+                                p.children = p.children.filter(c => c.id !== a.id);
                             }
-                        }
-                    })
-                }
-
-            });
-            
-            this.parents?.forEach(p => {
-                if (this.isTask(p) && !p.createdLaneId) {
-                    let parentLane = this.findParentLane([p]) // can be archive;
-                    let board = this._boards$.getValue().find(b => b.children.find(l => l.id === parentLane?.id));
-                    p.createdLaneId = board?.children[0].id ?? '';
-                }
-            }); 
-
-            //this._selectedTasks$.next(o.selectedTasks ?? []);
-            //this._lastSelectedTask$.next(o.lastSelectedTask ?? []);
-            //this._editorActiveTask$.next(o.editorActiveTask ?? []);
+                        });
+                    }
+    
+    
+    
+                    if (p.tags) {
+                        p.tags.forEach(t => {
+                            if (!t.type) {
+                                if (p.textContent.toLowerCase().indexOf(`${tagIdentifiers[0].symbol}${t.tag.toLowerCase()}`) >= 0) {
+                                    t.type = tagIdentifiers[0].type
+                                } else if (p.textContent.toLowerCase().indexOf(`${tagIdentifiers[1].symbol}${t.tag.toLowerCase()}`) >= 0) {
+                                    t.type = tagIdentifiers[1].type
+                                }
+                            }
+                        })
+                    }
+    
+                });
+                des.forEach(p => {
+                    if (this.isTask(p) && !p.createdLaneId) {
+                        let parentLane = this.findParentLane([p]) // can be archive;
+                        let board = this._boards$.getValue().find(b => b.children.find(l => l.id === parentLane?.id));
+                        p.createdLaneId = board?.children[0].id ?? '';
+                    }
+                }); 
+            } 
+            this._boards$.next(o.boards);
         }
         
         if(this._boards$.getValue().length === 0){

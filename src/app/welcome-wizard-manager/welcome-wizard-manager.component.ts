@@ -4,6 +4,7 @@ import { environment } from '../../environments/environment';
 
 import { StorageServiceAbstract } from '../../types/storage';
 import { BoardService } from '../../service/board.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'welcome-wizard-manager',
@@ -20,6 +21,7 @@ export class WelcomeWizardManagerComponent implements AfterViewInit {
   constructor(
     private modalService: ModalService,
     private boardService: BoardService,
+    private http: HttpClient,
     @Inject('StorageServiceAbstract') private storageService: StorageServiceAbstract
   ) {
     this.document = document;
@@ -58,6 +60,16 @@ export class WelcomeWizardManagerComponent implements AfterViewInit {
 
   closeModal() {
     this.modalService.setDisplayModal(false);
+  }
+
+  setupDemoBoard() {
+    this.http.get("/assets/readme/github-pages-example-status.trptrk", {responseType: 'text'})
+    .subscribe(
+      data => {
+        this.storageService.openStatus(data);
+        this.closeModal();
+      }
+    );
   }
 
 }

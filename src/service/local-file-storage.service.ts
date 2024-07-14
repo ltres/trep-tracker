@@ -22,17 +22,25 @@ export class LocalFileStorageService extends StorageServiceAbstract {
     return this.status;
   }
 
-  override openStatus(event?: Event): Promise<string | undefined> {
+  override openStatus(event?: Event | string): Promise<string | undefined> {
     if (!event) {
       throw new Error("Event is required to open status file");
     }
 
     return new Promise((resolve, reject) => {
+      if( typeof event === 'string'){
+        this.status = event;
+        this.statusChangeOutsideApp.next(this.status);
+        resolve(event);
+        return;
+      }
+
       const reader = new FileReader();
 
       reader.onload = (loadEvent) => {
         const fileContent = loadEvent.target!.result;
         this.status = fileContent as string;
+        this.statusChangeOutsideApp.next(this.status);
         resolve(fileContent as string);
       };
 

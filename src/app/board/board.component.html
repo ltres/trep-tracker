@@ -1,4 +1,4 @@
-<div class="board-toolbar">
+<div class="board-toolbar flex column align-items-end">
   <search class="m-b-1"></search>
   <div class="flex justify-content-end">
     <label class="translucent">Board:&nbsp;</label>
@@ -17,7 +17,7 @@
   <div class="translucent">
     of {{boardService.getTasksCount(this.board)}} tasks
   </div>
-  <button (click)="addLane()" >Add lane</button>
+  <button class="m-t-05"(click)="addLane()" >Add lane</button>
 </div>
 <ng-container *ngFor="let lane of lanes$ | async;trackBy: trackBy">
   <lane 

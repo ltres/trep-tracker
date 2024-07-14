@@ -32,6 +32,7 @@ import { AiAdvisorComponent } from './ai-advisor/ai-advisor.component';
 import { MarkdownModule } from 'ngx-markdown';
 import { LogoComponent } from './dumb/logo/logo.component';
 import { DraggableDirective } from './directive/draggable.directive';
+import { HttpClientModule } from '@angular/common/http';
  
 @NgModule({
     declarations: [
@@ -54,7 +55,7 @@ import { DraggableDirective } from './directive/draggable.directive';
          TimeBarComponent,
          AiAdvisorComponent,
          LogoComponent,
-         DraggableDirective
+         DraggableDirective 
         ],
     providers: [
         BoardService, 
@@ -79,7 +80,8 @@ import { DraggableDirective } from './directive/draggable.directive';
         FormsModule,
         ReactiveFormsModule,
         KeyboardListenerComponent,
-        MarkdownModule.forRoot()
+        MarkdownModule.forRoot(),
+        HttpClientModule
     ]
 })
 export class AppModule { }

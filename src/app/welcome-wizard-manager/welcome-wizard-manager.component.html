@@ -8,10 +8,10 @@
 
     </div>
     <div class="body">
-        <h2 class="text-align-center">
-            Choose an existing status file, or create a new one:
-        </h2>
         <div *ngIf="isElectron" class="buttons flex justify-content-center g-1">
+            <h2  class="text-align-center">
+                Choose an existing status file, or create a new one:
+            </h2>
             <button (click)="openStatusFile()">
                 Choose existing status file
             </button>
@@ -19,13 +19,30 @@
                 Create a new status file
             </button>
         </div>
-        <div *ngIf="!isElectron" class="buttons flex justify-content-center  g-1">
+        <div *ngIf="!isElectron" class="buttons flex column">
+            <h2 class="text-align-center">
+                This web version stores your data in your browser's local storage.<br/>
+            </h2>
+            <h3 class="text-align-center">
+                You can use this to familiarize yourself with the tool.<br/>
+                If you like what you see, and would like to try it for your day-by-day tasks, consider downloading the desktop version from the Github page.
+            </h3>
+            <!--
             <button (click)="document.querySelector('#status-chooser').click()">
                 Choose existing status file
-            </button>
-            <button (click)="createNewStatusFile()">
-                Create a new status file
-            </button>
+            </button>-->
+            <h2 class="flex justify-content-center m-y-1">
+                <button (click)="setupDemoBoard()">
+                    Try with a demo board
+                </button>
+            </h2>
+            <h4 class="flex justify-content-center">
+                <button (click)="createNewStatusFile()">
+                    Create a new status file
+                </button>
+            </h4>
+            
+
             <input id="status-chooser" type="file" #fileInput (change)="openStatusFile($event)" accept=".trptrk" hidden>
         </div>
     </div>

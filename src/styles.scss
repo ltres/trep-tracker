@@ -123,15 +123,16 @@ p {
 button {
   border: none;
   border-radius: 0;
-  padding: 0.2rem 0.5rem;
+  padding: 0.2rem 1rem!important;
   display: block;
   font: inherit;
   cursor: pointer;
+  box-shadow: inset 0 0 0 1px $translucent-color;
   outline: none;
   background: transparent;
   color: $text-color;
   &:hover, &.active{
-    box-shadow: inset 0 0 0 1px $text-color
+    box-shadow: inset 0 0 0 1px $text-color;
   }
 }
 
@@ -149,6 +150,9 @@ button {
 }
 .align-items-start{
   align-items: start;
+}
+.align-items-end{
+  align-items: flex-end;
 }
 .justify-content-center{
   justify-content: center;

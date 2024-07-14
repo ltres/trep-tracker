@@ -14,9 +14,9 @@ export abstract class StorageServiceAbstract {
 
     /**
      * Reads the status file and returns the content.
-     * Can accept a file chooser event.
+     * Can accept a file chooser event or a stringified status.
      */
-    abstract openStatus(event?:Event): Promise<string | undefined>
+    abstract openStatus(event?:Event | string): Promise<string | undefined>
 
     /**
      * Creates a new status. Returns true when finished.
