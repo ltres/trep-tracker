@@ -124,7 +124,7 @@ export class BoardService {
                     }
                 }
                 if(excldeArchived){
-                    res = res?.filter(t => t.status !== 'archived' && !isPlaceholder(t));
+                    res = res?.filter(t => t.status !== 'archived');
                 }
 
                 const regex = /[\-\.\:TZ]/g;
