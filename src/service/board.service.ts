@@ -547,7 +547,10 @@ export class BoardService {
         }
         let siblings = parent?.children || [];
 
-        let index = selectedTasks.map(sel => siblings.findIndex(s => s.id === sel.id)).sort()[0];
+        let index = selectedTasks.map(sel => siblings.findIndex(s => s.id === sel.id)).sort( ( a,b ) => a - b )[0];
+
+        // sort selected tasks basing on their order in the parent's children
+        selectedTasks = selectedTasks.sort((a, b) => siblings.findIndex(s => s.id === a.id) - siblings.findIndex(s => s.id === b.id));
 
         if (direction === "ArrowUp" && index > 0) {
             parent.children.splice(index - 1, selectedTasks.length + 1, ...selectedTasks.concat(siblings[index - 1]));
