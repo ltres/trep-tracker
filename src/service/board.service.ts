@@ -423,7 +423,10 @@ export class BoardService {
         return orderedLinearizedTasks[direction === 'up' || direction === 'left' ? index - 1 : index + 1];
     }
 
-    findParent(objs: Container[] | undefined): Container | undefined {
+    /**
+     * Finds the direct parent container for the given objects
+     */
+    findDirectParent(objs: Container[] | undefined): Container | undefined {
         if (!objs || objs.length === 0) {
             return;
         }
@@ -434,7 +437,9 @@ export class BoardService {
         let parents = this._allParents$.getValue()?.filter(p => p.children.length > 0 && p.children.find(c => objs.find(o => o.id === c.id)));
         // filter out duplicate parents and archive
         if(parents){
+            // remove duplicates
             parents = parents?.filter((p, index) => parents!.findIndex(p2 => p2.id === p.id) === index);
+            // remove archive 
             parents = parents?.filter(p => !this.isLane(p) || !p.isArchive);
         }
 
@@ -444,14 +449,15 @@ export class BoardService {
         }
         return parents[0];
     }
+    
     findParentLane(objs: Container[] | undefined): Lane | undefined {
         if (!objs || objs.length === 0) {
             return;
         }
-        let parent = this.findParent(objs);
+        let parent = this.findDirectParent(objs);
 
         while (parent != null) {
-            let grandParent = this.findParent([parent]);
+            let grandParent = this.findDirectParent([parent]);
             if (this.isLane(parent)) {
                 return parent;
             }
@@ -505,7 +511,7 @@ export class BoardService {
         children = this.getTopLevelTasks(children);
 
         // sort children basing on their in the current parent's children
-        let curParent = this.findParent(children);
+        let curParent = this.findDirectParent(children);
         if (curParent) {
             children = children.sort((a, b) => curParent.children.findIndex(c => c.id === a.id) - curParent.children.findIndex(c => c.id === b.id));
         }
@@ -541,7 +547,7 @@ export class BoardService {
         }*/
         selectedTasks = this.getTopLevelTasks(selectedTasks);
 
-        let parent = this.findParent(selectedTasks);
+        let parent = this.findDirectParent(selectedTasks);
         if (!parent) {
             throw new Error(`Cannot find parent of the selected tasks`);
         }
@@ -577,7 +583,7 @@ export class BoardService {
 
 
         // task need to become sibling of the parent. Find the parent of the parent
-        let grandParent = this.findParent([parent]);
+        let grandParent = this.findDirectParent([parent]);
         if (grandParent) {
             grandParent.children.splice(grandParent.children.findIndex(c => c.id === parent.id) + 1, 0, ...children);
             //grandParent.children = grandParent.children.concat(children);
@@ -646,7 +652,7 @@ export class BoardService {
     }
     deleteTask(task: Task) {
         let boards = this._boards$.getValue();
-        let parent = this.findParent([task]);
+        let parent = this.findDirectParent([task]);
         if (!parent) {
             throw new Error(`Cannot find parent for task with id ${task.id}`);
         }

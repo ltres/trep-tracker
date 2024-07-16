@@ -3,7 +3,7 @@ import { Component, Injectable } from "@angular/core";
 import { BehaviorSubject, Observable } from "rxjs";
 import { BoardService } from "./board.service";
 import { ContainerComponentRegistryService } from "./registry.service";
-import { Task, getNewTask } from "../types/task";
+import { Container, Lane, Task, getNewTask } from "../types/task";
 import { getCaretPosition, isPlaceholder } from "../utils/utils";
 
 @Injectable({
@@ -70,7 +70,7 @@ export class KeyboardService {
         this.boardService.addAsChild(wannaBeParent, this.boardService.selectedTasks);
       } else if (e.key === 'ArrowLeft' && e.ctrlKey === true) {
         // Children task gets promoted to the same level as the parent
-        let parent = this.boardService.findParent(this.boardService.selectedTasks);
+        let parent = this.boardService.findDirectParent(this.boardService.selectedTasks);
         if (!parent) {
           throw new Error("Cannot find parent task")
         }
@@ -90,17 +90,24 @@ export class KeyboardService {
         if(!e.ctrlKey || !e.shiftKey){
           return;
         }*/
-        let parent = this.boardService.findParent(this.boardService.selectedTasks);
-        if (!parent || !this.boardService.isLane(parent)) {
-          throw new Error("Cannot find parent task")
+        let parentObject = this.boardService.findDirectParent(this.boardService.selectedTasks);
+        let sibling: Container | undefined = this.boardService.lastSelectedTask;
+        while(parentObject && !this.boardService.isLane(parentObject)){
+          sibling = parentObject
+          parentObject = this.boardService.findDirectParent([parentObject]);
         }
-        let task = getNewTask(parent,"")
+        if (!parentObject || !this.boardService.isLane(parentObject) || !this.boardService.isTask(sibling)) {
+          throw new Error("Wrong parent or sibling");
+        }
+        let task = getNewTask(parentObject,"")
+        /*
         let lane = this.boardService.isLane(parent) ? parent : this.boardService.findParentLane([parent]);
         if (!lane) {
           return;
-        }
-        this.boardService.addAsSiblings(parent, this.boardService.lastSelectedTask, [task], !isPlaceholder(task) && caretPos === 0 ? "before" : "after");
-        this.boardService.activateEditorOnTask(lane, task, 0);
+        }*/
+
+        this.boardService.addAsSiblings(parentObject, sibling, [task], !isPlaceholder(task) && caretPos === 0 ? "before" : "after");
+        this.boardService.activateEditorOnTask(parentObject, task, 0);
         this.boardService.clearSelectedTasks();
         this.boardService.addToSelection(task);
       }else if(e.key === 'Backspace' || e.key === 'Delete'){
