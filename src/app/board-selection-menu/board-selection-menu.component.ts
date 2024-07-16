@@ -1,6 +1,7 @@
 import { AfterContentInit, Component } from '@angular/core';
 import { BoardService } from '../../service/board.service';
-import { Board } from '../../types/task';
+import { Board, Priorities, Priority } from '../../types/task';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'board-selection-menu',
@@ -11,8 +12,9 @@ import { Board } from '../../types/task';
 export class BoardSelectionMenuComponent implements AfterContentInit{
 
   boards: Board[] | undefined
+  availablePriorities: Priority[] = Priorities;
 
-  constructor(protected boardService: BoardService) { }
+  constructor(protected boardService: BoardService){}
 
   ngAfterContentInit(): void {
     this.boardService.boards$.subscribe(boards => {
@@ -25,6 +27,9 @@ export class BoardSelectionMenuComponent implements AfterContentInit{
   selectBoard(board: Board) {
     this.boardService.setSelectedBoard(board);
   }
-    
+  
+  getTaskCount(board: Board, priority: Priority): Observable<number> {
+    return this.boardService.getTasksHavingPriorityCount$(board,priority);
+  }
 
 }

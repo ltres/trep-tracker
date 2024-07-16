@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { Container, Priority } from '../../types/task';
+import { Container, Priorities, Priority } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 
 @Component({
@@ -17,6 +17,8 @@ export class PrioritizerComponent{
   @Output() onPrioritySelected = new EventEmitter<Priority[] | Priority | undefined>();
   
   protected open: boolean = false;
+
+  availablePriorities: Priority[] = Priorities;
 
   get priorities(): Priority[] {
     return Array.isArray(this.container.priority) ? this.container.priority : (this.container.priority ? [this.container.priority] : []);

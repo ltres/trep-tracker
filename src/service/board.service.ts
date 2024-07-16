@@ -1,7 +1,7 @@
 import {  Inject, Injectable, Injector, NgZone } from "@angular/core";
 import { Board, Lane, Container, Task, Tag, tagIdentifiers, getNewBoard, getNewLane, Priority, addTagsForDoneAndArchived, archivedLaneId, Status, ISODateString, StateChangeDate } from "../types/task";
 import { BehaviorSubject, Observable, map } from "rxjs";
-import { isPlaceholder, setDateSafe } from "../utils/utils";
+import { isPlaceholder, isStatic, setDateSafe } from "../utils/utils";
 import { TagService } from "./tag.service";
 import { StorageServiceAbstract } from "../types/storage";
 
@@ -124,7 +124,7 @@ export class BoardService {
                     }
                 }
                 if(excldeArchived){
-                    res = res?.filter(t => t.status !== 'archived');
+                    res = res?.filter(t => t.status !== 'archived' && !isPlaceholder(t));
                 }
 
                 const regex = /[\-\.\:TZ]/g;
@@ -169,7 +169,7 @@ export class BoardService {
                     }
                 }
                 if(excldeArchived){
-                    res = res?.filter(t => t.status !== 'archived');
+                    res = res?.filter(t => t.status !== 'archived' && !isPlaceholder(t));
                 }
                 const regex = /[\-\.\:TZ]/g;
                 if (sort) {
@@ -187,11 +187,48 @@ export class BoardService {
         )
     }
 
-    getTasksCount(board: Board): number {
-        return this.getDescendants(board).filter(c => this.isTask(c) && !isPlaceholder(c)).length;
+    /**
+     * Retrieves non-archived, non-placeholder tasks for the given board.
+     * @param board 
+     * @returns 
+     */
+    getTasksForBoard$(board: Board): Observable<Task[]> {
+        return this._boards$.pipe(
+            map(boards => {
+                let b = boards.find(b => b.id === board.id);
+                if (!b) {
+                    throw new Error(`Cannot find board with id ${board.id}`);
+                }
+                // get all lanes except the archive and static ones
+                let lanes = b.children.filter(l => !l.isArchive && !isStatic(l));
+                let tasks: Task[] = [];
+                for( let lane of lanes ){
+                    let chilren = lane.children;
+                    for( let child of chilren ){
+                        // get all the descendants of the child except the placeholders and the archived ones, for the given priority
+                        tasks = tasks.concat(child).concat( this.getDescendants(child) as Task[]);
+                    }
+                }
+                return tasks.filter(c => !isPlaceholder(c) && c.status !== 'archived');
+            })
+        
+        )
     }
-    getTodoCount(board: Board): number {
-        return this.getDescendants(board).filter(c => this.isTask(c) && !isPlaceholder(c) && c.status === 'todo').length;
+
+    getTasksCount$(board: Board): Observable<number> {
+        return this.getTasksForBoard$(board).pipe(
+            map(tasks => tasks.length)
+        );
+    }
+    getTodoCount$(board: Board): Observable<number> {
+        return this.getTasksForBoard$(board).pipe(
+            map(tasks => tasks.filter(t => t.status === 'todo').length)
+        );
+    }
+    getTasksHavingPriorityCount$(board: Board, priority: Priority): Observable<number> {
+        return this.getTasksForBoard$(board).pipe(
+            map(tasks => tasks.filter(t => t.priority === priority).length)
+        )
     }
 
     getLane$(lane: Lane): Observable<Lane | undefined> {

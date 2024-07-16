@@ -1,9 +1,9 @@
 import { generateUUID } from "../utils/utils";
 
-export interface Board extends Container<Lane>{
+export interface Board extends Container<Lane> {
 
 }
-export interface Lane extends Container<Task>{
+export interface Lane extends Container<Task> {
     _type: 'lane',
     showChildren: boolean,
     isArchive: boolean,
@@ -11,7 +11,7 @@ export interface Lane extends Container<Task>{
     status: Status[] | undefined,
     width: number | undefined,
 }
-export interface Task extends Container<Task>{
+export interface Task extends Container<Task> {
     _type: 'task',
     createdLaneId: string,
     priority: Priority,
@@ -35,15 +35,15 @@ export interface Container<T extends Container<any> = any> {
 }
 
 
-export interface Tag{
+export interface Tag {
     tag: string;
     type: string
 }
-
-export type Priority = 1 | 2 | 3 | 4
+export type Priority = 1 | 2 | 3 | 4;
+export const Priorities: Priority[] = [1, 2, 3, 4];
 
 export const Statuses = {
-    todo : {
+    todo: {
         icon: "☐"
     },
     "in-progress": {
@@ -82,7 +82,7 @@ export type ISODateString = `${number}-${number}-${number}T${number}:${number}:$
 
 export const addTagsForDoneAndArchived = false
 
-export const tagIdentifiers: { type: string, symbol: string, class:string }[] = [
+export const tagIdentifiers: { type: string, symbol: string, class: string }[] = [
     {
         type: "tag-orange",
         symbol: '@',
@@ -90,45 +90,47 @@ export const tagIdentifiers: { type: string, symbol: string, class:string }[] = 
     },
     {
         type: "tag-yellow",
-        symbol: '#', 
+        symbol: '#',
         class: "tag-yellow"
     },
     {
         type: "tag-green",
-        symbol: '!', 
+        symbol: '!',
         class: "tag-green"
     }
 ]
-export const tagHtmlWrapper = (kl:string) => ( ['<span tag="true" class="' + kl + '">','<\/span>'] )
-export const tagCapturingGroup = (symbol:string) => ( `${symbol}([A-Za-z0-9\-\_]+)` );
+export const tagHtmlWrapper = (kl: string) => (['<span tag="true" class="' + kl + '">', '<\/span>'])
+export const tagCapturingGroup = (symbol: string) => (`${symbol}([A-Za-z0-9\-\_]+)`);
 
 
-export const getNewTask: ( lane: Lane, textContent?: string | undefined ) => Task = ( lane: Lane, textContent?: string | undefined) => (
-     {
-        id: generateUUID(),
-        createdLaneId: lane.id,
-        textContent: textContent ?? "",
-        children: [],
-        tags: [],
-        dates: {
+export const getNewTask: (lane: Lane, textContent?: string | undefined) => Task = (lane: Lane, textContent?: string | undefined) => 
+    {
+        let uuid = generateUUID();
+        return {
+            id: uuid,
+            createdLaneId: lane.id,
+            textContent: textContent ?? `Task ${uuid}`,
+            children: [],
+            tags: [],
+            dates: {
 
-        },
-        _type: "task",
-        creationDate: new Date().toISOString() as ISODateString ,
-        stateChangeDate: undefined,
-        archived: false,
-        archivedDate: undefined,
-        priority: 1,
-        status: "todo"
+            },
+            _type: "task",
+            creationDate: new Date().toISOString() as ISODateString,
+            stateChangeDate: undefined,
+            archived: false,
+            archivedDate: undefined,
+            priority: 1,
+            status: "todo"
+        }
     }
-)
 
 export const archivedLaneId = "Archive";
 
-export const getNewLane: ( archive: boolean ) => Lane = (archive: boolean) => {
+export const getNewLane: (archive: boolean) => Lane = (archive: boolean) => {
     let id = generateUUID();
     return {
-        id:  id,
+        id: id,
         tags: [],
         showChildren: true,
         textContent: archive ? "Archive" : "Lane " + id,
@@ -148,18 +150,18 @@ export const getNewLane: ( archive: boolean ) => Lane = (archive: boolean) => {
 
 
 export const getNewBoard: (firstLane: Lane) => Board = (firstLane: Lane) => (
-    {      
-            id: generateUUID(),
-            _type: "board",
-            textContent: "Board",
-            tags: [],
-            status: undefined,
-            priority: undefined,
-            dates: {},
-            children: [firstLane],
-            creationDate: new Date().toISOString() as ISODateString,
-            stateChangeDate: undefined,
-            archived: false,
-            archivedDate: undefined       
+    {
+        id: generateUUID(),
+        _type: "board",
+        textContent: "Board",
+        tags: [],
+        status: undefined,
+        priority: undefined,
+        dates: {},
+        children: [firstLane],
+        creationDate: new Date().toISOString() as ISODateString,
+        stateChangeDate: undefined,
+        archived: false,
+        archivedDate: undefined
     }
 )
