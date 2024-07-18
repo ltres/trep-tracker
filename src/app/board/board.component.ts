@@ -1,5 +1,5 @@
 import { AfterViewChecked, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, HostBinding, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { Board, ColumnNumber, ColumnNumbers, Container, Lane, Tag, Task, getNewTask } from '../../types/task';
+import { Board, Container, Lane, Layout, Layouts, Tag, Task, getNewTask } from '../../types/task';
 import { TaskComponent } from '../task/task.component';
 import { BoardService } from '../../service/board.service';
 import { Observable, of } from 'rxjs';
@@ -84,7 +84,7 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
   get lanes$(): Observable<Lane[]> {
     return this.boardService.getLanes$(this.board);
   }
-  getLanesByColumn$(col: ColumnNumber): Observable<Lane[]> {
+  getLanesByColumn$(col: number): Observable<Lane[]> {
     return this.boardService.getLanes$(this.board, col);
   }
 
@@ -122,20 +122,22 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
     return hashCode(lane.id);
   }
 
-  setLayout(type: 'absolute' | 'flex', columns?: ColumnNumber) {
-    this.board.layout = type;
-    this.board.flexColumns = columns;
+  setLayout(layout: Layout) {
+    this.board.layout = layout;
     this.boardService.publishBoardUpdate();
   }
 
-  getColumnIndexes(cn: ColumnNumber | undefined): ColumnNumber[] {
-    let ret = [...ColumnNumbers];
-    ret.splice(cn ?? 0, ret.length);
-    return ret;
+  getLayouts(): Layout[] {
+    return Object.keys(Layouts) as Layout[];
   }
 
-  getLayoutSymbol(num: ColumnNumber) {
-    return Array(num).fill('☐').join('');
+
+  getColumnIndexes(layout: Layout): number[] {
+    return Array.from({ length: Layouts[layout].columns }, (_,index) => index);
+  }
+
+  getLayoutSymbol(layout: Layout) {
+    return Layouts[layout].symbol;
   }
 
 

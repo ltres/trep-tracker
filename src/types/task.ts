@@ -1,23 +1,53 @@
 import { generateUUID } from "../utils/utils";
 
 export interface Board extends Container<Lane> {
-    layout: 'absolute' | 'flex'
-    flexColumns: ColumnNumber | undefined
+    layout: Layout
     _type: 'board',
 }
 
-export type ColumnNumber = 1 | 2 | 3 | 4;
-export const ColumnNumbers: ColumnNumber[] = [1, 2, 3, 4];
+export const Layouts = {
+    absolute: {
+        columns: 1,
+        symbol: "Free"
+    },
+    flex1: {
+        columns: 1,
+        symbol: "☐"
+    },
+    flex2: {
+        columns: 2,
+        symbol: "☐☐"
+    },
+    flex3: {
+        columns: 3,
+        symbol: "☐☐☐"
+    },
+    flex4: {
+        columns: 4,
+        symbol: "☐☐☐☐"
+    },
+}
+
+export type Layout = keyof typeof Layouts;
+
+type LayoutProperties = {
+    [K in Layout]: {
+        column: number;
+        order: number;
+        width: number;
+    }
+};
+
 export interface Lane extends Container<Task> {
     _type: 'lane',
     showChildren: boolean,
-    columnNumber: ColumnNumber,
     index: number,
     isArchive: boolean,
     priority: Priority[] | undefined,
     status: Status[] | undefined,
-    width: number | undefined,
+    layouts: LayoutProperties
 }
+
 export interface Task extends Container<Task> {
     _type: 'task',
     createdLaneId: string,
@@ -110,27 +140,26 @@ export const tagHtmlWrapper = (kl: string) => (['<span tag="true" class="' + kl 
 export const tagCapturingGroup = (symbol: string) => (`${symbol}([A-Za-z0-9\-\_]+)`);
 
 
-export const getNewTask: (lane: Lane, textContent?: string | undefined) => Task = (lane: Lane, textContent?: string | undefined) => 
-    {
-        let uuid = generateUUID();
-        return {
-            id: uuid,
-            createdLaneId: lane.id,
-            textContent: textContent ?? `Task ${uuid}`,
-            children: [],
-            tags: [],
-            dates: {
+export const getNewTask: (lane: Lane, textContent?: string | undefined) => Task = (lane: Lane, textContent?: string | undefined) => {
+    let uuid = generateUUID();
+    return {
+        id: uuid,
+        createdLaneId: lane.id,
+        textContent: textContent ?? `Task ${uuid}`,
+        children: [],
+        tags: [],
+        dates: {
 
-            },
-            _type: "task",
-            creationDate: new Date().toISOString() as ISODateString,
-            stateChangeDate: undefined,
-            archived: false,
-            archivedDate: undefined,
-            priority: 1,
-            status: "todo"
-        }
+        },
+        _type: "task",
+        creationDate: new Date().toISOString() as ISODateString,
+        stateChangeDate: undefined,
+        archived: false,
+        archivedDate: undefined,
+        priority: 1,
+        status: "todo"
     }
+}
 
 export const archivedLaneId = "Archive";
 
@@ -153,10 +182,40 @@ export const getNewLane: (archive: boolean) => Lane = (archive: boolean) => {
         priority: undefined,
         width: undefined,
         archived: false,
-        archivedDate: undefined
+        archivedDate: undefined,
+        layouts: getLayouts()
     }
 }
 
+export function getLayouts(width?: number | undefined): LayoutProperties {
+    return {
+        absolute: {
+            column: 1,
+            order: 1,
+            width: width ?? 100
+        },
+        flex1: {
+            column: 1,
+            order: 1,
+            width: width ?? 1
+        },
+        flex2: {
+            column: 1,
+            order: 1,
+            width: width ?? 1
+        },
+        flex3: {
+            column: 1,
+            order: 1,
+            width: width ?? 1
+        },
+        flex4: {
+            column: 1,
+            order: 1,
+            width: width ?? 1
+        }
+    }
+}
 
 export const getNewBoard: (firstLane: Lane) => Board = (firstLane: Lane) => (
     {

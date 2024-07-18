@@ -24,9 +24,9 @@ export class LaneComponent extends ContainerComponent implements OnInit {
 
   @ViewChildren(TaskComponent, { read: ElementRef }) taskComponentsElRefs: QueryList<ElementRef> | undefined;
   @ViewChildren(TaskComponent) taskComponents: QueryList<TaskComponent> | undefined;
-
   @Input() lane!: Lane;
   @Input() board!: Board;
+  @Input() displayedInFixedLayout: boolean = false;
 
   menuOpen = false
   hoveringTooltip = false
@@ -64,7 +64,7 @@ export class LaneComponent extends ContainerComponent implements OnInit {
 
   @HostBinding('style.overflow-x')
   get overflowX(): string {
-    return this.menuOpen || this.hoveringTooltip ? 'visible' : 'auto';
+    return this.displayedInFixedLayout? 'visible' : (this.menuOpen || this.hoveringTooltip ? 'visible' : 'auto');
   }
 
   override get container(): Container {

@@ -1,5 +1,5 @@
 import {  Inject, Injectable, Injector, NgZone } from "@angular/core";
-import { Board, Lane, Container, Task, Tag, tagIdentifiers, getNewBoard, getNewLane, Priority, addTagsForDoneAndArchived, archivedLaneId, Status, ISODateString, StateChangeDate, ColumnNumber } from "../types/task";
+import { Board, Lane, Container, Task, Tag, tagIdentifiers, getNewBoard, getNewLane, Priority, addTagsForDoneAndArchived, archivedLaneId, Status, ISODateString, StateChangeDate, Layouts, Layout, getLayouts } from "../types/task";
 import { BehaviorSubject, Observable, map } from "rxjs";
 import { isPlaceholder, isStatic, setDateSafe } from "../utils/utils";
 import { TagService } from "./tag.service";
@@ -98,13 +98,15 @@ export class BoardService {
         this._boards$.next([...this._boards$.getValue(), board]);
     }
 
-    getLanes$(board: Board, columnNumber?: ColumnNumber): Observable<Lane[]> {
+    getLanes$(board: Board, columnNumber?: number): Observable<Lane[]> {
         return this._boards$.pipe(
             map(boards => { 
                 let ret : Lane[] = [];
                 ret = boards.find(b => b.id === board.id)?.children || [] 
-                if(columnNumber){
-                    ret = ret.filter(l => l.columnNumber === columnNumber).sort((a, b) => a.index - b.index);
+                if(typeof columnNumber !== 'undefined'){
+                    ret = ret.filter(l => { 
+                        return l.layouts[board.layout].column === columnNumber;
+                    }).sort((a, b) => a.index - b.index);
                 }
                 return ret;
             })
@@ -756,8 +758,12 @@ export class BoardService {
                         p.dates = {};
                     }
                     if(this.isLane(p)){
-                        p.columnNumber = p.columnNumber ?? 1;
+                        //p.columnNumber = p.columnNumber ?? 1;
                         p.index = p.index ?? 0;
+                        if(!p.layouts){
+                            // @ts-ignore
+                            p.layouts = getLayouts(p.width);
+                        }
                     }
                     // @ts-ignore
                     if(this.isLane(p) && typeof p.isArchive === 'undefined'){

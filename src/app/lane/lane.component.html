@@ -51,6 +51,7 @@
     [lane]="lane" 
     [draggableDir]="task" 
     [containerEl]="el.nativeElement"
+    [layout]="board.layout"
     (onDragStart)="draggingInside=true"
     (onDragEnd)="draggingInside=false"
     (createNewTask)="createNewTask()"></task>

@@ -11,7 +11,9 @@
     outline: 1px solid $lane-outline-color;
     outline-offset: -1px;
     border-radius: $border-radius;
-
+    &.dragged{
+        position: absolute;
+    }
 }
 
 .lane-wrapper{
