@@ -1,4 +1,4 @@
-# trep-tracker 
+# trep-tracker 📝
 ![trep-tracker icon](https://github.com/ltres/trep-tracker/blob/2b75c545cfd54d2a2c7a49a9df2060537a59db21/src/assets/icon/ios/AppIcon-40%402x~ipad.png)
 
 `trep-tracker` is a **minimal and minimalistic project manager-oriented task tracker/todo list**, designed to allow tracking TODOs efficiently and focusing on task prioritization and speed of use.
@@ -6,43 +6,54 @@
 `trep-tracker` is especially useful for project managers who need to keep track of various tags related to different projects and team members. 
 It allows you to have a clear view of tasks associated with specific projects or colleagues, allowing for quick and efficient monitoring.
 
-## Try it live: <a href="https://ltres.github.io/trep-tracker/browser/" target="_blank">https://ltres.github.io/trep-tracker/browser/</a> 
+## 💻 Try it live: <a href="https://ltres.github.io/trep-tracker/browser/" target="_blank">https://ltres.github.io/trep-tracker/browser/</a> 💻
 The above is a browser-based version, intended to showcase the functionalities that `trep-tracker` offers. 
-If you like what you see, consider downloading the distributed package to run it natively on your system, for an overall better experience.
+If you like what you see, consider downloading the <a href="https://github.com/ltres/trep-tracker/releases">distributed package</a> to run it natively on your system, for an overall better experience.
 
-### Screenshot
-<img src="https://github.com/ltres/trep-tracker/blob/7f9b0119a8e8ab75c54adeb950f09dd62f7f3e8b/src/assets/readme/trep-tracker.PNG" width="850" />
+### 👁️ See it in action
+<img src="https://github.com/ltres/trep-tracker/blob/63a69dde70dbdab0aa74d77944aa90f0b4e68f28/src/assets/readme/trep-tracker.gif" width="750" />
 
-### Who should use `trep-tracker`
+## ▶️ How to Run `trep-tracker`
+Either download and run the latest executable from the <a href="https://github.com/ltres/trep-tracker/releases">release page</a> or check out this git repository and start your dev server with `npm run electron`.
+
+## ✅ Who should use `trep-tracker`
 - People that have a medium to high number of tasks to do on a daily basis, and need to note them down quickly and efficiently. 
-- People who manage small teams and needs to track activities for colleagues. 
+- People who manage small teams and needs to track activities for colleagues.
+- People who want their TODO app to help them organize and prioritize quickly-noted tasks with views.
 - People who like a straight to the point, minimal approach to TODOs. 
 
-### Who should NOT use `trep-tracker`
+## 🙅‍♂️ Who should NOT use `trep-tracker`
 - People who are looking for a fully fledged, state-of-art, all-in-one TODO tracking solution with all the bells and whistles. 
-- ☐ TODO find additional points for this list. 
+- ⬜ TODO find additional points for this list. 
 
-## Features
-- **Boards**: A workspace area. You can have multiple boards.
-- **Lanes**: Each board contains lanes that function as tracks where tasks are inserted.
-- **Tasks**: Each task is a line of text with a status and priority. Tasks can be moved, dragged, edited, marked as done, and archived. Tasks can have a father-child relation.
-- **Tagging**: Advanced tagging system where you can use special characters like @ or # to add tags within tasks/lanes text, which are appropriately highlighted.
-- **Static Lanes (views)**: Lanes that have one or more tags in the title. These lanes automatically show all tasks with the specified tag(s), sorted by descending priority. Views can also be filtered by task priority
-- **Search**: Search functionality to quickly find tasks.
-- **Archive**: Move archived tasks in a dedicated lane.
-- **Simple, sleek interface**: Dark mode, minimal GUI.
+## ✨ Features & concepts
+- #### **Boards**
+A workspace area. You can have multiple, independent boards.
+- #### **Lanes**
+Each board contains lanes, draggable 'post-its' which can hold tasks.
+- #### **Tasks**
+Each task is a line of text with a status and priority. 
+They can have a father-child relation. 
+They can be selected and ordered quickly using just the keyboard; can be moved, dragged, edited, their status can be changed:
+  - ⬜ todo
+  - 🛠️ in progress
+  - 🙇 to delegate
+  - 👦🏼 delegated
+  - ⏳ waiting
+  - ✅ done
+  - 📂 archived (gets moved into a dedicated lane)
+  - 🗑️ discarded
+- #### **Tags**
+Tags can be tagged using specific symbols @, #, !. Each `@tag` is colored differently in order to be distinguishable at a glance.
+- #### **Static Lanes (views)**
+You can also `@tag` lanes. When you do, the lane becomes *static* and automatically displays tasks with the included tag(s). Static lanes can also display tasks filtering on priority, status, or a combination of both.
+- #### **Search**
+Quickly find tasks by pressing Ctrl + F.
+- #### **AI Advisor**
+Get advices on how to manage your tasks. *Requires an OpenAI API key*
 
-## How to Run `trep-tracker`
-Either download and run the latest executable from the release page, or check out this git repository and start your dev server with `npm run electron`.
+## 🧾 Where is my data stored?
+`trep-tracker` stores your tasks data in a local '.trptrk' file.
 
-### How to Use
-1. **Open a status file or create a new one**: The initial wizard will guide you. You can save different statuses. It is advisable to store the status in a cloud-synced location of your drive.
-3. **Add Lanes**: Within the first board, add lanes by clicking on the `Add lane` button on the top right. You can rename the lane and move it around.
-4. **Insert Tasks**: Add tasks into the lanes, assigning priorities and tags. Create new tasks by simply pressing `Enter`.
-5. **Manage Tasks**: Edit, complete, drag, indent or archive tasks as needed.
-6. **Use Tags**: Use `@tags` and `#tags` in your task content to associate that task or lanes to tags,
-7. **Create Static Lanes**: Add tags to lane titles to create dynamic views of tasks holding that/those tag(s).
-8. **Start working on the tasks**: And update their status accordingly.
-
-## How is `trep-tracker` made
+## 👨‍💻 How is `trep-tracker` made
 `trep-tracker` is built with Angular 17 and packaged with Electron 31.
