@@ -1,5 +1,5 @@
 import { AfterViewChecked, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, HostBinding, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { Board, Container, Lane, Tag, Task, getNewTask } from '../../types/task';
+import { Board, ColumnNumber, ColumnNumbers, Container, Lane, Tag, Task, getNewTask } from '../../types/task';
 import { TaskComponent } from '../task/task.component';
 import { BoardService } from '../../service/board.service';
 import { Observable, of } from 'rxjs';
@@ -22,7 +22,6 @@ import { ContainerComponentRegistryService } from '../../service/registry.servic
   ]
 })
 export class BoardComponent extends ContainerComponent implements OnInit, AfterViewInit {
-
   @Input() board!: Board;
   @ViewChildren(LaneComponent, { read: ElementRef }) laneComponentsElRefs: QueryList<ElementRef> | undefined;
   @ViewChildren(LaneComponent,) laneComponents: QueryList<LaneComponent> | undefined;
@@ -32,6 +31,11 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
 
   @HostBinding('style.width.px')
   protected width: number | undefined = 0;
+  @HostBinding('class')
+  protected get layoutClass() {
+    return this.board.layout;
+  }
+
   debounce: any;
 
   constructor(
@@ -80,6 +84,9 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
   get lanes$(): Observable<Lane[]> {
     return this.boardService.getLanes$(this.board);
   }
+  getLanesByColumn$(col: ColumnNumber): Observable<Lane[]> {
+    return this.boardService.getLanes$(this.board, col);
+  }
 
   override get container(): Container<any>{
     return this.board
@@ -115,5 +122,23 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
     return hashCode(lane.id);
   }
 
+  setLayout(type: 'absolute' | 'flex', columns?: ColumnNumber) {
+    this.board.layout = type;
+    this.board.flexColumns = columns;
+    this.boardService.publishBoardUpdate();
+  }
+
+  getColumnIndexes(cn: ColumnNumber | undefined): ColumnNumber[] {
+    let ret = [...ColumnNumbers];
+    ret.splice(cn ?? 0, ret.length);
+    return ret;
+  }
+
+  getLayoutSymbol(num: ColumnNumber) {
+    return Array(num).fill('☐').join('');
+  }
+
+
+    
 
 }

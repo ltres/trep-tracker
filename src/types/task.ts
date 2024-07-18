@@ -1,11 +1,18 @@
 import { generateUUID } from "../utils/utils";
 
 export interface Board extends Container<Lane> {
-
+    layout: 'absolute' | 'flex'
+    flexColumns: ColumnNumber | undefined
+    _type: 'board',
 }
+
+export type ColumnNumber = 1 | 2 | 3 | 4;
+export const ColumnNumbers: ColumnNumber[] = [1, 2, 3, 4];
 export interface Lane extends Container<Task> {
     _type: 'lane',
     showChildren: boolean,
+    columnNumber: ColumnNumber,
+    index: number,
     isArchive: boolean,
     priority: Priority[] | undefined,
     status: Status[] | undefined,
@@ -132,6 +139,8 @@ export const getNewLane: (archive: boolean) => Lane = (archive: boolean) => {
     return {
         id: id,
         tags: [],
+        columnNumber: 1,
+        index: 0,
         showChildren: true,
         textContent: archive ? "Archive" : "Lane " + id,
         children: [],
@@ -152,6 +161,8 @@ export const getNewLane: (archive: boolean) => Lane = (archive: boolean) => {
 export const getNewBoard: (firstLane: Lane) => Board = (firstLane: Lane) => (
     {
         id: generateUUID(),
+        layout: 'absolute',
+        flexColumns: undefined,
         _type: "board",
         textContent: "Board",
         tags: [],

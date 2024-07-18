@@ -2,10 +2,9 @@
 
 :host{
     resize: horizontal;
-    position: absolute;
     display: inline-block;
     min-width: 20rem;
-    
+    // width: 100%;
     //max-width: $max-lane-width;
     z-index: 10;
     box-shadow: 5px 5px 13px 0px #00000073;

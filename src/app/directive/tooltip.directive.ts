@@ -5,6 +5,9 @@ import { Directive, ElementRef, Host, HostListener, Input } from '@angular/core'
 })
 export class TooltipDirective {
   @Input('tooltip') tooltip: string = '';
+
+  @Input('position') position: string | undefined
+
   constructor(
     private element: ElementRef,
   ) { }
@@ -18,7 +21,7 @@ export class TooltipDirective {
     tooltip.innerHTML = this.tooltip;
     tooltip.style.position = 'absolute';
     tooltip.style.whiteSpace = 'nowrap';
-    tooltip.style.bottom = '150%';
+    tooltip.style.bottom = this.position && this.position === 'bottom' ?'-150%': '150%';
     tooltip.style.left = '0';
     tooltip.style.backgroundColor = 'black';
     tooltip.style.color = 'white';

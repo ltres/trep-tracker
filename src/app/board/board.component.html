@@ -1,4 +1,15 @@
 <div class="board-toolbar flex column align-items-end">
+  <div class="flex g-025 m-y-05">
+    <button (click)="setLayout('absolute')" 
+    [class.active]="board.layout === 'absolute'"
+    [position]="'bottom'" 
+    [tooltip]="'Unconstrained layout. Drag lanes around and resize them manually'">Free</button>
+
+    <button *ngFor="let col of getColumnIndexes(4)" (click)="setLayout('flex',col)" 
+    [class.active]="board.layout === 'flex' && board.flexColumns === col"
+    [position]="'bottom'" [tooltip]="col + ' column layout'">{{getLayoutSymbol(col)}}</button>
+  </div>
+
   <search class="m-b-1"></search>
   <div class="flex justify-content-end">
     <label class="translucent">Board:&nbsp;</label>
@@ -19,14 +30,29 @@
   </div>
   <button class="m-t-05"(click)="addLane()" >Add lane</button>
 </div>
-<ng-container *ngFor="let lane of lanes$ | async;trackBy: trackBy">
-  <lane 
-  [lane]="lane" 
-  [board]="this.board" 
-  [draggableDir]="lane" 
-  [containerEl]="el.nativeElement"
-  ></lane>
-</ng-container>  
+<ng-container *ngIf="board.layout === 'absolute'">
+  <ng-container *ngFor="let lane of lanes$ | async;trackBy: trackBy">
+    <lane 
+    class="absolute"
+    [lane]="lane" 
+    [board]="this.board" 
+    [draggableDir]="lane" 
+    [containerEl]="el.nativeElement"
+    ></lane>
+  </ng-container>  
+</ng-container>
+<ng-container *ngIf="board.layout === 'flex'">
+  <div class="flex column flex-child" *ngFor="let col of getColumnIndexes(board.flexColumns)">
+    <ng-container *ngFor="let lane of getLanesByColumn$(col) | async;trackBy: trackBy">
+      <lane 
+      class="static flex-child"
+      [lane]="lane" 
+      [board]="this.board" 
+      ></lane>
+    </ng-container>  
+  </div>
+</ng-container>
+
 
 
 

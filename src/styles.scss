@@ -118,8 +118,14 @@ p {
 
 .relative{
   position: relative;
-
 }
+.absolute{
+  position: absolute;
+}
+.static{
+  position: static;
+}
+
 button {
   border: none;
   border-radius: 0;

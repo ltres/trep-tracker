@@ -1,5 +1,5 @@
 import {  Inject, Injectable, Injector, NgZone } from "@angular/core";
-import { Board, Lane, Container, Task, Tag, tagIdentifiers, getNewBoard, getNewLane, Priority, addTagsForDoneAndArchived, archivedLaneId, Status, ISODateString, StateChangeDate } from "../types/task";
+import { Board, Lane, Container, Task, Tag, tagIdentifiers, getNewBoard, getNewLane, Priority, addTagsForDoneAndArchived, archivedLaneId, Status, ISODateString, StateChangeDate, ColumnNumber } from "../types/task";
 import { BehaviorSubject, Observable, map } from "rxjs";
 import { isPlaceholder, isStatic, setDateSafe } from "../utils/utils";
 import { TagService } from "./tag.service";
@@ -98,9 +98,16 @@ export class BoardService {
         this._boards$.next([...this._boards$.getValue(), board]);
     }
 
-    getLanes$(board: Board): Observable<Lane[]> {
+    getLanes$(board: Board, columnNumber?: ColumnNumber): Observable<Lane[]> {
         return this._boards$.pipe(
-            map(boards => boards.find(b => b.id === board.id)?.children || [])
+            map(boards => { 
+                let ret : Lane[] = [];
+                ret = boards.find(b => b.id === board.id)?.children || [] 
+                if(columnNumber){
+                    ret = ret.filter(l => l.columnNumber === columnNumber).sort((a, b) => a.index - b.index);
+                }
+                return ret;
+            })
         );
     }
 
@@ -734,6 +741,9 @@ export class BoardService {
         } else {
             // fixes to existing data and new fields
             for( let board of o.boards ){
+                board._type = 'board';
+                board.layout = board.layout ?? 'absolute';
+                board.flexColumns = board.flexColumns ?? undefined;
                 let des = this.getDescendants(board);
                 des.forEach(p => {
                     if (!p.creationDate) { 
@@ -745,10 +755,15 @@ export class BoardService {
                     if(!p.dates){
                         p.dates = {};
                     }
+                    if(this.isLane(p)){
+                        p.columnNumber = p.columnNumber ?? 1;
+                        p.index = p.index ?? 0;
+                    }
                     // @ts-ignore
                     if(this.isLane(p) && typeof p.isArchive === 'undefined'){
                         // @ts-ignore
                         p.isArchive = p.archive ?? false;
+
                     }
                     // @ts-ignore
                     if(this.isTask(p) && p.archived ){ 
