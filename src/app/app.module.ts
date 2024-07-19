@@ -33,6 +33,7 @@ import { MarkdownModule } from 'ngx-markdown';
 import { LogoComponent } from './dumb/logo/logo.component';
 import { DraggableDirective } from './directive/draggable.directive';
 import { HttpClientModule } from '@angular/common/http';
+import { BoardToolbarComponent } from './board-toolbar/board-toolbar.component';
  
 @NgModule({
     declarations: [
@@ -55,7 +56,8 @@ import { HttpClientModule } from '@angular/common/http';
          TimeBarComponent,
          AiAdvisorComponent,
          LogoComponent,
-         DraggableDirective 
+         DraggableDirective,
+         BoardToolbarComponent
         ],
     providers: [
         BoardService, 

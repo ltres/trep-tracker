@@ -14,6 +14,9 @@
     &.dragged{
         position: absolute;
     }
+    &:hover, &.dragged{
+        z-index: 100;
+    }
 }
 
 .lane-wrapper{

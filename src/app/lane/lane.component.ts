@@ -53,16 +53,6 @@ export class LaneComponent extends ContainerComponent implements OnInit {
     });
   }
 
-  @HostListener('document:click', ['$event'])
-  setZIndex($event: any) {
-    let el = this.el.nativeElement as HTMLElement;
-    if (el.contains($event.target)) {
-      el.style.zIndex = "100";
-    } else {
-      el.style.zIndex = "";
-    }
-  }
-
   @HostBinding('style.overflow-x')
   get overflowX(): string {
     return this.displayedInFixedLayout? 'visible' : (this.menuOpen || this.hoveringTooltip ? 'visible' : 'auto');

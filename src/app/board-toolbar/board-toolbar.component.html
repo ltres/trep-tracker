@@ -1,0 +1,14 @@
+<div class="board-toolbar flex column align-items-end">
+    <div class="flex g-025 m-y-05">
+        <button *ngFor="let layout of getLayouts()" (click)="setLayout(layout)" [class.active]="board.layout === layout" [position]="'bottom'" [tooltip]="layout + ' layout'">{{getLayoutSymbol(layout)}}</button>
+    </div>
+
+    <search class="m-b-1"></search>
+    <div class="flex justify-content-end">
+        <label class="translucent">Board:&nbsp;</label>
+        <div contenteditable="true" [(ngModel)]="board.textContent" [board]="board" (ngModelChange)="debounceBoardUpdate()" (onTagsChange)="updateBoardTags($event)" class="board-label"></div>
+        <prioritizer [container]="board" class="m-x-025"> </prioritizer>
+    </div>
+
+    <button class="m-t-05" (click)="addLane()">Add lane</button>
+</div>

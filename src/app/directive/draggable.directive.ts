@@ -162,7 +162,7 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
       this.deltaX = $event.clientX - node.getBoundingClientRect().left;
       this.deltaY = $event.clientY - node.getBoundingClientRect().top;
       node.style.position = 'absolute';
-      node.style.zIndex = "100";
+      //node.style.zIndex = "100";
       
       this.draggableDir.coordinates = this.calcRelativeCoordinates($event);
 
