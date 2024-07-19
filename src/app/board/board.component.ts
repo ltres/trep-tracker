@@ -27,10 +27,18 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
   @ViewChildren(LaneComponent,) laneComponents: QueryList<LaneComponent> | undefined;
 
   @HostBinding('style.height.px')
-  protected height: number | undefined = 0;
+  protected _height: number | undefined = 0;
+  protected get height(): number | undefined {
+    return this.board.layout === 'absolute' ? this._height : undefined;
+  };
 
+  private _width: number | undefined = 0;
   @HostBinding('style.width.px')
-  protected width: number | undefined = 0;
+
+  protected get width(): number | undefined {
+    return this.board.layout === 'absolute' ? this._width : undefined;
+  };
+
   @HostBinding('class')
   protected get layoutClass() {
     return this.board.layout;
@@ -58,21 +66,22 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
   }
 
   ngAfterViewInit(): void {
+    if(this.board.layout === 'absolute') return;
     this.subscriptions = this.boardService.boards$.subscribe(boards => {
       // set the board height basing on the childrens size.
       let boardEl = this.el.nativeElement as HTMLElement;
       let laneEls = boardEl.querySelectorAll('lane');
       setTimeout(() => {
-        this.height = 0;
-        this.width = 0;
+        this._height = 0;
+        this._width = 0;
         laneEls.forEach(laneEl => {
           let maxHeight = laneEl.getBoundingClientRect().height + laneEl.getBoundingClientRect().top + window.scrollY;
           if (maxHeight > (this.height ?? 0)) {
-            this.height = maxHeight;
+            this._height = maxHeight;
           }
           let maxWidth = laneEl.getBoundingClientRect().width + laneEl.getBoundingClientRect().left + window.scrollX;
           if (maxWidth > (this.width ?? 0)) {
-            this.width = maxWidth;
+            this._width = maxWidth;
           }
         });
       });

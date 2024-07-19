@@ -1,4 +1,4 @@
-<div class="board-toolbar flex column align-items-end g-05">
+<div class="board-toolbar flex column align-items-end g-05 m-x-05">
     <div class="flex g-025 align-items-center">
         <label class="translucent">Layout:&nbsp;</label> <button *ngFor="let layout of getLayouts()" (click)="setLayout(layout)" [class.active]="board.layout === layout" [position]="'bottom'" [tooltip]="layout + ' layout'">{{getLayoutSymbol(layout)}}</button>
     </div>
