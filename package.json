@@ -11,7 +11,7 @@
   "description": "A PM-Oriented task tracker",
   "scripts": {
     "ng": "ng",
-    "build-github-pages": "ng build --configuration github-pages",
+    "build-github-pages": "npx ng build --configuration github-pages",
     "start": "electron-forge start",
     "dev": "ng serve --configuration development",
     "build": "node update-versions.cjs && ng build --configuration electrified",
