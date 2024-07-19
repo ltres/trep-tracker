@@ -41,7 +41,6 @@ type LayoutProperties = {
 export interface Lane extends Container<Task> {
     _type: 'lane',
     showChildren: boolean,
-    index: number,
     isArchive: boolean,
     priority: Priority[] | undefined,
     status: Status[] | undefined,

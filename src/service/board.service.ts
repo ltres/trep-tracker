@@ -106,7 +106,7 @@ export class BoardService {
                 if(typeof columnNumber !== 'undefined'){
                     ret = ret.filter(l => { 
                         return l.layouts[board.layout].column === columnNumber;
-                    }).sort((a, b) => a.index - b.index);
+                    }).sort((a, b) => a.layouts[board.layout].order - b.layouts[board.layout].order);
                 }
                 return ret;
             })
@@ -726,6 +726,23 @@ export class BoardService {
         this._focusSearch$.next(false)
     }
 
+    reorderLayoutColumn(board: Board, lane: Lane, direction?: string) {
+        let colChildren = board.children.filter(l => l.layouts[board.layout].column === lane.layouts[board.layout].column).sort((a, b) => a.layouts[board.layout].order - b.layouts[board.layout].order);
+        if(direction){
+            let index = colChildren.findIndex(c => c.id === lane.id);
+            if (index === -1) {
+                throw new Error(`Cannot find lane with id ${lane.id}`);
+            }
+            let newIndex = direction === 'up' ? index - 1 : index + 1;
+            if (newIndex < 0 || newIndex >= colChildren.length) {
+                return;
+            }
+            colChildren.splice(index, 1);
+            colChildren.splice(newIndex, 0, lane);
+        }
+        colChildren.forEach((c, i) => c.layouts[board.layout].order = i);
+        this.publishBoardUpdate();
+    }
     
     /**
      * Deserializes the given data and updates the state of the board service.
@@ -759,10 +776,17 @@ export class BoardService {
                     }
                     if(this.isLane(p)){
                         //p.columnNumber = p.columnNumber ?? 1;
-                        p.index = p.index ?? 0;
+                        //p.index = p.index ?? 0;
                         if(!p.layouts){
                             // @ts-ignore
                             p.layouts = getLayouts(p.width);
+                        }
+                        for( let layout of Object.keys(Layouts) ){
+                            let l = layout as Layout;
+                            let thisColLayout = p.layouts[l];
+                            if( thisColLayout.column > Layouts[l].columns - 1 ){
+                                thisColLayout.column = Layouts[l].columns - 1;                           
+                            }
                         }
                     }
                     // @ts-ignore

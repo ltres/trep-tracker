@@ -38,10 +38,10 @@
   </ng-container>  
 </ng-container>
 <ng-template #flex>
-  <div class="flex column flex-child g-1" *ngFor="let col of getColumnIndexes(board.layout)">
-    <ng-container *ngFor="let lane of getLanesByColumn$(col) | async;trackBy: trackBy">
+  <div class="flex column flex-child g-1" *ngFor="let colIndex of getColumnIndexes(board.layout)">
+    <ng-container *ngFor="let lane of getLanesByColumn$(colIndex) | async;trackBy: trackBy">
       <lane 
-      class="static flex-child"
+      class="static"
       [displayedInFixedLayout]="true"
       [lane]="lane" 
       [board]="this.board" 

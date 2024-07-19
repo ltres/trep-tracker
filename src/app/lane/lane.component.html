@@ -24,6 +24,11 @@
       [staticLane]="isStatic()" > </status>
     </div>
     <div class="grow"></div>
+    <span [tooltip]="'Move left'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" *ngIf="displayedInFixedLayout" (click)="moveLane('up')">↑</span>
+    <span [tooltip]="'Move right'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" *ngIf="displayedInFixedLayout" (click)="moveLane('down')">↓</span>
+    <span [tooltip]="'Move left'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" *ngIf="displayedInFixedLayout" (click)="moveLane('left')">←</span>
+    <span [tooltip]="'Move right'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" *ngIf="displayedInFixedLayout" (click)="moveLane('right')">→</span>
+
     <span [tooltip]="'Show child tasks'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" *ngIf="isStatic() && lane.showChildren" (click)="toggleShowChildren()"><span class="completed">☑</span></span>
     <span [tooltip]="'Show child tasks'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" *ngIf="isStatic() && !lane.showChildren" (click)="toggleShowChildren()">☐</span>
     <div class="no-grow relative flex align-items-center">

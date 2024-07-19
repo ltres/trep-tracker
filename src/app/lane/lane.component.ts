@@ -22,12 +22,13 @@ import { ContainerComponent } from '../base/base.component';
 })
 export class LaneComponent extends ContainerComponent implements OnInit {
 
+
   @ViewChildren(TaskComponent, { read: ElementRef }) taskComponentsElRefs: QueryList<ElementRef> | undefined;
   @ViewChildren(TaskComponent) taskComponents: QueryList<TaskComponent> | undefined;
   @Input() lane!: Lane;
   @Input() board!: Board;
   @Input() displayedInFixedLayout: boolean = false;
-
+  
   menuOpen = false
   hoveringTooltip = false
 
@@ -139,7 +140,16 @@ export class LaneComponent extends ContainerComponent implements OnInit {
   togglePriority(prio: Priority[] | Priority | undefined) {
     this.lane.priority = Array.isArray(prio) ? prio : (prio ? [prio] : undefined);
     this.boardService.publishBoardUpdate()
-
   }
 
+  moveLane(direction: 'right' | 'left' | 'up' | 'down') {
+    if(direction === 'up' || direction === 'down'){
+      this.boardService.reorderLayoutColumn(this.board, this.lane, direction);
+    }else{
+      this.lane.layouts[this.board.layout].column = this.lane.layouts[this.board.layout].column + (direction === 'right' ? 1 : -1);
+      this.boardService.reorderLayoutColumn(this.board, this.lane);
+    }
+
+    this.boardService.publishBoardUpdate();
+  }
 }
