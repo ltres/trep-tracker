@@ -21,7 +21,7 @@ export class TooltipDirective {
     tooltip.innerHTML = this.tooltip;
     tooltip.style.position = 'absolute';
     tooltip.style.whiteSpace = 'nowrap';
-    tooltip.style.bottom = this.position && this.position === 'bottom' ?'-150%': '150%';
+    tooltip.style.bottom = this.position && this.position === 'bottom' ?'-250%': '150%';
     tooltip.style.left = '0';
     tooltip.style.backgroundColor = 'black';
     tooltip.style.color = 'white';
