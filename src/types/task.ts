@@ -144,7 +144,7 @@ export const getNewTask: (lane: Lane, textContent?: string | undefined) => Task 
     return {
         id: uuid,
         createdLaneId: lane.id,
-        textContent: textContent ?? `Task ${uuid}`,
+        textContent: typeof textContent != 'undefined' ? textContent : `Task ${uuid}`,
         children: [],
         tags: [],
         dates: {

@@ -154,8 +154,8 @@ export class LaneComponent extends ContainerComponent implements OnInit {
     }
     return false;
   }
-  moveToBoardDialog(){
-    
+  autoSort(){
+    this.boardService.autoSort(this.lane);
   }
 
 }

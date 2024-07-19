@@ -4,6 +4,7 @@ data-consider-for-overlapping-checks="true"
 [class.selected]="this.selected"
 [class.archived]="this.task.status === 'archived'"
 [class]="this.task.status"
+[style]="this.task.priority === 4 ? 'font-weight: bolder' : ''"
 (click)="clickTask($event)" 
 
 >

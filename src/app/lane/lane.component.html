@@ -35,6 +35,8 @@
 
       <div [position]="'bottom'" [tooltip]="'Lane menu'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small  no-grow" (click)="menuOpen = !menuOpen; $event.stopPropagation()">☰</div>
       <lane-menu *ngIf="menuOpen" [lane]="lane" (onClose)="menuOpen = false">
+        <button class="small no-grow" *ngIf="!isStatic() && !isArchive(lane) " (click)="autoSort()">✨ Auto-sort tasks</button>
+
         <button class="small no-grow" *ngIf="!isStatic() && !isArchive(lane) " (click)="archiveDones()">☢️ Archive dones </button>
         <button class="small no-grow" *ngIf="!isStatic()" (click)="showMoveToBoards=!showMoveToBoards">🚛 Move to board..</button>
         <div *ngIf="showMoveToBoards" class="p-x-05 flex column g-025">

@@ -1,5 +1,5 @@
 import {  Inject, Injectable, Injector, NgZone } from "@angular/core";
-import { Board, Lane, Container, Task, Tag, tagIdentifiers, getNewBoard, getNewLane, Priority, addTagsForDoneAndArchived, archivedLaneId, Status, ISODateString, StateChangeDate, Layouts, Layout, getLayouts } from "../types/task";
+import { Board, Lane, Container, Task, Tag, tagIdentifiers, getNewBoard, getNewLane, Priority, addTagsForDoneAndArchived, archivedLaneId, Status, ISODateString, StateChangeDate, Layouts, Layout, getLayouts, Statuses, Priorities, getNewTask } from "../types/task";
 import { BehaviorSubject, Observable, map } from "rxjs";
 import { isPlaceholder, isStatic, setDateSafe } from "../utils/utils";
 import { TagService } from "./tag.service";
@@ -704,6 +704,43 @@ export class BoardService {
         }
         parent.children = parent.children.filter(c => c.id !== task.id);
         this._boards$.next(boards);
+    }
+
+    // Sorts first-level child by priority, and then by status
+    autoSort(lane: Lane){
+        let children = lane.children;
+        children = children.filter( c => !isPlaceholder(c) ).sort((a, b) => {
+            if( b.priority > a.priority ){
+                return 1;
+            }else if( b.priority < a.priority ){
+                return -1;
+            }else{
+                return Object.keys(Statuses).indexOf(a.status) - Object.keys(Statuses).indexOf(b.status);
+            }
+        } );
+
+        // insert a placeholder when the children priority changes respect to the previous one:
+        let prevPriority: Priority | undefined;
+        let i = 0;
+        while( i < children.length ){
+            if(isPlaceholder(children[i])){
+                i++;
+                prevPriority = undefined;
+                continue;
+
+            };
+            if( prevPriority && children[i].priority !== prevPriority ){
+                children.splice(i, 0, getNewTask(lane,""));
+                children.splice(i, 0, getNewTask(lane,""));
+                i++;
+                continue;
+            }
+            prevPriority = children[i].priority;
+            i++;
+        }
+
+        lane.children = children;
+        this.publishBoardUpdate();
     }
 
     archiveDones(board: Board, lane: Lane) {
