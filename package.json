@@ -11,7 +11,7 @@
   "description": "A PM-Oriented task tracker",
   "scripts": {
     "ng": "ng",
-    "build-github-pages": "npx ng build --configuration github-pages",
+    "build-github-pages": "ng build --configuration github-pages",
     "start": "electron-forge start",
     "dev": "ng serve --configuration development",
     "build": "node update-versions.cjs && ng build --configuration electrified",
@@ -36,8 +36,6 @@
     "@angular/platform-browser": "^17.3.0",
     "@angular/platform-browser-dynamic": "^17.3.0",
     "@angular/router": "^17.3.0",
-    "@anthropic-ai/sdk": "^0.24.3",
-    "axios": "^1.7.2",
     "electron-context-menu": "^4.0.0",
     "electron-squirrel-startup": "^1.0.1",
     "marked": "^12.0.2",
