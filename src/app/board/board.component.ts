@@ -34,9 +34,13 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
 
   private _width: number | undefined = 0;
   @HostBinding('style.width.px')
-
   protected get width(): number | undefined {
     return this.board.layout === 'absolute' ? this._width : undefined;
+  };
+
+  @HostBinding('class.absolute')
+  protected get minWidth(): boolean {
+    return this.board.layout === 'absolute';
   };
 
   @HostBinding('class')

@@ -4,9 +4,13 @@
     flex-grow: 1;
     //height: 100vh;
     //width: 100vw;
+    padding:$board-padding;
     display: flex;
     gap:1rem;
     z-index: 5;
-    min-width: 100%;
+
     min-height: 300px;
+    &.absolute{
+        min-width: calc(100% - 2 * $board-padding);
+    }
 }
