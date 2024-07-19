@@ -24,10 +24,10 @@
       [staticLane]="isStatic()" > </status>
     </div>
     <div class="grow"></div>
-    <span [position]="'bottom'" [tooltip]="'Move left'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" *ngIf="displayedInFixedLayout" (click)="moveLane('up')">↑</span>
-    <span [position]="'bottom'" [tooltip]="'Move right'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" *ngIf="displayedInFixedLayout" (click)="moveLane('down')">↓</span>
-    <span [position]="'bottom'" [tooltip]="'Move left'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" *ngIf="displayedInFixedLayout" (click)="moveLane('left')">←</span>
-    <span [position]="'bottom'" [tooltip]="'Move right'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" *ngIf="displayedInFixedLayout" (click)="moveLane('right')">→</span>
+    <span [position]="'bottom'" [tooltip]="'Move left'" *ngIf="displayedInFixedLayout && canMove('up')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" (click)="moveLane('up')">↑</span>
+    <span [position]="'bottom'" [tooltip]="'Move right'" *ngIf="displayedInFixedLayout && canMove('down')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow"  (click)="moveLane('down')">↓</span>
+    <span [position]="'bottom'" [tooltip]="'Move left'" *ngIf="displayedInFixedLayout && canMove('left')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow"  (click)="moveLane('left')">←</span>
+    <span [position]="'bottom'" [tooltip]="'Move right'" *ngIf="displayedInFixedLayout && canMove('right')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow"  (click)="moveLane('right')">→</span>
 
     <span [position]="'bottom'" [tooltip]="'Show child tasks'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" *ngIf="isStatic() && lane.showChildren" (click)="toggleShowChildren()"><span class="completed">☑</span></span>
     <span [position]="'bottom'" [tooltip]="'Show child tasks'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" *ngIf="isStatic() && !lane.showChildren" (click)="toggleShowChildren()">☐</span>

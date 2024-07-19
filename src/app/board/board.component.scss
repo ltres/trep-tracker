@@ -13,4 +13,7 @@
     &.absolute{
         min-width: calc(100% - 2 * $board-padding);
     }
+    &:not(.absolute){
+        height: unset !important;
+    }
 }

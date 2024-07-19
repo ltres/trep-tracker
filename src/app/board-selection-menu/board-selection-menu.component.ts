@@ -14,6 +14,8 @@ export class BoardSelectionMenuComponent implements AfterContentInit{
   boards: Board[] | undefined
   availablePriorities: Priority[] = Priorities;
 
+  open: boolean = true;
+
   constructor(protected boardService: BoardService){}
 
   ngAfterContentInit(): void {

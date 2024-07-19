@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, HostBinding, HostListener, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { Board, Container, Lane, Priority, Status, Tag, Task, archivedLaneId, getNewTask } from '../../types/task';
+import { Board, Container, Lane, Layouts, Priority, Status, Tag, Task, archivedLaneId, getNewTask } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 import { generateUUID, hashCode, isArchive, isStatic } from '../../utils/utils';
 import { Observable } from 'rxjs';
@@ -142,4 +142,17 @@ export class LaneComponent extends ContainerComponent implements OnInit {
 
     this.boardService.publishBoardUpdate();
   }
+  canMove(direction: 'right' | 'left' | 'up' | 'down'): boolean {
+    if(direction === 'up'){
+      return this.lane.layouts[this.board.layout].order > 0;
+    }else if(direction === 'down'){
+      return this.board.children.filter(c => c.layouts[this.board.layout].column === this.lane.layouts[this.board.layout].column).length > this.lane.layouts[this.board.layout].order + 1;
+    }else if(direction === 'left'){
+      return this.lane.layouts[this.board.layout].column > 0;
+    }else if(direction === 'right'){
+      return this.lane.layouts[this.board.layout].column < Layouts[this.board.layout].columns - 1;
+    }
+    return false;
+  }
+
 }
