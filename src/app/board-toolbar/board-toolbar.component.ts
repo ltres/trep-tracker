@@ -10,7 +10,7 @@ import { Board, Layout, Layouts, Tag } from '../../types/task';
 export class BoardToolbarComponent {
   @Input() board!: Board;
   debounce: any;
-
+  open: boolean = true;
   constructor( protected boardService: BoardService ) { }
 
 
