@@ -33,7 +33,7 @@ export class LaneComponent extends ContainerComponent implements OnInit {
   hoveringTooltip = false
 
   draggingInside = false
-
+  showMoveToBoards = false;
   debounce: any;
 
   constructor(
@@ -153,6 +153,9 @@ export class LaneComponent extends ContainerComponent implements OnInit {
       return this.lane.layouts[this.board.layout].column < Layouts[this.board.layout].columns - 1;
     }
     return false;
+  }
+  moveToBoardDialog(){
+    
   }
 
 }

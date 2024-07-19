@@ -35,9 +35,14 @@
 
       <div [position]="'bottom'" [tooltip]="'Lane menu'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small  no-grow" (click)="menuOpen = !menuOpen; $event.stopPropagation()">☰</div>
       <lane-menu *ngIf="menuOpen" [lane]="lane" (onClose)="menuOpen = false">
-        <button class="small no-grow" *ngIf="!isStatic() && !isArchive(lane) " (click)="archiveDones()">☢ Archive dones </button>
-
-        <button class="small danger no-grow" *ngIf="(tasks | async)?.length == 0" (click)="deleteLane()">␡ Delete lane</button>
+        <button class="small no-grow" *ngIf="!isStatic() && !isArchive(lane) " (click)="archiveDones()">☢️ Archive dones </button>
+        <button class="small no-grow" *ngIf="!isStatic()" (click)="showMoveToBoards=!showMoveToBoards">🚛 Move to board..</button>
+        <div *ngIf="showMoveToBoards" class="p-x-05 flex column g-025">
+          <ng-container *ngFor="let otherBoard of this.boardService.boards$ | async">
+            <button class="small w-100 flex-child" *ngIf="otherBoard.id !== board.id" (click)="showMoveToBoards = false; boardService.moveToBoard(board, lane, otherBoard)" >{{otherBoard.textContent}}</button>
+          </ng-container>
+        </div>
+        <button class="small danger no-grow" *ngIf="(tasks | async)?.length == 0" (click)="deleteLane()">🗑️ Delete lane</button>
         <button class="small no-grow" *ngIf="(isStatic() || isArchive(lane)) && !lane.showChildren" (click)="toggleShowChildren()">☐ Show Children </button>
         <button class="small no-grow" *ngIf="(isStatic() || isArchive(lane)) && lane.showChildren" (click)="toggleShowChildren()"><span class="completed">☑</span> Show Children </button>
     

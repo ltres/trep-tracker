@@ -743,6 +743,11 @@ export class BoardService {
         colChildren.forEach((c, i) => c.layouts[board.layout].order = i);
         this.publishBoardUpdate();
     }
+    moveToBoard(currentBoard: Board, lane:Lane, targetBoard: Board){
+        currentBoard.children = currentBoard.children.filter(c => c.id !== lane.id);
+        targetBoard.children.unshift(lane);
+        this.publishBoardUpdate();
+    }
     
     /**
      * Deserializes the given data and updates the state of the board service.
