@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Lane, Task, Status, archivedLaneId, ISODateString, Container } from '../types/task';
+import { Lane, Task, Status, archivedLaneId, ISODateString, Container, DayDateString } from '../types/task';
 
 export function generateUUID(): string {
     return uuidv4().substring(0, 6);
@@ -156,6 +156,15 @@ export function setDateSafe(container: Container, status: Status, enterOrLeave: 
         container.dates[status] = {};
     }
     container.dates[status]![enterOrLeave] = date.toISOString() as ISODateString;
+}
+
+export function getIsoString(date: Date): ISODateString{
+    return date.toISOString() as ISODateString;
+}
+
+export function getDayDate(date: Date): DayDateString{
+    const formattedDate = `${date.getDate() >= 10 ? date.getDate() : '0' + date.getDate()}-${date.getMonth() + 1  >= 10 ? date.getMonth() + 1 : "0" + (date.getMonth() + 1) }-${date.getFullYear()}`;
+    return formattedDate as DayDateString;
 }
 
 export function formatDate(date: ISODateString) {

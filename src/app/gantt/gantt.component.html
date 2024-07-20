@@ -1,0 +1,15 @@
+
+<div class="task flex column" >
+    <div *ngFor="let task of tasks">
+        <div class="content"  [innerHTML]="task.textContent">
+
+        </div>
+        <div class="dates">
+            from <dp-date-picker format="MM-DD-YYYY" [ngModel]="getTaskGanttDate(task,'start')" (ngModelChange)="setTaskGanttDate(task,'start', $event)" theme="dp-material"></dp-date-picker> 
+            to <dp-date-picker format="MM-DD-YYYY" [ngModel]="getTaskGanttDate(task,'end')" (ngModelChange)="setTaskGanttDate(task,'end', $event)" theme="dp-material"></dp-date-picker>
+        </div>
+    </div>
+</div>
+<div class="lines grow flex column" >
+    <div id="gantt" class="gantt-target dark"></div>
+</div>

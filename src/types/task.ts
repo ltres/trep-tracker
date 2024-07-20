@@ -53,6 +53,10 @@ export interface Task extends Container<Task> {
     priority: Priority,
     status: Status,
     notes?: string,
+    gantt?: {
+        start: ISODateString,
+        end: ISODateString
+    }   
 }
 
 export interface Container<T extends Container<any> = any> {
@@ -98,6 +102,9 @@ export const Statuses = {
     completed: {
         icon: "✅",
     },
+    gantterized: {
+        icon: "📊",
+    },
     discarded: {
         icon: "🗑️",
     },
@@ -116,6 +123,7 @@ export type StateChangeDate = {
 };
 
 export type ISODateString = `${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`
+export type DayDateString = `${number}-${number}-${number}`
 
 export const addTagsForDoneAndArchived = false
 

@@ -6,7 +6,6 @@
 @import "assets/animations";
 
 
-
 html {
   background-color: $background-color;
   color: $text-color;
@@ -126,7 +125,7 @@ p {
   position: static;
 }
 
-button {
+button:not([type="button"]) {
   border: none;
   border-radius: 0;
   padding: 0.2rem 1rem!important;
@@ -361,6 +360,12 @@ input, textarea{
   display: inline-block;
 }
 
+.gantter-icon:after{
+  content: "📊";
+  display: inline-block;
+  transform: rotate(90deg);
+}
+
 .loading::after{
   content:"🌐";
   display: inline-block;
@@ -368,4 +373,12 @@ input, textarea{
   top:-2rem;
   right: 0;
   animation: pulse 1s ease 0s infinite normal forwards;
+}
+
+.cdk-overlay-container{
+  z-index: 1000;
+  color: black;
+  * {
+    color: black;
+  }
 }

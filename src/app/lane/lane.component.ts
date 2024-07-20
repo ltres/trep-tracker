@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, HostBinding, HostListener, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, HostBinding, HostListener, Input, OnInit, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
 import { Board, Container, Lane, Layouts, Priority, Status, Tag, Task, archivedLaneId, getNewTask } from '../../types/task';
 import { BoardService } from '../../service/board.service';
 import { generateUUID, hashCode, isArchive, isStatic } from '../../utils/utils';
@@ -8,6 +8,7 @@ import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
 import { ContainerComponentRegistryService } from '../../service/registry.service';
 import { ContainerComponent } from '../base/base.component';
+import { ModalService } from '../../service/modal.service';
 
 @Component({
   selector: 'lane[lane][board]',
@@ -26,7 +27,9 @@ export class LaneComponent extends ContainerComponent implements OnInit {
   @Input() lane!: Lane;
   @Input() board!: Board;
   @Input() displayedInFixedLayout: boolean = false;
-  
+  @ViewChild('gantt') ganttTemplate: TemplateRef<any> | null = null;
+
+
   menuOpen = false
   hoveringTooltip = false
 
@@ -39,6 +42,7 @@ export class LaneComponent extends ContainerComponent implements OnInit {
     protected dragService: DragService,
     protected keyboardService: KeyboardService,
     protected override registry: ContainerComponentRegistryService,
+    protected modalService: ModalService,
     public override el: ElementRef,
     private cdr: ChangeDetectorRef) {
     super(registry, el);
@@ -167,6 +171,15 @@ export class LaneComponent extends ContainerComponent implements OnInit {
   }
   autoSort(){
     this.boardService.autoSort(this.lane);
+  }
+
+  openGantt() {
+    this.modalService.setModalContent(this.ganttTemplate);
+    this.modalService.setDisplayModal(true, 'full');
+  }
+
+  getGanttTasks(): Task[] {
+    return this.lane.children.filter(t => t.status === 'gantterized');
   }
 
 }

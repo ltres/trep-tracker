@@ -37,6 +37,8 @@ import { BoardToolbarComponent } from './board-toolbar/board-toolbar.component';
 import { NotesComponent } from './notes/notes.component';
 import { ClickComponent } from './click/click.component';
 import { ClickService } from '../service/click.service';
+import { GanttComponent } from './gantt/gantt.component';
+import { DpDatePickerModule } from 'ng2-date-picker';
  
 @NgModule({
     declarations: [
@@ -62,7 +64,9 @@ import { ClickService } from '../service/click.service';
          DraggableDirective,
          BoardToolbarComponent,
          NotesComponent,
-         ClickComponent
+         ClickComponent,
+         GanttComponent,
+         
         ],
     providers: [
         BoardService, 
@@ -89,7 +93,8 @@ import { ClickService } from '../service/click.service';
         ReactiveFormsModule,
         KeyboardListenerComponent,
         MarkdownModule.forRoot(),
-        HttpClientModule
+        HttpClientModule,
+        DpDatePickerModule 
     ]
 })
 export class AppModule { }

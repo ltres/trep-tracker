@@ -30,7 +30,7 @@ export class AppComponent implements AfterViewInit {
       //this.board = board
     })
     this.modalService.displayModal$.subscribe(display => {
-      setTimeout(() => { this.displayModal = display; })    
+      setTimeout(() => { this.displayModal = display.show; })    
     });
   }
 
