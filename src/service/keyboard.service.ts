@@ -79,6 +79,10 @@ export class KeyboardService {
         }
         this.boardService.removeChildrenAndAddAsSibling(parent, this.boardService.selectedTasks);
       }else if(e.key === 'Enter'){
+        let t = e.target as HTMLElement;
+        if(t && !t.classList.contains('task-text-content')){
+          return;
+        } 
         // Create new task
         let {task:selTask, el, caretPos} = this.getLastSelectedTaskData();
 
