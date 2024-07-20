@@ -6,6 +6,7 @@ import { KeyboardService } from '../../service/keyboard.service';
 import { hashCode, isPlaceholder, isStatic, setCaretPosition } from '../../utils/utils';
 import { ContainerComponentRegistryService } from '../../service/registry.service';
 import { ContainerComponent } from '../base/base.component';
+import { ClickService } from '../../service/click.service';
 
 @Component({
   selector: 'task[task][lane][parent][board]',
@@ -19,6 +20,7 @@ import { ContainerComponent } from '../base/base.component';
   ]
 })
 export class TaskComponent extends ContainerComponent implements OnInit, OnDestroy {
+
   @ViewChild('editor') editor: ElementRef | undefined;
   @Input() task!: Task;
   @Input() lane!: Lane;
@@ -32,6 +34,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
 
   editorActive: boolean = false;
   selected: boolean = false;
+  showNotes: boolean = false;
   debounce: any;
 
 
@@ -40,6 +43,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     protected dragService: DragService,
     protected keyboardService: KeyboardService,
     protected override registry: ContainerComponentRegistryService,
+    private clickService: ClickService,
     public override el: ElementRef,
     protected cdr: ChangeDetectorRef,
   ) {
@@ -50,7 +54,6 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   override get container(): Container {
     return this.task;
   }
-
 
   updateValue( $event: Event) {
     this.task.textContent = ($event.target as HTMLElement).innerHTML ?? '';
@@ -87,6 +90,14 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
       }
       this.cdr.detectChanges();
     })
+    this.subscriptions = this.clickService.click$.subscribe((target) => {
+      if(!this.el.nativeElement.contains(target)) {
+        setTimeout(() => {
+          this.showNotes = false;
+          this.cdr.detectChanges();
+        })
+      }
+    });
   }
 
   clickTask($event: MouseEvent) {
@@ -100,7 +111,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
  */
   dragEnd($event: DragEvent) {
     this.boardService.clearSelectedTasks();
-    this.boardService.toggleTaskSelection(this.task);
+    this.boardService.toggleTaskSelection(this.lane, this.task);
   }
 
   onDragStart($event: DragEvent) {
@@ -108,18 +119,18 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
       this.boardService.clearSelectedTasks();
     }
     if (!this.selected) {
-      this.boardService.toggleTaskSelection(this.task);
+      this.boardService.toggleTaskSelection(this.lane, this.task);
     }
   }
 
   activateEditorOnTask() {
     this.boardService.activateEditorOnTask(this.lane, this.task, undefined);
     this.boardService.clearSelectedTasks();
-    this.boardService.toggleTaskSelection(this.task);
+    this.boardService.toggleTaskSelection(this.lane,this.task);
   }
 
   selectTask() {
-    this.boardService.toggleTaskSelection(this.task);
+    this.boardService.toggleTaskSelection(this.lane, this.task);
     this.boardService.activateEditorOnTask(this.lane, this.task, undefined);
   }
 
@@ -178,4 +189,8 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     return hashCode(task.id);
   }
 
+  storeNotes(ev: string) {
+    this.task.notes = ev; 
+    this.boardService.publishBoardUpdate()
+  }
 }

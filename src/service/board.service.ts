@@ -20,7 +20,7 @@ export class BoardService {
     //private _allNuked$: BehaviorSubject<Task[]> = new BehaviorSubject<Task[]>([]);
 
     private _selectedTasks$: BehaviorSubject<Task[] | undefined> = new BehaviorSubject<Task[] | undefined>(undefined);
-    private _lastSelectedTask$: BehaviorSubject<Task | undefined> = new BehaviorSubject<Task | undefined>(undefined);
+    private _lastSelectedTask$: BehaviorSubject<{lane: Lane,task:Task} | undefined> = new BehaviorSubject<{lane: Lane,task:Task} | undefined>(undefined);
     private _focusSearch$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
     private tagService!: TagService;
@@ -133,7 +133,7 @@ export class BoardService {
                     }
                 }
                 if(excldeArchived){
-                    res = res?.filter(t => t.status !== 'archived');
+                    // res = res?.filter(t => t.status !== 'archived');
                 }
 
                 const regex = /[\-\.\:TZ]/g;
@@ -257,23 +257,23 @@ export class BoardService {
         this._editorActiveTask$.next({ lane, task, startingCaretPosition: caretPosition });
     }
 
-    toggleTaskSelection(task: Task) {
+    toggleTaskSelection(lane: Lane, task: Task) {
         let cur = this._selectedTasks$.getValue() || [];
         if (cur?.find(t => t.id === task.id)) {
             cur = cur.filter(t => t.id !== task.id);
         } else {
             cur?.push(task);
         }
-        this._lastSelectedTask$.next(task);
+        this._lastSelectedTask$.next({lane,task});
         this._selectedTasks$.next(cur);
     }
-    addToSelection(task: Task) {
+    addToSelection(lane: Lane, task: Task) {
         let cur = this._selectedTasks$.getValue() || [];
         if (cur?.find(t => t.id === task.id)) {
             return;
         }
         cur?.push(task);
-        this._lastSelectedTask$.next(task);
+        this._lastSelectedTask$.next({lane,task});
         this._selectedTasks$.next(cur);
     }
     clearSelectedTasks() {
@@ -290,7 +290,7 @@ export class BoardService {
     get selectedTasks$(): Observable<Task[] | undefined> {
         return this._selectedTasks$;
     }
-    get lastSelectedTask$(): Observable<Task | undefined> {
+    get lastSelectedTask$(): Observable<{lane: Lane,task:Task} | undefined> {
         return this._lastSelectedTask$;
     }
     get selectedBoard$(): Observable<Board | undefined> {
@@ -320,9 +320,10 @@ export class BoardService {
     get parents(): Container[] | undefined {
         return this._allParents$.getValue();
     }
-    get lastSelectedTask(): Task | undefined {
+    get lastSelectedTask(): {lane: Lane,task:Task} | undefined {
         return this._lastSelectedTask$.getValue();
     }
+    
     get selectedTasks(): Task[] | undefined {
         return this._selectedTasks$.getValue();
     }

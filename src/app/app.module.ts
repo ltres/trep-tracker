@@ -34,6 +34,9 @@ import { LogoComponent } from './dumb/logo/logo.component';
 import { DraggableDirective } from './directive/draggable.directive';
 import { HttpClientModule } from '@angular/common/http';
 import { BoardToolbarComponent } from './board-toolbar/board-toolbar.component';
+import { NotesComponent } from './notes/notes.component';
+import { ClickComponent } from './click/click.component';
+import { ClickService } from '../service/click.service';
  
 @NgModule({
     declarations: [
@@ -57,7 +60,9 @@ import { BoardToolbarComponent } from './board-toolbar/board-toolbar.component';
          AiAdvisorComponent,
          LogoComponent,
          DraggableDirective,
-         BoardToolbarComponent
+         BoardToolbarComponent,
+         NotesComponent,
+         ClickComponent
         ],
     providers: [
         BoardService, 
@@ -66,6 +71,7 @@ import { BoardToolbarComponent } from './board-toolbar/board-toolbar.component';
         ContainerComponentRegistryService, 
         TagService, 
         ModalService,
+        ClickService,
         {
             provide: 'StorageServiceAbstract',
             useClass: environment.storageService

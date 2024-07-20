@@ -52,6 +52,7 @@ export interface Task extends Container<Task> {
     createdLaneId: string,
     priority: Priority,
     status: Status,
+    notes?: string,
 }
 
 export interface Container<T extends Container<any> = any> {

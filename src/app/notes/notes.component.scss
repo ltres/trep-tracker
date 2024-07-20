@@ -1,0 +1,13 @@
+@import "../../assets/variables";
+@import "../../assets/mixins";
+:host{
+    position: absolute;
+    left: 100%;
+    top:0;
+    z-index: 110;
+    isolation: isolate
+}
+.notes{
+    @include lane-style;
+    min-width: 40rem;
+}

@@ -21,8 +21,6 @@ import { ContainerComponent } from '../base/base.component';
   ]
 })
 export class LaneComponent extends ContainerComponent implements OnInit {
-
-
   @ViewChildren(TaskComponent, { read: ElementRef }) taskComponentsElRefs: QueryList<ElementRef> | undefined;
   @ViewChildren(TaskComponent) taskComponents: QueryList<TaskComponent> | undefined;
   @Input() lane!: Lane;
@@ -51,12 +49,21 @@ export class LaneComponent extends ContainerComponent implements OnInit {
     this.boardService.boards$.subscribe(boards => {
       this.cdr.detectChanges();
     });
+    this.boardService.lastSelectedTask$.subscribe(lastSelectedTask => {
+      if(lastSelectedTask?.lane.id === this.lane.id){
+        this.active = true;
+      }else{
+        this.active = false;
+      }
+    });
   }
 
   @HostBinding('style.overflow-x')
   get overflowX(): string {
     return this.displayedInFixedLayout? 'visible' : (this.menuOpen || this.hoveringTooltip ? 'visible' : 'auto');
   }
+  @HostBinding('class.active')
+  active: boolean = false
 
   override get container(): Container {
     return this.lane;
@@ -84,7 +91,7 @@ export class LaneComponent extends ContainerComponent implements OnInit {
     let task: Task = getNewTask(this.lane, undefined);
     this.boardService.addAsChild(this.lane, [task]);
     this.boardService.clearSelectedTasks();
-    this.boardService.toggleTaskSelection(task);
+    this.boardService.toggleTaskSelection(this.lane, task);
     this.boardService.activateEditorOnTask(this.lane, task, 0);
   }
 

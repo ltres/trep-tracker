@@ -1,5 +1,6 @@
 import { Component, ElementRef, EventEmitter, HostListener, Input, Output } from '@angular/core';
 import { Lane } from '../../types/task';
+import { ClickService } from '../../service/click.service';
 
 @Component({
   selector: 'lane-menu[lane]',
@@ -10,16 +11,14 @@ export class LaneMenuComponent {
   @Input() lane!: Lane;
   @Output() onClose = new EventEmitter<void>();
 
-  constructor(private eRef: ElementRef) {
-    
+  constructor(
+    private clickService: ClickService,
+    private eRef: ElementRef) {
+    this.clickService.click$.subscribe((target) => {
+      if(!this.eRef.nativeElement.contains(target)) {
+        this.onClose.emit();
+      }
+    });
   }
 
-  @HostListener('document:click', ['$event'])
-  clickout(event: { target: any; }) {
-    if(this.eRef.nativeElement.contains(event.target)) {
-      //this.text = "clicked inside";
-    } else {
-      this.onClose.emit();
-    }
-  }
 }

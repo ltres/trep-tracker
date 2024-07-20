@@ -1,5 +1,6 @@
 <div class="lane-wrapper p-x-05 p-y-025"  
 [class.archive-lane]="isArchive(lane)"
+
 [class.static-view]="isStatic() && (tasks | async)?.length === 0" data-consider-for-overlapping-checks="true">
   <div class="lane-toolbar flex align-items-center g-05 ">
     <div class="grow no-wrap flex align-items-center g-05" >

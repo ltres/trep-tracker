@@ -53,13 +53,13 @@ export class KeyboardService {
           }else{
             // Select multiple case
             this.boardService.activateEditorOnTask(lane, nearby, caretPos);
-            this.boardService.addToSelection(nearby);
+            this.boardService.addToSelection(lane,nearby);
           }
         } else {
           // Select next/previous case
           this.boardService.activateEditorOnTask(lane , nearby, caretPos);
           this.boardService.clearSelectedTasks();
-          this.boardService.addToSelection(nearby);
+          this.boardService.addToSelection(lane,nearby);
         }
       } else if (e.key === 'ArrowRight' && e.ctrlKey === true) {
         // Make this task a child of the task on the top
@@ -91,7 +91,7 @@ export class KeyboardService {
           return;
         }*/
         let parentObject = this.boardService.findDirectParent(this.boardService.selectedTasks);
-        let sibling: Container | undefined = this.boardService.lastSelectedTask;
+        let sibling: Container | undefined = this.boardService.lastSelectedTask?.task;
         while(parentObject && !this.boardService.isLane(parentObject)){
           sibling = parentObject
           parentObject = this.boardService.findDirectParent([parentObject]);
@@ -109,7 +109,7 @@ export class KeyboardService {
         this.boardService.addAsSiblings(parentObject, sibling, [task], !isPlaceholder(task) && caretPos === 0 ? "before" : "after");
         this.boardService.activateEditorOnTask(parentObject, task, 0);
         this.boardService.clearSelectedTasks();
-        this.boardService.addToSelection(task);
+        this.boardService.addToSelection(parentObject, task);
       }else if(e.key === 'Backspace' || e.key === 'Delete'){
         // Delete placeholder
 
@@ -126,14 +126,14 @@ export class KeyboardService {
           this.boardService.deleteTask(task);
           this.boardService.activateEditorOnTask(lane, bottomTask, 0);
           this.boardService.clearSelectedTasks();
-          this.boardService.addToSelection(bottomTask);
+          this.boardService.addToSelection(lane,bottomTask);
         }
       }
     });
   }
 
   private getLastSelectedTaskData(): {task: Task, el: Node | undefined, caretPos: number} { 
-    let task = this.boardService.lastSelectedTask;
+    let task = this.boardService.lastSelectedTask?.task;
     if (!task) {
       throw new Error("Cannot find lane or task")
     }

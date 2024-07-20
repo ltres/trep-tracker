@@ -33,8 +33,16 @@ data-consider-for-overlapping-checks="true"
         <div *ngIf="task.status === 'completed'"class="date-wrapper translucent small flex align-items-center">
             completed {{ parseDate(this.task.dates.completed?.enter) | date: 'dd-MM-yy hh:mm a'}}
         </div>
-        <div class="task-toolbar">
-           
+        <div  class="notes-wrapper relative">
+            <span class="task-notes pointer" 
+            *ngIf="!isPlaceholder()"
+            [tooltip]="(task.notes && task.notes.length > 0 ? 'Edit' : 'Create') +' task notes'"
+            (click)="showNotes = !showNotes"
+            [class.hasNotes]="task.notes && task.notes.length > 0"
+            [class.open]="showNotes" >
+                📝
+            </span>
+            <notes [notes]="task.notes" (onNoteChanged)="storeNotes($event)" *ngIf="showNotes" ></notes>
         </div>
     </div>
 </div>

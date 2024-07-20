@@ -6,7 +6,7 @@
     min-width: 20rem;
     // width: 100%;
     //max-width: $max-lane-width;
-    z-index: 10;
+    // z-index: 10;
     box-shadow: 5px 5px 13px 0px #00000073;
     outline: 1px solid $lane-outline-color;
     outline-offset: -1px;
@@ -14,7 +14,7 @@
     &.dragged{
         position: absolute;
     }
-    &:hover, &.dragged{
+    &.active, &.dragged{
         z-index: 100;
     }
 }
