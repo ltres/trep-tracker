@@ -33,12 +33,16 @@
         padding-left: 0.25rem;
     }
     .task-notes:not(.open):not(.hasNotes){
-        display: none;
+        opacity:0;
     }
     &:hover .task-notes{
-        display: block!important;
+        opacity: 1!important;
         z-index: 110;
     }
+}
+
+.task-text-content:not(.placeholder) {
+    padding: $task-y-padding 0;
 }
 
 .editor-wrapper{

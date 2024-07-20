@@ -15,8 +15,11 @@ data-consider-for-overlapping-checks="true"
     (onStatusSelected)="updateStatus($event)"
     class="m-x-025"></status>
 
-    <div class="flex wrap w-100 g-025">
-        <div  class="grow" #editor 
+    <div class="flex w-100 g-025">
+        <div  
+        class="task-text-content grow" 
+        [class.placeholder]="isPlaceholder()"
+        #editor 
         contenteditable="true" 
         [preventEvents]="!editorActive"
         [board]="board"
@@ -33,7 +36,7 @@ data-consider-for-overlapping-checks="true"
         <div *ngIf="task.status === 'completed'"class="date-wrapper translucent small flex align-items-center">
             completed {{ parseDate(this.task.dates.completed?.enter) | date: 'dd-MM-yy hh:mm a'}}
         </div>
-        <div  class="notes-wrapper relative">
+        <div  class="notes-wrapper relative flex align-items-center">
             <span class="task-notes pointer" 
             *ngIf="!isPlaceholder()"
             [tooltip]="(task.notes && task.notes.length > 0 ? 'Edit' : 'Create') +' task notes'"
