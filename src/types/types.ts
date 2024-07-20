@@ -243,3 +243,4 @@ export const getNewBoard: (firstLane: Lane) => Board = (firstLane: Lane) => (
         archivedDate: undefined
     }
 )
+

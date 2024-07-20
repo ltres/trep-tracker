@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Lane, Task, Status, archivedLaneId, ISODateString, Container, DayDateString } from '../types/task';
+import { Lane, Task, Status, archivedLaneId, ISODateString, Container, DayDateString } from '../types/types';
 
 export function generateUUID(): string {
     return uuidv4().substring(0, 6);

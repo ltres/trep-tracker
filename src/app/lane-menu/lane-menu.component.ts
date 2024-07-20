@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, HostListener, Input, Output } from '@angular/core';
-import { Lane } from '../../types/task';
+import { Lane } from '../../types/types';
 import { ClickService } from '../../service/click.service';
 
 @Component({

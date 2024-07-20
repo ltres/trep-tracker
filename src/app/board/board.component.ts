@@ -1,5 +1,5 @@
 import { AfterViewChecked, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, HostBinding, HostListener, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { Board, Container, Lane, Layout, Layouts, Tag, Task, getNewTask } from '../../types/task';
+import { Board, Container, Lane, Layout, Layouts, Tag, Task, getNewTask } from '../../types/types';
 import { TaskComponent } from '../task/task.component';
 import { BoardService } from '../../service/board.service';
 import { Observable, of } from 'rxjs';

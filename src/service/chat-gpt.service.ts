@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AiServiceI } from '../types/ai';
 import OpenAI from "openai";
-import { Board } from '../types/task';
+import { Board } from '../types/types';
 import { removeEntry } from '../utils/utils';
 import { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 

@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { BoardService } from '../../service/board.service';
-import { Board, Layout, Layouts, Tag } from '../../types/task';
+import { Board, Layout, Layouts, Tag } from '../../types/types';
 
 @Component({
   selector: 'board-toolbar[board]',

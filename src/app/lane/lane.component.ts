@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, HostBinding, HostListener, Input, OnInit, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
-import { Board, Container, Lane, Layouts, Priority, Status, Tag, Task, archivedLaneId, getNewTask } from '../../types/task';
+import { Board, Container, Lane, Layouts, Priority, Status, Tag, Task, archivedLaneId, getNewTask } from '../../types/types';
 import { BoardService } from '../../service/board.service';
 import { generateUUID, hashCode, isArchive, isStatic } from '../../utils/utils';
 import { Observable } from 'rxjs';

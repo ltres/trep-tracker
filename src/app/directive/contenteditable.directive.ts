@@ -6,7 +6,7 @@ import {
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, NgModel } from '@angular/forms';
 import { generateUUID, getCaretCharacterOffsetWithin, getCaretPosition, setCaretPosition } from '../../utils/utils';
 import { TagService } from '../../service/tag.service';
-import { Board, Container, Tag } from '../../types/task';
+import { Board, Container, Tag } from '../../types/types';
 
 @Directive({
     selector: '[contenteditable][ngModel][board]',

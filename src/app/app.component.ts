@@ -2,7 +2,7 @@ import { AfterViewInit, ApplicationRef, Component, Inject, OnInit } from '@angul
 
 import { BoardService } from '../service/board.service';
 import { Observable } from 'rxjs';
-import { Board, Lane} from '../types/task';
+import { Board, Lane} from '../types/types';
 import { ModalService } from '../service/modal.service';
 import { StorageServiceAbstract } from '../types/storage';
 

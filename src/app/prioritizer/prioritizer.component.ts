@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { Container, Priorities, Priority } from '../../types/task';
+import { Container, Priorities, Priority } from '../../types/types';
 import { BoardService } from '../../service/board.service';
 
 @Component({

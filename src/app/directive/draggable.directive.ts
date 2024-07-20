@@ -19,7 +19,7 @@ import {
 import { BoardService } from '../../service/board.service';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
-import { Board, Container, Lane, Layout } from '../../types/task';
+import { Board, Container, Lane, Layout } from '../../types/types';
 import { overlaps } from '../../utils/utils';
 import { ContainerComponent } from '../base/base.component';
 import { ContainerComponentRegistryService } from '../../service/registry.service';

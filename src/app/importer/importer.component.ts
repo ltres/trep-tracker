@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { BoardService } from '../../service/board.service';
-import { Lane, Task, getNewTask } from '../../types/task';
+import { Lane, Task, getNewTask } from '../../types/types';
 @Component({
   selector: 'importer[lane]',
 
