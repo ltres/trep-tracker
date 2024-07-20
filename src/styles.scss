@@ -4,12 +4,13 @@
 @import "assets/variables";
 @import "assets/mixins";
 @import "assets/animations";
+@import "assets/gantt";
 
 
 html {
   background-color: $background-color;
   color: $text-color;
-  font-family: 'JetBrains Mono';
+  font-family: $font-family;
   font-size: $font-size
 }
 a{
@@ -383,9 +384,3 @@ input, textarea{
   }
 }
 
-.gantt-parent-task{
-  opacity: 0.7;
-}
-.gantt-weekend {
-  background-color: lightblue;
-}

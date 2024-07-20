@@ -30,8 +30,7 @@
             ],
             "styles": [
               "src/styles.scss",
-              "node_modules/@angular/cdk/overlay-prebuilt.css",
-              "node_modules/dhtmlx-gantt/codebase/dhtmlxgantt.css"
+              "node_modules/@angular/cdk/overlay-prebuilt.css"
             ],
             "scripts": []
           },

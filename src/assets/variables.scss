@@ -1,3 +1,5 @@
+$font-family: 'JetBrains Mono';
+
 $spacer-multiplier: 1;
 
 $background-color: hsl(223, 10%, 10%);
@@ -23,7 +25,6 @@ $lane-padding: 0.75rem 1rem;
 
 $translucent-opacity: 0.3;
 $translucent-color: rgba($text-color, $translucent-opacity);
-$lane-outline-color: rgba($text-color, 0.1);;
 $lane-outline-color: rgba($text-color, 0.1);;
 
 $editor-active-background:rgba(0, 0, 0, 0.4);
@@ -67,3 +68,14 @@ $time-bars-height:0.5rem;
 $time-bars-border-radius:0.2rem;
 
 $task-y-padding: calc($font-size/4);
+
+$gantt-background-color: transparent;
+$gantt-background-hover-color: $lane-archive-background-color;
+
+$gantt-border-color: $lane-outline-color;
+$gantt-text-color: $text-color;
+$gantt-weekend-color: $ai-background-color;
+$gantt-link-color: $tag-yellow-color;
+
+$gantt-task-color: hsl(293, 100%, 56%);
+$gantt-project-color: hsl(315, 80%, 50%);

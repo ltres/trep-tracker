@@ -29,7 +29,16 @@ export class GanttComponent implements AfterViewInit {
 
     gantt.config.min_column_width = 30; // Set to your desired width in pixels
     gantt.plugins({
-      multiselect: true
+      multiselect: true,
+      marker: true,
+    });
+    var dateToStr = gantt.date.date_to_str(gantt.config.task_date);
+
+    gantt.addMarker({
+      start_date: today,
+      css: "today",
+      text: "Today",
+      title: "Today: " + dateToStr(today)
     });
     gantt.config.multiselect = true;
     gantt.config.multiselect_one_level = false;
@@ -145,18 +154,20 @@ export class GanttComponent implements AfterViewInit {
 
     let prevBase: Task | undefined;
     for (let task of tasks) {
-      this.initGanttData(task, task.children.length > 0,  prevBase, runningObject.latestEndDate);
+      this.initGanttData(task, prevBase, runningObject.latestEndDate);
       //standard task
       let dhtmlxTask: DhtmlxTask = {
         id: task.id,
         text: task.textContent,
-        start_date: task.children.length > 0 ? undefined : new Date(task.gantt!.startDate),
-        end_date: task.children.length > 0 ? undefined :  task.gantt!.endDate ? new Date(task.gantt!.endDate) : undefined,
+        type: task.children.length > 0 ? 'project' : 'task',
+        start_date: new Date(task.gantt!.startDate),
+        end_date: new Date(task.gantt!.endDate),
         parent: parentId,
+        //auto_scheduling: true,
         open: true,
       }
 
-      runningObject.latestEndDate = task.gantt!.endDate ? task.gantt!.endDate : runningObject.latestEndDate;
+      runningObject.latestEndDate = task.children.length > 0 ? runningObject.latestEndDate : task.gantt!.endDate;
 
       if(!parentId){
         delete dhtmlxTask.parent;
@@ -198,30 +209,25 @@ export class GanttComponent implements AfterViewInit {
     return runningObject;
   }
 
-  private initGanttData(task: Task, isParent: boolean, previousTask?: Task, latestEndDate?: ISODateString): Task {
+  private initGanttData(task: Task, previousTask?: Task, latestEndDate?: ISODateString): Task {
     let baseDuration = 2;
-    if (!task.gantt) {
-      let startDate = new Date();
-      if( previousTask && previousTask.gantt?.endDate ){
-        startDate = new Date(previousTask.gantt.endDate);
-      }else if( latestEndDate ){
-        startDate = new Date(latestEndDate);
-      }
-      let plusTwo = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + baseDuration);
-      task.gantt = {
-        startDate: getIsoString(startDate),
-        endDate: getIsoString(plusTwo),
-        predecessors: previousTask ? [{
-          laneId: this.lane.id,
-          taskId: previousTask.id,
-          linkId: generateUUID()
-        }]: undefined
-      }
+    let startDate = new Date();
+    if( previousTask && previousTask.gantt?.endDate && previousTask.children.length === 0){
+      startDate = new Date(previousTask.gantt.endDate);
+    }else if( latestEndDate ){
+      startDate = new Date(latestEndDate);
+    }
+    let plusTwo = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + baseDuration);
+    task.gantt = {
+      startDate: task.gantt?.startDate ?? getIsoString(startDate),
+      endDate: task.gantt?.endDate ?? getIsoString(plusTwo),
+      predecessors: task.gantt?.predecessors ?? (previousTask ? [{
+        laneId: this.lane.id,
+        taskId: previousTask.id,
+        linkId: generateUUID()
+      }]: undefined)
     }
 
-    if(isParent){
-      delete task.gantt.endDate;
-    }
 
     return task;
   }

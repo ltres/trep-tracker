@@ -57,7 +57,7 @@ export interface Task extends Container<Task> {
     startDate?: ISODateString,
     gantt?: {
         startDate: ISODateString,
-        endDate?: ISODateString,
+        endDate: ISODateString,
         predecessors:{
             laneId: string,
             taskId: string
