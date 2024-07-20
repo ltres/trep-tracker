@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forw
 import { Board, Container, Lane, Layouts, Priority, Status, Tag, Task, archivedLaneId, getNewTask } from '../../types/types';
 import { BoardService } from '../../service/board.service';
 import { generateUUID, hashCode, isArchive, isStatic } from '../../utils/utils';
-import { Observable } from 'rxjs';
+import { map, Observable, of } from 'rxjs';
 import { TaskComponent } from '../task/task.component';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
@@ -178,8 +178,10 @@ export class LaneComponent extends ContainerComponent implements OnInit {
     this.modalService.setDisplayModal(true, 'full');
   }
 
-  getGanttTasks(): Task[] {
-    return this.lane.children.filter(t => t.status === 'gantterized');
+  getGanttTasks$(): Observable<Task[] | undefined> {
+    return isStatic(this.lane) ? 
+    this.staticTasks.pipe( map(tasks => tasks?.filter(t => t.status === 'gantterized') ?? [])) :
+    of(this.lane.children.filter(t => t.status === 'gantterized'));
   }
 
 }

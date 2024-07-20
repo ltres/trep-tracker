@@ -41,7 +41,7 @@
       <lane-menu *ngIf="menuOpen" [lane]="lane" (onClose)="menuOpen = false">
         <button class="small no-grow" *ngIf="!isStatic() && !isArchive(lane) " (click)="autoSort()">✨ Auto-sort tasks</button>
 
-        <button class="small no-grow" *ngIf="getGanttTasks().length > 0" (click)="openGantt()">
+        <button class="small no-grow" *ngIf="getGanttTasks$() | async" (click)="openGantt()">
           <span class="gantter-icon"></span> Gantt..
         </button>
 
@@ -104,5 +104,5 @@
 </div>
 
 <ng-template #gantt>
-  <gantt [lane]="lane" [tasks]="getGanttTasks()"></gantt>
+  <gantt [lane]="lane" [tasks]="getGanttTasks$() | async"></gantt>
 </ng-template>

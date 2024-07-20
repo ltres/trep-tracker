@@ -12,49 +12,23 @@ import { gantt, Task as DhtmlxTask } from 'dhtmlx-gantt';
 })
 export class GanttComponent implements AfterViewInit {
   @Input() lane!: Lane;
-  @Input() tasks!: Task[];
+  @Input() tasks!: Task[] | undefined | null;
 
   gantt: GanttStatic | undefined;
-
-  taskz = [
-    {
-      id: 'Task 1',
-      name: 'Redesign website',
-      start: '2016-12-28',
-      end: '2016-12-31',
-      progress: 20,
-      dependencies: '',
-      custom_class: 'bar-milestone' // optional
-    },
-    {
-      id: 'Task 2',
-      name: 'Redesign website',
-      start: '2016-12-28',
-      end: '2016-12-31',
-      progress: 20,
-      dependencies: 'Task 1',
-      custom_class: 'bar-milestone' // optional
-    },
-
-    {
-      id: 'Task 3',
-      name: 'Redesign website',
-      start: '2016-12-28',
-      end: '2016-12-31',
-      progress: 20,
-      dependencies: 'Task 1',
-      custom_class: 'bar-milestone' // optional
-    }
-  ]
 
   constructor(protected boardService: BoardService) { }
 
   ngAfterViewInit(): void {
+    if(!this.tasks){
+      throw new Error('Tasks must be defined');
+    }
     // gantt.config.date_format = "%Y-%m-%d %H:%i";
 
     //gantt.config['scale_unit'] = "week";
     //antt.config['date_scale'] = "%F, %Y";
     let today = new Date();
+
+    gantt.config.min_column_width = 30; // Set to your desired width in pixels
 
 
     var start = new Date(today.getFullYear(), today.getMonth(), 0); // January 1, 2024
@@ -64,7 +38,16 @@ export class GanttComponent implements AfterViewInit {
 
     gantt.config.start_date = start;
     gantt.config.end_date = end;
-
+    gantt.attachEvent("onBeforeTaskDelete", function (id, task) {
+      gantt.message({ type: "error", text: "Cannot delete tasks from this view" });
+      return false;
+    });
+    gantt.templates.task_class = function(start, end, task){
+      if ( gantt.hasChild(task.id)) {
+          return "gantt-parent-task";
+      }
+      return "";
+  };
 
     gantt.init("gantt");
     gantt.parse(this.toDhtmlxGanttDataModel(this.tasks));
@@ -74,108 +57,76 @@ export class GanttComponent implements AfterViewInit {
 
       const dp = gantt.createDataProcessor({
         task: {
-          update: (data: Task) => console.log(data),
-          create: (data: Task) => console.log(data),
-          delete: (id: any) => console.log(id),
+          update: (data: DhtmlxTask) => console.log(data),
+          create: (data: DhtmlxTask) => console.log(data),
+          delete: (id: string) => console.log(id),
         },
         link: {
           update: (data: Link) => console.log(data),
           create: (data: Link) => console.log(data),
-          delete: (id: any) => console.log(id),
+          delete: (id: string) => console.log(id),
         }
       });
     }
   }
 
-  toDhtmlxGanttDataModel(tasks: Task[]): { data: DhtmlxTask[], links: Link[] } {
-    let reTasks: DhtmlxTask[] = [];
-    let reLinks: Link[] = [];
+  toDhtmlxGanttDataModel(tasks: Task[], cur? :{ data: DhtmlxTask[], links: Link[] }, parentId?: string ): { data: DhtmlxTask[], links: Link[] } {
+    // remove duplicates:
+    tasks = tasks.reduce((acc: Task[], task) => {
+      if (!acc.find(t => t.id === task.id)) {
+        acc.push(task);
+      }
+      return acc;
+    }, []);
+    let ret:{
+      data: DhtmlxTask[],
+      links: Link[]
+    } = cur ?? { data: [], links: [] };
 
     let prevBase: Task | undefined;
     for (let task of tasks) {
-      if (task.children && task.children.length > 0) {
-        //Project task
-        let dhtmlxTask: DhtmlxTask = {
-          id: task.id,
-          text: task.textContent,
-          editable: true,
-          //start_date: task.gantt ? new Date(task.gantt?.start) : undefined,
-          //end_date: task.gantt ? new Date(task.gantt?.end) : undefined,
-
-          //duration: undefined,
-          open: true
-        }
-        reTasks.push(dhtmlxTask);
-        if (prevBase) {
-          let link: Link = {
-            id: generateUUID(),
-            source: prevBase.id,
-            target: task.id,
-            type: '0'
-          }
-          reLinks.push(link);
-        }
-        if (true) {
-          let prevChild: Task | undefined;
-          this.boardService.getDescendants(task).forEach(child => {
-            if (!this.boardService.isTask(child)) return;
-            if (!child.gantt) {
-              child.gantt = {
-                start: getIsoString(new Date()),
-                end: getIsoString(new Date())
-              }
-            }
-
-            let dhtmlxTask: DhtmlxTask = {
-              id: child.id,
-              text: child.textContent,
-              start_date: new Date(child.gantt.start),
-              end_date: new Date(child.gantt.start),
-              editable: true,
-              parent: task.id,
-            }
-            reTasks.push(dhtmlxTask);
-            if (prevChild) {
-              let link: Link = {
-                id: generateUUID(),
-                source: prevChild.id,
-                target: child.id,
-                type: '0'
-              }
-              reLinks.push(link);
-            }
-            prevChild = child;
-          });
-        }
-
-      } else {
-        //standard task
-        let dhtmlxTask: DhtmlxTask = {
-          id: task.id,
-          text: task.textContent,
-          start_date: task.gantt ? new Date(task.gantt?.start) : undefined,
-          end_date: task.gantt ? new Date(task.gantt?.end) : undefined,
-        }
-        reTasks.push(dhtmlxTask);
-        if (prevBase) {
-          let link: Link = {
-            id: generateUUID(),
-            source: prevBase.id,
-            target: task.id,
-            editable: true,
-            type: '0'
-          }
-          reLinks.push(link);
-        }
+      this.initGanttDates(task, prevBase);
+      //standard task
+      let dhtmlxTask: DhtmlxTask = {
+        id: task.id,
+        text: task.textContent,
+        start_date: task.children.length > 0 ? undefined:  new Date(task.gantt!.start),
+        end_date:task.children.length > 0 ? undefined: new Date(task.gantt!.end),
+        parent: parentId,
+        open: true,
       }
 
+      if(task.children.length > 0){
+        this.toDhtmlxGanttDataModel(task.children, ret, task.id);
+      }
+
+      ret.data.push(dhtmlxTask);
+      if (prevBase) {
+        let link: Link = {
+          id: generateUUID(),
+          source: prevBase.id,
+          target: task.id,
+          editable: true,
+          type: '0'
+        }
+        ret.links.push(link);
+      }
       prevBase = task;
     }
 
-    return {
-      data: reTasks,
-      links: reLinks
+    return ret;
+  }
+
+  private initGanttDates(task: Task, previousTask?: Task): Task {
+    if (!task.gantt) {
+      let date = previousTask && previousTask.gantt?.end ? new Date(previousTask.gantt.end) : new Date();
+      let plusTwo = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 2);
+      task.gantt = {
+        start: getIsoString(date),
+        end: getIsoString(plusTwo)
+      }
     }
+    return task;
   }
 
   log($event: any) {
@@ -183,13 +134,8 @@ export class GanttComponent implements AfterViewInit {
   }
 
   getTaskGanttDate(task: Task, dateKey: "start" | 'end'): DayDateString {
-    if (!task.gantt) {
-      task.gantt = {
-        start: getIsoString(new Date()),
-        end: getIsoString(new Date())
-      }
-    }
-    let d = task.gantt[dateKey];
+    this.initGanttDates(task);
+    let d = task.gantt![dateKey];
     return getDayDate(new Date(d));
   }
 
