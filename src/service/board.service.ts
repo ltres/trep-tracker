@@ -308,6 +308,9 @@ export class BoardService {
     get selectedBoard(): Board | undefined {
         return this._selectedBoard$.getValue();
     }
+    get allTasks(): Task[] | undefined {
+        return this._allTasks$.getValue();
+    }
     getTask(id: string): Task | undefined {
         return this._allTasks$.getValue()?.find(t => t.id === id);
     }
@@ -819,6 +822,7 @@ export class BoardService {
                     if(!p.dates){
                         p.dates = {};
                     }
+
                     if(this.isLane(p)){
                         //p.columnNumber = p.columnNumber ?? 1;
                         //p.index = p.index ?? 0;
@@ -834,6 +838,8 @@ export class BoardService {
                             }
                         }
                     }
+                    // @ts-ignore
+                    //delete p.gantt;
                     // @ts-ignore
                     if(this.isLane(p) && typeof p.isArchive === 'undefined'){
                         // @ts-ignore
