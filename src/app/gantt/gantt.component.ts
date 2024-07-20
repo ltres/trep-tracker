@@ -58,7 +58,7 @@ export class GanttComponent implements AfterViewInit {
     };
 
     gantt.clearAll();
-    gantt.parse(this.toDhtmlxGanttDataModel(this.tasks));
+    gantt.parse(this.toDhtmlxGanttDataModel( this.tasks, {data: [], links: []} ));
 
 
     gantt.init("gantt");
@@ -134,7 +134,7 @@ export class GanttComponent implements AfterViewInit {
     this.boardService.publishBoardUpdate();
   }
 
-  toDhtmlxGanttDataModel(tasks: Task[], cur?: { data: DhtmlxTask[], links: Link[] }, parentId?: string): { data: DhtmlxTask[], links: Link[] } {
+  toDhtmlxGanttDataModel(tasks: Task[], runningObject: { data: DhtmlxTask[], links: Link[], latestEndDate?: ISODateString}, parentId?: string ): { data: DhtmlxTask[], links: Link[] } {
     // remove duplicates:
     tasks = tasks.reduce((acc: Task[], task) => {
       if (!acc.find(t => t.id === task.id)) {
@@ -142,32 +142,31 @@ export class GanttComponent implements AfterViewInit {
       }
       return acc;
     }, []);
-    let ret: {
-      data: DhtmlxTask[],
-      links: Link[]
-    } = cur ?? { data: [], links: [] };
 
     let prevBase: Task | undefined;
     for (let task of tasks) {
-      this.initGanttData(task, prevBase);
+      this.initGanttData(task, task.children.length > 0,  prevBase, runningObject.latestEndDate);
       //standard task
       let dhtmlxTask: DhtmlxTask = {
         id: task.id,
         text: task.textContent,
         start_date: task.children.length > 0 ? undefined : new Date(task.gantt!.startDate),
-        end_date: task.children.length > 0 ? undefined : new Date(task.gantt!.endDate),
+        end_date: task.children.length > 0 ? undefined :  task.gantt!.endDate ? new Date(task.gantt!.endDate) : undefined,
         parent: parentId,
         open: true,
       }
+
+      runningObject.latestEndDate = task.gantt!.endDate ? task.gantt!.endDate : runningObject.latestEndDate;
+
       if(!parentId){
         delete dhtmlxTask.parent;
       }
 
       if (task.children.length > 0) {
-        this.toDhtmlxGanttDataModel(task.children, ret, task.id);
+        this.toDhtmlxGanttDataModel(task.children, runningObject, task.id );
       }
 
-      ret.data.push(dhtmlxTask);
+      runningObject.data.push(dhtmlxTask);
 
       // links
       if(task.gantt?.predecessors){
@@ -179,7 +178,7 @@ export class GanttComponent implements AfterViewInit {
             editable: true,
             type: '0'
           }
-          ret.links.push(link);
+          runningObject.links.push(link);
         }
       }else{
         if (prevBase && 1 !== 1) {
@@ -190,26 +189,40 @@ export class GanttComponent implements AfterViewInit {
             editable: true,
             type: '0'
           }
-          ret.links.push(link);
+          runningObject.links.push(link);
         }
       }
       prevBase = task;
     }
 
-    return ret;
+    return runningObject;
   }
 
-  private initGanttData(task: Task, previousTask?: Task): Task {
+  private initGanttData(task: Task, isParent: boolean, previousTask?: Task, latestEndDate?: ISODateString): Task {
     let baseDuration = 2;
     if (!task.gantt) {
-      let date = previousTask && previousTask.gantt?.endDate ? new Date(previousTask.gantt.endDate) : new Date();
-      let plusTwo = new Date(date.getFullYear(), date.getMonth(), date.getDate() + baseDuration);
+      let startDate = new Date();
+      if( previousTask && previousTask.gantt?.endDate ){
+        startDate = new Date(previousTask.gantt.endDate);
+      }else if( latestEndDate ){
+        startDate = new Date(latestEndDate);
+      }
+      let plusTwo = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + baseDuration);
       task.gantt = {
-        startDate: getIsoString(date),
+        startDate: getIsoString(startDate),
         endDate: getIsoString(plusTwo),
-        predecessors: undefined
+        predecessors: previousTask ? [{
+          laneId: this.lane.id,
+          taskId: previousTask.id,
+          linkId: generateUUID()
+        }]: undefined
       }
     }
+
+    if(isParent){
+      delete task.gantt.endDate;
+    }
+
     return task;
   }
 

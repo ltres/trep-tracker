@@ -809,7 +809,7 @@ export class BoardService {
             // fixes to existing data and new fields
             for( let board of o.boards ){
                 board._type = 'board';
-                board.layout = board.layout ?? 'absolute';
+                board.layout = board.layout ?? 'absolute'; 
                 board.flexColumns = board.flexColumns ?? undefined;
                 let des = this.getDescendants(board);
                 des.forEach(p => {
