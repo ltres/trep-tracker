@@ -20,7 +20,6 @@ import { ClickService } from '../../service/click.service';
   ]
 })
 export class TaskComponent extends ContainerComponent implements OnInit, OnDestroy {
-
   @ViewChild('editor') editor: ElementRef | undefined;
   @Input() task!: Task;
   @Input() lane!: Lane;
@@ -31,6 +30,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   @Input() showChildren: boolean = true;
   
   @Output() createNewTask: EventEmitter<void> = new EventEmitter();
+  @Output() onToggleShowNotes: EventEmitter<boolean> = new EventEmitter();
 
   editorActive: boolean = false;
   selected: boolean = false;
@@ -192,5 +192,10 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   storeNotes(ev: string) {
     this.task.notes = ev; 
     this.boardService.publishBoardUpdate()
+  }
+
+  toggleShowNotes() {
+    this.showNotes = !this.showNotes;
+    this.onToggleShowNotes.emit(this.showNotes);
   }
 }

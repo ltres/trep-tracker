@@ -30,7 +30,7 @@ export class LaneComponent extends ContainerComponent implements OnInit {
   menuOpen = false
   hoveringTooltip = false
 
-  draggingInside = false
+  interactingWithChildTasks = false
   showMoveToBoards = false;
   debounce: any;
 
@@ -60,7 +60,11 @@ export class LaneComponent extends ContainerComponent implements OnInit {
 
   @HostBinding('style.overflow-x')
   get overflowX(): string {
-    return this.displayedInFixedLayout? 'visible' : (this.menuOpen || this.hoveringTooltip ? 'visible' : 'auto');
+    if( this.displayedInFixedLayout || this.menuOpen || this.hoveringTooltip || this.interactingWithChildTasks){
+      return 'visible';
+    }else{
+      return 'auto';
+    }
   }
   @HostBinding('class.active')
   active: boolean = false

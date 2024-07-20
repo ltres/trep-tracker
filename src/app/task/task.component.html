@@ -40,7 +40,8 @@ data-consider-for-overlapping-checks="true"
             <span class="task-notes pointer" 
             *ngIf="!isPlaceholder()"
             [tooltip]="(task.notes && task.notes.length > 0 ? 'Edit' : 'Create') +' task notes'"
-            (click)="showNotes = !showNotes"
+            [position]="'left'"
+            (click)="toggleShowNotes()"
             [class.hasNotes]="task.notes && task.notes.length > 0"
             [class.open]="showNotes" >
                 📝

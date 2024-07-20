@@ -65,8 +65,9 @@
     [draggableDir]="task" 
     [containerEl]="el.nativeElement"
     [layout]="board.layout"
-    (onDragStart)="draggingInside=true"
-    (onDragEnd)="draggingInside=false"
+    (onDragStart)="interactingWithChildTasks=true"
+    (onDragEnd)="interactingWithChildTasks=false"
+    (onToggleShowNotes)="interactingWithChildTasks = $event"
     (createNewTask)="createNewTask()"></task>
   </div>
 
@@ -74,7 +75,8 @@
     <div class="static-view flex column">
         <task *ngFor="let task of (staticTasks | async);trackBy: trackBy" 
         [staticView]="true"       
-        [showChildren]="lane.showChildren" [task]="task" 
+        [showChildren]="lane.showChildren" [task]="task"
+        (onToggleShowNotes)="interactingWithChildTasks = $event"
         [parent]="lane" [board]="board" [lane]="lane"
         ></task>
     </div>

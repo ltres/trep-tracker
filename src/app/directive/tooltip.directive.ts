@@ -21,8 +21,16 @@ export class TooltipDirective {
     tooltip.innerHTML = this.tooltip;
     tooltip.style.position = 'absolute';
     tooltip.style.whiteSpace = 'nowrap';
-    tooltip.style.bottom = this.position && this.position === 'bottom' ?'-250%': '150%';
-    tooltip.style.left = '0';
+    if(!this.position || this.position === 'top' || this.position === 'bottom'){
+      tooltip.style.bottom = this.position && this.position === 'bottom' ?'-250%': '150%';
+    }else{
+      tooltip.style.top = '0';
+    }
+    if(this.position && this.position === 'left'){
+      tooltip.style.right = '120%';
+    }else{
+      tooltip.style.left = '0';
+    }
     tooltip.style.backgroundColor = 'black';
     tooltip.style.color = 'white';
     //tooltip.style.padding = '5px';
