@@ -15,21 +15,21 @@ jobs:
             { name: 'windows', image: 'windows-latest' },
             { name: 'macos', image: 'macos-latest' },
           ]
+        node-version: [22.4.x]
+
     runs-on: ${{ matrix.os.image }}
     steps:
       - name: Github checkout
         uses: actions/checkout@v4
 
-      - name: Use Node.js
+      - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-
-      - run: npm install -g @angular/cli@latest 
+          node-version: ${{ matrix.node-version }}
 
       - run: npm ci
 
-      - name: Running npm run build-github-pages..
+      - name: Running npm run build..
         run: npm run build
 
       - name: Publish app
