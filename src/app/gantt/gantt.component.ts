@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Input } from '@angular/core';
+import { AfterViewInit, Component, Input, OnDestroy } from '@angular/core';
 import { DayDateString, ISODateString, Lane, Task } from '../../types/types';
 import { generateUUID, getDayDate, getIsoString } from '../../utils/utils';
 import { BoardService } from '../../service/board.service';
@@ -14,12 +14,11 @@ export class GanttComponent implements AfterViewInit {
   @Input() lane!: Lane;
   @Input() tasks!: Task[] | undefined | null;
 
-  gantt: GanttStatic | undefined;
-
   constructor(protected boardService: BoardService) { }
 
+
   ngAfterViewInit(): void {
-    if(!this.tasks){
+    if (!this.tasks) {
       throw new Error('Tasks must be defined');
     }
     // gantt.config.date_format = "%Y-%m-%d %H:%i";
@@ -29,48 +28,95 @@ export class GanttComponent implements AfterViewInit {
     let today = new Date();
 
     gantt.config.min_column_width = 30; // Set to your desired width in pixels
-
+    gantt.plugins({
+      multiselect: true
+    });
+    gantt.config.multiselect = true;
+    gantt.config.multiselect_one_level = false;
 
     var start = new Date(today.getFullYear(), today.getMonth(), 0); // January 1, 2024
-    var end = new Date(today.getFullYear(), today.getMonth() + 2, 0); // December 31, 2024
+    var end = new Date(today.getFullYear(), today.getMonth() + 4, 0); // December 31, 2024
     gantt.config.work_time = true;
     gantt.setWorkTime({ hours: [9, 13, 14, 18] });//global working hours. 8:00-12:00, 13:00-17:00
-
+    gantt.templates.timeline_cell_class = function (task, date) {
+      if (!gantt.isWorkTime(date)) {
+        return "gantt-weekend";
+      }
+      return "";
+    };
     gantt.config.start_date = start;
     gantt.config.end_date = end;
     gantt.attachEvent("onBeforeTaskDelete", function (id, task) {
       gantt.message({ type: "error", text: "Cannot delete tasks from this view" });
       return false;
     });
-    gantt.templates.task_class = function(start, end, task){
-      if ( gantt.hasChild(task.id)) {
-          return "gantt-parent-task";
+    gantt.templates.task_class = function (start, end, task) {
+      if (gantt.hasChild(task.id)) {
+        return "gantt-parent-task";
       }
       return "";
-  };
+    };
+
+    gantt.clearAll();
+    gantt.parse(this.toDhtmlxGanttDataModel(this.tasks));
+
 
     gantt.init("gantt");
-    gantt.parse(this.toDhtmlxGanttDataModel(this.tasks));
 
     if (!(gantt as any).$_initOnce) {
       (gantt as any).$_initOnce = true;
 
       const dp = gantt.createDataProcessor({
         task: {
-          update: (data: DhtmlxTask) => console.log(data),
-          create: (data: DhtmlxTask) => console.log(data),
-          delete: (id: string) => console.log(id),
+          update: (data: DhtmlxTask) => this.updateTask(data),
+          create: (data: DhtmlxTask) => this.createTask(data),
+          // delete: (id: string) => console.log(id),
         },
         link: {
-          update: (data: Link) => console.log(data),
-          create: (data: Link) => console.log(data),
-          delete: (id: string) => console.log(id),
+          update: (data: Link) => this.updateLink(data),
+          create: (data: Link) => this.createLink(data),
+          delete: (id: string) => this.deleteLink(id),
         }
       });
     }
   }
+  updateTask(data: DhtmlxTask) {
+    var formatFunc = gantt.date.str_to_date("%dd-%mm-%YYYY hh:MM", true);
+    let toUpdate = this.boardService.getTask(data.id.toString());
+    if (!toUpdate) {
+      throw new Error('Task not found');
+    }
+    let changed = false;
+    if (data.start_date) {
+      changed = true;
+      toUpdate.gantt!.start = getIsoString(typeof data.start_date === 'string' ? formatFunc(data.start_date) : data.start_date);
+    }
+    if (data.end_date) {
+      changed = true;
+      toUpdate.gantt!.end = getIsoString(typeof data.end_date === 'string' ? formatFunc(data.end_date) : data.start_date);
+    }
+    if (data.text) {
+      changed = true;
+      toUpdate.textContent = data.text;
+    }
+    if (changed) {
+      this.boardService.publishBoardUpdate();
+    }
+  }
+  createTask(data: DhtmlxTask) {
+    throw new Error('Method not implemented.');
+  }
+  updateLink(data: Link) {
+    throw new Error('Method not implemented.');
+  }
+  createLink(data: Link) {
+    throw new Error('Method not implemented.');
+  }
+  deleteLink(id: string) {
+    throw new Error('Method not implemented.');
+  }
 
-  toDhtmlxGanttDataModel(tasks: Task[], cur? :{ data: DhtmlxTask[], links: Link[] }, parentId?: string ): { data: DhtmlxTask[], links: Link[] } {
+  toDhtmlxGanttDataModel(tasks: Task[], cur?: { data: DhtmlxTask[], links: Link[] }, parentId?: string): { data: DhtmlxTask[], links: Link[] } {
     // remove duplicates:
     tasks = tasks.reduce((acc: Task[], task) => {
       if (!acc.find(t => t.id === task.id)) {
@@ -78,7 +124,7 @@ export class GanttComponent implements AfterViewInit {
       }
       return acc;
     }, []);
-    let ret:{
+    let ret: {
       data: DhtmlxTask[],
       links: Link[]
     } = cur ?? { data: [], links: [] };
@@ -90,13 +136,16 @@ export class GanttComponent implements AfterViewInit {
       let dhtmlxTask: DhtmlxTask = {
         id: task.id,
         text: task.textContent,
-        start_date: task.children.length > 0 ? undefined:  new Date(task.gantt!.start),
-        end_date:task.children.length > 0 ? undefined: new Date(task.gantt!.end),
+        start_date: task.children.length > 0 ? undefined : new Date(task.gantt!.start),
+        end_date: task.children.length > 0 ? undefined : new Date(task.gantt!.end),
         parent: parentId,
         open: true,
       }
+      if(!parentId){
+        delete dhtmlxTask.parent;
+      }
 
-      if(task.children.length > 0){
+      if (task.children.length > 0) {
         this.toDhtmlxGanttDataModel(task.children, ret, task.id);
       }
 
@@ -154,5 +203,7 @@ export class GanttComponent implements AfterViewInit {
     task.gantt[dateKey] = getIsoString(newDate);
     this.boardService.publishBoardUpdate();
   }
+
+
 
 }

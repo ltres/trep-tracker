@@ -308,6 +308,9 @@ export class BoardService {
     get selectedBoard(): Board | undefined {
         return this._selectedBoard$.getValue();
     }
+    getTask(id: string): Task | undefined {
+        return this._allTasks$.getValue()?.find(t => t.id === id);
+    }
     get focusSearch$(): Observable<boolean> {
         return this._focusSearch$;
     }
@@ -322,8 +325,7 @@ export class BoardService {
     }
     get lastSelectedTask(): {lane: Lane,task:Task} | undefined {
         return this._lastSelectedTask$.getValue();
-    }
-    
+    }   
     get selectedTasks(): Task[] | undefined {
         return this._selectedTasks$.getValue();
     }
