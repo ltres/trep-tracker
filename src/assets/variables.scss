@@ -70,6 +70,8 @@ $time-bars-border-radius:0.2rem;
 $task-y-padding: calc($font-size/4);
 
 $gantt-background-color: transparent;
+$gantt-modal-background-color: $lane-non-static-background-color;
+
 $gantt-background-hover-color: $lane-archive-background-color;
 
 $gantt-border-color: $lane-outline-color;
@@ -79,3 +81,4 @@ $gantt-link-color: $tag-yellow-color;
 
 $gantt-task-color: hsl(293, 100%, 56%);
 $gantt-project-color: hsl(315, 80%, 50%);
+$gantt-progress-color: hsl(288, 80%, 50%);

@@ -86,7 +86,7 @@
 }
 
 .gantt_task_line.gantt_project .gantt_task_progress {
-    background-color: #46ad51;
+    background-color: $gantt-progress-color;
 }
 
 /*
@@ -100,26 +100,29 @@
 }
 
 .gantt_cal_light .gantt_btn_set {
-    margin: 5px 10px;
+    //margin: 5px 10px;
 }
 
 .gantt_btn_set.gantt_cancel_btn_set {
-    background: #fff;
+/*     background: #fff;
     color: $gantt-text-color;
-    border: 1px solid $gantt-border-color;
+    border: 1px solid $gantt-border-color; */
+    @include button();
 }
 
 .gantt_btn_set.gantt_save_btn_set {
-    background: #3db9d3;
+    /* background: #3db9d3;
     text-shadow: 0 -1px 0 #248a9f;
-    color: #fff;
+    color: #fff; */
+    @include button();
 }
 
 .gantt_btn_set.gantt_delete_btn_set {
-    text-shadow: 0 -1px 0 #6F6F6F;
+    /* text-shadow: 0 -1px 0 #6F6F6F;
     background: #ec8e00;
     text-shadow: 0 -1px 0 #aa6600;
-    color: #fff;
+    color: #fff; */
+    @include button();
 }
 
 .gantt_delete_btn {
@@ -867,7 +870,7 @@ div.dhx_modal_cover {
 .gantt_task_progress {
     text-align: center;
     z-index: 0;
-    background: #299cb4;
+    background: $gantt-progress-color;
 }
 
 .gantt_task_progress_wrapper {
@@ -1273,18 +1276,19 @@ div.dhx_modal_cover {
 
 .gantt_cal_light {
     -webkit-tap-highlight-color: transparent;
-    background: #fff;
-    border-radius: 6px;
+    background: $gantt-modal-background-color;
+    //border-radius: 6px;
     font-family: $font-family;
     font-size: $font-size;
-    border: 1px solid $gantt-border-color;
-    color: #6b6b6b;
+    //border: 1px solid $gantt-border-color;
+    color: $gantt-text-color;
     font-size: $font-size;
     position: absolute;
     z-index: 10001;
     width: 550px;
     height: 250px;
-    box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.07);
+    //box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.07);
+    @include lane-style;
 }
 
 .gantt_cal_light_wide {
@@ -1383,18 +1387,18 @@ div.dhx_modal_cover {
 }
 
 .gantt_btn_set {
-    margin: 10px 7px 5px 10px;
-    padding: 5px 15px 5px 10px;
+    //margin: 10px 7px 5px 10px;
+    //padding: 5px 15px 5px 10px;
     float: left;
-    -webkit-border-radius: 4px;
+    /* -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
-    border-radius: 4px;
-    border-width: 0;
+    border-radius: 4px; */
+/*     border-width: 0;
     border-color: $gantt-border-color;
     border-style: solid;
-    height: 32px;
-    font-weight: bold;
-    background: #fff;
+    height: 32px; */
+/*     font-weight: bold;
+    background: #fff; */
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
@@ -1406,30 +1410,33 @@ div.dhx_modal_cover {
 }
 
 .gantt_btn_set div {
-    float: left;
+    //float: left;
     font-size: $font-size;
-    height: 22px;
-    line-height: 22px;
+    height: 1rem;
+    /* line-height: 22px;
     background-repeat: no-repeat;
-    vertical-align: middle;
+    vertical-align: middle; */
 }
 
 .gantt_save_btn {
     background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoV2luZG93cykiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MTk1OUU5RDFDMzA0MTFFMkExMUZBQTdDNDAzOUE5RjMiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MTk1OUU5RDJDMzA0MTFFMkExMUZBQTdDNDAzOUE5RjMiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDoxOTU5RTlDRkMzMDQxMUUyQTExRkFBN0M0MDM5QTlGMyIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDoxOTU5RTlEMEMzMDQxMUUyQTExRkFBN0M0MDM5QTlGMyIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PjDroXYAAAEXSURBVHjaYvz//z8DJYCRUgPIAUxAbAnEHiAHMIBcQCwGaRYXF3e6evXqoffv39/dv38/CymaGSUkJBzv3LlzCsj///fv3wdAihkkIQnEvkAshU8zLy+v7a1bt06ANP/79+87kDIAy505cybq06dPr3p7ezuwGQLTfOPGjWP/ESAZLg8kPKBO+g01RBJNszWyZqC6uSgWgIg/f/4shxnS2dnZBjMEqNkSFGBImi8CKTYMA4BYCGjIczRDHC5dunQQSfN7IKWI4UUkjjdMMdCwnw8ePLjwHxV4Yw1gZA5Q47z/2EELzhhCE+ABGvIQWSeQvwcU38QaAML2wHj+C/X3MyAlijeB4ZBoBOIPQGxJKIVSnBsBAgwABddBclWfcZUAAAAASUVORK5CYII=);
-    margin-top: 2px;
-    width: 21px;
+    width: 1rem;
+    height: 1rem;
+    background-size: cover;
 }
 
 .gantt_cancel_btn {
-    margin-top: 2px;
     background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoV2luZG93cykiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MDkzMDA3MzlDMzA0MTFFMjg2QTVFMzFEQzgwRkJERDYiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MDkzMDA3M0FDMzA0MTFFMjg2QTVFMzFEQzgwRkJERDYiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDowOTMwMDczN0MzMDQxMUUyODZBNUUzMURDODBGQkRENiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDowOTMwMDczOEMzMDQxMUUyODZBNUUzMURDODBGQkRENiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PmYuYOUAAAEdSURBVHjaYvz//z8DJYAFXWDlypU8QKoIiD2A2AwqfAqIdwBxX3h4+Bdk9YzILgBqtgdS84FYEYeF94E4EWjIQZgAE5LmQCB1AKoZZKMPEAtAMYh9GSp3AKjWD8UFQAEhIPshEIOc3wHENUBb/qJ57SyQMoJyPwKxElDNO1gYFEE17wMKVmIJlzNQzeegrjaA6qmBecEbSvfh0GwMxGeBhoPoemQ9MAO0kEIbl2YTqPAFKK2IbMB3AjabYIkRZmQD7kNpMyI0G0PpO8gGbIUFJj7NQDk2INWIrIcJKfBAKcwJqvkcDs0TgFgXGo19KCkRmpDWQdWDEk0NUoCBoq0FqhkE/IEWbKJKUmZEz43QzFSKIzN1481M5ACAAAMAlfl/lCwRpagAAAAASUVORK5CYII=);
-    width: 20px;
+    width: 1rem;
+    height: 1rem;
+    background-size: cover;
 }
 
 .gantt_delete_btn {
     background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoV2luZG93cykiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MjFENzI3NUNDMzA0MTFFMjhBNjJGQTc3MUIyQzYzNEYiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MjFENzI3NURDMzA0MTFFMjhBNjJGQTc3MUIyQzYzNEYiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDoyMUQ3Mjc1QUMzMDQxMUUyOEE2MkZBNzcxQjJDNjM0RiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDoyMUQ3Mjc1QkMzMDQxMUUyOEE2MkZBNzcxQjJDNjM0RiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PmUD0gAAAABvSURBVHjaYvz//z8DIyMjAxYQicReji4J0ofKQNP8HwmgGQbXB8IsWGwDSSwDuioKjY9uBthVjFAXYHUGAQA2kYmBUoAUBpGk0LAwgBvwH+YX4mkwptgLowYMRgOITUyYKRFIN/wnDjQgJySAAAMApryKzL8wjfUAAAAASUVORK5CYII=);
-    margin-top: 2px;
-    width: 20px;
+    width: 1rem;
+    height: 1rem;
+    background-size: cover;
 }
 
 .gantt_cal_cover {
@@ -1560,7 +1567,7 @@ div.dhx_modal_cover {
 }
 
 .gantt_section_time {
-    background-color: white;
+    background-color: $gantt-background-color;
     white-space: nowrap;
     padding: 2px 10px 5px;
     padding-top: 2px !important;
@@ -1614,7 +1621,7 @@ div.dhx_modal_cover {
     width: 20px;
     padding: 1px;
     padding-bottom: 1px;
-    background: #fff;
+    // background: #fff;
 }
 
 .gantt_duration .gantt_duration_dec {
