@@ -109,6 +109,11 @@ export class GanttComponent implements AfterViewInit {
       changed = true;
       toUpdate.textContent = data.text;
     }
+    if (data.progress && data.progress !== toUpdate.gantt!.progress) {
+      changed = true;
+      toUpdate.gantt!.progress = data.progress;
+    }
+
     if (changed) {
       this.boardService.publishBoardUpdate();
     }
@@ -163,6 +168,7 @@ export class GanttComponent implements AfterViewInit {
         start_date: new Date(task.gantt!.startDate),
         end_date: new Date(task.gantt!.endDate),
         parent: parentId,
+        progress: task.gantt?.progress ?? 0,
         //auto_scheduling: true,
         open: true,
       }
@@ -221,6 +227,7 @@ export class GanttComponent implements AfterViewInit {
     task.gantt = {
       startDate: task.gantt?.startDate ?? getIsoString(startDate),
       endDate: task.gantt?.endDate ?? getIsoString(plusTwo),
+      progress: task.gantt?.progress,
       predecessors: task.gantt?.predecessors ?? (previousTask ? [{
         laneId: this.lane.id,
         taskId: previousTask.id,

@@ -55,9 +55,11 @@ export interface Task extends Container<Task> {
     notes?: string,
     duration?: number,
     startDate?: ISODateString,
+    includeInGantt: boolean,
     gantt?: {
         startDate: ISODateString,
         endDate: ISODateString,
+        progress?: number,
         predecessors:{
             laneId: string,
             taskId: string
@@ -108,9 +110,6 @@ export const Statuses = {
     },
     completed: {
         icon: "✅",
-    },
-    gantterized: {
-        icon: "📊",
     },
     discarded: {
         icon: "🗑️",
@@ -163,6 +162,7 @@ export const getNewTask: (lane: Lane, textContent?: string | undefined) => Task 
         textContent: typeof textContent != 'undefined' ? textContent : `Task ${uuid}`,
         children: [],
         tags: [],
+        includeInGantt:false,
         dates: {
 
         },

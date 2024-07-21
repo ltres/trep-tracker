@@ -20,6 +20,7 @@ import { ClickService } from '../../service/click.service';
   ]
 })
 export class TaskComponent extends ContainerComponent implements OnInit, OnDestroy {
+
   @ViewChild('editor') editor: ElementRef | undefined;
   @Input() task!: Task;
   @Input() lane!: Lane;
@@ -197,5 +198,9 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   toggleShowNotes() {
     this.showNotes = !this.showNotes;
     this.onToggleShowNotes.emit(this.showNotes);
+  }
+  toggleShowInGantt() {
+    this.task.includeInGantt = !this.task.includeInGantt;
+    this.boardService.publishBoardUpdate()
   }
 }

@@ -822,6 +822,11 @@ export class BoardService {
                     if(!p.dates){
                         p.dates = {};
                     }
+                    if(this.isTask(p)){
+                        if(typeof p.includeInGantt === 'undefined'){
+                            p.includeInGantt = false;
+                        }
+                    }
 
                     if(this.isLane(p)){
                         //p.columnNumber = p.columnNumber ?? 1;
