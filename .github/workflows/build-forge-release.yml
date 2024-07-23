@@ -2,6 +2,8 @@ name: Electron-forge packages release
 
 on:
   push:
+    branches:
+      - master
     tags:
       - 'v*'
 
