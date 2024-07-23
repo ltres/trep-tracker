@@ -30,25 +30,25 @@ export class PrioritizerComponent{
   }
 
   togglePriority(priority: Priority) {
+    let toRet: Priority[] | Priority | undefined;
     if (this.multipleSelectable) {
       let priorities = this.container.priority as Priority[] | undefined;
       priorities = priorities?.includes(priority) ? priorities.filter(s => s !== priority) : (priorities ? [...priorities, priority]: [priority]);
       if(priorities.length === 0 && this.allowEmpty) {
         priorities = undefined;
       }
-      this.container.priority = priorities
+      toRet = priorities
     } else {
-      this.container.priority = priority;
+      toRet = priority;
     }
-    this.onPrioritySelected.emit(this.container.priority);
+    this.onPrioritySelected.emit(toRet);
     //this.boardService.publishBoardUpdate();
     this.open = false;
   }
   cancelAndClose(){
     if(this.allowEmpty){
-      this.container.priority = undefined;
+      this.onPrioritySelected.emit(undefined);
     }
-    this.onPrioritySelected.emit(this.container.priority);
     this.open = false;
   }
   priorityPresent(arg0: Priority): boolean {

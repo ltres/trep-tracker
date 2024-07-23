@@ -27,18 +27,19 @@ export class StatusComponent {
   }
 
   toggleStatus(status: Status) {
+    let toEmit: Status[] | Status | undefined;
     if (this.multipleSelectable) {
       let states = this.container.status as Status[] | undefined;
       states = states?.includes(status) ? states.filter(s => s !== status) : (states ? [...states, status]: [status]);
       if(states.length === 0 && this.allowEmpty) {
         states = undefined;
       }
-      this.container.status = states
+      toEmit = states
     } else {
-      this.container.status = status;
+      toEmit = status;
     }
 
-    this.onStatusSelected.emit(this.container.status);
+    this.onStatusSelected.emit(toEmit);
     //this.boardService.updateStatus(this.container, status);
     this.open = false;
   }
@@ -64,9 +65,8 @@ export class StatusComponent {
   }
   cancelAndClose() {
     if (this.allowEmpty) {
-      this.container.status = undefined;
+      this.onStatusSelected.emit(undefined);
     }
-    this.onStatusSelected.emit(this.container.status);
     
     this.open = false;
   }

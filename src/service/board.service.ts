@@ -372,10 +372,19 @@ export class BoardService {
             if(!status){
                 throw new Error(`Cannot update status of a task to undefined`);
             }
+            if(container.status){
+                if(!Array.isArray(container.status)){
+                    setDateSafe(container, container.status , 'leave', new Date());
+
+                }else{
+                    for(let s of container.status){
+                        setDateSafe(container, s , 'leave', new Date());
+                    }
+                }         
+            }
+
             for (let s of status) {
-                if(container.status){
-                    setDateSafe(container, s, 'leave', new Date());
-                }
+                
                 container.status = s;
                 setDateSafe(container, s, 'enter', new Date());
                 if( this.isTask(container) ){

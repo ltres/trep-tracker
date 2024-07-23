@@ -204,3 +204,4 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     this.boardService.publishBoardUpdate()
   }
 }
+
