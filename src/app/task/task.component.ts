@@ -199,3 +199,4 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     this.onToggleShowNotes.emit(this.showNotes);
   }
 }
+
