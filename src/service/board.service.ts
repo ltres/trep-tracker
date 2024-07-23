@@ -844,7 +844,7 @@ export class BoardService {
                         }
                     }
                     // @ts-ignore
-                    //delete p.gantt;
+                    // delete p.gantt;
                     // @ts-ignore
                     if(this.isLane(p) && typeof p.isArchive === 'undefined'){
                         // @ts-ignore

@@ -79,6 +79,7 @@ $gantt-text-color: $text-color;
 $gantt-weekend-color: $ai-background-color;
 $gantt-link-color: $tag-yellow-color;
 
-$gantt-task-color: hsl(293, 100%, 56%);
-$gantt-project-color: hsl(315, 80%, 50%);
-$gantt-progress-color: hsl(288, 80%, 50%);
+$gantt-task-color: hsl(293, 100%, 56%,0.6);
+$gantt-external-task-color: hsla(293, 100%, 56%, 0.15);
+$gantt-project-color: hsla(120, 80%, 50%, 0.3);
+$gantt-progress-color: hsl(293, 100%, 56%, 1);

@@ -53,18 +53,17 @@ export interface Task extends Container<Task> {
     priority: Priority,
     status: Status,
     notes?: string,
-    duration?: number,
     startDate?: ISODateString,
     includeInGantt: boolean,
     gantt?: {
         startDate: ISODateString,
         endDate: ISODateString,
-        progress?: number,
-        predecessors:{
-            laneId: string,
+        progress: number,
+        order?: number,
+        successors:{
             taskId: string
             linkId: string
-        }[] | undefined
+        }[]
     }   
 }
 

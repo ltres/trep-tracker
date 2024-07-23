@@ -1,6 +1,9 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, TemplateRef, ViewChild } from '@angular/core';
 import { BoardService } from '../../service/board.service';
-import { Board, Layout, Layouts, Tag } from '../../types/types';
+import { Board, Layout, Layouts, Tag, Task } from '../../types/types';
+import { ModalService } from '../../service/modal.service';
+import { Observable, filter, map, of } from 'rxjs';
+import { isPlaceholder, isStatic } from '../../utils/utils';
 
 @Component({
   selector: 'board-toolbar[board]',
@@ -8,10 +11,15 @@ import { Board, Layout, Layouts, Tag } from '../../types/types';
   styleUrl: './board-toolbar.component.scss'
 })
 export class BoardToolbarComponent {
+  @ViewChild('gantt') ganttTemplate: TemplateRef<any> | null = null;
+
   @Input() board!: Board;
   debounce: any;
   open: boolean = true;
-  constructor( protected boardService: BoardService ) { }
+  constructor( 
+    protected boardService: BoardService,
+    protected modalService: ModalService,
+   ) { }
 
 
   getLayouts(): Layout[] {
@@ -51,6 +59,17 @@ export class BoardToolbarComponent {
 
   getLayoutSymbol(layout: Layout) {
     return Layouts[layout].symbol;
+  }
+
+  openGantt() {
+    this.modalService.setModalContent(this.ganttTemplate);
+    this.modalService.setDisplayModal(true, 'full');
+  }
+
+  getGanttTasks$(): Observable<Task[] | undefined> {
+    return this.boardService.getTasksForBoard$(this.board).pipe(
+      map( tasks => tasks.filter(task => task.includeInGantt  && !isPlaceholder(task) && task.status !== 'archived')),
+    );
   }
 
 }

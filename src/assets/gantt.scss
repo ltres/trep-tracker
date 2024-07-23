@@ -893,6 +893,9 @@ div.dhx_modal_cover {
     -webkit-user-select: none;
     -moz-user-select: none;
     -moz-user-select: -moz-none;
+    &.gantt-external-task {
+        background-color: $gantt-external-task-color;
+    }
 }
 
 .gantt_task_line.gantt_drag_move div {
@@ -2383,6 +2386,3 @@ div.dhx_modal_cover {
     background-color: $gantt-weekend-color;
 }
 
-.gantt-parent-task{
-    opacity: 0.7;
-  }

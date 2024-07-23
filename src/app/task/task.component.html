@@ -53,7 +53,7 @@ data-consider-for-overlapping-checks="true"
             (click)="toggleShowNotes()"
             [class.selected]="task.notes && task.notes.length > 0"
             [class.open]="showNotes" >
-                📝
+                🗒️
             </span>
             <notes [notes]="task.notes" (onNoteChanged)="storeNotes($event)" *ngIf="showNotes" ></notes>
         </div>
