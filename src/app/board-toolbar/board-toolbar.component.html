@@ -7,13 +7,13 @@
 
     <div *ngIf="open" class="flex column align-items-end g-05">
         <div class="flex g-025 align-items-center">
-            <label class="translucent">Layout:&nbsp;</label> <button *ngFor="let layout of getLayouts()" (click)="setLayout(layout)" [class.active]="board.layout === layout" [position]="'bottom'" [tooltip]="layout + ' layout'">{{getLayoutSymbol(layout)}}</button>
+            <label class="translucent">Layout:&nbsp;</label> <button *ngFor="let layout of getLayouts()" (click)="setLayout(layout)" [class.active]="board.layout === layout" position="left" [tooltip]="layout + ' layout'">{{getLayoutSymbol(layout)}}</button>
         </div>
 
         <search></search>
 
         <div class="flex g-025 align-items-center">
-            <button (click)="openGantt()">📊 Show gantt..</button>
+            <button [tooltip]="'Shows a Gantt chart for the whole board'" position="left" (click)="openGantt()">📊 Gantt..</button>
             <button (click)="addLane()">➕ Add lane</button>
         </div>
     </div>

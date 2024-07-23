@@ -42,6 +42,12 @@ export class GanttComponent implements AfterViewInit {
     });
     gantt.config.multiselect = true;
     gantt.config.multiselect_one_level = false;
+    // default columns definition
+    gantt.config.columns = [
+      { name: "text", label: "Task name", min_width: 300, width: "*", tree: true },
+      { name: "start_date", label: "Start time", align: "center" },
+      { name: "duration", label: "Duration", align: "center" }
+    ];
 
     var start = new Date(today.getFullYear(), today.getMonth(), 0); // January 1, 2024
     var end = new Date(today.getFullYear(), today.getMonth() + 4, 0); // December 31, 2024
@@ -63,13 +69,13 @@ export class GanttComponent implements AfterViewInit {
       if (gantt.hasChild(task.id)) {
         return "gantt-parent-task";
       }
-      if(task['css'])
-      return task['css'];
+      if (task['css'])
+        return task['css'];
     };
     gantt.config.order_branch = true;
     gantt.clearAll();
-    this.fullDescendants = this.tasks.flatMap(task => this.boardService.getDescendants(task)).concat(this.tasks).filter( t => this.boardService.isTask(t)) as Task[];
-    let dataModel = this.toDhtmlxGanttDataModel( this.tasks, {data: [], links: []} );
+    this.fullDescendants = this.tasks.flatMap(task => this.boardService.getDescendants(task)).concat(this.tasks).filter(t => this.boardService.isTask(t)) as Task[];
+    let dataModel = this.toDhtmlxGanttDataModel(this.tasks, { data: [], links: [] });
     dataModel.data = dataModel.data.sort((a, b) => a['order'] - b['order']);
     gantt.parse(dataModel);
 
@@ -108,11 +114,11 @@ export class GanttComponent implements AfterViewInit {
     let order = 0;
     gantt.eachTask((task) => {
       let toOrder = this.tasks!.find(t => t.id === task.id);
-      if(!toOrder || !toOrder.gantt){
+      if (!toOrder || !toOrder.gantt) {
         console.warn('Task not found');
         return
       }
-      if( toOrder.gantt.order && order === 0){
+      if (toOrder.gantt.order && order === 0) {
         order = toOrder.gantt.order;
       }
       toOrder.gantt.order = order++;
@@ -130,7 +136,7 @@ export class GanttComponent implements AfterViewInit {
   createLink(data: Link) {
     let source = this.boardService.getTask(data.source.toString());
     let target = this.boardService.getTask(data.target.toString());
-    if(!source || !target){
+    if (!source || !target) {
       throw new Error('Task not found');
     }
 
@@ -143,15 +149,15 @@ export class GanttComponent implements AfterViewInit {
   }
   deleteLink(id: string) {
     this.boardService.allTasks?.forEach(task => {
-      if(task.gantt?.successors){
+      if (task.gantt?.successors) {
         task.gantt.successors = task.gantt.successors.filter(p => p.linkId !== id);
       }
     });
     this.boardService.publishBoardUpdate();
   }
 
-  toDhtmlxGanttDataModel(tasks: Task[], runningObject: { data: DhtmlxTask[], links: Link[], latestEndDate?: ISODateString}, parentId?: string, cssClass?: string ): { data: DhtmlxTask[], links: Link[] } {
-    
+  toDhtmlxGanttDataModel(tasks: Task[], runningObject: { data: DhtmlxTask[], links: Link[], latestEndDate?: ISODateString }, parentId?: string, cssClass?: string): { data: DhtmlxTask[], links: Link[] } {
+
     // remove duplicates:
     tasks = tasks.reduce((acc: Task[], task) => {
       if (!acc.find(t => t.id === task.id) && !runningObject.data.find(t => t.id === task.id)) {
@@ -180,19 +186,19 @@ export class GanttComponent implements AfterViewInit {
 
       runningObject.latestEndDate = task.children.length > 0 ? runningObject.latestEndDate : task.gantt!.endDate;
 
-      if(!parentId){
+      if (!parentId) {
         delete dhtmlxTask.parent;
       }
 
       if (task.children.length > 0) {
-        this.toDhtmlxGanttDataModel(task.children, runningObject, task.id );
+        this.toDhtmlxGanttDataModel(task.children, runningObject, task.id);
       }
 
       runningObject.data.push(dhtmlxTask);
 
       // links
-      if(task.gantt?.successors){
-        for(let succ of task.gantt.successors){
+      if (task.gantt?.successors) {
+        for (let succ of task.gantt.successors) {
           let link: Link = {
             id: succ.linkId,
             source: task.id,
@@ -202,15 +208,15 @@ export class GanttComponent implements AfterViewInit {
           }
           runningObject.links.push(link);
           // It may happen that a successor is not between the tasks or their descendants. We need to retrieve it and process it.
-          if( this.fullDescendants && this.fullDescendants.map( t => t.id ).indexOf( succ.taskId ) < 0 ){
+          if (this.fullDescendants && this.fullDescendants.map(t => t.id).indexOf(succ.taskId) < 0) {
             let retrievedSucc = this.boardService.getTask(succ.taskId);
-            if(!retrievedSucc){
+            if (!retrievedSucc) {
               throw new Error('Task not found');
             }
-            this.toDhtmlxGanttDataModel([retrievedSucc], runningObject, undefined, 'gantt-external-task' );
+            this.toDhtmlxGanttDataModel([retrievedSucc], runningObject, undefined, 'gantt-external-task');
           }
         }
-      }else{
+      } else {
         if (prevBase && 1 !== 1) {
           let link: Link = {
             id: generateUUID(),
@@ -231,12 +237,12 @@ export class GanttComponent implements AfterViewInit {
   private initGanttData(task: Task, previousTask?: Task, latestEndDate?: ISODateString): Task {
     let baseDuration = 2;
     let startDate = new Date();
-    if( previousTask && previousTask.gantt?.endDate && previousTask.children.length === 0){
+    if (previousTask && previousTask.gantt?.endDate && previousTask.children.length === 0) {
       startDate = new Date(previousTask.gantt.endDate);
-    }else if( latestEndDate ){
+    } else if (latestEndDate) {
       startDate = new Date(latestEndDate);
     }
-    if(startDate.getDay() == 6 || startDate.getDay() == 0){
+    if (startDate.getDay() == 6 || startDate.getDay() == 0) {
       // weekend
       startDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
     }

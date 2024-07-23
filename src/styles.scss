@@ -261,7 +261,12 @@ button {
 .discarded-background{
   background-color: $discarded-color
 }
-
+.priority-0{
+  color:$priority-0-color;
+}
+.priority-0-background{
+  background-color:$priority-0-color; 
+}
 .priority-1{
   color:$priority-1-color;
 }

@@ -89,8 +89,8 @@ export interface Tag {
     tag: string;
     type: string
 }
-export type Priority = 1 | 2 | 3 | 4;
-export const Priorities: Priority[] = [1, 2, 3, 4];
+export type Priority = 0 | 1 | 2 | 3 | 4;
+export const Priorities: Priority[] = [0, 1, 2, 3, 4];
 
 export const Statuses = {
     todo: {
