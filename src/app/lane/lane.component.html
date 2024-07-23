@@ -42,7 +42,7 @@
         <button class="small no-grow" *ngIf="!isStatic() && !isArchive(lane) " (click)="autoSort()">✨ Auto-sort tasks</button>
 
         <button class="small no-grow" *ngIf="getGanttTasks$() | async" (click)="openGantt()">
-          <span class="gantter-icon"></span> Gantt..
+          📊 Show lane Gantt..
         </button>
 
         <button class="small no-grow" *ngIf="!isStatic() && !isArchive(lane) " (click)="archiveDones()">☢️ Archive dones </button>
@@ -57,10 +57,10 @@
         <button class="small no-grow" *ngIf="(isStatic() || isArchive(lane))" (click)="toggleShowChildren()">
           <span *ngIf="lane.showChildren" class="completed">☑</span>
           <span *ngIf="!lane.showChildren">☐</span> 
-          Show Children 
+          &nbsp;Show Children 
         </button>
     
-        <button *ngIf="!isStatic() && !isArchive(lane)" class="small no-grow" (click)="createNewTask()"> <span *ngIf="lane.priority" class="warning">⚠</span> 🆕 New task</button>
+        <button *ngIf="!isStatic() && !isArchive(lane)" class="small no-grow" (click)="createNewTask()">➕ New task</button>
       </lane-menu>
     </div>
 
@@ -98,7 +98,7 @@
   <div *ngIf="!isStatic()" class="lane-toolbar flex g-05">
     <div class="grow"></div><button class="small no-grow" (click)="createNewTask()">
       <span *ngIf="lane.priority" class="warning">⚠</span>
-      New task
+      ➕ New task
     </button>
   </div>
 </div>

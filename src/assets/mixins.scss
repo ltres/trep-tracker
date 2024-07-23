@@ -13,6 +13,7 @@
 @mixin button(){
     border: none;
     border-radius: 0;
+    line-height: $font-size * 1.2!important;
     padding: 0.2rem 1rem!important;
     display: block;
     font: inherit;

@@ -1,18 +1,21 @@
 <div class="board-toolbar flex column align-items-end p-05 g-05">
+    <div class="flex justify-content-end">
+        <label class="translucent">Board:&nbsp;</label>
+        <div contenteditable="true" [(ngModel)]="board.textContent" [board]="board" (ngModelChange)="debounceBoardUpdate()" (onTagsChange)="updateBoardTags($event)" class="board-label"></div>
+        <!-- <prioritizer [container]="board" class="m-x-025"> </prioritizer> -->
+    </div>
+
     <div *ngIf="open" class="flex column align-items-end g-05">
         <div class="flex g-025 align-items-center">
             <label class="translucent">Layout:&nbsp;</label> <button *ngFor="let layout of getLayouts()" (click)="setLayout(layout)" [class.active]="board.layout === layout" [position]="'bottom'" [tooltip]="layout + ' layout'">{{getLayoutSymbol(layout)}}</button>
         </div>
 
         <search></search>
-        <div class="flex justify-content-end">
-            <label class="translucent">Board:&nbsp;</label>
-            <div contenteditable="true" [(ngModel)]="board.textContent" [board]="board" (ngModelChange)="debounceBoardUpdate()" (onTagsChange)="updateBoardTags($event)" class="board-label"></div>
-            <prioritizer [container]="board" class="m-x-025"> </prioritizer>
-        </div>
 
-        <button (click)="openGantt()">📊 Show gantt..</button>
-        <button (click)="addLane()">Add lane</button>
+        <div class="flex g-025 align-items-center">
+            <button (click)="openGantt()">📊 Show gantt..</button>
+            <button (click)="addLane()">➕ Add lane</button>
+        </div>
     </div>
     <span class="pointer" (click)="open=!open" [class]="!open ? 'chevron-down' : 'chevron-up'"></span>
 
