@@ -96,27 +96,14 @@ export class GanttComponent implements AfterViewInit {
   updateTask(data: DhtmlxTask) {
     var formatFunc = gantt.date.str_to_date("%dd-%mm-%YYYY hh:MM", true);
     let toUpdate = this.boardService.getTask(data.id.toString());
-    if (!toUpdate) {
+    if (!toUpdate || !toUpdate.gantt) {
       throw new Error('Task not found');
     }
-    let changed = false;
-    if (data.start_date && formatFunc(data.start_date) !== toUpdate.gantt!.startDate) {
-      changed = true;
-      toUpdate.gantt!.startDate = getIsoString(typeof data.start_date === 'string' ? formatFunc(data.start_date) : data.start_date);
-    }
-    if (data.end_date && formatFunc(data.end_date) !== toUpdate.gantt!.endDate ) {
-      changed = true;
-      toUpdate.gantt!.endDate = getIsoString(typeof data.end_date === 'string' ? formatFunc(data.end_date) : data.start_date);
-    }
-
-    if (data.text && data.text !== toUpdate.textContent) {
-      changed = true;
-      toUpdate.textContent = data.text;
-    }
-    if (data.progress && data.progress !== toUpdate.gantt!.progress) {
-      changed = true;
-      toUpdate.gantt!.progress = data.progress;
-    }
+    toUpdate.gantt.startDate = getIsoString(typeof data.start_date === 'string' ? formatFunc(data.start_date) : data.start_date);
+    toUpdate.gantt.endDate = getIsoString(typeof data.end_date === 'string' ? formatFunc(data.end_date) : data.start_date);
+    toUpdate.gantt.progress = data.progress ?? 0;
+    toUpdate.textContent = data.text;
+    toUpdate.gantt.duration = data.duration;
 
     let order = 0;
     gantt.eachTask((task) => {
@@ -131,9 +118,8 @@ export class GanttComponent implements AfterViewInit {
       toOrder.gantt.order = order++;
     });
 
-    if (changed) {
-      this.boardService.publishBoardUpdate();
-    }
+    this.boardService.publishBoardUpdate();
+
   }
   createTask(data: DhtmlxTask) {
     throw new Error('Method not implemented.');

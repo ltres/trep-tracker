@@ -60,6 +60,7 @@ export interface Task extends Container<Task> {
         endDate: ISODateString,
         progress: number,
         order?: number,
+        duration?: number,
         successors:{
             taskId: string
             linkId: string
