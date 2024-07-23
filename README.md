@@ -27,11 +27,11 @@ Either download and run the latest executable from the <a href="https://github.c
 - ⬜ TODO find additional points for this list. 
 
 ## ✨ Features & concepts
-- #### **Boards**
+### **Boards**
 A workspace area. You can have multiple, independent boards.
-- #### **Lanes**
+### **Lanes**
 Each board contains lanes, draggable 'post-its' which can hold tasks.
-- #### **Tasks**
+### **Tasks**
 Each task is a line of text with a status and priority. 
 They can have a father-child relation. 
 They can be selected and ordered quickly using just the keyboard; can be moved, dragged, edited, their status can be changed:
@@ -43,17 +43,17 @@ They can be selected and ordered quickly using just the keyboard; can be moved, 
   - ✅ done
   - 📂 archived (gets moved into a dedicated lane)
   - 🗑️ discarded
-- #### **Tags**
+### **Tags**
 Tags can be tagged using specific symbols @, #, !. Each `@tag` is colored differently in order to be distinguishable at a glance.
-- #### **Static Lanes (views)**
+### **Static Lanes (views)**
 You can also `@tag` lanes. When you do, the lane becomes *static* and automatically displays tasks with the included tag(s). Static lanes can also display tasks filtering on priority, status, or a combination of both.
-- #### **Search**
+### **Search**
 Quickly find tasks by pressing Ctrl + F.
-- #### **AI Advisor**
+### **AI Advisor**
 Get advices on how to manage your tasks. *Requires an OpenAI API key*
 
 ## 🧾 Where is my data stored?
-`trep-tracker` stores your tasks data in a local '.trptrk' file.
+`trep-tracker` stores your tasks data in a local '.trptrk' (json) file.
 
 ## 👨‍💻 How is `trep-tracker` made
 `trep-tracker` is built with Angular 17 and packaged with Electron 31.
