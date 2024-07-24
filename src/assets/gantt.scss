@@ -108,6 +108,8 @@
     color: $gantt-text-color;
     border: 1px solid $gantt-border-color; */
     @include button();
+    display: flex;
+    align-items: center
 }
 
 .gantt_btn_set.gantt_save_btn_set {
@@ -115,6 +117,8 @@
     text-shadow: 0 -1px 0 #248a9f;
     color: #fff; */
     @include button();
+    display: flex;
+    align-items: center
 }
 
 .gantt_btn_set.gantt_delete_btn_set {
@@ -123,6 +127,8 @@
     text-shadow: 0 -1px 0 #aa6600;
     color: #fff; */
     @include button();
+    display: flex;
+    align-items: center
 }
 
 .gantt_delete_btn {
@@ -144,16 +150,22 @@
 	Message
 */
 .gantt_popup_button.gantt_ok_button {
+    /*
     background: #3db9d3;
     text-shadow: 0 -1px 0 #248a9f;
     color: #fff;
     font-weight: bold;
-    border-width: 0;
+    border-width: 0; */
+    @include button();
+
 }
 
 .gantt_popup_button.gantt_cancel_button {
+    /*
     font-weight: bold;
-    color: #454544;
+    color: #454544;*/
+    @include button();
+
 }
 
 .gantt_popup_title {
@@ -688,11 +700,12 @@
     text-align: center;
     position: fixed;
     z-index: 20000;
-    box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.07);
+    //box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.07);
     font-family: $font-family;
-    border-radius: 6px;
-    border: 1px solid $gantt-border-color;
-    background: #fff;
+    @include lane-style();
+    //border-radius: 6px;
+    //border: 1px solid $gantt-border-color;
+    //background: #fff;
 }
 
 .gantt_popup_title {
@@ -703,13 +716,14 @@
 
 .gantt_button,
 .gantt_popup_button {
+    /*
     border: 1px solid $gantt-border-color;
     height: 30px;
     line-height: 30px;
     display: inline-block;
     margin: 0 5px;
-    border-radius: 4px;
-    background: #fff;
+    border-radius: 4px;*/
+    //background: #fff;
 }
 
 .gantt-info,
@@ -728,6 +742,8 @@
 .gantt_popup_controls {
     border-radius: 6px;
     padding: 10px;
+    display: flex;
+    justify-content: space-between;
 }
 
 .gantt_popup_button {
@@ -782,7 +798,7 @@ div.dhx_modal_cover {
 .gantt_popup_text {
     margin: 15px 15px 5px 15px;
     font-size: $font-size;
-    color: #000;
+    color: $gantt-text-color;
     min-height: 30px;
     border-radius: 6px;
 }
@@ -2360,11 +2376,14 @@ div.dhx_modal_cover {
 }
 
 .gantt_popup_button.gantt_delete_button {
+    /*
     background: #3db9d3;
     text-shadow: 0 -1px 0 #248a9f;
     color: #fff;
     font-weight: bold;
-    border-width: 0;
+    border-width: 0;*/
+    @include button();
+
 }
 
 .gantt_container_resize_watcher {

@@ -69,9 +69,12 @@ export class GanttComponent implements AfterViewInit {
       if (gantt.hasChild(task.id)) {
         return "gantt-parent-task";
       }
-      if (task['css'])
+      if (task['css']) {
         return task['css'];
+      }
+
     };
+
     gantt.config.order_branch = true;
     gantt.clearAll();
     this.fullDescendants = this.tasks.flatMap(task => this.boardService.getDescendants(task)).concat(this.tasks).filter(t => this.boardService.isTask(t)) as Task[];
@@ -103,13 +106,15 @@ export class GanttComponent implements AfterViewInit {
     var formatFunc = gantt.date.str_to_date("%dd-%mm-%YYYY hh:MM", true);
     let toUpdate = this.boardService.getTask(data.id.toString());
     if (!toUpdate || !toUpdate.gantt) {
-      throw new Error('Task not found');
+      console.log('Task ' + toUpdate?.id + 'not found');
+    } else {
+      toUpdate.gantt.startDate = getIsoString(typeof data.start_date === 'string' ? formatFunc(data.start_date) : data.start_date);
+      toUpdate.gantt.endDate = getIsoString(typeof data.end_date === 'string' ? formatFunc(data.end_date) : data.start_date);
+      toUpdate.gantt.progress = data.progress ?? 0;
+      toUpdate.textContent = data.text;
+      toUpdate.gantt.duration = data.duration;
     }
-    toUpdate.gantt.startDate = getIsoString(typeof data.start_date === 'string' ? formatFunc(data.start_date) : data.start_date);
-    toUpdate.gantt.endDate = getIsoString(typeof data.end_date === 'string' ? formatFunc(data.end_date) : data.start_date);
-    toUpdate.gantt.progress = data.progress ?? 0;
-    toUpdate.textContent = data.text;
-    toUpdate.gantt.duration = data.duration;
+
 
     let order = 0;
     gantt.eachTask((task) => {
@@ -169,7 +174,8 @@ export class GanttComponent implements AfterViewInit {
     let prevBase: Task | undefined;
     for (let task of tasks) {
       this.initGanttData(task, prevBase, runningObject.latestEndDate);
-      //standard tas
+      let resourceTag = task.tags?.find(t => t.type === 'tag-orange')?.tag;
+      //standard task
       let dhtmlxTask: DhtmlxTask = {
         id: task.id,
         text: task.textContent,
@@ -179,6 +185,7 @@ export class GanttComponent implements AfterViewInit {
         parent: parentId,
         progress: task.gantt?.progress ?? 0,
         css: cssClass,
+        color: resourceTag ? `hsl(${this.textToNumber(resourceTag,357)}, 50%, 40%, 0.6)` : undefined,
         order: task.gantt?.order ?? 999,
         //auto_scheduling: true,
         open: true,
@@ -211,9 +218,10 @@ export class GanttComponent implements AfterViewInit {
           if (this.fullDescendants && this.fullDescendants.map(t => t.id).indexOf(succ.taskId) < 0) {
             let retrievedSucc = this.boardService.getTask(succ.taskId);
             if (!retrievedSucc) {
-              throw new Error('Task not found');
+              console.error('Task ' + succ.taskId + ' not found');
+            } else {
+              this.toDhtmlxGanttDataModel([retrievedSucc], runningObject, undefined, 'gantt-external-task');
             }
-            this.toDhtmlxGanttDataModel([retrievedSucc], runningObject, undefined, 'gantt-external-task');
           }
         }
       } else {
@@ -233,6 +241,38 @@ export class GanttComponent implements AfterViewInit {
 
     return runningObject;
   }
+
+  private textToHexColor(text: string): string {
+    let hash = 0;
+
+    // Generate a hash from the input text
+    for (let i = 0; i < text.length; i++) {
+      const charCode = text.toLowerCase().charCodeAt(i);
+      hash = (hash * 31 + charCode) % 0xFFFFFF;
+    }
+
+    // Extract RGB components from the hash
+    const r = (hash >> 16) & 0xFF;
+    const g = (hash >> 8) & 0xFF;
+    const b = hash & 0xFF;
+
+    // Convert RGB components to HEX string
+    const hexColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+
+    return hexColor;
+  }
+
+  private textToNumber(text: string, to?: number): number {
+    let hash = 0;
+
+    for (let i = 0; i < text.length; i++) {
+      const charCode = text.toLowerCase().charCodeAt(i);
+      hash = (hash * 31 + charCode) % (to ?? 256);
+    }
+
+    return hash;
+  }
+
 
   private initGanttData(task: Task, previousTask?: Task, latestEndDate?: ISODateString): Task {
     let baseDuration = 2;

@@ -22,9 +22,10 @@
     outline: none;
     background: transparent;
     color: $text-color;
-    display: flex;
+    // display: flex;
     gap: 0.25rem;
     align-items: center;
+    text-align: center;
     &:hover, &.active{
       box-shadow: inset 0 0 0 1px $text-color;
     }
