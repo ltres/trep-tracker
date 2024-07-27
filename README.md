@@ -49,8 +49,8 @@ Tags can be tagged using specific symbols @, #, !. Each `@tag` is colored differ
 You can also `@tag` lanes. When you do, the lane becomes *static* and automatically displays tasks with the included tag(s). Static lanes can also display tasks filtering on priority, status, or a combination of both.
 ### **Search**
 Quickly find tasks by pressing Ctrl + F.
-### **AI Advisor**
-Get advices on how to manage your tasks. *Requires an OpenAI API key*
+### **Gantt**
+Show selected tasks in dynamic gantts!
 
 ## 🧾 Where is my data stored?
 `trep-tracker` stores your tasks data in a local '.trptrk' (json) file.
