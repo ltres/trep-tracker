@@ -1,9 +1,9 @@
-import { LocalFileStorageService } from "../service/local-file-storage.service";
 import { ChatGPTService } from "../service/chat-gpt.service";
+import { ElectronService } from "../service/electron.service";
 
 export const environment = {
-    storageService: LocalFileStorageService,
+    storageService: ElectronService,
     aiService: ChatGPTService,
     userVersion: "0.17.0-beta",
-    environment: 'default'
+    environment: 'electrified-prod'
 };

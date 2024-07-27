@@ -37,6 +37,7 @@ import { BoardToolbarComponent } from './board-toolbar/board-toolbar.component';
 import { NotesComponent } from './notes/notes.component';
 import { ClickComponent } from './click/click.component';
 import { ClickService } from '../service/click.service';
+import { UpdateCheckerComponent } from './update-checker/update-checker.component';
  
 @NgModule({
     declarations: [
@@ -62,7 +63,8 @@ import { ClickService } from '../service/click.service';
          DraggableDirective,
          BoardToolbarComponent,
          NotesComponent,
-         ClickComponent
+         ClickComponent,
+         UpdateCheckerComponent
         ],
     providers: [
         BoardService, 

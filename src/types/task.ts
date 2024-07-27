@@ -235,3 +235,24 @@ export const getNewBoard: (firstLane: Lane) => Board = (firstLane: Lane) => (
         archivedDate: undefined
     }
 )
+
+export type VersionCheckRequest = {
+    UUID: string,
+    userVersion: string,
+
+
+    userAgent: string | undefined
+    language: string | undefined
+    timezoneOffset: number | undefined
+    hardwareConcurrency: number | undefined
+    platform: string | undefined
+    timezone: string | undefined
+    date?: ISODateString
+    currentVersion?: string,
+}
+
+export type VersionCheckResponse = {
+    needsUpdate: false,
+    currentVersion: string,
+    changeLog: string
+}

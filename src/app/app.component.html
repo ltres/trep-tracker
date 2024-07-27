@@ -1,6 +1,6 @@
 
 
-<ai-advisor *ngIf="board" [board]="board"></ai-advisor>
+<!-- <ai-advisor *ngIf="board" [board]="board"></ai-advisor> -->
 <main class="main flex" ondragover="event.preventDefault()">
 
     <div class="column-1 flex column">
@@ -28,3 +28,4 @@
 <welcome-wizard-manager *ngIf="!isStatusPresent()"></welcome-wizard-manager>
 <modal *ngIf="displayModal"></modal>
 <click></click>
+<update-checker></update-checker>

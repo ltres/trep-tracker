@@ -1,0 +1,15 @@
+<div *ngIf="response && response.needsUpdate" class="flex column m-b-2 ">
+    <div class="flex align-items-center g-1">
+        <logo [size]="2"></logo>
+        <span>An update is available: 
+            <a href="https://github.com/ltres/trep-tracker/releases/" target="_blank">
+                <strong>{{userVersion}} ⤳ {{response.currentVersion}}</strong>
+            </a>
+        </span>
+        <span class="pointer" (click)="closeAndDismiss()">×</span>
+    </div>
+    <a *ngIf="response.changeLog" class="link" (click)="open=true">More info..</a>
+</div>
+<div class="m-t-1" *ngIf="open">
+    {{response?.changeLog}}
+</div>

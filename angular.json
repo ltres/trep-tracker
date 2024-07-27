@@ -34,7 +34,7 @@
             "scripts": []
           },
           "configurations": {
-            "electrified":{
+            "electrified-dev":{
               "deployUrl": "./",
               "baseHref": "./",
               "optimization": false,
@@ -43,7 +43,20 @@
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.electrified.ts"
+                  "with": "src/environments/environment.electrified-dev.ts"
+                }
+              ]
+            },
+            "electrified-prod":{
+              "deployUrl": "./",
+              "baseHref": "./",
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.electrified-prod.ts"
                 }
               ]
             },
@@ -71,13 +84,16 @@
               ]
             }
           },
-          "defaultConfiguration": "electrified"
+          "defaultConfiguration": "electrified-prod"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
-            "electrified": {
-              "buildTarget": "trep-tracker:build:electrified"
+            "electrified-dev": {
+              "buildTarget": "trep-tracker:build:electrified-dev"
+            },
+            "electrified-prod": {
+              "buildTarget": "trep-tracker:build:electrified-prod"
             },
             "development": {
               "buildTarget": "trep-tracker:build:development"

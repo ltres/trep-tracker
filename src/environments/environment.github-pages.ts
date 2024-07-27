@@ -3,5 +3,7 @@ import { LocalFileStorageService } from "../service/local-file-storage.service";
 
 export const environment = {
     storageService: LocalFileStorageService,
-    aiService: ChatGPTService
+    aiService: ChatGPTService,
+    userVersion: "0.17.0-beta",
+    environment: 'github-pages'
 };

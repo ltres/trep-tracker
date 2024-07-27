@@ -96,6 +96,10 @@ function createWindow () {
   win.on('closed', function () {
     win = null
   })
+  win.on('new-window', function(e, url) {
+    e.preventDefault();
+    require('electron').shell.openExternal(url);
+  });
 }
 
 // Create window on electron intialization

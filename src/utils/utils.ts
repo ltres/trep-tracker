@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Lane, Task, Status, archivedLaneId, ISODateString, Container } from '../types/task';
 
-export function generateUUID(): string {
-    return uuidv4().substring(0, 6);
+export function generateUUID(length?: number): string {
+    return uuidv4().substring(0, length ?? 6);
 }
 
 
