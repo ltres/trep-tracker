@@ -5,7 +5,8 @@
     left: 100%;
     top:0;
     z-index: 110;
-    isolation: isolate
+    isolation: isolate;
+    opacity: 1!important;
 }
 .notes{
     @include lane-style;

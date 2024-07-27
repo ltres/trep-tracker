@@ -1,4 +1,4 @@
-import { Board } from "./task";
+import { Board } from "./types";
 
 export interface AiServiceI{
     getInsight(board: Board): Promise<string>;

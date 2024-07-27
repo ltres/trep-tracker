@@ -10,7 +10,7 @@ data-consider-for-overlapping-checks="true"
 >
     <div [tooltip]="'Drag'" *ngIf="!isStaticView() && !isPlaceholder()"class="drag-handle translucent pointer" drag-on-this="true">⋮</div>
 
-    <prioritizer *ngIf="!isPlaceholder()" (onPrioritySelected)="$event ? updatePriority($event) : undefined" [container]="task" class=""> </prioritizer>
+    <prioritizer *ngIf="!isPlaceholder()" (onPrioritySelected)="updatePriority($event)" [container]="task" class=""> </prioritizer>
     <status [container]="task" [board]="board" [staticLane]="isStaticView()" 
     (onStatusSelected)="updateStatus($event)"
     class="m-x-025"></status>
@@ -29,27 +29,45 @@ data-consider-for-overlapping-checks="true"
         ></div>
 
         
-        <div *ngIf="task.status === 'archived'" class="date-wrapper translucent small flex column align-items-start">
-           <time-bar [container]="task"></time-bar> 
-           <span>archived on {{parseDate(this.task.dates.archived?.enter) | date: 'dd-MM-yy hh:mm a'}}</span>
-        </div>
-        <div *ngIf="task.status === 'completed'"class="date-wrapper translucent small flex align-items-center">
-            completed {{ parseDate(this.task.dates.completed?.enter) | date: 'dd-MM-yy hh:mm a'}}
-        </div>
-        <div  class="notes-wrapper relative flex align-items-center">
+
+        <div  class="task-toolbar relative flex align-items-center g-025">
+            <span 
+            *ngIf="!isPlaceholder()"
+            [tooltip]="'Toggle show in Gantt chart'"
+            [position]="'left'"
+            [class.selected]="task.includeInGantt"
+            (click)="toggleShowInGantt()" 
+            class="show-in-gantter pointer" >
+                📊
+            </span>
             <span class="task-notes pointer" 
             *ngIf="!isPlaceholder()"
             [tooltip]="(task.notes && task.notes.length > 0 ? 'Edit' : 'Create') +' task notes'"
             [position]="'left'"
             (click)="toggleShowNotes()"
-            [class.hasNotes]="task.notes && task.notes.length > 0"
+            [class.selected]="task.notes && task.notes.length > 0"
             [class.open]="showNotes" >
-                📝
+                🗒️
             </span>
             <notes [notes]="task.notes" (onNoteChanged)="storeNotes($event)" *ngIf="showNotes" ></notes>
         </div>
     </div>
 </div>
+<div class="dates-n-stuff flex g-05 small translucent">
+    <div *ngIf="task.gantt">
+        <ng-container *ngIf="task.gantt.startDate">
+            planned for {{task.gantt.startDate | date: 'dd-MM-yy'}}<ng-container *ngIf="task.gantt.duration"> ({{task.gantt.duration}} working days)</ng-container>
+        </ng-container>
+    </div>
+    <div *ngIf="task.status === 'archived'" class="date-wrapper flex align-items-center g-05">       
+        <span>archived on {{parseDate(this.task.dates.archived?.enter) | date: 'dd-MM-yy hh:mm a'}}</span>
+        <time-bar [container]="task"></time-bar> 
+     </div>
+     <div *ngIf="task.status === 'completed'"class="date-wrapper flex align-items-center">
+         completed {{ parseDate(this.task.dates.completed?.enter) | date: 'dd-MM-yy hh:mm a'}}
+     </div>
+</div>
+
 <div *ngIf="showChildren" class="task-children-wrapper g-025 ">
     <ng-container *ngFor="let child of this.task.children; let last = last;trackBy: trackBy">
         <div class="flex" >

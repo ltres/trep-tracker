@@ -2,7 +2,7 @@ import { AfterViewInit, ApplicationRef, Component, Inject, OnInit } from '@angul
 
 import { BoardService } from '../service/board.service';
 import { Observable } from 'rxjs';
-import { Board, Lane} from '../types/task';
+import { Board, Lane} from '../types/types';
 import { ModalService } from '../service/modal.service';
 import { StorageServiceAbstract } from '../types/storage';
 
@@ -30,7 +30,7 @@ export class AppComponent implements AfterViewInit {
       //this.board = board
     })
     this.modalService.displayModal$.subscribe(display => {
-      setTimeout(() => { this.displayModal = display; })    
+      setTimeout(() => { this.displayModal = display.show; })    
     });
   }
 

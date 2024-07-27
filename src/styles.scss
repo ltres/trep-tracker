@@ -4,13 +4,13 @@
 @import "assets/variables";
 @import "assets/mixins";
 @import "assets/animations";
-
+@import "assets/gantt";
 
 
 html {
   background-color: $background-color;
   color: $text-color;
-  font-family: 'JetBrains Mono';
+  font-family: $font-family;
   font-size: $font-size
 }
 a{
@@ -127,19 +127,7 @@ p {
 }
 
 button {
-  border: none;
-  border-radius: 0;
-  padding: 0.2rem 1rem!important;
-  display: block;
-  font: inherit;
-  cursor: pointer;
-  box-shadow: inset 0 0 0 1px $translucent-color;
-  outline: none;
-  background: transparent;
-  color: $text-color;
-  &:hover, &.active{
-    box-shadow: inset 0 0 0 1px $text-color;
-  }
+  @include button();
 }
 
 .flex{
@@ -273,7 +261,12 @@ button {
 .discarded-background{
   background-color: $discarded-color
 }
-
+.priority-0{
+  color:$priority-0-color;
+}
+.priority-0-background{
+  background-color:$priority-0-color; 
+}
 .priority-1{
   color:$priority-1-color;
 }
@@ -361,6 +354,12 @@ input, textarea{
   display: inline-block;
 }
 
+.gantter-icon:after{
+  content: "📊";
+  display: inline-block;
+  transform: rotate(90deg);
+}
+
 .loading::after{
   content:"🌐";
   display: inline-block;
@@ -368,6 +367,26 @@ input, textarea{
   top:-2rem;
   right: 0;
   animation: pulse 1s ease 0s infinite normal forwards;
+}
+
+.cdk-overlay-container{
+  z-index: 1000;
+  color: black;
+  * {
+    color: black;
+  }
+}
+
+
+select {
+  background-color: $background-color;
+  color: $text-color;
+  border: 1px solid $translucent-color;
+}
+
+select option {
+  background-color: $background-color;
+  color: $text-color;
 }
 
 .link{

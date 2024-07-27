@@ -1,5 +1,5 @@
 import {  Inject, Injectable, Injector, NgZone } from "@angular/core";
-import { Board, Lane, Container, Task, Tag, tagIdentifiers, getNewBoard, getNewLane, Priority, addTagsForDoneAndArchived, archivedLaneId, Status, ISODateString, StateChangeDate, Layouts, Layout, getLayouts, Statuses, Priorities, getNewTask } from "../types/task";
+import { Board, Lane, Container, Task, Tag, tagIdentifiers, getNewBoard, getNewLane, Priority, addTagsForDoneAndArchived, archivedLaneId, Status, ISODateString, StateChangeDate, Layouts, Layout, getLayouts, Statuses, Priorities, getNewTask } from "../types/types";
 import { BehaviorSubject, Observable, map } from "rxjs";
 import { isPlaceholder, isStatic, setDateSafe } from "../utils/utils";
 import { TagService } from "./tag.service";
@@ -308,6 +308,12 @@ export class BoardService {
     get selectedBoard(): Board | undefined {
         return this._selectedBoard$.getValue();
     }
+    get allTasks(): Task[] | undefined {
+        return this._allTasks$.getValue();
+    }
+    getTask(id: string): Task | undefined {
+        return this._allTasks$.getValue()?.find(t => t.id === id);
+    }
     get focusSearch$(): Observable<boolean> {
         return this._focusSearch$;
     }
@@ -322,8 +328,7 @@ export class BoardService {
     }
     get lastSelectedTask(): {lane: Lane,task:Task} | undefined {
         return this._lastSelectedTask$.getValue();
-    }
-    
+    }   
     get selectedTasks(): Task[] | undefined {
         return this._selectedTasks$.getValue();
     }
@@ -813,7 +818,7 @@ export class BoardService {
             // fixes to existing data and new fields
             for( let board of o.boards ){
                 board._type = 'board';
-                board.layout = board.layout ?? 'absolute';
+                board.layout = board.layout ?? 'absolute'; 
                 board.flexColumns = board.flexColumns ?? undefined;
                 let des = this.getDescendants(board);
                 des.forEach(p => {
@@ -826,6 +831,12 @@ export class BoardService {
                     if(!p.dates){
                         p.dates = {};
                     }
+                    if(this.isTask(p)){
+                        if(typeof p.includeInGantt === 'undefined'){
+                            p.includeInGantt = false;
+                        }
+                    }
+
                     if(this.isLane(p)){
                         //p.columnNumber = p.columnNumber ?? 1;
                         //p.index = p.index ?? 0;
@@ -841,6 +852,8 @@ export class BoardService {
                             }
                         }
                     }
+                    // @ts-ignore
+                    // delete p.gantt;
                     // @ts-ignore
                     if(this.isLane(p) && typeof p.isArchive === 'undefined'){
                         // @ts-ignore

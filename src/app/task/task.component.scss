@@ -32,12 +32,20 @@
         border-left:.15rem solid $text-color;
         padding-left: 0.25rem;
     }
-    .task-notes:not(.open):not(.hasNotes){
-        opacity:0;
+
+    .task-toolbar{
+        > *{
+            opacity: 0;
+        }
+        > *.selected{
+            opacity: 1;
+        }
     }
-    &:hover .task-notes{
-        opacity: 1!important;
-        z-index: 110;
+    &:hover .task-toolbar *{
+        opacity: 0.7;
+        &.selected{
+            opacity: 1;
+        }
     }
 }
 

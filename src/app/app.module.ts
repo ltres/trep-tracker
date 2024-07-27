@@ -38,6 +38,8 @@ import { NotesComponent } from './notes/notes.component';
 import { ClickComponent } from './click/click.component';
 import { ClickService } from '../service/click.service';
 import { UpdateCheckerComponent } from './update-checker/update-checker.component';
+import { GanttComponent } from './gantt/gantt.component';
+import { DpDatePickerModule } from 'ng2-date-picker';
  
 @NgModule({
     declarations: [
@@ -64,6 +66,8 @@ import { UpdateCheckerComponent } from './update-checker/update-checker.componen
          BoardToolbarComponent,
          NotesComponent,
          ClickComponent,
+         GanttComponent,
+         
          UpdateCheckerComponent
         ],
     providers: [
@@ -91,7 +95,8 @@ import { UpdateCheckerComponent } from './update-checker/update-checker.componen
         ReactiveFormsModule,
         KeyboardListenerComponent,
         MarkdownModule.forRoot(),
-        HttpClientModule
+        HttpClientModule,
+        DpDatePickerModule 
     ]
 })
 export class AppModule { }

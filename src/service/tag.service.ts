@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { Board, Lane, Container, Task, Tag, tagIdentifiers, tagHtmlWrapper, tagCapturingGroup, addTagsForDoneAndArchived } from "../types/task";
+import { Board, Lane, Container, Task, Tag, tagIdentifiers, tagHtmlWrapper, tagCapturingGroup, addTagsForDoneAndArchived } from "../types/types";
 import { BehaviorSubject, Observable, filter, map, of } from "rxjs";
 import { generateUUID, isStatic } from "../utils/utils";
 import { BoardService } from "./board.service";

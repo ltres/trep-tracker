@@ -6,7 +6,7 @@ import { ContainerComponentRegistryService } from "./registry.service";
 import { DraggableDirective } from "../app/directive/draggable.directive";
 import { ContainerComponent } from "../app/base/base.component";
 import { BoardComponent } from "../app/board/board.component";
-import { Board, Container } from "../types/task";
+import { Board, Container } from "../types/types";
 
 @Injectable({
     providedIn: 'root'

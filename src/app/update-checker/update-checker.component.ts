@@ -1,5 +1,5 @@
 import { Component, HostBinding, OnInit } from '@angular/core';
-import { VersionCheckRequest, VersionCheckResponse } from '../../types/task';
+import { VersionCheckRequest, VersionCheckResponse } from '../../types/types';
 import { generateUUID } from '../../utils/utils';
 import { environment } from '../../environments/environment';
 import { HttpClient, HttpHeaders } from '@angular/common/http';

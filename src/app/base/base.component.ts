@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { Container } from '../../types/task';
+import { Container } from '../../types/types';
 import { ContainerComponentRegistryService } from '../../service/registry.service';
 
 // A base compoent whose data model is a Container

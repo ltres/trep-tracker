@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, forwardRef, HostBinding, HostListener, Input, OnChanges, OnDestroy, OnInit, Output, Renderer2, SimpleChanges, ViewChild, viewChild } from '@angular/core';
-import { Board, Lane, Container, Task, Tag, Status, Priority, ISODateString, StateChangeDate } from '../../types/task';
+import { Board, Lane, Container, Task, Tag, Status, Priority, ISODateString, StateChangeDate } from '../../types/types';
 import { BoardService } from '../../service/board.service';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
@@ -20,6 +20,7 @@ import { ClickService } from '../../service/click.service';
   ]
 })
 export class TaskComponent extends ContainerComponent implements OnInit, OnDestroy {
+
   @ViewChild('editor') editor: ElementRef | undefined;
   @Input() task!: Task;
   @Input() lane!: Lane;
@@ -197,6 +198,10 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   toggleShowNotes() {
     this.showNotes = !this.showNotes;
     this.onToggleShowNotes.emit(this.showNotes);
+  }
+  toggleShowInGantt() {
+    this.task.includeInGantt = !this.task.includeInGantt;
+    this.boardService.publishBoardUpdate()
   }
 }
 

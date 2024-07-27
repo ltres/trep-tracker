@@ -53,6 +53,19 @@ export interface Task extends Container<Task> {
     priority: Priority,
     status: Status,
     notes?: string,
+    startDate?: ISODateString,
+    includeInGantt: boolean,
+    gantt?: {
+        startDate: ISODateString,
+        endDate: ISODateString,
+        progress: number,
+        order?: number,
+        duration?: number,
+        successors:{
+            taskId: string
+            linkId: string
+        }[]
+    }   
 }
 
 export interface Container<T extends Container<any> = any> {
@@ -76,8 +89,8 @@ export interface Tag {
     tag: string;
     type: string
 }
-export type Priority = 1 | 2 | 3 | 4;
-export const Priorities: Priority[] = [1, 2, 3, 4];
+export type Priority = 0 | 1 | 2 | 3 | 4;
+export const Priorities: Priority[] = [0, 1, 2, 3, 4];
 
 export const Statuses = {
     todo: {
@@ -116,6 +129,7 @@ export type StateChangeDate = {
 };
 
 export type ISODateString = `${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`
+export type DayDateString = `${number}-${number}-${number}`
 
 export const addTagsForDoneAndArchived = false
 
@@ -148,6 +162,7 @@ export const getNewTask: (lane: Lane, textContent?: string | undefined) => Task 
         textContent: typeof textContent != 'undefined' ? textContent : `Task ${uuid}`,
         children: [],
         tags: [],
+        includeInGantt:false,
         dates: {
 
         },
@@ -256,3 +271,4 @@ export type VersionCheckResponse = {
     currentVersion: string,
     changeLog: string
 }
+

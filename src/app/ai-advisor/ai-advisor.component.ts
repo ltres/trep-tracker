@@ -1,6 +1,6 @@
 import { AfterContentInit, Component, HostBinding, Inject, Input } from '@angular/core';
 import { AiServiceI } from '../../types/ai';
-import { Board, ISODateString } from '../../types/task';
+import { Board, ISODateString } from '../../types/types';
 
 @Component({
   selector: 'ai-advisor[board]',

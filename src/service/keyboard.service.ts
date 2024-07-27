@@ -3,7 +3,7 @@ import { Component, Injectable } from "@angular/core";
 import { BehaviorSubject, Observable } from "rxjs";
 import { BoardService } from "./board.service";
 import { ContainerComponentRegistryService } from "./registry.service";
-import { Container, Lane, Task, getNewTask } from "../types/task";
+import { Container, Lane, Task, getNewTask } from "../types/types";
 import { getCaretPosition, isPlaceholder } from "../utils/utils";
 
 @Injectable({

@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { Board, Container, Task, Status, Statuses } from '../../types/task';
+import { Board, Container, Task, Status, Statuses } from '../../types/types';
 import { isPlaceholder } from '../../utils/utils';
 import { BoardService } from '../../service/board.service';
 

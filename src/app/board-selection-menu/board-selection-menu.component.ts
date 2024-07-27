@@ -1,6 +1,6 @@
 import { AfterContentInit, Component } from '@angular/core';
 import { BoardService } from '../../service/board.service';
-import { Board, Priorities, Priority } from '../../types/task';
+import { Board, Priorities, Priority } from '../../types/types';
 import { Observable } from 'rxjs';
 
 @Component({

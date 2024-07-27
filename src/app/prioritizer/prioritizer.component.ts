@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { Container, Priorities, Priority } from '../../types/task';
+import { Container, Priorities, Priority } from '../../types/types';
 import { BoardService } from '../../service/board.service';
 
 @Component({
@@ -9,6 +9,7 @@ import { BoardService } from '../../service/board.service';
   styleUrl: './prioritizer.component.scss'
 })
 export class PrioritizerComponent{
+
 
   @Input() container!: Container;
   @Input() multipleSelectable: boolean = false;
@@ -21,7 +22,7 @@ export class PrioritizerComponent{
   availablePriorities: Priority[] = Priorities;
 
   get priorities(): Priority[] {
-    return Array.isArray(this.container.priority) ? this.container.priority : (this.container.priority ? [this.container.priority] : []);
+    return Array.isArray(this.container.priority) ? this.container.priority : (typeof this.container.priority !== 'undefined' ? [this.container.priority] : []);
   }
 
   getSymbol(number: number | undefined): string {
@@ -53,5 +54,8 @@ export class PrioritizerComponent{
   }
   priorityPresent(arg0: Priority): boolean {
     return this.priorities ? this.priorities.includes(arg0): false;
+  }
+  existPriorities(): boolean {
+    return typeof this.priorities !== 'undefined' && this.priorities.length !== 0
   }
 }

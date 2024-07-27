@@ -1,3 +1,5 @@
+$font-family: 'JetBrains Mono';
+
 $spacer-multiplier: 1;
 
 $background-color: hsl(223, 10%, 10%);
@@ -24,7 +26,6 @@ $lane-padding: 0.75rem 1rem;
 $translucent-opacity: 0.3;
 $translucent-color: rgba($text-color, $translucent-opacity);
 $lane-outline-color: rgba($text-color, 0.1);;
-$lane-outline-color: rgba($text-color, 0.1);;
 
 $editor-active-background:rgba(0, 0, 0, 0.4);
 $selected-background:$text-color;
@@ -46,7 +47,7 @@ $tag-orange-color: rgb(241, 134, 255);
 $tag-yellow-color: rgb(255, 137, 58);
 $tag-green-color: rgb(255, 97, 97);
 
-
+$priority-0-color: hsl(207, 80%, 50%);
 $priority-1-color:hsl(115, 80%, 50%);
 $priority-2-color:hsl(61, 80%, 50%);
 $priority-3-color:hsl(32, 80%, 50%);
@@ -67,3 +68,18 @@ $time-bars-height:0.5rem;
 $time-bars-border-radius:0.2rem;
 
 $task-y-padding: calc($font-size/4);
+
+$gantt-background-color: transparent;
+$gantt-modal-background-color: $lane-non-static-background-color;
+
+$gantt-background-hover-color: $lane-archive-background-color;
+
+$gantt-border-color: $lane-outline-color;
+$gantt-text-color: $text-color;
+$gantt-weekend-color: $ai-background-color;
+$gantt-link-color: $tag-yellow-color;
+
+$gantt-task-color: hsl(293, 100%, 56%, 0.6);
+$gantt-external-task-color: hsla(293, 100%, 56%, 0.15);
+$gantt-project-color: hsla(120, 80%, 50%, 0.3);
+$gantt-progress-color: hsl(293, 100%, 56%, 1);
