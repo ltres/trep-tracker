@@ -41,7 +41,6 @@
     "dhtmlx-gantt": "^8.0.9",
     "electron-context-menu": "^4.0.0",
     "electron-squirrel-startup": "^1.0.1",
-    "frappe-gantt": "^0.6.1",
     "marked": "^12.0.2",
     "ng2-date-picker": "^17.0.0",
     "ngx-markdown": "^17.2.1",
