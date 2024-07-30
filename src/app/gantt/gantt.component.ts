@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, Input, OnDestroy } from '@angular/core';
-import { DayDateString, ISODateString, Task } from '../../types/types';
-import { generateUUID, getDayDate, getIsoString } from '../../utils/utils';
+import { DayDateString, ISODateString, tagHtmlWrapper, tagIdentifiers, Task } from '../../types/types';
+import { generateUUID, getDayDate, getFirstMentionTag, getIsoString } from '../../utils/utils';
 import { BoardService } from '../../service/board.service';
 import { GanttStatic, Link } from 'dhtmlx-gantt';
 import { gantt, Task as DhtmlxTask } from 'dhtmlx-gantt';
@@ -21,36 +21,60 @@ export class GanttComponent implements AfterViewInit {
     if (!this.tasks) {
       throw new Error('Tasks must be defined');
     }
-    // gantt.config.date_format = "%Y-%m-%d %H:%i";
-
-    //gantt.config['scale_unit'] = "week";
-    //antt.config['date_scale'] = "%F, %Y";
     let today = new Date();
 
-    gantt.config.min_column_width = 30; // Set to your desired width in pixels
     gantt.plugins({
       multiselect: true,
-      marker: true,
+      marker: true
     });
-    var dateToStr = gantt.date.date_to_str(gantt.config.task_date);
-
     gantt.addMarker({
       start_date: today,
       css: "today",
       text: "Today",
-      title: "Today: " + dateToStr(today)
+      title: "Today"
     });
+    gantt.addMarker({
+      start_date: new Date(2024,7,1),
+      css: "aug",
+      text: "aug",
+      title: "aug"
+    });
+    gantt.config['scale_unit'] = "month";
+    gantt.config['date_scale'] = "%F"; // Full month name
+    gantt.config['subscales'] = [
+      {unit: "day", step: 1, date: "%j"} // Day of the month as number
+    ];
+    gantt.config.min_column_width = 25; // Set to your desired width in pixels
+
     gantt.config.multiselect = true;
     gantt.config.multiselect_one_level = false;
     // default columns definition
+
     gantt.config.columns = [
+      {
+        name: "mention",
+        label: "Mention",
+        width: 100,
+        template: (task) => {
+          return task['mention'];
+        },
+        sort: function(a, b) {
+          let cmp = a['mention']?.toLowerCase().localeCompare(b['mention']?.toLowerCase());
+          if(cmp !== 0){
+            return cmp
+          }
+          return (a.start_date?.getTime() ?? 0) - (b.start_date?.getTime() ?? 0)
+        }
+      },
       { name: "text", label: "Task name", min_width: 300, width: "*", tree: true },
       { name: "start_date", label: "Start time", align: "center" },
       { name: "duration", label: "Duration", align: "center" }
     ];
+    gantt.config.sort = true;
 
-    var start = new Date(today.getFullYear(), today.getMonth(), 0); // January 1, 2024
-    var end = new Date(today.getFullYear(), today.getMonth() + 4, 0); // December 31, 2024
+    var start = new Date(today.getFullYear(), today.getMonth(), 0); 
+    var end = new Date(today.getFullYear(), today.getMonth() + 4, 0);
+
     gantt.config.work_time = true;
     gantt.setWorkTime({ hours: [9, 13, 14, 18] });//global working hours. 8:00-12:00, 13:00-17:00
     gantt.templates.timeline_cell_class = function (task, date) {
@@ -84,7 +108,7 @@ export class GanttComponent implements AfterViewInit {
 
 
     gantt.init("gantt");
-    gantt.showDate(new Date());
+    gantt.showDate(today);
     if (!(gantt as any).$_initOnce) {
       (gantt as any).$_initOnce = true;
 
@@ -118,7 +142,7 @@ export class GanttComponent implements AfterViewInit {
 
     let order = 0;
     gantt.eachTask((task) => {
-      let toOrder = this.tasks!.find(t => t.id === task.id);
+      let toOrder = this.boardService.getTask(task.id);
       if (!toOrder || !toOrder.gantt) {
         console.warn('Task not found');
         return
@@ -187,6 +211,7 @@ export class GanttComponent implements AfterViewInit {
         css: cssClass,
         color: resourceTag ? `hsl(${this.textToNumber(resourceTag,357)}, 50%, 40%, 0.6)` : undefined,
         order: task.gantt?.order ?? 999,
+        mention: getFirstMentionTag(task),
         //auto_scheduling: true,
         open: true,
       }
@@ -220,6 +245,7 @@ export class GanttComponent implements AfterViewInit {
             if (!retrievedSucc) {
               console.error('Task ' + succ.taskId + ' not found');
             } else {
+              // this.tasks?.push(retrievedSucc);
               this.toDhtmlxGanttDataModel([retrievedSucc], runningObject, undefined, 'gantt-external-task');
             }
           }

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Lane, Task, Status, archivedLaneId, ISODateString, Container, DayDateString } from '../types/types';
+import { Lane, Task, Status, archivedLaneId, ISODateString, Container, DayDateString, tagHtmlWrapper, tagIdentifiers } from '../types/types';
 
 export function generateUUID(length?: number): string {
     return uuidv4().substring(0, length ?? 6);
@@ -243,4 +243,13 @@ export function hashCode(str:string):number {
         hash |= 0; // Convert to 32bit integer
     }
     return hash;
+}
+
+export function getFirstMentionTag(task :Task){
+    let mentionTagType = 'tag-orange';
+    let mention = task.tags.find( t => t.type === mentionTagType );
+    if( mention ){
+        return tagHtmlWrapper(mentionTagType)[0] + tagIdentifiers.find( r => r.type === mentionTagType )?.symbol + mention.tag + tagHtmlWrapper(mentionTagType)[1]
+    }
+    return ""
 }

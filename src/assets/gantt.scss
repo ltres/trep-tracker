@@ -910,7 +910,7 @@ div.dhx_modal_cover {
     -moz-user-select: none;
     -moz-user-select: -moz-none;
     &.gantt-external-task {
-        background-color: $gantt-external-task-color;
+        opacity: $gantt-external-task-opacity;
     }
 }
 

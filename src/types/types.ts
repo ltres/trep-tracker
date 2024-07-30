@@ -145,6 +145,11 @@ export const tagIdentifiers: { type: string, symbol: string, class: string }[] =
         class: "tag-yellow"
     },
     {
+        type: "tag-plus",
+        symbol: '+',
+        class: "tag-plus"
+    },
+    {
         type: "tag-green",
         symbol: '!',
         class: "tag-green"

@@ -46,6 +46,7 @@ $warning-color:hsl(56, 80%, 50%);
 $tag-orange-color: rgb(241, 134, 255);
 $tag-yellow-color: rgb(255, 137, 58);
 $tag-green-color: rgb(255, 97, 97);
+$tag-plus-color: rgb(109, 194, 98);
 
 $priority-0-color: hsl(207, 80%, 50%);
 $priority-1-color:hsl(115, 80%, 50%);
@@ -81,5 +82,6 @@ $gantt-link-color: $tag-yellow-color;
 
 $gantt-task-color: hsl(293, 100%, 56%, 0.6);
 $gantt-external-task-color: hsla(293, 100%, 56%, 0.15);
+$gantt-external-task-opacity: 0.5;
 $gantt-project-color: hsla(120, 80%, 50%, 0.3);
 $gantt-progress-color: hsl(293, 100%, 56%, 1);
