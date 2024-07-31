@@ -37,10 +37,10 @@ export class DragService {
                 return;
             }
             console.info("Drag end event", event);
-            let draggedObject = event.dragged;
-            let board = event.board;
-            let draggedComponent = event.component
-            let {deltaX, deltaY} = event;
+            const draggedObject = event.dragged;
+            const board = event.board;
+            const draggedComponent = event.component
+            const {deltaX, deltaY} = event;
             if (!draggedObject || !board) {
                 console.warn("Dragged component has no object");
                 return;
@@ -50,7 +50,7 @@ export class DragService {
                 return
             }
             // look for overlapped component in the registry
-            let registry = this.registryService.componentRegistry
+            const registry = this.registryService.componentRegistry
             let overlappedComponent = registry
             .sort((a, b) => {
                 if (this.boardService.isTask(a.container) && !this.boardService.isTask(b.container)) {
@@ -72,7 +72,7 @@ export class DragService {
                 
                 // overlapped element's html may contain a data-consider-for-overlapping-checks attribute. 
                 // If it does, consider it for overlapping checks
-                let overlappedConsiderForOverlappingChecks: HTMLElement = mayBeOverlapped.el.nativeElement.querySelector("[data-consider-for-overlapping-checks]")|| mayBeOverlapped.el.nativeElement;
+                const overlappedConsiderForOverlappingChecks: HTMLElement = mayBeOverlapped.el.nativeElement.querySelector("[data-consider-for-overlapping-checks]")|| mayBeOverlapped.el.nativeElement;
                 //let draggedConsiderForOverlappingChecks: HTMLElement = draggedComponent.el.nativeElement.querySelector("[data-consider-for-overlapping-checks]")|| mayBeOverlapped.el.nativeElement;
 
                 return cursorIsInside(event.event, overlappedConsiderForOverlappingChecks.getBoundingClientRect())});
@@ -95,13 +95,13 @@ export class DragService {
                     return 0;
                 }); 
  
-                let { container: overlappedObject } = overlappedComponent[0];
+                const { container: overlappedObject } = overlappedComponent[0];
                 if (!overlappedObject) {
                     console.info("Overlapped component has no object");
                     return;
                 }
                 // exclude the possibility that parents get dragged into children
-                let anyMatch = this.boardService.getDescendants(draggedObject).filter(descendant => descendant.id === overlappedObject.id && descendant._type === overlappedObject._type).length > 0;
+                const anyMatch = this.boardService.getDescendants(draggedObject).filter(descendant => descendant.id === overlappedObject.id && descendant._type === overlappedObject._type).length > 0;
                 if (anyMatch) {
                     console.warn("Dragged object is a descendant of the overlapped object");
                     return;

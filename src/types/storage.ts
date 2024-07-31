@@ -27,7 +27,7 @@ export abstract class StorageServiceAbstract {
      * Writes the status object to the current status location
      * @param status 
      */
-    abstract writeToStatus(status: Object): void
+    abstract writeToStatus(status: object): void
 
     /**
      * Returns an observable that emits the status content when it changes outside the Angular app

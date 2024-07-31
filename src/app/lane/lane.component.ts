@@ -96,7 +96,7 @@ export class LaneComponent extends ContainerComponent implements OnInit {
   }
 
   createNewTask() {
-    let task: Task = getNewTask(this.lane, undefined);
+    const task: Task = getNewTask(this.lane, undefined);
     this.boardService.addAsChild(this.lane, [task]);
     this.boardService.clearSelectedTasks();
     this.boardService.toggleTaskSelection(this.lane, task);
@@ -118,8 +118,8 @@ export class LaneComponent extends ContainerComponent implements OnInit {
     return isArchive(arg0);
   }
   updateLaneTags($event: Tag[]) {
-    let allOldPresent = this.lane.tags.filter(oldTag => $event.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === this.lane.tags.length
-    let allNewPresent = $event.filter(oldTag => this.lane.tags.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === $event.length
+    const allOldPresent = this.lane.tags.filter(oldTag => $event.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === this.lane.tags.length
+    const allNewPresent = $event.filter(oldTag => this.lane.tags.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === $event.length
 
     if (!allOldPresent || !allNewPresent) {
       this.lane.tags = $event;

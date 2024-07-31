@@ -47,7 +47,7 @@ export class LocalFileStorageService extends StorageServiceAbstract {
       reader.onerror = function () {
         console.error("Could not read the file");
       };
-      let target = event.target as HTMLInputElement;
+      const target = event.target as HTMLInputElement;
       if (!target?.files || target.files.length === 0) throw ("No file selected");
       const file = target.files[0]; // Get the first file
 
@@ -62,7 +62,7 @@ export class LocalFileStorageService extends StorageServiceAbstract {
     return true;
   }
 
-  override writeToStatus(status: Object): void {
+  override writeToStatus(status: object): void {
     if( JSON.stringify(status) === this.status) return;
     localStorage.setItem("TrepTrackerStatus", JSON.stringify(status));
   }

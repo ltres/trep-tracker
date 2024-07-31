@@ -24,7 +24,7 @@ export class ElectronService extends StorageServiceAbstract{
     /**Electron callbacks */
     window.electron.onOpenedAppStatus(( event, filePath) => {
       console.log("Opened app status");
-      let statusContent = this.initWithStoragePath(filePath);
+      const statusContent = this.initWithStoragePath(filePath);
       this.status = statusContent;
       this.statusChangeOutsideApp.next(statusContent);
     })
@@ -45,14 +45,14 @@ export class ElectronService extends StorageServiceAbstract{
     return this.storagePath !== undefined && this.storagePath !== null;
   }
 
-  override writeToStatus(status: Object): void {
+  override writeToStatus(status: object): void {
     if(!this.storagePath) throw("No storage path configured");
     if( JSON.stringify(status) === this.status) return;
     this.writeSystemFile(this.storagePath, JSON.stringify(status));
   }
 
   override async openStatus(): Promise<string | undefined> {
-    let {path, content} = await window.electron.openAppStatus();
+    const {path, content} = await window.electron.openAppStatus();
     this.storagePath = path;
     this.status = content;
     setStatusPath(this.storagePath);

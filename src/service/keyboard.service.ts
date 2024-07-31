@@ -1,9 +1,9 @@
-import { Component, Injectable } from "@angular/core";
+import { Injectable } from "@angular/core";
 
 import { BehaviorSubject, Observable } from "rxjs";
 import { BoardService } from "./board.service";
 import { ContainerComponentRegistryService } from "./registry.service";
-import { Container, Lane, Task, getNewTask } from "../types/types";
+import { Container, Task, getNewTask } from "../types/types";
 import { getCaretPosition, isPlaceholder } from "../utils/utils";
 
 @Injectable({
@@ -15,7 +15,7 @@ export class KeyboardService {
   constructor(
     private boardService: BoardService,
     private registry: ContainerComponentRegistryService
-  ){
+  ){ 
     this._keyboardEvent$.subscribe(e => {
       if (e?.type != 'keydown' || !e || ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Enter', 'Backspace', 'Delete', 'Shift', 'd', 'a', 'f'].indexOf(e.key) === -1) {
         return
@@ -36,13 +36,13 @@ export class KeyboardService {
         // Focus search input
         this.boardService.focusSearch();
       }else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-        let {task, el, caretPos} = this.getLastSelectedTaskData();
+        const {caretPos} = this.getLastSelectedTaskData();
 
-        let nearby = e?.key === 'ArrowDown' ? this.boardService.getTaskInDirection(this.boardService.selectedTasks, "down") : this.boardService.getTaskInDirection(this.boardService.selectedTasks, "up");   
+        const nearby = e?.key === 'ArrowDown' ? this.boardService.getTaskInDirection(this.boardService.selectedTasks, "down") : this.boardService.getTaskInDirection(this.boardService.selectedTasks, "up");   
         if (!nearby) {
           return;
         }
-        let lane = this.boardService.findParentLane([nearby]);
+        const lane = this.boardService.findParentLane([nearby]);
         if (!lane) {
           return;
         }
@@ -63,14 +63,14 @@ export class KeyboardService {
         }
       } else if (e.key === 'ArrowRight' && e.ctrlKey === true) {
         // Make this task a child of the task on the top
-        let wannaBeParent = this.boardService.getTaskInDirection(this.boardService.selectedTasks, "up");
+        const wannaBeParent = this.boardService.getTaskInDirection(this.boardService.selectedTasks, "up");
         if (!wannaBeParent) {
           throw new Error("Cannot find nearby task")
         }
         this.boardService.addAsChild(wannaBeParent, this.boardService.selectedTasks);
       } else if (e.key === 'ArrowLeft' && e.ctrlKey === true) {
         // Children task gets promoted to the same level as the parent
-        let parent = this.boardService.findDirectParent(this.boardService.selectedTasks);
+        const parent = this.boardService.findDirectParent(this.boardService.selectedTasks);
         if (!parent) {
           throw new Error("Cannot find parent task")
         }
@@ -79,12 +79,12 @@ export class KeyboardService {
         }
         this.boardService.removeChildrenAndAddAsSibling(parent, this.boardService.selectedTasks);
       }else if(e.key === 'Enter'){
-        let t = e.target as HTMLElement;
+        const t = e.target as HTMLElement;
         if(t && !t.classList.contains('task-text-content')){
           return;
         } 
         // Create new task
-        let {task:selTask, el, caretPos} = this.getLastSelectedTaskData();
+        const {caretPos} = this.getLastSelectedTaskData();
 
         e.stopPropagation();
         e.stopImmediatePropagation();
@@ -103,7 +103,7 @@ export class KeyboardService {
         if (!parentObject || !this.boardService.isLane(parentObject) || !this.boardService.isTask(sibling)) {
           throw new Error("Wrong parent or sibling");
         }
-        let task = getNewTask(parentObject,"")
+        const task = getNewTask(parentObject,"")
         /*
         let lane = this.boardService.isLane(parent) ? parent : this.boardService.findParentLane([parent]);
         if (!lane) {
@@ -117,13 +117,13 @@ export class KeyboardService {
       }else if(e.key === 'Backspace' || e.key === 'Delete'){
         // Delete placeholder
 
-        let {task, el, caretPos} = this.getLastSelectedTaskData();
+        const {task} = this.getLastSelectedTaskData();
         if( isPlaceholder(task) ){
-          let bottomTask = this.boardService.getTaskInDirection(this.boardService.selectedTasks, e.key === 'Delete' ? "down" : "up");
+          const bottomTask = this.boardService.getTaskInDirection(this.boardService.selectedTasks, e.key === 'Delete' ? "down" : "up");
           if (!bottomTask) {
             return;
           }
-          let lane = this.boardService.findParentLane([task]);
+          const lane = this.boardService.findParentLane([task]);
           if (!lane) {
             return;
           }
@@ -137,7 +137,7 @@ export class KeyboardService {
   }
 
   private getLastSelectedTaskData(): {task: Task, el: Node | undefined, caretPos: number} { 
-    let task = this.boardService.lastSelectedTask?.task;
+    const task = this.boardService.lastSelectedTask?.task;
     if (!task) {
       throw new Error("Cannot find lane or task")
     }

@@ -30,7 +30,7 @@ export class UpdateCheckerComponent implements OnInit {
       this.showToaster = false;
       return;
     }
-    let latestClosedDate = localStorage.getItem("updateToasterClosed");
+    const latestClosedDate = localStorage.getItem("updateToasterClosed");
     if( latestClosedDate && new Date().getTime() - new Date(latestClosedDate).getTime() < this.remindUpdateAfterDays * 1000 * 3600 * 24  ){
       this.showToaster = false;
     }
@@ -39,7 +39,7 @@ export class UpdateCheckerComponent implements OnInit {
       this.showToaster = false
     }, 60000 )
 
-    let body = this.getCheckVersionData();
+    const body = this.getCheckVersionData();
     let headers = new HttpHeaders();
     headers = headers.set('Content-Type', 'application/json; charset=utf-8');
     headers = headers.set('X-Amz-Content-Sha256', await this.sha256(JSON.stringify(body)));

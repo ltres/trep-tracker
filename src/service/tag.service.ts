@@ -13,7 +13,7 @@ export class TagService {
     constructor(private boardService: BoardService) {
         this.boardService.boards$.subscribe(boards => {
             this._tags$.next([]);
-            for( let board of boards ){
+            for( const board of boards ){
                 let tags: Tag[] = board.tags ?? [];
                 this.boardService.getDescendants(board).forEach( container => {
                     if( this.boardService.isLane(container) && !isStatic(container) ){
@@ -60,18 +60,18 @@ export class TagService {
             value = value.replaceAll("&nbsp;<", '<'); // "a <span tag="true" class="tag-orange">@l&nbsp;</span>"
             value = value.replaceAll("&nbsp;", ' ');
     
-            let allTags = this._tags$.getValue().find(t => t.board.id === board.id)?.tags ?? [];
+            const allTags = this._tags$.getValue().find(t => t.board.id === board.id)?.tags ?? [];
     
             const tags: { tag: string, type: string}[] = [];
-            for( let tagIdentifier of tagIdentifiers){
-                let wrappers = tagHtmlWrapper( tagIdentifier.class );
-                let regex = new RegExp(`(${wrappers[0]})?${tagCapturingGroup(tagIdentifier.symbol)}?(${wrappers[1]})?`, 'g');
+            for( const tagIdentifier of tagIdentifiers){
+                const wrappers = tagHtmlWrapper( tagIdentifier.class );
+                const regex = new RegExp(`(${wrappers[0]})?${tagCapturingGroup(tagIdentifier.symbol)}?(${wrappers[1]})?`, 'g');
     
                 // step #0 tag unwrapping
                 value = value.replace(regex, `${tagIdentifier.symbol}$2`);
             }
-            for( let tagIdentifier of tagIdentifiers){
-                let wrappers = tagHtmlWrapper( tagIdentifier.class );
+            for( const tagIdentifier of tagIdentifiers){
+                const wrappers = tagHtmlWrapper( tagIdentifier.class );
                 // Step #1 Tags extraction
                 let regex = new RegExp(tagCapturingGroup(tagIdentifier.symbol), 'g');           
                 let match;
@@ -80,8 +80,8 @@ export class TagService {
                 }
     
                 // Step #2 Auto tagging feature. If a word that was previously used as a tag is used as a standard word in the text, automatically make it a tag.
-                let words = value.split(/\s+/);
-                for( let word of words ){
+                const words = value.split(/\s+/);
+                for( const word of words ){
                     if( allTags.filter( t => t.type === tagIdentifier.type )
                         .map( t => t.tag.toLowerCase() )
                         .indexOf( word.toLowerCase() ) >= 0 

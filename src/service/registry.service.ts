@@ -22,8 +22,8 @@ export class ContainerComponentRegistryService {
     }
 
     private removeFromRegistry<T extends ContainerComponent>(registry: BehaviorSubject<T[]>, component: T) {
-        let curVal = registry.getValue();
-        let index = curVal.findIndex(c => c === component);
+        const curVal = registry.getValue();
+        const index = curVal.findIndex(c => c === component);
         if (index === -1) {
             console.warn("Component not found in registry");
             return;
@@ -33,7 +33,7 @@ export class ContainerComponentRegistryService {
     }
 
     private addToRegistry<T extends ContainerComponent>(registry: BehaviorSubject<T[]>, component: T) {
-        let curVal = registry.getValue();
+        const curVal = registry.getValue();
         if (curVal.find(c => c === component)) {
             console.warn("Component already in registry");
             return;

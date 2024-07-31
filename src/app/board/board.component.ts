@@ -73,17 +73,17 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
     if(this.board.layout === 'absolute') return;
     this.subscriptions = this.boardService.boards$.subscribe(boards => {
       // set the board height basing on the childrens size.
-      let boardEl = this.el.nativeElement as HTMLElement;
-      let laneEls = boardEl.querySelectorAll('lane');
+      const boardEl = this.el.nativeElement as HTMLElement;
+      const laneEls = boardEl.querySelectorAll('lane');
       setTimeout(() => {
         this._height = 0;
         this._width = 0;
         laneEls.forEach(laneEl => {
-          let maxHeight = laneEl.getBoundingClientRect().height + laneEl.getBoundingClientRect().top + window.scrollY;
+          const maxHeight = laneEl.getBoundingClientRect().height + laneEl.getBoundingClientRect().top + window.scrollY;
           if (maxHeight > (this.height ?? 0)) {
             this._height = maxHeight;
           }
-          let maxWidth = laneEl.getBoundingClientRect().width + laneEl.getBoundingClientRect().left + window.scrollX;
+          const maxWidth = laneEl.getBoundingClientRect().width + laneEl.getBoundingClientRect().left + window.scrollX;
           if (maxWidth > (this.width ?? 0)) {
             this._width = maxWidth;
           }
@@ -120,8 +120,8 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
   }
 
   updateBoardTags($event: Tag[]) {
-    let allOldPresent = this.board.tags.filter(oldTag => $event.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === this.board.tags.length
-    let allNewPresent = $event.filter(oldTag => this.board.tags.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === $event.length
+    const allOldPresent = this.board.tags.filter(oldTag => $event.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === this.board.tags.length
+    const allNewPresent = $event.filter(oldTag => this.board.tags.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === $event.length
 
     if (!allOldPresent || !allNewPresent) {
       this.board.tags = $event;

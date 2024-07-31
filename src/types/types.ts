@@ -162,7 +162,7 @@ export const tagCapturingGroup = (symbol: string) => (`${symbol}([A-Za-z0-9\-\_]
 
 
 export const getNewTask: (lane: Lane, textContent?: string | undefined) => Task = (lane: Lane, textContent?: string | undefined) => {
-    let uuid = generateUUID();
+    const uuid = generateUUID();
     return {
         id: uuid,
         createdLaneId: lane.id,
@@ -186,7 +186,7 @@ export const getNewTask: (lane: Lane, textContent?: string | undefined) => Task 
 export const archivedLaneId = "Archive";
 
 export const getNewLane: (archive: boolean) => Lane = (archive: boolean) => {
-    let id = generateUUID();
+    const id = generateUUID();
     return {
         id: id,
         tags: [],

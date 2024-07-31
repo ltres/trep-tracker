@@ -90,7 +90,7 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
   ngAfterViewInit(): void {
     //super.ngOnInit();
     if (this.static) return;
-    let el = this.el.nativeElement as HTMLElement;
+    const el = this.el.nativeElement as HTMLElement;
     this.draggableEl = el.querySelector("[drag-on-this]:not([draggable])") ?? el;
     this.draggableEl.setAttribute('draggable', 'true');
   }
@@ -112,7 +112,7 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
     this.ngZone.runOutsideAngular(() => {
       // if(1===1)return;
       this.isBeingDragged = false;
-      let node = this.el.nativeElement as HTMLElement;
+      const node = this.el.nativeElement as HTMLElement;
       node.style.position = "";
 
       if (this.static) return;
@@ -121,7 +121,7 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
       this.draggableDir.coordinates = this.calcRelativeCoordinates($event);
       this.boardService.publishBoardUpdate()
 
-      let board = this.boardService.selectedBoard;
+      const board = this.boardService.selectedBoard;
       if( !board ) return;
       this.dragService.publishDragEvent(
         this.draggableDir,
@@ -157,7 +157,7 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
       if (this.static) return;
       document.body.classList.add('dragging');
 
-      let node = this.el.nativeElement as HTMLElement;
+      const node = this.el.nativeElement as HTMLElement;
       this.onDragStart.emit($event);
       this.deltaX = $event.clientX - node.getBoundingClientRect().left;
       this.deltaY = $event.clientY - node.getBoundingClientRect().top;

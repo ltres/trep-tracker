@@ -41,7 +41,7 @@ export class AiAdvisorComponent implements AfterContentInit{
     this.advice = await this.aiService.getInsight(this.board);
     this.loading = false;
     localStorage.setItem("AIadvice", this.advice);
-    let refreshDateISOString = new Date().toISOString();
+    const refreshDateISOString = new Date().toISOString();
     localStorage.setItem("AIadviceRefreshDateISOString", refreshDateISOString)
   }
 

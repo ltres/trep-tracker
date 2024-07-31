@@ -67,7 +67,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     });
     this.subscriptions = this.boardService.editorActiveTask$.subscribe((data: { lane: Lane, task: Task, startingCaretPosition: number | undefined } | undefined) => {
       if (!data) return;
-      let { lane, task, startingCaretPosition } = data;
+      const { lane, task, startingCaretPosition } = data;
       if (task && task.id === this.task.id && lane && this.lane.id === lane.id) {
         this.editorActive = true;
 
@@ -144,8 +144,8 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   }
 
   updateTaskTags($event: Tag[]) {
-    let allOldPresent = this.task.tags.filter( oldTag => $event.map( t => t.tag.toLowerCase() ).find( r => r === oldTag.tag.toLowerCase() ) ).length === this.task.tags.length
-    let allNewPresent = $event.filter( oldTag => this.task.tags.map( t => t.tag.toLowerCase() ).find( r => r === oldTag.tag .toLowerCase()) ).length === $event.length
+    const allOldPresent = this.task.tags.filter( oldTag => $event.map( t => t.tag.toLowerCase() ).find( r => r === oldTag.tag.toLowerCase() ) ).length === this.task.tags.length
+    const allNewPresent = $event.filter( oldTag => this.task.tags.map( t => t.tag.toLowerCase() ).find( r => r === oldTag.tag .toLowerCase()) ).length === $event.length
 
     if(!allOldPresent || !allNewPresent){
       this.task.tags = $event;

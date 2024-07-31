@@ -17,10 +17,10 @@ export class TimeBarComponent {
   }
 
   getDays(dateKey: Status):number {
-    let start = this.container.dates[dateKey]?.enter!;
-    let end = this.container.dates[dateKey]?.leave!;
+    const start = this.container.dates[dateKey]?.enter!;
+    const end = this.container.dates[dateKey]?.leave!;
 
-    let days = (new Date(end).getTime() - new Date(start).getTime()) / (1000 * 60 * 60 * 24);
+    const days = (new Date(end).getTime() - new Date(start).getTime()) / (1000 * 60 * 60 * 24);
     return Math.round(days * 100) / 100;
   }
 
@@ -29,9 +29,9 @@ export class TimeBarComponent {
   }
 
   getDates(): Status[] {
-    let ret: Status[] = [];
-    for( let key of Object.keys(this.container.dates) ) {
-      let status = key as Status;
+    const ret: Status[] = [];
+    for( const key of Object.keys(this.container.dates) ) {
+      const status = key as Status;
       if( this.container.dates && 
         this.container.dates[status] &&
         this.container.dates[status]?.enter &&

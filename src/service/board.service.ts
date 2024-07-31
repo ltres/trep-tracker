@@ -34,7 +34,7 @@ export class BoardService {
     ) {
         setTimeout(() => this.tagService = injector.get(TagService));
 
-        let latestStatus = this.storageService.getStatus();
+        const latestStatus = this.storageService.getStatus();
         if( latestStatus !== null ){
             this.deserialize(latestStatus);
         }
@@ -82,7 +82,7 @@ export class BoardService {
      */
     getDescendants(container: Container): Container[] {
         let descendants: Container[] = [];
-        for (let child of container.children) {
+        for (const child of container.children) {
             descendants = descendants.concat(child).concat(this.getDescendants(child));
         }
 
@@ -90,7 +90,7 @@ export class BoardService {
     }
 
     addNewBoard() {
-        let board = getNewBoard(getNewLane(false))
+        const board = getNewBoard(getNewLane(false))
 
         this._boards$.next([...this._boards$.getValue(), board]);
     }
@@ -152,7 +152,7 @@ export class BoardService {
     getStaticTasks$(board: Board,tags: Tag[] | undefined, priority: Priority | Priority[] | undefined, status: Status | Status[] | undefined, excldeArchived: boolean, sort: keyof StateChangeDate | undefined, sortOrder?: 'asc' | 'desc'): Observable<Task[] | undefined> {
         return this._boards$.pipe(
             map(boards => { 
-                let b = boards.find(b => b.id === board.id);
+                const b = boards.find(b => b.id === board.id);
                 if (!b) {
                     throw new Error(`Cannot find board with id ${board.id}`);
                 }
@@ -204,16 +204,16 @@ export class BoardService {
     getTasksForBoard$(board: Board): Observable<Task[]> {
         return this._boards$.pipe(
             map(boards => {
-                let b = boards.find(b => b.id === board.id);
+                const b = boards.find(b => b.id === board.id);
                 if (!b) {
                     throw new Error(`Cannot find board with id ${board.id}`);
                 }
                 // get all lanes except the archive and static ones
-                let lanes = b.children.filter(l => !l.isArchive && !isStatic(l));
+                const lanes = b.children.filter(l => !l.isArchive && !isStatic(l));
                 let tasks: Task[] = [];
-                for( let lane of lanes ){
-                    let chilren = lane.children;
-                    for( let child of chilren ){
+                for( const lane of lanes ){
+                    const chilren = lane.children;
+                    for( const child of chilren ){
                         // get all the descendants of the child except the placeholders and the archived ones, for the given priority
                         tasks = tasks.concat(child).concat( this.getDescendants(child) as Task[]);
                     }
@@ -243,7 +243,7 @@ export class BoardService {
     getLane$(lane: Lane): Observable<Lane | undefined> {
         return this._boards$.pipe(
             map(boards => {
-                let b = boards.find(board => board.children.find(l => l.id === lane.id))
+                const b = boards.find(board => board.children.find(l => l.id === lane.id))
 
                 return b?.children.find(l => l.id === lane.id)!;
             })
@@ -268,7 +268,7 @@ export class BoardService {
         this._selectedTasks$.next(cur);
     }
     addToSelection(lane: Lane, task: Task) {
-        let cur = this._selectedTasks$.getValue() || [];
+        const cur = this._selectedTasks$.getValue() || [];
         if (cur?.find(t => t.id === task.id)) {
             return;
         }
@@ -280,7 +280,7 @@ export class BoardService {
         this._selectedTasks$.next([]);
     }
     selectFirstBoard() {
-        let boards = this._boards$.getValue();
+        const boards = this._boards$.getValue();
         if (boards.length === 0) {
             return;
         }
@@ -343,14 +343,14 @@ export class BoardService {
      * Finally, the new floating lane is added to the board and the updated boards are emitted.
      */
     addFloatingLane(board: Board, x: number, y: number, children: Task[] | undefined, archive: boolean): Lane {
-        let boards = this._boards$.getValue();
-        let activeBoard = boards.find(b => b.id === board.id);
+        const boards = this._boards$.getValue();
+        const activeBoard = boards.find(b => b.id === board.id);
         if (!activeBoard) {
             throw new Error(`Cannot find board for board ${board.id}`)
         }
         // activeBoard.children = activeBoard.children.filter(l => l.children.length > 0 || l.tags.length > 0);
 
-        let newLane: Lane = getNewLane(archive);
+        const newLane: Lane = getNewLane(archive);
         newLane.coordinates = { x, y };
         activeBoard.children.push(newLane);
 
@@ -364,7 +364,7 @@ export class BoardService {
     }
 
     updateStatus(board: Board, container: Container, status: Status | Status[] | undefined) {
-        let boards = this._boards$.getValue();
+        const boards = this._boards$.getValue();
         status = status && Array.isArray(status) ? status : (status ? [status] : undefined);
         if( this.isLane(container) ){
             container.status = status;
@@ -377,13 +377,13 @@ export class BoardService {
                     setDateSafe(container, container.status , 'leave', new Date());
 
                 }else{
-                    for(let s of container.status){
+                    for(const s of container.status){
                         setDateSafe(container, s , 'leave', new Date());
                     }
                 }         
             }
 
-            for (let s of status) {
+            for (const s of status) {
                 
                 container.status = s;
                 setDateSafe(container, s, 'enter', new Date());
@@ -402,7 +402,7 @@ export class BoardService {
     private evaluateArchiveMove(board: Board, task: Task) {
         let archive = board.children.find(l => l.isArchive);
         if (task.status === 'archived') {
-            let lane = this.findParentLane([task]);
+            const lane = this.findParentLane([task]);
             if (lane) {
                 // Removal from the original lane
                 lane.children = lane.children.filter(t => t.id !== task.id);
@@ -412,14 +412,14 @@ export class BoardService {
                 archive = this.addFloatingLane(board, 0, 0, undefined, true);
             }
             // Check if the task is already displayed in the archive lane (can be a descendant of an archived task)
-            let descendants = this.getDescendants(archive);
+            const descendants = this.getDescendants(archive);
             if (descendants.find(t => t.id === task.id)) {
                 // Do not add it
                 console.warn(`Task with id ${task.id} is already in the archive, as a descendant of an archived task.`);
                 return;
             }
             // Check if the task has any descendants that are already in the archive lane, and remove them
-            let descendantsToRemove = this.getDescendants(task).filter(t => t.status === 'archived');
+            const descendantsToRemove = this.getDescendants(task).filter(t => t.status === 'archived');
             descendantsToRemove.forEach(d => {
                 archive!.children = archive!.children.filter(t => t.id !== d.id);
             })
@@ -435,13 +435,13 @@ export class BoardService {
             }
             // send the task back to the original lane
             // Identify the original lane
-            let lane = this._allParents$.getValue()?.find(p => p.id === task.createdLaneId);
+            const lane = this._allParents$.getValue()?.find(p => p.id === task.createdLaneId);
             if (lane) {
                 // add the task to the original lane
                 lane.children.push(task);
             } else {
                 console.warn(`Cannot find lane with id ${task.createdLaneId}`);
-                let lane = this.addFloatingLane(board, 0, 0, [task], false);
+                const lane = this.addFloatingLane(board, 0, 0, [task], false);
                 task.createdLaneId = lane.id;
             }
 
@@ -457,26 +457,26 @@ export class BoardService {
         }
 
         // get outer parent of the tasks
-        let parent = this.findParentLane(tasks);
+        const parent = this.findParentLane(tasks);
         if (!parent) {
             return;
         }
         // let taskToFind = this.getTopLevelTasks(tasks);
         // get all the tasks in the lane, including descendants, in an ordered array
-        let orderedLinearizedTasks = this.getDescendants(parent).filter(c => this.isTask(c)) as Task[];
+        const orderedLinearizedTasks = this.getDescendants(parent).filter(c => this.isTask(c)) as Task[];
         let index = 0;
         if (direction === 'up' || direction === 'left') {
             // Get smalles index from the tasks
             index = orderedLinearizedTasks.length - 1;
-            for (let toCheck of tasks) {
-                let internalIdx = orderedLinearizedTasks.findIndex(t => t.id === toCheck.id);
+            for (const toCheck of tasks) {
+                const internalIdx = orderedLinearizedTasks.findIndex(t => t.id === toCheck.id);
                 index = internalIdx < index ? internalIdx : index;
             }
         } else {
             // Get bigger index from the tasks
             index = 0;
-            for (let toCheck of tasks) {
-                let internalIdx = orderedLinearizedTasks.findIndex(t => t.id === toCheck.id);
+            for (const toCheck of tasks) {
+                const internalIdx = orderedLinearizedTasks.findIndex(t => t.id === toCheck.id);
                 index = internalIdx > index ? internalIdx : index;
             }
         }
@@ -518,7 +518,7 @@ export class BoardService {
         let parent = this.findDirectParent(objs);
 
         while (parent != null) {
-            let grandParent = this.findDirectParent([parent]);
+            const grandParent = this.findDirectParent([parent]);
             if (this.isLane(parent)) {
                 return parent;
             }
@@ -532,7 +532,7 @@ export class BoardService {
         if (!tasks || tasks.length === 0) {
             return;
         }
-        let boards = this._boards$.getValue();
+        const boards = this._boards$.getValue();
 
 
         tasks = this.getTopLevelTasks(tasks);
@@ -545,7 +545,7 @@ export class BoardService {
 
         if (sibling) {
             // find the index of the sibling
-            let index = parent.children.findIndex(c => c.id === sibling.id);
+            const index = parent.children.findIndex(c => c.id === sibling.id);
             if (index === -1) {
                 throw new Error(`Cannot find sibling with id ${sibling.id} in parent with id ${parent.id}`);
             }
@@ -566,13 +566,13 @@ export class BoardService {
         if (!children || children.length === 0) {
             return;
         }
-        let boards = this._boards$.getValue();
+        const boards = this._boards$.getValue();
 
         // incoming tasks could be related one another. Keep only the top level tasks
         children = this.getTopLevelTasks(children);
 
         // sort children basing on their in the current parent's children
-        let curParent = this.findDirectParent(children);
+        const curParent = this.findDirectParent(children);
         if (curParent) {
             children = children.sort((a, b) => curParent.children.findIndex(c => c.id === a.id) - curParent.children.findIndex(c => c.id === b.id));
         }
@@ -608,13 +608,13 @@ export class BoardService {
         }*/
         selectedTasks = this.getTopLevelTasks(selectedTasks);
 
-        let parent = this.findDirectParent(selectedTasks);
+        const parent = this.findDirectParent(selectedTasks);
         if (!parent) {
             throw new Error(`Cannot find parent of the selected tasks`);
         }
-        let siblings = parent?.children || [];
+        const siblings = parent?.children || [];
 
-        let index = selectedTasks.map(sel => siblings.findIndex(s => s.id === sel.id)).sort( ( a,b ) => a - b )[0];
+        const index = selectedTasks.map(sel => siblings.findIndex(s => s.id === sel.id)).sort( ( a,b ) => a - b )[0];
 
         // sort selected tasks basing on their order in the parent's children
         selectedTasks = selectedTasks.sort((a, b) => siblings.findIndex(s => s.id === a.id) - siblings.findIndex(s => s.id === b.id));
@@ -632,7 +632,7 @@ export class BoardService {
         if (!children || children.length === 0) {
             return;
         }
-        let boards = this._boards$.getValue();
+        const boards = this._boards$.getValue();
 
         children = this.getTopLevelTasks(children);
 
@@ -644,7 +644,7 @@ export class BoardService {
 
 
         // task need to become sibling of the parent. Find the parent of the parent
-        let grandParent = this.findDirectParent([parent]);
+        const grandParent = this.findDirectParent([parent]);
         if (grandParent) {
             grandParent.children.splice(grandParent.children.findIndex(c => c.id === parent.id) + 1, 0, ...children);
             //grandParent.children = grandParent.children.concat(children);
@@ -677,8 +677,8 @@ export class BoardService {
     getTopLevelTasks(tasks: Task[]): Task[] {
         let ret: Task[] = [...tasks];
         // incoming tasks could be related one another. Keep only the top level tasks
-        for (let child of tasks) {
-            let descendants = this.getDescendants(child);
+        for (const child of tasks) {
+            const descendants = this.getDescendants(child);
             ret = ret.filter(c => descendants.map(d => d.id).indexOf(c.id) === -1);
         }
         return ret;
@@ -687,7 +687,7 @@ export class BoardService {
     hasNextSibling(board: Board, task: Task): boolean {
         let has: boolean = false;
         this._allParents$.getValue()?.forEach(p => {
-            let index = p.children.findIndex(c => c.id === task.id);
+            const index = p.children.findIndex(c => c.id === task.id);
             if (index !== -1 && index < p.children.length - 1) {
                 has = true;
             }
@@ -703,8 +703,8 @@ export class BoardService {
         if (lane.children.length > 0) {
             throw new Error(`Cannot delete lane with children`);
         }
-        let boards = this._boards$.getValue();
-        let board = boards.find(b => b.children.find(l => l.id === lane.id));
+        const boards = this._boards$.getValue();
+        const board = boards.find(b => b.children.find(l => l.id === lane.id));
         if (!board) {
             throw new Error(`Cannot find board for lane with id ${lane.id}`);
         }
@@ -712,8 +712,8 @@ export class BoardService {
         this._boards$.next(boards);
     }
     deleteTask(task: Task) {
-        let boards = this._boards$.getValue();
-        let parent = this.findDirectParent([task]);
+        const boards = this._boards$.getValue();
+        const parent = this.findDirectParent([task]);
         if (!parent) {
             throw new Error(`Cannot find parent for task with id ${task.id}`);
         }
@@ -760,7 +760,7 @@ export class BoardService {
 
     archiveDones(board: Board, lane: Lane) {
         // this._boards$.getValue();
-        let descendants = this.getDescendants(lane);
+        const descendants = this.getDescendants(lane);
         descendants.filter(t => this.isTask(t) && !isPlaceholder(t) && t.status === 'completed')
         .forEach(d => this.updateStatus(board, d, 'archived'));
         /*
@@ -779,13 +779,13 @@ export class BoardService {
     }
 
     reorderLayoutColumn(board: Board, lane: Lane, direction?: string) {
-        let colChildren = board.children.filter(l => l.layouts[board.layout].column === lane.layouts[board.layout].column).sort((a, b) => a.layouts[board.layout].order - b.layouts[board.layout].order);
+        const colChildren = board.children.filter(l => l.layouts[board.layout].column === lane.layouts[board.layout].column).sort((a, b) => a.layouts[board.layout].order - b.layouts[board.layout].order);
         if(direction){
-            let index = colChildren.findIndex(c => c.id === lane.id);
+            const index = colChildren.findIndex(c => c.id === lane.id);
             if (index === -1) {
                 throw new Error(`Cannot find lane with id ${lane.id}`);
             }
-            let newIndex = direction === 'up' ? index - 1 : index + 1;
+            const newIndex = direction === 'up' ? index - 1 : index + 1;
             if (newIndex < 0 || newIndex >= colChildren.length) {
                 return;
             }
@@ -807,7 +807,7 @@ export class BoardService {
 
      */
     deserialize(data: string): void {
-        let o = JSON.parse(data);
+        const o = JSON.parse(data);
         if (!o.boards) {
             console.warn('No boards found in the data');
             this._boards$.next([getNewBoard(getNewLane(false))]);
@@ -816,11 +816,11 @@ export class BoardService {
             this._editorActiveTask$.next(undefined);
         } else {
             // fixes to existing data and new fields
-            for( let board of o.boards ){
+            for( const board of o.boards ){
                 board._type = 'board';
                 board.layout = board.layout ?? 'absolute'; 
                 board.flexColumns = board.flexColumns ?? undefined;
-                let des = this.getDescendants(board);
+                const des = this.getDescendants(board);
                 des.forEach(p => {
                     if (!p.creationDate) { 
                         p.creationDate = new Date().toISOString() as ISODateString;
@@ -844,9 +844,9 @@ export class BoardService {
                             // @ts-ignore
                             p.layouts = getLayouts(p.width);
                         }
-                        for( let layout of Object.keys(Layouts) ){
-                            let l = layout as Layout;
-                            let thisColLayout = p.layouts[l];
+                        for( const layout of Object.keys(Layouts) ){
+                            const l = layout as Layout;
+                            const thisColLayout = p.layouts[l];
                             if( thisColLayout.column > Layouts[l].columns - 1 ){
                                 thisColLayout.column = Layouts[l].columns - 1;                           
                             }
@@ -890,10 +890,10 @@ export class BoardService {
                     // Archive fix
                     if( this.isLane(p) && p.isArchive ){
                         // Case for archived tasks that are children of archived tasks. They should be moved to the archive lane.
-                        let descendants = this.getDescendants(p);
-                        let archivedFirstLevel = p.children.filter(c => c.status === 'archived');
+                        const descendants = this.getDescendants(p);
+                        const archivedFirstLevel = p.children.filter(c => c.status === 'archived');
                         archivedFirstLevel.forEach(a => {
-                            let findInDescendants = descendants.filter(d => d.id === a.id);
+                            const findInDescendants = descendants.filter(d => d.id === a.id);
                             if(findInDescendants.length > 1){
                                 // this is a task that is a child of an archived task. Remove from direct descendants.
                                 p.children = p.children.filter(c => c.id !== a.id);
@@ -918,8 +918,8 @@ export class BoardService {
                 });
                 des.forEach(p => {
                     if (this.isTask(p) && !p.createdLaneId) {
-                        let parentLane = this.findParentLane([p]) // can be archive;
-                        let board = this._boards$.getValue().find(b => b.children.find(l => l.id === parentLane?.id));
+                        const parentLane = this.findParentLane([p]) // can be archive;
+                        const board = this._boards$.getValue().find(b => b.children.find(l => l.id === parentLane?.id));
                         p.createdLaneId = board?.children[0].id ?? '';
                     }
                 }); 

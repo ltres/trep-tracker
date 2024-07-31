@@ -80,16 +80,16 @@ export function getCaretPosition2(): number {
 }
 
 export function getCaretPosition(element: Node) {
-    var caretOffset = 0;
+    let caretOffset = 0;
     if (typeof window.getSelection != "undefined") {
-        var range: Range | undefined;
+        let range: Range | undefined;
         try {
             range = window.getSelection()?.getRangeAt(0);
         } catch (e) {
             return 0;
         }
         if (!range) return 0;
-        var preCaretRange = range.cloneRange();
+        const preCaretRange = range.cloneRange();
         preCaretRange.selectNodeContents(element);
         preCaretRange.setEnd(range.endContainer, range.endOffset);
         caretOffset = preCaretRange.endOffset;
@@ -99,26 +99,26 @@ export function getCaretPosition(element: Node) {
 
 // @ts-ignore
 export function getCaretCharacterOffsetWithin(element: HTMLElement) {
-    var caretOffset = 0;
+    let caretOffset = 0;
     // @ts-ignore
-    var doc = element.ownerDocument || element.document;
+    const doc = element.ownerDocument || element.document;
     // @ts-ignore
-    var win = doc.defaultView || doc.parentWindow;
-    var sel;
+    const win = doc.defaultView || doc.parentWindow;
+    let sel;
     if (typeof win.getSelection != "undefined") {
         sel = win.getSelection();
         if (sel.rangeCount > 0) {
-            var range = win.getSelection().getRangeAt(0);
-            var preCaretRange = range.cloneRange();
+            const range = win.getSelection().getRangeAt(0);
+            const preCaretRange = range.cloneRange();
             preCaretRange.selectNodeContents(element);
             preCaretRange.setEnd(range.endContainer, range.endOffset);
             caretOffset = preCaretRange.toString().length;
         }
         // @ts-ignore
     } else if ((sel = doc.selection) && sel.type != "Control") {
-        var textRange = sel.createRange();
+        const textRange = sel.createRange();
         // @ts-ignore
-        var preCaretTextRange = doc.body.createTextRange();
+        const preCaretTextRange = doc.body.createTextRange();
         preCaretTextRange.moveToElementText(element);
         preCaretTextRange.setEndPoint("EndToEnd", textRange);
         caretOffset = preCaretTextRange.text.length;
@@ -230,15 +230,15 @@ export function removeEntry2(obj: Record<string, any>, keyToRemove?: string, con
 }
 
 export function isStatic(lane: Lane): boolean {
-    let isTagged = lane.tags ? lane.tags.length > 0 : false;
-    let cond = lane.priority !== undefined || lane.status !== undefined;
-    let cond2 =  false; //lane.children.length === 0
+    const isTagged = lane.tags ? lane.tags.length > 0 : false;
+    const cond = lane.priority !== undefined || lane.status !== undefined;
+    const cond2 =  false; //lane.children.length === 0
     return isTagged || cond || cond2;
 }
 export function hashCode(str:string):number {
     let hash = 0;
     for (let i = 0, len = str.length; i < len; i++) {
-        let chr = str.charCodeAt(i);
+        const chr = str.charCodeAt(i);
         hash = (hash << 5) - hash + chr;
         hash |= 0; // Convert to 32bit integer
     }
@@ -246,8 +246,8 @@ export function hashCode(str:string):number {
 }
 
 export function getFirstMentionTag(task :Task){
-    let mentionTagType = 'tag-orange';
-    let mention = task.tags.find( t => t.type === mentionTagType );
+    const mentionTagType = 'tag-orange';
+    const mention = task.tags.find( t => t.type === mentionTagType );
     if( mention ){
         return tagHtmlWrapper(mentionTagType)[0] + tagIdentifiers.find( r => r.type === mentionTagType )?.symbol + mention.tag + tagHtmlWrapper(mentionTagType)[1]
     }

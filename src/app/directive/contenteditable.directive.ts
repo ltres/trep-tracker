@@ -38,7 +38,7 @@ export class ContenteditableDirective implements ControlValueAccessor {
         // get the current cursor position:
         //const value = this.elementRef.nativeElement.innerHTML;
         const value =  this.elementRef.nativeElement.textContent;
-        let result = this.tagService.extractTags( value, this.board );
+        const result = this.tagService.extractTags( value, this.board );
         //console.log(result);
 
         this.caretShift = result.caretShift;
@@ -77,11 +77,11 @@ export class ContenteditableDirective implements ControlValueAccessor {
     // gets called when new tag html should be inserted in the DOM
     writeValue(value: string | null): void {
         if(!value) return;
-        let curVal = this.elementRef.nativeElement.innerHTML.replaceAll("&nbsp;"," ").replace(/\s/," ")
+        const curVal = this.elementRef.nativeElement.innerHTML.replaceAll("&nbsp;"," ").replace(/\s/," ")
         value = value.replaceAll("&nbsp;"," ").replace(/\s/," ");
 
         if( curVal !== value ){
-            let pos = getCaretCharacterOffsetWithin(this.elementRef.nativeElement);
+            const pos = getCaretCharacterOffsetWithin(this.elementRef.nativeElement);
             this.elementRef.nativeElement.innerHTML = value || '';
             if(!this.preventEvents){
                 setCaretPosition(this.elementRef.nativeElement, pos + this.caretShift);

@@ -66,7 +66,7 @@ export class ChatGPTService implements AiServiceI {
       this.openai = new OpenAI({ apiKey: this.apiKey, dangerouslyAllowBrowser: true })
     }
     // Clean up and minimize the board json:
-    let object = JSON.parse(JSON.stringify(board));
+    const object = JSON.parse(JSON.stringify(board));
     removeEntry(object, "coordinates");
     removeEntry(object, "width");
     removeEntry(object, "createdLaneId");
@@ -94,9 +94,9 @@ export class ChatGPTService implements AiServiceI {
     let str = JSON.stringify(object);
     str = str.replaceAll(/(<[^>]+>([^>]*))(<[^>]+>)/g, "<tag>$2</tag>")
 
-    let latest = this.getLatestSentBoard(board.id);
+    const latest = this.getLatestSentBoard(board.id);
     if (latest != null) {
-      let p = `Latest board sent: <${latest}> \n\n, current board: ${new Date().toISOString()}<${str}> \n\n`
+      const p = `Latest board sent: <${latest}> \n\n, current board: ${new Date().toISOString()}<${str}> \n\n`
       this.storeAsLatestSent(board.id,str);
       return this.fetchOpenAIResponse(
         `Current board: ${new Date().toISOString()}<${str}>`,
@@ -110,7 +110,7 @@ export class ChatGPTService implements AiServiceI {
 
   private async fetchOpenAIResponse(userPrompt: string, oldPrompt?: string): Promise<string> {
 
-    let messages: ChatCompletionMessageParam[] = [{
+    const messages: ChatCompletionMessageParam[] = [{
       role: "system",
       content: this.systemPropmt
     }];
