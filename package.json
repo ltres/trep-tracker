@@ -63,11 +63,15 @@
     "@electron-forge/plugin-fuses": "^7.4.0",
     "@electron-forge/publisher-github": "^7.4.0",
     "@electron/fuses": "^1.8.0",
+    "@eslint/js": "^9.8.0",
     "@types/uuid": "^9.0.8",
     "concurrently": "^8.2.2",
     "electron": "^31.0.0",
     "electron-reload": "^2.0.0-alpha.1",
+    "eslint": "^9.8.0",
+    "globals": "^15.8.0",
     "typescript": "~5.4.2",
+    "typescript-eslint": "^8.0.0",
     "wait-on": "^7.2.0"
   }
 }
