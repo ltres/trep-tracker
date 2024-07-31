@@ -20,7 +20,8 @@
     "electron-forge-test": "node update-versions.cjs && ng build && electron ./electron-make-app.js\"",
     "package": "electron-forge package",
     "make": "node update-versions.cjs && npm run build && electron-forge make",
-    "publish": "electron-forge publish"
+    "publish": "electron-forge publish",
+    "lint": "npx eslint ./src --fix"
   },
   "productName": "trep-tracker",
   "engines": {

@@ -8,7 +8,9 @@ export default [
     files: ["src/**/*.{js,mjs,cjs,ts}"],
     ignores: ["dist/**", "build/**", "node_modules/**"],
     rules: {
-      "indent": ["error", 2],
+      "indent": ["error", 2,  { "SwitchCase": 1 }],
+      "no-tabs": "error",
+      "no-mixed-spaces-and-tabs": "error",
       "linebreak-style": ["error", "unix"],
       "no-prototype-builtins":'off',
       "no-multiple-empty-lines": ["error", { "max": 1, "maxEOF": 0 }],
