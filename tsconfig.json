@@ -2,10 +2,7 @@
 
 {
   "compileOnSave": false,
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.d.ts",
-  ],
+  "include": ["src/**/*.ts", "src/**/*.d.ts"],
   "compilerOptions": {
     "outDir": "./dist/out-tsc",
     "strict": true,
@@ -23,10 +20,8 @@
     "target": "ES2022",
     "module": "ES2022",
     "useDefineForClassFields": false,
-    "lib": [
-      "ES2022",
-      "dom"
-    ]
+    "noImplicitAny": true,
+    "lib": ["ES2022", "dom"]
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
