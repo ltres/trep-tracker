@@ -144,11 +144,13 @@ export const tagIdentifiers: { type: string, symbol: string, class: string }[] =
         symbol: '#',
         class: "tag-yellow"
     },
+    /*
     {
         type: "tag-plus",
-        symbol: '+',
+        symbol: '\\+',
         class: "tag-plus"
     },
+    */
     {
         type: "tag-green",
         symbol: '!',
