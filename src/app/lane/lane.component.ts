@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, HostBinding, HostListener, Input, OnInit, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
-import { Board, Container, Lane, Layouts, Priority, Status, Tag, Task, archivedLaneId, getNewTask } from '../../types/types';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, HostBinding, Input, OnInit, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
+import { Board, Container, Lane, Layouts, Priority, Status, Tag, Task, getNewTask } from '../../types/types';
 import { BoardService } from '../../service/board.service';
-import { generateUUID, hashCode, isArchive, isStatic } from '../../utils/utils';
+import { hashCode, isArchive, isStatic } from '../../utils/utils';
 import { map, Observable, of } from 'rxjs';
 import { TaskComponent } from '../task/task.component';
 import { DragService } from '../../service/drag.service';
@@ -18,8 +18,8 @@ import { ModalService } from '../../service/modal.service';
   styleUrl: './lane.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
-    {provide: ContainerComponent, useExisting: forwardRef(() => LaneComponent)}
-  ]
+    { provide: ContainerComponent, useExisting: forwardRef(() => LaneComponent) },
+  ],
 })
 export class LaneComponent extends ContainerComponent implements OnInit {
   @ViewChildren(TaskComponent, { read: ElementRef }) taskComponentsElRefs: QueryList<ElementRef> | undefined;
@@ -27,15 +27,14 @@ export class LaneComponent extends ContainerComponent implements OnInit {
   @Input() lane!: Lane;
   @Input() board!: Board;
   @Input() displayedInFixedLayout: boolean = false;
-  @ViewChild('gantt') ganttTemplate: TemplateRef<any> | null = null;
+  @ViewChild('gantt') ganttTemplate: TemplateRef<unknown> | null = null;
 
+  menuOpen = false;
+  hoveringTooltip = false;
 
-  menuOpen = false
-  hoveringTooltip = false
-
-  interactingWithChildTasks = false
+  interactingWithChildTasks = false;
   showMoveToBoards = false;
-  debounce: any;
+  debounce: ReturnType<typeof setTimeout> | undefined;
 
   constructor(
     protected boardService: BoardService,
@@ -50,7 +49,7 @@ export class LaneComponent extends ContainerComponent implements OnInit {
   }
   override ngOnInit(): void {
     super.ngOnInit();
-    this.boardService.boards$.subscribe(boards => {
+    this.boardService.boards$.subscribe( () => {
       this.cdr.detectChanges();
     });
     this.boardService.lastSelectedTask$.subscribe(lastSelectedTask => {
@@ -71,7 +70,7 @@ export class LaneComponent extends ContainerComponent implements OnInit {
     }
   }
   @HostBinding('class.active')
-  active: boolean = false
+    active: boolean = false;
 
   override get container(): Container {
     return this.lane;
@@ -79,16 +78,16 @@ export class LaneComponent extends ContainerComponent implements OnInit {
 
   // Lane's self children, eventually filtered by priority, status.
   get tasks(): Observable<Task[] | undefined> {
-    return this.boardService.getTasks$(this.lane, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false : true, this.isArchive(this.lane) ? "archived" : undefined, 'desc');
+    return this.boardService.getTasks$(this.lane, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false : true, this.isArchive(this.lane) ? 'archived' : undefined, 'desc');
   }
 
   // Statically displayed tasks, eventually filtered by priority, status.
   get staticTasks(): Observable<Task[] | undefined> {
-    return this.boardService.getStaticTasks$(this.board, this.lane.tags, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false : true, this.isArchive(this.lane) ? "archived" : undefined, 'desc');
+    return this.boardService.getStaticTasks$(this.board, this.lane.tags, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false : true, this.isArchive(this.lane) ? 'archived' : undefined, 'desc');
   }
 
   isStatic(): boolean {
-    return isStatic(this.lane)
+    return isStatic(this.lane);
   }
 
   isTagged(): boolean {
@@ -118,12 +117,12 @@ export class LaneComponent extends ContainerComponent implements OnInit {
     return isArchive(arg0);
   }
   updateLaneTags($event: Tag[]) {
-    const allOldPresent = this.lane.tags.filter(oldTag => $event.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === this.lane.tags.length
-    const allNewPresent = $event.filter(oldTag => this.lane.tags.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === $event.length
+    const allOldPresent = this.lane.tags.filter(oldTag => $event.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === this.lane.tags.length;
+    const allNewPresent = $event.filter(oldTag => this.lane.tags.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === $event.length;
 
     if (!allOldPresent || !allNewPresent) {
       this.lane.tags = $event;
-      this.debounceBoardUpdate()
+      this.debounceBoardUpdate();
     }
   }
   debounceBoardUpdate() {
@@ -131,8 +130,8 @@ export class LaneComponent extends ContainerComponent implements OnInit {
       clearTimeout(this.debounce);
     }
     this.debounce = setTimeout(() => {
-      this.boardService.publishBoardUpdate()
-    }, 500)
+      this.boardService.publishBoardUpdate();
+    }, 500);
   }
   updateStatus($event: Status[] | Status | undefined) {
     this.lane.status = Array.isArray($event) ? $event : ($event ? [$event] : undefined);
@@ -144,7 +143,7 @@ export class LaneComponent extends ContainerComponent implements OnInit {
   }
   togglePriority(prio: Priority[] | Priority | undefined) {
     this.lane.priority = Array.isArray(prio) ? prio : (prio ? [prio] : undefined);
-    this.boardService.publishBoardUpdate()
+    this.boardService.publishBoardUpdate();
   }
 
   moveLane(direction: 'right' | 'left' | 'up' | 'down') {
@@ -179,9 +178,9 @@ export class LaneComponent extends ContainerComponent implements OnInit {
   }
 
   getGanttTasks$(): Observable<Task[] | undefined> {
-    return isStatic(this.lane) ? 
-    this.staticTasks.pipe( map(tasks => tasks?.filter(t => t.includeInGantt) ?? [])) :
-    of(this.lane.children.filter(t =>  t.includeInGantt ));
+    return isStatic(this.lane) ?
+      this.staticTasks.pipe( map(tasks => tasks?.filter(t => t.includeInGantt) ?? [])) :
+      of(this.lane.children.filter(t =>  t.includeInGantt ));
   }
 
 }

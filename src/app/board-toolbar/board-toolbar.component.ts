@@ -2,25 +2,24 @@ import { Component, Input, TemplateRef, ViewChild } from '@angular/core';
 import { BoardService } from '../../service/board.service';
 import { Board, Layout, Layouts, Tag, Task } from '../../types/types';
 import { ModalService } from '../../service/modal.service';
-import { Observable, filter, map, of } from 'rxjs';
-import { isPlaceholder, isStatic } from '../../utils/utils';
+import { Observable, map } from 'rxjs';
+import { isPlaceholder } from '../../utils/utils';
 
 @Component({
   selector: 'board-toolbar[board]',
   templateUrl: './board-toolbar.component.html',
-  styleUrl: './board-toolbar.component.scss'
+  styleUrl: './board-toolbar.component.scss',
 })
 export class BoardToolbarComponent {
-  @ViewChild('gantt') ganttTemplate: TemplateRef<any> | null = null;
+  @ViewChild('gantt') ganttTemplate: TemplateRef<unknown> | null = null;
 
   @Input() board!: Board;
-  debounce: any;
+  debounce: ReturnType<typeof setTimeout> | undefined;
   open: boolean = true;
-  constructor( 
+  constructor(
     protected boardService: BoardService,
     protected modalService: ModalService,
-   ) { }
-
+  ) { }
 
   getLayouts(): Layout[] {
     return Object.keys(Layouts) as Layout[];
@@ -30,23 +29,23 @@ export class BoardToolbarComponent {
     this.board.layout = layout;
     this.boardService.publishBoardUpdate();
   }
-  
+
   debounceBoardUpdate() {
     if (this.debounce) {
       clearTimeout(this.debounce);
     }
     this.debounce = setTimeout(() => {
-      this.boardService.publishBoardUpdate()
-    }, 500)
+      this.boardService.publishBoardUpdate();
+    }, 500);
   }
 
   updateBoardTags($event: Tag[]) {
-    const allOldPresent = this.board.tags.filter(oldTag => $event.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === this.board.tags.length
-    const allNewPresent = $event.filter(oldTag => this.board.tags.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === $event.length
+    const allOldPresent = this.board.tags.filter(oldTag => $event.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === this.board.tags.length;
+    const allNewPresent = $event.filter(oldTag => this.board.tags.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === $event.length;
 
     if (!allOldPresent || !allNewPresent) {
       this.board.tags = $event;
-      this.debounceBoardUpdate()
+      this.debounceBoardUpdate();
     }
   }
 

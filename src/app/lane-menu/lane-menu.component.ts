@@ -1,11 +1,11 @@
-import { Component, ElementRef, EventEmitter, HostListener, Input, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, Output } from '@angular/core';
 import { Lane } from '../../types/types';
 import { ClickService } from '../../service/click.service';
 
 @Component({
   selector: 'lane-menu[lane]',
   templateUrl: './lane-menu.component.html',
-  styleUrl: './lane-menu.component.scss'
+  styleUrl: './lane-menu.component.scss',
 })
 export class LaneMenuComponent {
   @Input() lane!: Lane;

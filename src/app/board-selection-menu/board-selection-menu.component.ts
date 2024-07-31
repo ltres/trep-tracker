@@ -7,11 +7,11 @@ import { Observable } from 'rxjs';
   selector: 'board-selection-menu',
 
   templateUrl: './board-selection-menu.component.html',
-  styleUrl: './board-selection-menu.component.scss'
+  styleUrl: './board-selection-menu.component.scss',
 })
 export class BoardSelectionMenuComponent implements AfterContentInit{
 
-  boards: Board[] | undefined
+  boards: Board[] | undefined;
   availablePriorities: Priority[] = Priorities;
 
   open: boolean = true;
@@ -20,8 +20,8 @@ export class BoardSelectionMenuComponent implements AfterContentInit{
 
   ngAfterContentInit(): void {
     this.boardService.boards$.subscribe(boards => {
-      setTimeout(() => { this.boards = boards })
-    })
+      setTimeout(() => { this.boards = boards; });
+    });
   }
   addBoard() {
     this.boardService.addNewBoard();
@@ -29,7 +29,7 @@ export class BoardSelectionMenuComponent implements AfterContentInit{
   selectBoard(board: Board) {
     this.boardService.setSelectedBoard(board);
   }
-  
+
   getTaskCount(board: Board, priority: Priority): Observable<number> {
     return this.boardService.getTasksHavingPriorityCount$(board,priority);
   }

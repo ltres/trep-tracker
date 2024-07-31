@@ -1,28 +1,19 @@
 import {
-  AfterContentInit,
   AfterViewChecked,
   AfterViewInit,
-  Component,
-  ComponentFactoryResolver,
   Directive,
   ElementRef,
   EventEmitter,
-  Host,
   HostBinding,
   HostListener,
   Input,
   NgZone,
-  OnInit,
-  Optional,
   Output,
 } from '@angular/core';
 import { BoardService } from '../../service/board.service';
 import { DragService } from '../../service/drag.service';
-import { KeyboardService } from '../../service/keyboard.service';
-import { Board, Container, Lane, Layout } from '../../types/types';
-import { overlaps } from '../../utils/utils';
+import { Container, Lane, Layout } from '../../types/types';
 import { ContainerComponent } from '../base/base.component';
-import { ContainerComponentRegistryService } from '../../service/registry.service';
 
 @Directive({
   selector: '[draggableDir][containerEl][layout]',
@@ -32,11 +23,11 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
   @Input() displayedInFixedLayout: boolean = false;
 
   @Input() draggableDir!: Container | Lane;
-  @Input() containerEl!: HTMLElement
+  @Input() containerEl!: HTMLElement;
   @Input() layout!: Layout;
 
   private resizeObserver: ResizeObserver | undefined;
-  private resizeTimeout: any;
+  private resizeTimeout: ReturnType<typeof setTimeout> | undefined;
   private draggableEl: Element | undefined;
   private isBeingDragged: boolean = false;
   private deltaX: number = 0;
@@ -58,15 +49,16 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
 
   @HostBinding('class.dragged')
   private get dragged(): string | undefined {
-    return this.isBeingDragged ? 'dragged' : "";
+    return this.isBeingDragged ? 'dragged' : '';
   }
 
   @HostBinding('style.width')
   private get width(): number | string | undefined {
-    return this.displayedInFixedLayout && !this.isBeingDragged ? '100%' : (this.boardService.isLane(this.draggableDir )? (this.draggableDir.layouts[this.layout].width ?? 0) + "px" : "100%");
+    return this.displayedInFixedLayout && !this.isBeingDragged ? '100%' : (this.boardService.isLane(this.draggableDir ) ? (this.draggableDir.layouts[this.layout].width ?? 0) + 'px' : '100%');
   }
-  
+
   private set width(value: number ) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     this.boardService.isLane(this.draggableDir) ? this.draggableDir.layouts[this.layout].width = value : undefined;
   }
 
@@ -75,7 +67,7 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
     private ngZone: NgZone,
     private dragService: DragService,
     private boardService: BoardService,
-    private host: ContainerComponent
+    private host: ContainerComponent,
   ) {
 
   }
@@ -88,10 +80,10 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
   }
 
   ngAfterViewInit(): void {
-    //super.ngOnInit();
+  //super.ngOnInit();
     if (this.static) return;
     const el = this.el.nativeElement as HTMLElement;
-    this.draggableEl = el.querySelector("[drag-on-this]:not([draggable])") ?? el;
+    this.draggableEl = el.querySelector('[drag-on-this]:not([draggable])') ?? el;
     this.draggableEl.setAttribute('draggable', 'true');
   }
 
@@ -107,19 +99,19 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
    * @param $event
    */
   @HostListener('dragend', ['$event'])
-  dragEnd($event: DragEvent, parent: Container) {
+  dragEnd($event: DragEvent) {
 
     this.ngZone.runOutsideAngular(() => {
       // if(1===1)return;
       this.isBeingDragged = false;
       const node = this.el.nativeElement as HTMLElement;
-      node.style.position = "";
+      node.style.position = '';
 
       if (this.static) return;
       document.body.classList.remove('dragging');
 
       this.draggableDir.coordinates = this.calcRelativeCoordinates($event);
-      this.boardService.publishBoardUpdate()
+      this.boardService.publishBoardUpdate();
 
       const board = this.boardService.selectedBoard;
       if( !board ) return;
@@ -129,8 +121,8 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
         $event,
         this.deltaX,
         this.deltaY,
-        board
-      )
+        board,
+      );
 
       this.onDragEnd.emit($event);
       $event.stopPropagation();
@@ -138,7 +130,7 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
     });
   }
   @HostListener('drag', ['$event'])
-  drag($event: DragEvent, parent: Container) {
+  drag($event: DragEvent) {
     this.ngZone.runOutsideAngular(() => {
       if (this.static) return;
       this.draggableDir.coordinates = this.calcRelativeCoordinates($event);
@@ -163,10 +155,9 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
       this.deltaY = $event.clientY - node.getBoundingClientRect().top;
       node.style.position = 'absolute';
       //node.style.zIndex = "100";
-      
+
       this.draggableDir.coordinates = this.calcRelativeCoordinates($event);
 
-      
       $event.stopPropagation();
       $event.stopImmediatePropagation();
     });
@@ -180,15 +171,14 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
    */
   calcRelativeCoordinates($event: DragEvent): { x:number, y:number } {
     return {
-      x: $event.clientX - this.deltaX - this.containerEl.getBoundingClientRect().left, 
-      y: $event.clientY - this.deltaY - this.containerEl.getBoundingClientRect().top
-    }
+      x: $event.clientX - this.deltaX - this.containerEl.getBoundingClientRect().left,
+      y: $event.clientY - this.deltaY - this.containerEl.getBoundingClientRect().top,
+    };
   }
-
 
   resize($event: ResizeObserverEntry[]) {
     if (this.width?.toString().indexOf($event[0].contentRect.width.toString()) === 0 || $event[0].contentRect.width === 0) {
-      return
+      return;
     };
     this.width = this.el.nativeElement.getBoundingClientRect().width;
 

@@ -1,20 +1,20 @@
 import {
-    Directive, ElementRef, Input, Output, EventEmitter, SimpleChanges, OnChanges,
-    HostListener, Sanitizer, SecurityContext,
-    forwardRef
+  Directive, ElementRef, Input, Output, EventEmitter, SimpleChanges, 
+  HostListener, 
+  forwardRef,
 } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR, NgModel } from '@angular/forms';
-import { generateUUID, getCaretCharacterOffsetWithin, getCaretPosition, setCaretPosition } from '../../utils/utils';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { getCaretCharacterOffsetWithin, setCaretPosition } from '../../utils/utils';
 import { TagService } from '../../service/tag.service';
-import { Board, Container, Tag } from '../../types/types';
+import { Board, Tag } from '../../types/types';
 
 @Directive({
-    selector: '[contenteditable][ngModel][board]',
-    providers: [{
-        provide: NG_VALUE_ACCESSOR,
-        useExisting: forwardRef(() => ContenteditableDirective),
-        multi: true
-    }]
+  selector: '[contenteditable][ngModel][board]',
+  providers: [{
+    provide: NG_VALUE_ACCESSOR,
+    useExisting: forwardRef(() => ContenteditableDirective),
+    multi: true,
+  }],
 })
 export class ContenteditableDirective implements ControlValueAccessor {
     @Input() ngModel!: string;
@@ -24,48 +24,46 @@ export class ContenteditableDirective implements ControlValueAccessor {
     @Output() onTagsChange = new EventEmitter<Tag[]>();
 
     private caretShift: number = 0;
-    private debounce: any;
+    private debounce: ReturnType<typeof setTimeout> | undefined;
 
     constructor(
         private tagService: TagService,
-        private elementRef: ElementRef
+        private elementRef: ElementRef,
     ) { }
-
 
     @HostListener('keyup', ['$event'])
     // @HostListener('blur', ['$event'])
-    onInteract($event: Event): void {
-        // get the current cursor position:
-        //const value = this.elementRef.nativeElement.innerHTML;
-        const value =  this.elementRef.nativeElement.textContent;
-        const result = this.tagService.extractTags( value, this.board );
-        //console.log(result);
+    onInteract(): void {
+    // get the current cursor position:
+    //const value = this.elementRef.nativeElement.innerHTML;
+      const value =  this.elementRef.nativeElement.textContent;
+      const result = this.tagService.extractTags( value, this.board );
+      //console.log(result);
 
-        this.caretShift = result.caretShift;
-        //this.ngModel = value;
-        //this.onChange(value); // makes the ngModel effectively update by calling the writeValue
-        //this.onTouched();
-        //this.skipWriteValue = true;
-        if(!this.preventEvents){
-            this.onTagsChange.emit(result.tags);
-        }
-        if(!this.preventEvents){
-            this.ngModelChange.emit(result.taggedString); // makes the ngModel effectively update. Triggers ngOnChange
-        }
+      this.caretShift = result.caretShift;
+      //this.ngModel = value;
+      //this.onChange(value); // makes the ngModel effectively update by calling the writeValue
+      //this.onTouched();
+      //this.skipWriteValue = true;
+      if(!this.preventEvents){
+        this.onTagsChange.emit(result.tags);
+      }
+      if(!this.preventEvents){
+        this.ngModelChange.emit(result.taggedString); // makes the ngModel effectively update. Triggers ngOnChange
+      }
     }
-
 
     private onChange: (value: string) => void = () => {};
     private onTouched: () => void = () => {};
 
     ngOnChanges(changes: SimpleChanges): void {
-        //this.startingCaretPosition = getCaretPosition( this.elementRef.nativeElement );
-        
-        if( !changes['ngModel'] || this.elementRef.nativeElement.innerHTML === changes['ngModel'].currentValue || changes['ngModel'].isFirstChange() ){
-            return;
-        }
-        // console.log("model changed", changes)
-        /*
+    //this.startingCaretPosition = getCaretPosition( this.elementRef.nativeElement );
+
+      if( !changes['ngModel'] || this.elementRef.nativeElement.innerHTML === changes['ngModel'].currentValue || changes['ngModel'].isFirstChange() ){
+        return;
+      }
+      // console.log("model changed", changes)
+    /*
         this.elementRef.nativeElement.innerHTML = changes['ngModel'].currentValue;
         setTimeout( () => {
             setCaretPosition(this.elementRef.nativeElement, this.startingCaretPosition!);
@@ -76,36 +74,36 @@ export class ContenteditableDirective implements ControlValueAccessor {
     // This method is called by the forms API to write to the view when programmatic changes from model to view are requested.
     // gets called when new tag html should be inserted in the DOM
     writeValue(value: string | null): void {
-        if(!value) return;
-        const curVal = this.elementRef.nativeElement.innerHTML.replaceAll("&nbsp;"," ").replace(/\s/," ")
-        value = value.replaceAll("&nbsp;"," ").replace(/\s/," ");
+      if(!value) return;
+      const curVal = this.elementRef.nativeElement.innerHTML.replaceAll('&nbsp;',' ').replace(/\s/,' ');
+      value = value.replaceAll('&nbsp;',' ').replace(/\s/,' ');
 
-        if( curVal !== value ){
-            const pos = getCaretCharacterOffsetWithin(this.elementRef.nativeElement);
-            this.elementRef.nativeElement.innerHTML = value || '';
-            if(!this.preventEvents){
-                setCaretPosition(this.elementRef.nativeElement, pos + this.caretShift);
-                this.caretShift = 0;
-            }
+      if( curVal !== value ){
+        const pos = getCaretCharacterOffsetWithin(this.elementRef.nativeElement);
+        this.elementRef.nativeElement.innerHTML = value || '';
+        if(!this.preventEvents){
+          setCaretPosition(this.elementRef.nativeElement, pos + this.caretShift);
+          this.caretShift = 0;
         }
-        
-        //this.skipWriteValue = true
-        //this.ngModel = value;
+      }
+
+    //this.skipWriteValue = true
+    //this.ngModel = value;
     }
 
     registerOnChange(fn: (value: string) => void): void {
-        this.onChange = fn;
+      this.onChange = fn;
     }
 
     registerOnTouched(fn: () => void): void {
-        this.onTouched = fn;
+      this.onTouched = fn;
     }
 
     setDisabledState(isDisabled: boolean): void {
-        this.elementRef.nativeElement.contentEditable = !isDisabled;
+      this.elementRef.nativeElement.contentEditable = !isDisabled;
     }
 
-    /*
+  /*
     ngOnChanges(changes: SimpleChanges) {
         console.log("changes")
         /*
@@ -118,13 +116,13 @@ export class ContenteditableDirective implements ControlValueAccessor {
         }*
     } */
 
-    /*
+  /*
     @HostListener('input') // input event would be sufficient, but isn't supported by IE
     @HostListener('blur')  // additional fallback
-    @HostListener('keyup') 
+    @HostListener('keyup')
     onInput(trim = false) {
         console.log("input")
-        
+
         let value = (this.elRef.nativeElement as HTMLElement).innerHTML;
 
         this.container.textContent = value;
@@ -138,7 +136,7 @@ export class ContenteditableDirective implements ControlValueAccessor {
         }
         // moveCaret(moveCaretForward);
         //this.delayedEmitChanges(value ,moveCaretForward);
-        
+
     }
 
     @HostListener('blur')  // additional fallback
@@ -146,27 +144,27 @@ export class ContenteditableDirective implements ControlValueAccessor {
         /*
         let value = this.elRef.nativeElement[this.getProperty()];
         this.delayedEmitChanges(value);
-        
+
     }*/
 
-    /*
+  /*
     @HostListener('paste') onPaste() {
         this.onInput();
     }
 
     private delayedEmitChanges(value: string, moveRight: number = 0){
-        if( this.timeout ){ 
+        if( this.timeout ){
             clearTimeout(this.timeout)
         };
         this.timeout = setTimeout(() => {
             if( this.shouldRefresh ){
                 this.contenteditableModelChange.emit( value );
-                this.shouldRefresh = false;           
+                this.shouldRefresh = false;
             }
         }, 500);
     }
     */
-    /*
+  /*
     private refreshView() {
         const newContent = this.sanitize(this.contenteditableModel);
         // Only refresh if content changed to avoid cursor loss
@@ -186,5 +184,3 @@ export class ContenteditableDirective implements ControlValueAccessor {
     */
 
 }
-
-

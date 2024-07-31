@@ -1,55 +1,22 @@
-<div class="task-wrapper g-025" 
-data-consider-for-overlapping-checks="true"
-[class.editor-active]="this.editorActive"
-[class.selected]="this.selected"
-[class.archived]="this.task.status === 'archived'"
-[class]="this.task.status"
-[style]="this.task.priority === 4 ? 'font-weight: bolder' : ''"
-(click)="clickTask($event)" 
-
->
-    <div [tooltip]="'Drag'" *ngIf="!isStaticView() && !isPlaceholder()"class="drag-handle translucent pointer" drag-on-this="true">⋮</div>
+<div class="task-wrapper g-025" data-consider-for-overlapping-checks="true" [class.editor-active]="this.editorActive" [class.selected]="this.selected" [class.archived]="this.task.status === 'archived'" [class]="this.task.status" [style]="this.task.priority === 4 ? 'font-weight: bolder' : ''" (click)="clickTask()">
+    <div [tooltip]="'Drag'" *ngIf="!isStaticView() && !isPlaceholder()" class="drag-handle translucent pointer" drag-on-this="true">⋮</div>
 
     <prioritizer *ngIf="!isPlaceholder()" (onPrioritySelected)="updatePriority($event)" [container]="task" class=""> </prioritizer>
-    <status [container]="task" [board]="board" [staticLane]="isStaticView()" 
-    (onStatusSelected)="updateStatus($event)"
-    class="m-x-025"></status>
+    <status [container]="task" [board]="board" [staticLane]="isStaticView()" (onStatusSelected)="updateStatus($event)" class="m-x-025"></status>
 
     <div class="flex w-100 g-025">
-        <div  
-        class="task-text-content grow" 
-        [class.placeholder]="isPlaceholder()"
-        #editor 
-        contenteditable="true" 
-        [preventEvents]="!editorActive"
-        [board]="board"
-        [(ngModel)]="task.textContent"
-        (ngModelChange)="debounceBoardUpdate()"
-        (onTagsChange)="updateTaskTags($event)"
-        ></div>
+        <div class="task-text-content grow" [class.placeholder]="isPlaceholder()" #editor contenteditable="true" [preventEvents]="!editorActive" [board]="board" [(ngModel)]="task.textContent" (ngModelChange)="debounceBoardUpdate()" (onTagsChange)="updateTaskTags($event)"></div>
 
-        
 
-        <div  class="task-toolbar relative flex align-items-center g-025">
-            <span 
-            *ngIf="!isPlaceholder()"
-            [tooltip]="'Toggle show in Gantt chart'"
-            [position]="'left'"
-            [class.selected]="task.includeInGantt"
-            (click)="toggleShowInGantt()" 
-            class="show-in-gantter pointer" >
+
+        <div class="task-toolbar relative flex align-items-center g-025">
+            <span *ngIf="!isPlaceholder()" [tooltip]="'Toggle show in Gantt chart'" [position]="'left'" [class.selected]="task.includeInGantt" (click)="toggleShowInGantt()" class="show-in-gantter pointer">
                 📊
             </span>
-            <span class="task-notes pointer" 
-            *ngIf="!isPlaceholder()"
-            [tooltip]="(task.notes && task.notes.length > 0 ? 'Edit' : 'Create') +' task notes'"
-            [position]="'left'"
-            (click)="toggleShowNotes()"
-            [class.selected]="task.notes && task.notes.length > 0"
-            [class.open]="showNotes" >
+            <span class="task-notes pointer" *ngIf="!isPlaceholder()" [tooltip]="(task.notes && task.notes.length > 0 ? 'Edit' : 'Create') +' task notes'" [position]="'left'" (click)="toggleShowNotes()" [class.selected]="task.notes && task.notes.length > 0" [class.open]="showNotes">
                 🗒️
             </span>
-            <notes [notes]="task.notes" (onNoteChanged)="storeNotes($event)" *ngIf="showNotes" ></notes>
+            <notes [notes]="task.notes" (onNoteChanged)="storeNotes($event)" *ngIf="showNotes"></notes>
         </div>
     </div>
 </div>
@@ -59,33 +26,24 @@ data-consider-for-overlapping-checks="true"
             planned for {{task.gantt.startDate | date: 'dd-MM-yy'}}<ng-container *ngIf="task.gantt.duration"> ({{task.gantt.duration}} working days)</ng-container>
         </ng-container>
     </div>
-    <div *ngIf="task.status === 'archived'" class="date-wrapper flex align-items-center g-05">       
+    <div *ngIf="task.status === 'archived'" class="date-wrapper flex align-items-center g-05">
         <span>archived on {{parseDate(this.task.dates.archived?.enter) | date: 'dd-MM-yy hh:mm a'}}</span>
-        <time-bar [container]="task"></time-bar> 
-     </div>
-     <div *ngIf="task.status === 'completed'"class="date-wrapper flex align-items-center">
-         completed {{ parseDate(this.task.dates.completed?.enter) | date: 'dd-MM-yy hh:mm a'}}
-     </div>
+        <time-bar [container]="task"></time-bar>
+    </div>
+    <div *ngIf="task.status === 'completed'" class="date-wrapper flex align-items-center">
+        completed {{ parseDate(this.task.dates.completed?.enter) | date: 'dd-MM-yy hh:mm a'}}
+    </div>
 </div>
 
 <div *ngIf="showChildren" class="task-children-wrapper g-025 ">
     <ng-container *ngFor="let child of this.task.children; let last = last;trackBy: trackBy">
-        <div class="flex" >
+        <div class="flex">
             <div class="line">
                 <div class="border-angle"></div>
                 <div *ngIf="!last" class="border-line"></div>
             </div>
-            <task 
-            [draggableDir]="task"
-            [containerEl]="el.nativeElement"
-            [layout]="'absolute'"
-            class="child" 
-            [staticView]="isStaticView()" 
-            [parent]="this.task" 
-            [task]="child"  
-            [board]="this.board" 
-            [lane]="this.lane"></task>
+            <task [draggableDir]="task" [containerEl]="el.nativeElement" [layout]="'absolute'" class="child" [staticView]="isStaticView()" [parent]="this.task" [task]="child" [board]="this.board" [lane]="this.lane"></task>
         </div>
     </ng-container>
-    
-</div>    
+
+</div>

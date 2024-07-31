@@ -1,4 +1,4 @@
-import { Directive, ElementRef, Host, HostListener, Input } from '@angular/core';
+import { Directive, ElementRef, HostListener, Input } from '@angular/core';
 
 @Directive({
   selector: '[tooltip]',
@@ -6,7 +6,7 @@ import { Directive, ElementRef, Host, HostListener, Input } from '@angular/core'
 export class TooltipDirective {
   @Input('tooltip') tooltip: string = '';
 
-  @Input('position') position: string | undefined
+  @Input('position') position: string | undefined;
 
   constructor(
     private element: ElementRef,
@@ -16,13 +16,13 @@ export class TooltipDirective {
   onMouseEnter(  ) {
     this.element.nativeElement.style.position = 'relative';
     const tooltip = document.createElement('div');
-    tooltip.classList.add('tooltip')
+    tooltip.classList.add('tooltip');
     tooltip.classList.add('standard');
     tooltip.innerHTML = this.tooltip;
     tooltip.style.position = 'absolute';
     tooltip.style.whiteSpace = 'nowrap';
     if(!this.position || this.position === 'top' || this.position === 'bottom'){
-      tooltip.style.bottom = this.position && this.position === 'bottom' ?'-250%': '150%';
+      tooltip.style.bottom = this.position && this.position === 'bottom' ? '-250%' : '150%';
     }else{
       tooltip.style.top = '0';
     }

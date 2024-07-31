@@ -4,7 +4,7 @@ import { Component } from '@angular/core';
   selector: 'font-resizer',
 
   templateUrl: './font-resizer.component.html',
-  styleUrl: './font-resizer.component.scss'
+  styleUrl: './font-resizer.component.scss',
 })
 export class FontResizerComponent {
 

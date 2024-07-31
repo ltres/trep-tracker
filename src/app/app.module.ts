@@ -23,7 +23,6 @@ import { SearchComponent } from './search/search.component';
 import { ModalComponent } from './modal/modal.component';
 import { ModalService } from '../service/modal.service';
 import { WelcomeWizardManagerComponent } from './welcome-wizard-manager/welcome-wizard-manager.component';
-import { ElectronService } from '../service/electron.service';
 import { StatusComponent } from './task-status/status.component';
 import { TooltipDirective } from './directive/tooltip.directive';
 import { TimeBarComponent } from './time-bar/time-bar.component';
@@ -40,63 +39,63 @@ import { ClickService } from '../service/click.service';
 import { UpdateCheckerComponent } from './update-checker/update-checker.component';
 import { GanttComponent } from './gantt/gantt.component';
 import { DpDatePickerModule } from 'ng2-date-picker';
- 
+
 @NgModule({
-    declarations: [
-        AppComponent,
-         BoardComponent, 
-         LaneComponent, 
-         TaskComponent, 
-         ContenteditableDirective, 
-         TagsViewerComponent,
-         LaneMenuComponent,
-         BoardSelectionMenuComponent,
-         PrioritizerComponent,
-         ImporterComponent,
-         FontResizerComponent,
-         SearchComponent,
-         ModalComponent,
-         WelcomeWizardManagerComponent,
-         StatusComponent,
-         TooltipDirective,
-         TimeBarComponent,
-         AiAdvisorComponent,
-         LogoComponent,
-         DraggableDirective,
-         BoardToolbarComponent,
-         NotesComponent,
-         ClickComponent,
-         GanttComponent,
-         
-         UpdateCheckerComponent
-        ],
-    providers: [
-        BoardService, 
-        KeyboardService, 
-        DragService, 
-        ContainerComponentRegistryService, 
-        TagService, 
-        ModalService,
-        ClickService,
-        {
-            provide: 'StorageServiceAbstract',
-            useClass: environment.storageService
-        },
-        {
-            provide: 'AiServiceI',
-            useClass: environment.aiService
-        }
-    ],
-    bootstrap: [AppComponent],
-    imports: [
-        CommonModule,
-        BrowserModule,
-        FormsModule,
-        ReactiveFormsModule,
-        KeyboardListenerComponent,
-        MarkdownModule.forRoot(),
-        HttpClientModule,
-        DpDatePickerModule 
-    ]
+  declarations: [
+    AppComponent,
+    BoardComponent,
+    LaneComponent,
+    TaskComponent,
+    ContenteditableDirective,
+    TagsViewerComponent,
+    LaneMenuComponent,
+    BoardSelectionMenuComponent,
+    PrioritizerComponent,
+    ImporterComponent,
+    FontResizerComponent,
+    SearchComponent,
+    ModalComponent,
+    WelcomeWizardManagerComponent,
+    StatusComponent,
+    TooltipDirective,
+    TimeBarComponent,
+    AiAdvisorComponent,
+    LogoComponent,
+    DraggableDirective,
+    BoardToolbarComponent,
+    NotesComponent,
+    ClickComponent,
+    GanttComponent,
+
+    UpdateCheckerComponent,
+  ],
+  providers: [
+    BoardService,
+    KeyboardService,
+    DragService,
+    ContainerComponentRegistryService,
+    TagService,
+    ModalService,
+    ClickService,
+    {
+      provide: 'StorageServiceAbstract',
+      useClass: environment.storageService,
+    },
+    {
+      provide: 'AiServiceI',
+      useClass: environment.aiService,
+    },
+  ],
+  bootstrap: [AppComponent],
+  imports: [
+    CommonModule,
+    BrowserModule,
+    FormsModule,
+    ReactiveFormsModule,
+    KeyboardListenerComponent,
+    MarkdownModule.forRoot(),
+    HttpClientModule,
+    DpDatePickerModule,
+  ],
 })
 export class AppModule { }

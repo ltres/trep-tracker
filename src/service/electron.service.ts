@@ -1,36 +1,35 @@
-import { Injectable, Injector, NgZone } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { StorageServiceAbstract } from '../types/storage';
-import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
+import { Observable, Subject, Subscription } from 'rxjs';
 import { getStatusPath, setStatusPath } from '../utils/utils';
 
-// @ts-ignore
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ElectronService extends StorageServiceAbstract{
   storagePath: string | null = null;
   subscription: Subscription | undefined;
-  status = "{}";
+  status = '{}';
   private statusChangeOutsideApp: Subject<string | null> = new Subject<string | null>();
 
   constructor(
-    private zone: NgZone
+    private zone: NgZone,
   ) {
     super();
     if(!window.electron) {
-      console.log("Electron not available");
+      console.log('Electron not available');
       return;
     }
     /**Electron callbacks */
     window.electron.onOpenedAppStatus(( event, filePath) => {
-      console.log("Opened app status");
+      console.log('Opened app status');
       const statusContent = this.initWithStoragePath(filePath);
       this.status = statusContent;
       this.statusChangeOutsideApp.next(statusContent);
-    })
+    });
     window.electron.onStoreAppStatusRequest(() => {
       window.electron.sendAppStatus(this.status);
-    })
+    });
 
     this.storagePath = getStatusPath();
     if(this.storagePath){
@@ -46,13 +45,13 @@ export class ElectronService extends StorageServiceAbstract{
   }
 
   override writeToStatus(status: object): void {
-    if(!this.storagePath) throw("No storage path configured");
+    if(!this.storagePath) throw('No storage path configured');
     if( JSON.stringify(status) === this.status) return;
     this.writeSystemFile(this.storagePath, JSON.stringify(status));
   }
 
   override async openStatus(): Promise<string | undefined> {
-    const {path, content} = await window.electron.openAppStatus();
+    const { path, content } = await window.electron.openAppStatus();
     this.storagePath = path;
     this.status = content;
     setStatusPath(this.storagePath);
@@ -72,12 +71,13 @@ export class ElectronService extends StorageServiceAbstract{
       this.zone.run(() => {
         // Electron fix
 
-        if(!this.storagePath) throw("No storage path");
+        if(!this.storagePath) throw('No storage path');
         setStatusPath(this.storagePath);
-      })
+      });
       return this.status;
     }catch(e){
-      throw("It was not possible to deserialize the status in " + this.storagePath);
+      console.error(e);
+      throw('It was not possible to deserialize the status in ' + this.storagePath);
     }
   }
 
@@ -86,11 +86,11 @@ export class ElectronService extends StorageServiceAbstract{
       try{
         return window.electron.readFile(filePath);
       }catch(e){
-        console.warn("Error reading file", e);
-        return "{}";
+        console.warn('Error reading file', e);
+        return '{}';
       }
     } else {
-      throw new Error("Electron not available");
+      throw new Error('Electron not available');
     }
   }
 
@@ -103,4 +103,3 @@ export class ElectronService extends StorageServiceAbstract{
     return this.statusChangeOutsideApp.asObservable();
   }
 }
-

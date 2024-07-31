@@ -1,4 +1,4 @@
-import { Board } from "./types";
+import { Board } from './types';
 
 export interface AiServiceI{
     getInsight(board: Board): Promise<string>;

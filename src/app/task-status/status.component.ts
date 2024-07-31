@@ -1,12 +1,12 @@
-import { AfterViewInit, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { Board, Container, Task, Status, Statuses } from '../../types/types';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Board, Container, Status, Statuses } from '../../types/types';
 import { isPlaceholder } from '../../utils/utils';
 import { BoardService } from '../../service/board.service';
 
 @Component({
   selector: 'status[container][staticLane][board]',
   templateUrl: './status.component.html',
-  styleUrl: './status.component.scss'
+  styleUrl: './status.component.scss',
 })
 export class StatusComponent {
   @Input() container!: Container;
@@ -30,11 +30,11 @@ export class StatusComponent {
     let toEmit: Status[] | Status | undefined;
     if (this.multipleSelectable) {
       let states = this.container.status as Status[] | undefined;
-      states = states?.includes(status) ? states.filter(s => s !== status) : (states ? [...states, status]: [status]);
-      if(states.length === 0 && this.allowEmpty) {
+      states = states?.includes(status) ? states.filter(s => s !== status) : (states ? [...states, status] : [status]);
+      if (states.length === 0 && this.allowEmpty) {
         states = undefined;
       }
-      toEmit = states
+      toEmit = states;
     } else {
       toEmit = status;
     }
@@ -67,14 +67,14 @@ export class StatusComponent {
     if (this.allowEmpty) {
       this.onStatusSelected.emit(undefined);
     }
-    
+
     this.open = false;
   }
 
-  isTask(arg0: Container<any>) {
+  isTask(arg0: Container) {
     return this.boardService.isTask(arg0);
   }
-  isArray(arg0: any) {
+  isArray(arg0: object) {
     return Array.isArray(arg0);
   }
   hasStatus(toCheck: Status): boolean {

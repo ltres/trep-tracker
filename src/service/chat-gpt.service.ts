@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import { AiServiceI } from '../types/ai';
-import OpenAI from "openai";
+import OpenAI from 'openai';
 import { Board } from '../types/types';
 import { removeEntry } from '../utils/utils';
 import { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ChatGPTService implements AiServiceI {
   apiKey: string | null = this.getApiKey();
@@ -37,66 +37,65 @@ export class ChatGPTService implements AiServiceI {
   Base on the task ID field to identify variations in priority, status, textContent, dates.
 
   Do not cite task IDs in the answer.
-  `
+  `;
   getApiKey(): string | null {
-    this.apiKey = localStorage.getItem("openAIAPIKey");
+    this.apiKey = localStorage.getItem('openAIAPIKey');
     return this.apiKey;
   }
   setApiKey(key: string): void {
     this.apiKey = key;
     if (!key) {
-      localStorage.removeItem("openAIAPIKey");
+      localStorage.removeItem('openAIAPIKey');
     }else{
-      localStorage.setItem("openAIAPIKey", key);
+      localStorage.setItem('openAIAPIKey', key);
     }
   }
 
   getLatestSentBoard(boardId: string): string | null {
-    return localStorage.getItem("latestSentBoard" + boardId);
+    return localStorage.getItem('latestSentBoard' + boardId);
   }
   storeAsLatestSent(boardId: string, val: string) {
-    localStorage.setItem("latestSentBoard" + boardId, new Date().toISOString() + ':' + val);
+    localStorage.setItem('latestSentBoard' + boardId, new Date().toISOString() + ':' + val);
   }
 
   getInsight(board: Board): Promise<string> {
     if (!this.apiKey) {
-      throw new Error("No API key set");
+      throw new Error('No API key set');
     }
     if(!this.openai){
-      this.openai = new OpenAI({ apiKey: this.apiKey, dangerouslyAllowBrowser: true })
+      this.openai = new OpenAI({ apiKey: this.apiKey, dangerouslyAllowBrowser: true });
     }
     // Clean up and minimize the board json:
     const object = JSON.parse(JSON.stringify(board));
-    removeEntry(object, "coordinates");
-    removeEntry(object, "width");
-    removeEntry(object, "createdLaneId");
-    removeEntry(object, "showChildren");
+    removeEntry(object, 'coordinates');
+    removeEntry(object, 'width');
+    removeEntry(object, 'createdLaneId');
+    removeEntry(object, 'showChildren');
 
     // archive and static lanes
-
+    /*
     removeEntry(object, undefined, (k: string, v: any) => {
-      if (typeof v === "string" && v === "") {
+      if (typeof v === 'string' && v === '') {
         return true;
       } else if (Array.isArray(v) && v.length === 0) {
-        return true
-      } else if (typeof v === "object" && Object.keys(v).length === 0) {
         return true;
-      } else if (typeof v === "object" && !Array.isArray(v) && !v.textContent) {
-        return true
-      } else if (typeof v === "object" && !Array.isArray(v) && v["_type"] === "lane" && (!v.children || v.children.length === 0)) {
-        return true
-      } else if (typeof v === "object" && v["isArchive"] === true) {
+      } else if (typeof v === 'object' && Object.keys(v).length === 0) {
+        return true;
+      } else if (typeof v === 'object' && !Array.isArray(v) && !v.textContent) {
+        return true;
+      } else if (typeof v === 'object' && !Array.isArray(v) && v['_type'] === 'lane' && (!v.children || v.children.length === 0)) {
+        return true;
+      } else if (typeof v === 'object' && v['isArchive'] === true) {
         return true;
       }
       return false;
     });
-
+    */
     let str = JSON.stringify(object);
-    str = str.replaceAll(/(<[^>]+>([^>]*))(<[^>]+>)/g, "<tag>$2</tag>")
+    str = str.replaceAll(/(<[^>]+>([^>]*))(<[^>]+>)/g, '<tag>$2</tag>');
 
     const latest = this.getLatestSentBoard(board.id);
     if (latest != null) {
-      const p = `Latest board sent: <${latest}> \n\n, current board: ${new Date().toISOString()}<${str}> \n\n`
       this.storeAsLatestSent(board.id,str);
       return this.fetchOpenAIResponse(
         `Current board: ${new Date().toISOString()}<${str}>`,
@@ -111,34 +110,31 @@ export class ChatGPTService implements AiServiceI {
   private async fetchOpenAIResponse(userPrompt: string, oldPrompt?: string): Promise<string> {
 
     const messages: ChatCompletionMessageParam[] = [{
-      role: "system",
-      content: this.systemPropmt
+      role: 'system',
+      content: this.systemPropmt,
     }];
     if (oldPrompt) {
       messages.push({
-        role: "user",
-        content: oldPrompt
+        role: 'user',
+        content: oldPrompt,
       });
     }
     messages.push(
       {
-        role: "user",
-        content: userPrompt
-      })
-
+        role: 'user',
+        content: userPrompt,
+      });
 
     // return "ol";
     const completion = await this.openai!.chat.completions.create({
       messages,
       max_tokens: 500,
       temperature: 0.5,
-      model: "gpt-4o",
+      model: 'gpt-4o',
     });
 
     console.log(completion.choices[0]);
-    return completion.choices[0].message.content ?? "No response";
+    return completion.choices[0].message.content ?? 'No response';
   }
-
-
 
 }

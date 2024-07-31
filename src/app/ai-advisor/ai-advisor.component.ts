@@ -5,14 +5,13 @@ import { Board, ISODateString } from '../../types/types';
 @Component({
   selector: 'ai-advisor[board]',
   templateUrl: './ai-advisor.component.html',
-  styleUrl: './ai-advisor.component.scss'
+  styleUrl: './ai-advisor.component.scss',
 })
 export class AiAdvisorComponent implements AfterContentInit{
 
-
-  @Input() board!: Board; 
+  @Input() board!: Board;
   open: boolean = false;
-  advice: string ="Advice here";
+  advice: string = 'Advice here';
   refreshDateISOString: ISODateString| undefined;
   apiKey: string | null = this.aiService.getApiKey();
   loading: boolean = false;
@@ -23,13 +22,13 @@ export class AiAdvisorComponent implements AfterContentInit{
   }
 
   constructor(
-    @Inject('AiServiceI') private aiService: AiServiceI
+    @Inject('AiServiceI') private aiService: AiServiceI,
   ) {}
-  
+
   ngAfterContentInit(): void {
-    // get latest advice from local storage:
-    this.advice = localStorage.getItem("AIadvice") || "No advice yet";
-    this.refreshDateISOString = localStorage.getItem("AIadviceRefreshDateISOString") as ISODateString || undefined;
+  // get latest advice from local storage:
+    this.advice = localStorage.getItem('AIadvice') || 'No advice yet';
+    this.refreshDateISOString = localStorage.getItem('AIadviceRefreshDateISOString') as ISODateString || undefined;
   }
 
   hasApiKey(): boolean {
@@ -40,9 +39,9 @@ export class AiAdvisorComponent implements AfterContentInit{
     this.loading = true;
     this.advice = await this.aiService.getInsight(this.board);
     this.loading = false;
-    localStorage.setItem("AIadvice", this.advice);
+    localStorage.setItem('AIadvice', this.advice);
     const refreshDateISOString = new Date().toISOString();
-    localStorage.setItem("AIadviceRefreshDateISOString", refreshDateISOString)
+    localStorage.setItem('AIadviceRefreshDateISOString', refreshDateISOString);
   }
 
   parseDate(arg0: ISODateString | undefined): Date | undefined {

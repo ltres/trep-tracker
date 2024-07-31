@@ -1,31 +1,31 @@
-import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { BoardService } from '../../service/board.service';
 
 @Component({
   selector: 'search',
 
   templateUrl: './search.component.html',
-  styleUrl: './search.component.scss'
+  styleUrl: './search.component.scss',
 })
 export class SearchComponent {
   @ViewChild('input') searchInput!: ElementRef;
   searchPhrase: string | undefined;
   matchNumber: number = 0;
-  private debounce: any;
+  private debounce: ReturnType<typeof setTimeout> | undefined;
 
   constructor(
     private boardService: BoardService,
-    private el: ElementRef
+    private el: ElementRef,
   ) {
     this.boardService.focusSearch$.subscribe(fs => {
       if (fs) {
         if( this.searchPhrase ){
           this.highlightText(this.searchPhrase, true);
         }else{
-          this.focusInput(true)
+          this.focusInput(true);
         }
       }
-    })
+    });
   }
 
   change(){
@@ -35,33 +35,33 @@ export class SearchComponent {
     }
     this.debounce = setTimeout( () => {
       this.highlightText(this.searchPhrase!, false);
-    },250)
+    },250);
 
   }
 
   highlightText(searchTerm: string, selectAll: boolean) {
     this.matchNumber = 0;
     if(searchTerm.length < 2 )return;
-    document.designMode = "on";
+    document.designMode = 'on';
     this.removeHighlights();
     //var sel = window.getSelection();
     //sel?.collapse(document.body, 0);
 
     while (window.find(searchTerm)) {
       this.matchNumber ++;
-      document.execCommand("HiliteColor", false, "darkblue");
+      document.execCommand('HiliteColor', false, 'darkblue');
       //sel?.collapseToEnd();
     }
-    document.designMode = "off";
+    document.designMode = 'off';
     this.focusInput(selectAll);
   }
 
   removeHighlights() {
     const highlights = document.querySelectorAll('span[style="background-color: darkblue;"]');
     highlights.forEach(span => {
-        const parent = span.parentNode;
-        parent?.replaceChild(document.createTextNode(span.textContent ?? ""), span);
-        parent?.normalize();
+      const parent = span.parentNode;
+      parent?.replaceChild(document.createTextNode(span.textContent ?? ''), span);
+      parent?.normalize();
     });
   }
 
@@ -69,11 +69,11 @@ export class SearchComponent {
     if( this.searchPhrase ){
       //this.highlightText(this.searchPhrase, false);
     }
-    //this.boardService.blurSearch();
+  //this.boardService.blurSearch();
   }
 
   onBlur() {
-    this.removeHighlights()
+    this.removeHighlights();
     this.boardService.blurSearch();
   }
 
@@ -85,4 +85,3 @@ export class SearchComponent {
   }
 
 }
-

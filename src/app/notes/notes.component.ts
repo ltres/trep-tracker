@@ -5,7 +5,7 @@ import { debounceTime } from 'rxjs/operators';
 @Component({
   selector: 'notes[notes]',
   templateUrl: './notes.component.html',
-  styleUrl: './notes.component.scss'
+  styleUrl: './notes.component.scss',
 })
 export class NotesComponent implements OnDestroy{
   @Input() notes: string | undefined = '';
@@ -28,5 +28,3 @@ export class NotesComponent implements OnDestroy{
     this.noteSubject.next(ev);
   }
 }
-
-

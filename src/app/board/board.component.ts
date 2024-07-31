@@ -1,10 +1,9 @@
-import { AfterViewChecked, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, HostBinding, HostListener, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { Board, Container, Lane, Layout, Layouts, Tag, Task, getNewTask } from '../../types/types';
-import { TaskComponent } from '../task/task.component';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, HostBinding, HostListener, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Board, Container, Lane, Layout, Layouts, Tag } from '../../types/types';
 import { BoardService } from '../../service/board.service';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { LaneComponent } from '../lane/lane.component';
-import { getCaretPosition, hashCode, isPlaceholder } from '../../utils/utils';
+import { hashCode } from '../../utils/utils';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
 import { ContainerComponent } from '../base/base.component';
@@ -18,13 +17,13 @@ import { ContainerComponentRegistryService } from '../../service/registry.servic
   styleUrl: './board.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
-    {provide: ContainerComponent, useExisting: forwardRef(() => BoardComponent)}
-  ]
+    { provide: ContainerComponent, useExisting: forwardRef(() => BoardComponent) },
+  ],
 })
 export class BoardComponent extends ContainerComponent implements OnInit, AfterViewInit {
   @Input() board!: Board;
   @ViewChildren(LaneComponent, { read: ElementRef }) laneComponentsElRefs: QueryList<ElementRef> | undefined;
-  @ViewChildren(LaneComponent,) laneComponents: QueryList<LaneComponent> | undefined;
+  @ViewChildren(LaneComponent) laneComponents: QueryList<LaneComponent> | undefined;
 
   @HostBinding('style.height.px')
   protected _height: number | undefined = 0;
@@ -48,7 +47,7 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
     return this.board.layout;
   }
 
-  debounce: any;
+  debounce: ReturnType<typeof setTimeout> | undefined;
 
   constructor(
     protected boardService: BoardService,
@@ -56,22 +55,22 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
     protected override registry: ContainerComponentRegistryService,
     protected dragService: DragService,
     public override el: ElementRef,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {
-    //super(boardService, dragService, keyboardService, registry,el);
-    super(registry, el)
-    
-    // this.taskService = taskService;
+  //super(boardService, dragService, keyboardService, registry,el);
+    super(registry, el);
+
+  // this.taskService = taskService;
   }
   override ngOnInit(): void {
-    this.boardService.boards$.subscribe(boards => {
+    this.boardService.boards$.subscribe(() => {
       this.cdr.detectChanges();
     });
   }
 
   ngAfterViewInit(): void {
     if(this.board.layout === 'absolute') return;
-    this.subscriptions = this.boardService.boards$.subscribe(boards => {
+    this.subscriptions = this.boardService.boards$.subscribe(() => {
       // set the board height basing on the childrens size.
       const boardEl = this.el.nativeElement as HTMLElement;
       const laneEls = boardEl.querySelectorAll('lane');
@@ -91,11 +90,11 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
       });
       //this.cdr.detectChanges();
     });
-    //this.cdr.detectChanges();
+  //this.cdr.detectChanges();
   }
 
   @HostListener('window:resize', ['$event'])
-  onResize(event: { target: { innerWidth: any; }; }) {
+  onResize() {
     if(window.innerWidth < 800) {
       this.board.layout = 'flex1';
     }
@@ -108,8 +107,8 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
     return this.boardService.getLanes$(this.board, col);
   }
 
-  override get container(): Container<any>{
-    return this.board
+  override get container(): Container{
+    return this.board;
   }
 
   addLane() {
@@ -120,12 +119,12 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
   }
 
   updateBoardTags($event: Tag[]) {
-    const allOldPresent = this.board.tags.filter(oldTag => $event.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === this.board.tags.length
-    const allNewPresent = $event.filter(oldTag => this.board.tags.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === $event.length
+    const allOldPresent = this.board.tags.filter(oldTag => $event.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === this.board.tags.length;
+    const allNewPresent = $event.filter(oldTag => this.board.tags.map(t => t.tag.toLowerCase()).find(r => r === oldTag.tag.toLowerCase())).length === $event.length;
 
     if (!allOldPresent || !allNewPresent) {
       this.board.tags = $event;
-      this.debounceBoardUpdate()
+      this.debounceBoardUpdate();
     }
   }
 
@@ -134,8 +133,8 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
       clearTimeout(this.debounce);
     }
     this.debounce = setTimeout(() => {
-      this.boardService.publishBoardUpdate()
-    }, 500)
+      this.boardService.publishBoardUpdate();
+    }, 500);
   }
 
   trackBy(index: number, lane: Lane): number {
@@ -151,7 +150,6 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
     return Object.keys(Layouts) as Layout[];
   }
 
-
   getColumnIndexes(layout: Layout): number[] {
     return Array.from({ length: Layouts[layout].columns }, (_,index) => index);
   }
@@ -159,8 +157,5 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
   getLayoutSymbol(layout: Layout) {
     return Layouts[layout].symbol;
   }
-
-
-    
 
 }

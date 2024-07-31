@@ -1,21 +1,20 @@
-import { AfterViewInit, Component, Input, OnDestroy } from '@angular/core';
-import { DayDateString, ISODateString, tagHtmlWrapper, tagIdentifiers, Task } from '../../types/types';
-import { generateUUID, getDayDate, getFirstMentionTag, getIsoString } from '../../utils/utils';
+import { AfterViewInit, Component, Input } from '@angular/core';
+import { ISODateString, Task } from '../../types/types';
+import { generateUUID, getFirstMentionTag, getIsoString } from '../../utils/utils';
 import { BoardService } from '../../service/board.service';
-import { GanttStatic, Link } from 'dhtmlx-gantt';
+import { Link } from 'dhtmlx-gantt';
 import { gantt, Task as DhtmlxTask } from 'dhtmlx-gantt';
 
 @Component({
   selector: 'gantt[tasks]',
   templateUrl: './gantt.component.html',
-  styleUrl: './gantt.component.scss'
+  styleUrl: './gantt.component.scss',
 })
 export class GanttComponent implements AfterViewInit {
   @Input() tasks!: Task[] | undefined | null;
   fullDescendants: Task[] | undefined;
 
   constructor(protected boardService: BoardService) { }
-
 
   ngAfterViewInit(): void {
     if (!this.tasks) {
@@ -25,24 +24,24 @@ export class GanttComponent implements AfterViewInit {
 
     gantt.plugins({
       multiselect: true,
-      marker: true
+      marker: true,
     });
     gantt.addMarker({
       start_date: today,
-      css: "today",
-      text: "Today",
-      title: "Today"
+      css: 'today',
+      text: 'Today',
+      title: 'Today',
     });
     gantt.addMarker({
       start_date: new Date(2024,7,1),
-      css: "aug",
-      text: "aug",
-      title: "aug"
+      css: 'aug',
+      text: 'aug',
+      title: 'aug',
     });
-    gantt.config['scale_unit'] = "month";
-    gantt.config['date_scale'] = "%F"; // Full month name
+    gantt.config['scale_unit'] = 'month';
+    gantt.config['date_scale'] = '%F'; // Full month name
     gantt.config['subscales'] = [
-      {unit: "day", step: 1, date: "%j"} // Day of the month as number
+      { unit: 'day', step: 1, date: '%j' }, // Day of the month as number
     ];
     gantt.config.min_column_width = 25; // Set to your desired width in pixels
 
@@ -52,8 +51,8 @@ export class GanttComponent implements AfterViewInit {
 
     gantt.config.columns = [
       {
-        name: "mention",
-        label: "Mention",
+        name: 'mention',
+        label: 'Mention',
         width: 100,
         template: (task) => {
           return task['mention'];
@@ -61,37 +60,37 @@ export class GanttComponent implements AfterViewInit {
         sort: function(a, b) {
           const cmp = a['mention']?.toLowerCase().localeCompare(b['mention']?.toLowerCase());
           if(cmp !== 0){
-            return cmp
+            return cmp;
           }
-          return (a.start_date?.getTime() ?? 0) - (b.start_date?.getTime() ?? 0)
-        }
+          return (a.start_date?.getTime() ?? 0) - (b.start_date?.getTime() ?? 0);
+        },
       },
-      { name: "text", label: "Task name", min_width: 300, width: "*", tree: true },
-      { name: "start_date", label: "Start time", align: "center" },
-      { name: "duration", label: "Duration", align: "center" }
+      { name: 'text', label: 'Task name', min_width: 300, width: '*', tree: true },
+      { name: 'start_date', label: 'Start time', align: 'center' },
+      { name: 'duration', label: 'Duration', align: 'center' },
     ];
     gantt.config.sort = true;
 
-    const start = new Date(today.getFullYear(), today.getMonth(), 0); 
+    const start = new Date(today.getFullYear(), today.getMonth(), 0);
     const end = new Date(today.getFullYear(), today.getMonth() + 4, 0);
 
     gantt.config.work_time = true;
     gantt.setWorkTime({ hours: [9, 13, 14, 18] });//global working hours. 8:00-12:00, 13:00-17:00
     gantt.templates.timeline_cell_class = function (task, date) {
       if (!gantt.isWorkTime(date)) {
-        return "gantt-weekend";
+        return 'gantt-weekend';
       }
-      return "";
+      return '';
     };
     gantt.config.start_date = start;
     gantt.config.end_date = end;
-    gantt.attachEvent("onBeforeTaskDelete", function (id, task) {
-      gantt.message({ type: "error", text: "Cannot delete tasks from this view" });
+    gantt.attachEvent('onBeforeTaskDelete', function () {
+      gantt.message({ type: 'error', text: 'Cannot delete tasks from this view' });
       return false;
     });
     gantt.templates.task_class = function (start, end, task) {
       if (gantt.hasChild(task.id)) {
-        return "gantt-parent-task";
+        return 'gantt-parent-task';
       }
       if (task['css']) {
         return task['css'];
@@ -106,28 +105,29 @@ export class GanttComponent implements AfterViewInit {
     dataModel.data = dataModel.data.sort((a, b) => a['order'] - b['order']);
     gantt.parse(dataModel);
 
-
-    gantt.init("gantt");
+    gantt.init('gantt');
     gantt.showDate(today);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (!(gantt as any).$_initOnce) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gantt as any).$_initOnce = true;
 
-      const dp = gantt.createDataProcessor({
+      gantt.createDataProcessor({
         task: {
           update: (data: DhtmlxTask) => this.updateTask(data),
-          create: (data: DhtmlxTask) => this.createTask(data),
+          create: () => this.createTask(),
           // delete: (id: string) => console.log(id),
         },
         link: {
-          update: (data: Link) => this.updateLink(data),
+          update: () => this.updateLink(),
           create: (data: Link) => this.createLink(data),
           delete: (id: string) => this.deleteLink(id),
-        }
+        },
       });
     }
   }
   updateTask(data: DhtmlxTask) {
-    const formatFunc = gantt.date.str_to_date("%dd-%mm-%YYYY hh:MM", true);
+    const formatFunc = gantt.date.str_to_date('%dd-%mm-%YYYY hh:MM', true);
     const toUpdate = this.boardService.getTask(data.id.toString());
     if (!toUpdate || !toUpdate.gantt) {
       console.log('Task ' + toUpdate?.id + 'not found');
@@ -139,13 +139,12 @@ export class GanttComponent implements AfterViewInit {
       toUpdate.gantt.duration = data.duration;
     }
 
-
     let order = 0;
     gantt.eachTask((task) => {
       const toOrder = this.boardService.getTask(task.id);
       if (!toOrder || !toOrder.gantt) {
         console.warn('Task not found');
-        return
+        return;
       }
       if (toOrder.gantt.order && order === 0) {
         order = toOrder.gantt.order;
@@ -156,10 +155,10 @@ export class GanttComponent implements AfterViewInit {
     this.boardService.publishBoardUpdate();
 
   }
-  createTask(data: DhtmlxTask) {
+  createTask() {
     throw new Error('Method not implemented.');
   }
-  updateLink(data: Link) {
+  updateLink() {
     throw new Error('Method not implemented.');
   }
   createLink(data: Link) {
@@ -172,7 +171,7 @@ export class GanttComponent implements AfterViewInit {
     source.gantt!.successors = source.gantt!.successors ?? [];
     source.gantt!.successors.push({
       taskId: target.id,
-      linkId: data.id.toString()
+      linkId: data.id.toString(),
     });
     this.boardService.publishBoardUpdate();
   }
@@ -214,7 +213,7 @@ export class GanttComponent implements AfterViewInit {
         mention: getFirstMentionTag(task),
         //auto_scheduling: true,
         open: true,
-      }
+      };
 
       runningObject.latestEndDate = task.children.length > 0 ? runningObject.latestEndDate : task.gantt!.endDate;
 
@@ -236,8 +235,8 @@ export class GanttComponent implements AfterViewInit {
             source: task.id,
             target: succ.taskId,
             editable: true,
-            type: '0'
-          }
+            type: '0',
+          };
           runningObject.links.push(link);
           // It may happen that a successor is not between the tasks or their descendants. We need to retrieve it and process it.
           if (this.fullDescendants && this.fullDescendants.map(t => t.id).indexOf(succ.taskId) < 0) {
@@ -257,8 +256,8 @@ export class GanttComponent implements AfterViewInit {
             source: prevBase.id,
             target: task.id,
             editable: true,
-            type: '0'
-          }
+            type: '0',
+          };
           runningObject.links.push(link);
         }
       }
@@ -299,7 +298,6 @@ export class GanttComponent implements AfterViewInit {
     return hash;
   }
 
-
   private initGanttData(task: Task, previousTask?: Task, latestEndDate?: ISODateString): Task {
     const baseDuration = 2;
     let startDate = new Date();
@@ -319,13 +317,9 @@ export class GanttComponent implements AfterViewInit {
       endDate: task.gantt?.endDate ?? getIsoString(plusTwo),
       progress: task.gantt?.progress ?? 0,
       successors: task.gantt?.successors ?? [],
-      order: task.gantt?.order ?? 999
-    }
+      order: task.gantt?.order ?? 999,
+    };
     return task;
-  }
-
-  log($event: any) {
-    console.log($event);
   }
 
 }

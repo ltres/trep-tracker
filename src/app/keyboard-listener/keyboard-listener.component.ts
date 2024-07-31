@@ -8,8 +8,8 @@ import { KeyboardService } from '../../service/keyboard.service';
   templateUrl: './keyboard-listener.component.html',
   styleUrl: './keyboard-listener.component.scss',
   host: {
-    '(document:keydown)': 'handleKeyboardEvent($event)'
-  }
+    '(document:keydown)': 'handleKeyboardEvent($event)',
+  },
 })
 export class KeyboardListenerComponent {
   constructor(private keyboardService: KeyboardService) { }

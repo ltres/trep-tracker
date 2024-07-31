@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Container } from '../../types/types';
 import { ContainerComponentRegistryService } from '../../service/registry.service';
@@ -11,16 +11,16 @@ import { ContainerComponentRegistryService } from '../../service/registry.servic
   //standalone: true,
   //imports: [],
   templateUrl: './base.component.html',
-  styleUrl: './base.component.scss'
+  styleUrl: './base.component.scss',
 })
 export abstract class ContainerComponent implements OnInit, OnDestroy{
   protected _container!: Container;
   protected _subscriptions: Subscription[] = [];
-  
+
   constructor(
     protected registry: ContainerComponentRegistryService,
-    public el: ElementRef
-  ) { } 
+    public el: ElementRef,
+  ) { }
 
   abstract get container(): Container | undefined;
 
