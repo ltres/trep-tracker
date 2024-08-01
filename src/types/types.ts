@@ -191,7 +191,6 @@ export const getNewLane: (archive: boolean) => Lane = (archive: boolean) => {
   return {
     id: id,
     tags: [],
-    columnNumber: 1,
     index: 0,
     showChildren: true,
     textContent: archive ? 'Archive' : 'Lane ' + id,
@@ -218,22 +217,22 @@ export function getLayouts(width?: number | undefined): LayoutProperties {
       width: width ?? 100,
     },
     flex1: {
-      column: 1,
+      column: 0,
       order: 1,
       width: width ?? 1,
     },
     flex2: {
-      column: 1,
+      column: 0,
       order: 1,
       width: width ?? 1,
     },
     flex3: {
-      column: 1,
+      column:0,
       order: 1,
       width: width ?? 1,
     },
     flex4: {
-      column: 1,
+      column: 0,
       order: 1,
       width: width ?? 1,
     },
