@@ -12,25 +12,23 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     strategy:
       matrix:
-        include:
-          - os: ubuntu-latest
-            name: linux
-          - os: windows-latest
-            name: windows
-          - os: macos-latest
-            name: macos
-          - os: ubuntu-latest-arm64
-            name: linux-arm64
-        
-    runs-on: ${{ matrix.os }}
+        os:
+          [
+            { name: 'linux', image: 'ubuntu-latest' },
+            { name: 'windows', image: 'windows-latest' },
+            { name: 'macos', image: 'macos-latest' },
+          ]
+        node-version: [22.4.x]
+
+    runs-on: ${{ matrix.os.image }}
     steps:
       - name: Github checkout
         uses: actions/checkout@v4
 
-      - name: Use Node.js '22.4.x'
+      - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
-          node-version: '22.4.x'
+          node-version: ${{ matrix.node-version }}
 
       - run: npm ci
 
