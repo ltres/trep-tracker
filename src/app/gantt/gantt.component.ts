@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, Input } from '@angular/core';
 import { ISODateString, Task } from '../../types/types';
-import { generateUUID, getFirstMentionTag, getIsoString } from '../../utils/utils';
+import { generateUUID, getDescendants, getFirstMentionTag, getIsoString, isTask } from '../../utils/utils';
 import { BoardService } from '../../service/board.service';
 import { Link } from 'dhtmlx-gantt';
 import { gantt, Task as DhtmlxTask } from 'dhtmlx-gantt';
@@ -21,7 +21,7 @@ export class GanttComponent implements AfterViewInit {
       throw new Error('Tasks must be defined');
     }
     const today = new Date();
-
+    
     gantt.plugins({
       multiselect: true,
       marker: true,
@@ -100,17 +100,16 @@ export class GanttComponent implements AfterViewInit {
 
     gantt.config.order_branch = true;
     gantt.clearAll();
-    this.fullDescendants = this.tasks.flatMap(task => this.boardService.getDescendants(task)).concat(this.tasks).filter(t => this.boardService.isTask(t)) as Task[];
+    this.fullDescendants = this.tasks.flatMap(task => getDescendants(task)).concat(this.tasks).filter(t => isTask(t)) as Task[];
     const dataModel = this.toDhtmlxGanttDataModel(this.tasks, { data: [], links: [] });
     dataModel.data = dataModel.data.sort((a, b) => a['order'] - b['order']);
     gantt.parse(dataModel);
 
     gantt.init('gantt');
     gantt.showDate(today);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (!(gantt as any).$_initOnce) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (gantt as any).$_initOnce = true;
+     
+    if (!(gantt as unknown as {$_initOnce?:boolean}).$_initOnce) {
+      (gantt as unknown as {$_initOnce?:boolean}).$_initOnce = true;
 
       gantt.createDataProcessor({
         task: {

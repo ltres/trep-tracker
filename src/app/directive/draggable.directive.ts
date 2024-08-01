@@ -14,6 +14,7 @@ import { BoardService } from '../../service/board.service';
 import { DragService } from '../../service/drag.service';
 import { Container, Lane, Layout } from '../../types/types';
 import { ContainerComponent } from '../base/base.component';
+import { isLane } from '../../utils/utils';
 
 @Directive({
   selector: '[draggableDir][containerEl][layout]',
@@ -54,12 +55,12 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
 
   @HostBinding('style.width')
   private get width(): number | string | undefined {
-    return this.displayedInFixedLayout && !this.isBeingDragged ? '100%' : (this.boardService.isLane(this.draggableDir ) ? (this.draggableDir.layouts[this.layout].width ?? 0) + 'px' : '100%');
+    return this.displayedInFixedLayout && !this.isBeingDragged ? '100%' : (isLane(this.draggableDir ) ? (this.draggableDir.layouts[this.layout].width ?? 0) + 'px' : '100%');
   }
 
   private set width(value: number ) {
   // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    this.boardService.isLane(this.draggableDir) ? this.draggableDir.layouts[this.layout].width = value : undefined;
+    isLane(this.draggableDir) ? this.draggableDir.layouts[this.layout].width = value : undefined;
   }
 
   constructor(
@@ -142,7 +143,7 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
   @HostListener('dragstart', ['$event'])
   dragStart($event: DragEvent) {
     this.ngZone.runOutsideAngular(() => {
-      if(this.boardService.isLane(this.draggableDir)){
+      if(isLane(this.draggableDir)){
         this.draggableDir.layouts[this.layout].width = this.el.nativeElement.getBoundingClientRect().width;
       }
       this.isBeingDragged = true;

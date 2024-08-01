@@ -1,9 +1,8 @@
-import { ChatGPTService } from '../service/chat-gpt.service';
 import { LocalFileStorageService } from '../service/local-file-storage.service';
+import { Environment } from '../types/types';
 
-export const environment = {
+export const environment: Environment = {
   storageService: LocalFileStorageService,
-  aiService: ChatGPTService,
   userVersion: '1.2.0-preview',
   environment: 'development',
 };

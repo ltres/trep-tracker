@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { cursorIsInside } from '../utils/utils';
+import { cursorIsInside, getDescendants, isLane, isTask } from '../utils/utils';
 import { BoardService } from './board.service';
 import { ContainerComponentRegistryService } from './registry.service';
 import { ContainerComponent } from '../app/base/base.component';
@@ -43,7 +43,7 @@ export class DragService {
         console.warn('Dragged component has no object');
         return;
       }
-      if (!this.boardService.isTask(draggedObject)) {
+      if (!isTask(draggedObject)) {
         console.info('Lane is being dragged, skip checks');
         return;
       }
@@ -51,16 +51,16 @@ export class DragService {
       const registry = this.registryService.componentRegistry;
       let overlappedComponent = registry
         .sort((a, b) => {
-          if (this.boardService.isTask(a.container) && !this.boardService.isTask(b.container)) {
+          if (isTask(a.container) && !isTask(b.container)) {
             return -1;
           }
-          if (this.boardService.isTask(b.container) && !this.boardService.isTask(a.container)) {
+          if (isTask(b.container) && !isTask(a.container)) {
             return 1;
           }
-          if (this.boardService.isLane(a.container) && !this.boardService.isLane(b.container)) {
+          if (isLane(a.container) && !isLane(b.container)) {
             return -1;
           }
-          if (this.boardService.isLane(b.container) && !this.boardService.isLane(a.container)) {
+          if (isLane(b.container) && !isLane(a.container)) {
             return 1;
           }
           return 0;
@@ -84,10 +84,10 @@ export class DragService {
         // Overlap case:
         // we have a collection of overlapped components, sort them task first and take the first one
         overlappedComponent = overlappedComponent.sort((a, b) => {
-          if (this.boardService.isTask(a.container) && !this.boardService.isTask(b.container)) {
+          if (isTask(a.container) && !isTask(b.container)) {
             return -1;
           }
-          if (!this.boardService.isTask(a.container) && this.boardService.isTask(b.container)) {
+          if (!isTask(a.container) && isTask(b.container)) {
             return 1;
           }
           return 0;
@@ -99,7 +99,7 @@ export class DragService {
           return;
         }
         // exclude the possibility that parents get dragged into children
-        const anyMatch = this.boardService.getDescendants(draggedObject).filter(descendant => descendant.id === overlappedObject.id && descendant._type === overlappedObject._type).length > 0;
+        const anyMatch = getDescendants(draggedObject).filter(descendant => descendant.id === overlappedObject.id && descendant._type === overlappedObject._type).length > 0;
         if (anyMatch) {
           console.warn('Dragged object is a descendant of the overlapped object');
           return;

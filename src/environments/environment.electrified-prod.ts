@@ -1,9 +1,8 @@
-import { ChatGPTService } from '../service/chat-gpt.service';
 import { ElectronService } from '../service/electron.service';
+import { Environment } from './environment';
 
-export const environment = {
+export const environment: Environment = {
   storageService: ElectronService,
-  aiService: ChatGPTService,
   userVersion: '1.2.0-preview',
   environment: 'electrified-prod',
 };

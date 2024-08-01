@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Board, Tag, tagIdentifiers, tagHtmlWrapper, tagCapturingGroup } from '../types/types';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { isStatic } from '../utils/utils';
+import { getDescendants, isLane, isStatic } from '../utils/utils';
 import { BoardService } from './board.service';
 
 @Injectable({
@@ -15,8 +15,8 @@ export class TagService {
       this._tags$.next([]);
       for (const board of boards) {
         let tags: Tag[] = board.tags ?? [];
-        this.boardService.getDescendants(board).forEach(container => {
-          if (this.boardService.isLane(container) && !isStatic(container)) {
+        getDescendants(board).forEach(container => {
+          if (isLane(container) && !isStatic(container)) {
             return;
           }
           tags = tags.concat(container.tags ?? []);

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Lane, Task, Status, ISODateString, Container, DayDateString, tagHtmlWrapper, tagIdentifiers } from '../types/types';
+import { Lane, Task, Status, ISODateString, Container, DayDateString, tagHtmlWrapper, tagIdentifiers, Board, getLayouts, Layout, Layouts, LayoutProperties } from '../types/types';
 
 export function generateUUID(length?: number): string {
   return uuidv4().substring(0, length ?? 6);
@@ -98,30 +98,25 @@ export function getCaretPosition(element: Node) {
   return caretOffset;
 }
 
-export function getCaretCharacterOffsetWithin(element: HTMLElement) {
+export function getCaretCharacterOffsetWithin(element: HTMLElement & { document? : Document }) {
   let caretOffset = 0;
-  // @ts-expect-error not typed
   const doc = element.ownerDocument || element.document;
-  // @ts-expect-error not typed
-  const win = doc.defaultView || doc.parentWindow;
+  const win = doc.defaultView;
+  if(!win){
+    throw new Error('No window');
+  }
   let sel;
   if (typeof win.getSelection != 'undefined') {
     sel = win.getSelection();
-    if (sel.rangeCount > 0) {
-      const range = win.getSelection().getRangeAt(0);
+    if (sel && sel.rangeCount > 0) {
+      const range = sel.getRangeAt(0);
       const preCaretRange = range.cloneRange();
       preCaretRange.selectNodeContents(element);
       preCaretRange.setEnd(range.endContainer, range.endOffset);
       caretOffset = preCaretRange.toString().length;
     }
-    // @ts-expect-error not typed
-  } else if ((sel = doc.selection) && sel.type != 'Control') {
-    const textRange = sel.createRange();
-    // @ts-expect-error not typed
-    const preCaretTextRange = doc.body.createTextRange();
-    preCaretTextRange.moveToElementText(element);
-    preCaretTextRange.setEndPoint('EndToEnd', textRange);
-    caretOffset = preCaretTextRange.text.length;
+  } else {
+    throw new Error('Cannot find selection');
   }
   return caretOffset;
 }
@@ -173,69 +168,6 @@ export function formatDate(date: ISODateString | undefined) {
   return new Date(date).toLocaleDateString();
 }
 
-export function removeEntry(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  obj: any,
-  keyToRemove?: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  condition?: (key: string, value: any) => boolean,
-): void {
-  if (Array.isArray(obj)) {
-    for (const item of obj) {
-      removeEntry(item, keyToRemove, condition);
-    }
-  } else if (obj !== null && typeof obj === 'object') {
-    for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        const shouldRemove = (keyToRemove && key === keyToRemove) ||
-                    (condition && condition(key, obj[key]));
-
-        if (shouldRemove) {
-          delete obj[key];
-        } else if (Array.isArray(obj[key])) {
-          if (condition && condition(key, obj[key])) {
-            delete obj[key];
-          }
-          for (const item of obj[key]) {
-            if (condition && condition(key, item)) {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              obj[key] = obj[key].filter((i: any) => i !== item);
-            }
-          }
-          removeEntry(obj[key], keyToRemove, condition);
-        } else if (typeof obj[key] === 'object') {
-          removeEntry(obj[key], keyToRemove, condition);
-        }
-      }
-    }
-  }
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function removeEntry2(obj: Record<string, any>, keyToRemove?: string, conditionForValue?: (value: string | object) => boolean): void {
-  if (obj == null || typeof obj !== 'object') {
-    return;
-  }
-
-  for (const key in obj) {
-    // eslint-disable-next-line no-prototype-builtins
-    if (obj.hasOwnProperty(key)     ) {
-      if ((keyToRemove && key === keyToRemove) || !keyToRemove) {
-        if (conditionForValue) {
-          if (conditionForValue(obj[key])) {
-            delete obj[key];
-            continue;
-          }
-        } else {
-          delete obj[key];
-        }
-      } else if (typeof obj[key] === 'object') {
-        removeEntry(obj[key], keyToRemove, conditionForValue);
-      }
-    }
-  }
-}
-
 export function isStatic(lane: Lane): boolean {
   const isTagged = lane.tags ? lane.tags.length > 0 : false;
   const cond = lane.priority !== undefined || lane.status !== undefined;
@@ -260,4 +192,138 @@ export function getFirstMentionTag(task: Task) {
     return tagHtmlWrapper(mentionTagType)[0] + tagIdentifiers.find(r => r.type === mentionTagType)?.symbol + mention.tag + tagHtmlWrapper(mentionTagType)[1];
   }
   return '';
+}
+
+export function isLane(parent: Container | undefined): parent is Lane {
+  if (!parent) {
+    return false;
+  }
+  return (parent as Lane)._type === 'lane';
+}
+export function isTask(parent: Container | undefined): parent is Task {
+  if (!parent) {
+    return false;
+  }
+  return (parent as Task)._type === 'task';
+}
+export function isLanes(parent: Container[]): parent is Lane[] {
+  return (parent[0] as Lane)._type === 'lane';
+}
+export function isTasks(parent: Container[]): parent is Task[] {
+  return (parent[0] as Task)._type === 'task';
+}
+
+/**
+ * Retrieves all descendants of a given container.
+ * @param container - The container whose descendants are to be retrieved.
+ * @returns An array of Container objects representing the descendants.
+ */
+export function getDescendants(container: Container): Container[] {
+  let descendants: Container[] = [];
+  for (const child of container.children) {
+    descendants = descendants.concat(child).concat(getDescendants(child));
+  }
+
+  return descendants;
+}
+
+/**
+ * Data model has undergone some changes in time. This method ensures that all the statuses get brought to the latest version.
+ * @param board 
+ * @returns 
+ */
+export function eventuallyPatch( board: Board ): Board{
+  board._type = 'board';
+  board.layout = board.layout ?? 'absolute';
+  const des = getDescendants(board);
+  des.forEach(p => {
+    if (!p.creationDate) {
+      p.creationDate = new Date().toISOString() as ISODateString;
+    }
+    if (typeof p.priority == 'undefined') {
+      p.priority = undefined;
+    }
+    if(!p.dates){
+      p.dates = {};
+    }
+    if(isTask(p)){
+      const mayBeOldTask: Task & {
+        includeInGantt?: boolean,
+        archived?:boolean,
+        archivedDate?: ISODateString,
+        stateChangeDate?: ISODateString,
+        createdLaneId?: string | undefined;
+      } = p
+
+      if(typeof mayBeOldTask.includeInGantt === 'undefined'){
+        mayBeOldTask.includeInGantt = false;
+      }
+      if(!mayBeOldTask.dates){
+        mayBeOldTask.dates = {}
+      }
+      if(mayBeOldTask.archived ){
+        mayBeOldTask.status = 'archived';
+        mayBeOldTask.dates.archived = { enter: mayBeOldTask.archivedDate ?? new Date().toISOString() as ISODateString };
+      }
+      if( mayBeOldTask.stateChangeDate && mayBeOldTask.status && mayBeOldTask.status !== 'archived' ){
+        mayBeOldTask.dates[mayBeOldTask.status] = { enter: mayBeOldTask.stateChangeDate ?? new Date().toISOString() as ISODateString };
+      }
+      if( mayBeOldTask.creationDate && (!mayBeOldTask.dates['todo'] || !mayBeOldTask.dates['todo'].enter) ){
+        if(!mayBeOldTask.dates['todo']){
+          mayBeOldTask.dates['todo'] = {};
+        }
+        mayBeOldTask.dates['todo']['enter'] = mayBeOldTask.creationDate;
+        mayBeOldTask.dates['todo']['leave'] = mayBeOldTask.stateChangeDate;
+      }
+    }
+
+    if(isLane(p)){
+      const mayBeOldLane: Lane & {
+        archive?: boolean
+        layouts?: LayoutProperties | undefined
+      } = p
+
+      if(!mayBeOldLane.layouts){
+        mayBeOldLane.layouts = getLayouts();
+      }
+      for( const layout of Object.keys(Layouts) ){
+        const l = layout as Layout;
+        const thisColLayout = mayBeOldLane.layouts[l];
+        if( thisColLayout.column > Layouts[l].columns - 1 ){
+          thisColLayout.column = Layouts[l].columns - 1;
+        }
+      }
+
+      if(typeof mayBeOldLane.isArchive === 'undefined'){
+        mayBeOldLane.isArchive = mayBeOldLane.archive ?? false;
+      }
+      if( mayBeOldLane.isArchive ){
+        // Case for archived tasks that are children of archived tasks. They should be moved to the archive lane.
+        const descendants = getDescendants(mayBeOldLane);
+        const archivedFirstLevel = mayBeOldLane.children.filter(c => c.status === 'archived');
+        archivedFirstLevel.forEach(a => {
+          const findInDescendants = descendants.filter(d => d.id === a.id);
+          if(findInDescendants.length > 1){
+            // this is a task that is a child of an archived task. Remove from direct descendants.
+            mayBeOldLane.children = mayBeOldLane.children.filter(c => c.id !== a.id);
+          }
+        });
+      }
+    }
+
+    // maybe some tags types are missing
+    if (p.tags) {
+      p.tags.forEach(t => {
+        if (!t.type) {
+          if (p.textContent.toLowerCase().indexOf(`${tagIdentifiers[0].symbol}${t.tag.toLowerCase()}`) >= 0) {
+            t.type = tagIdentifiers[0].type;
+          } else if (p.textContent.toLowerCase().indexOf(`${tagIdentifiers[1].symbol}${t.tag.toLowerCase()}`) >= 0) {
+            t.type = tagIdentifiers[1].type;
+          }
+        }
+      });
+    }
+  });
+
+  return board;
 }

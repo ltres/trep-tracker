@@ -4,7 +4,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { BoardService } from './board.service';
 import { ContainerComponentRegistryService } from './registry.service';
 import { Container, Task, getNewTask } from '../types/types';
-import { getCaretPosition, isPlaceholder } from '../utils/utils';
+import { getCaretPosition, isLane, isPlaceholder, isTask } from '../utils/utils';
 
 @Injectable({
   providedIn: 'root',
@@ -74,7 +74,7 @@ export class KeyboardService {
         if (!parent) {
           throw new Error('Cannot find parent task');
         }
-        if (this.boardService.isLane(parent)) {
+        if (isLane(parent)) {
           return;
         }
         this.boardService.removeChildrenAndAddAsSibling(parent, this.boardService.selectedTasks);
@@ -96,16 +96,16 @@ export class KeyboardService {
         }*/
         let parentObject = this.boardService.findDirectParent(this.boardService.selectedTasks);
         let sibling: Container | undefined = this.boardService.lastSelectedTask?.task;
-        while(parentObject && !this.boardService.isLane(parentObject)){
+        while(parentObject && !isLane(parentObject)){
           sibling = parentObject;
           parentObject = this.boardService.findDirectParent([parentObject]);
         }
-        if (!parentObject || !this.boardService.isLane(parentObject) || !this.boardService.isTask(sibling)) {
+        if (!parentObject || !isLane(parentObject) || !isTask(sibling)) {
           throw new Error('Wrong parent or sibling');
         }
         const task = getNewTask(parentObject,'');
         /*
-        let lane = this.boardService.isLane(parent) ? parent : this.boardService.findParentLane([parent]);
+        let lane = isLane(parent) ? parent : this.boardService.findParentLane([parent]);
         if (!lane) {
           return;
         }*/

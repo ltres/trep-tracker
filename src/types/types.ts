@@ -1,5 +1,13 @@
+import { Type } from '@angular/core';
 import { generateUUID } from '../utils/utils';
+ 
+import { StorageServiceAbstract } from './storage';
 
+export type Environment = {
+  storageService: Type<StorageServiceAbstract>,
+  userVersion: `${number}.${number}.${number}-${string}`,
+  environment: string
+}
 export interface Board extends Container {
     layout: Layout
     children: Lane[],
@@ -79,7 +87,7 @@ export const Layouts = {
 
 export type Layout = keyof typeof Layouts;
 
-type LayoutProperties = {
+export type LayoutProperties = {
     [K in Layout]: {
         column: number;
         order: number;

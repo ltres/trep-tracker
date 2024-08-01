@@ -1,7 +1,7 @@
 import {  Inject, Injectable, Injector, NgZone } from '@angular/core';
-import { Board, Lane, Container, Task, Tag, tagIdentifiers, getNewBoard, getNewLane, Priority, Status, ISODateString, StateChangeDate, Layouts, Layout, getLayouts, Statuses, getNewTask } from '../types/types';
+import { Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, Statuses, getNewTask } from '../types/types';
 import { BehaviorSubject, Observable, map } from 'rxjs';
-import { isPlaceholder, isStatic, setDateSafe } from '../utils/utils';
+import { eventuallyPatch, getDescendants, isLane, isPlaceholder, isStatic, isTask, isTasks, setDateSafe } from '../utils/utils';
 import { TagService } from './tag.service';
 import { StorageServiceAbstract } from '../types/storage';
 
@@ -56,7 +56,7 @@ export class BoardService {
         board.children.forEach(lane => {
           allTasks = allTasks.concat(lane.children);
           lane.children.forEach(task => {
-            allTasks = allTasks.concat(this.getDescendants(task).filter(t => this.isTask(t)) as Task[]);
+            allTasks = allTasks.concat(getDescendants(task).filter(t => isTask(t)) as Task[]);
           });
         });
         // remove lanes without children
@@ -73,20 +73,6 @@ export class BoardService {
         this.storageService.writeToStatus({ boards: b });
       }
     });
-  }
-
-  /**
-     * Retrieves all descendants of a given container.
-     * @param container - The container whose descendants are to be retrieved.
-     * @returns An array of Container objects representing the descendants.
-     */
-  getDescendants(container: Container): Container[] {
-    let descendants: Container[] = [];
-    for (const child of container.children) {
-      descendants = descendants.concat(child).concat(this.getDescendants(child));
-    }
-
-    return descendants;
   }
 
   addNewBoard() {
@@ -158,7 +144,7 @@ export class BoardService {
         if (!b) {
           throw new Error(`Cannot find board with id ${board.id}`);
         }
-        let res = this.getDescendants(b).filter(c => this.isTask(c)) as Task[];
+        let res = getDescendants(b).filter(c => isTask(c)) as Task[];
 
         if (tags) {
           res = res?.filter(task =>
@@ -219,7 +205,7 @@ export class BoardService {
           const chilren = lane.children;
           for( const child of chilren ){
             // get all the descendants of the child except the placeholders and the archived ones, for the given priority
-            tasks = tasks.concat(child).concat( this.getDescendants(child) as Task[]);
+            tasks = tasks.concat(child).concat( getDescendants(child) as Task[]);
           }
         }
         return tasks.filter(c => !isPlaceholder(c) && c.status !== 'archived');
@@ -370,7 +356,7 @@ export class BoardService {
   updateStatus(board: Board, container: Container, status: Status | Status[] | undefined) {
     const boards = this._boards$.getValue();
     status = status && Array.isArray(status) ? status : (status ? [status] : undefined);
-    if( this.isLane(container) ){
+    if( isLane(container) ){
       container.status = status;
     }else{
       if(!status){
@@ -391,7 +377,7 @@ export class BoardService {
 
         container.status = s;
         setDateSafe(container, s, 'enter', new Date());
-        if( this.isTask(container) ){
+        if( isTask(container) ){
           this.evaluateArchiveMove(board, container);
         }
       }
@@ -416,14 +402,14 @@ export class BoardService {
         archive = this.addFloatingLane(board, 0, 0, undefined, true);
       }
       // Check if the task is already displayed in the archive lane (can be a descendant of an archived task)
-      const descendants = this.getDescendants(archive);
+      const descendants = getDescendants(archive);
       if (descendants.find(t => t.id === task.id)) {
         // Do not add it
         console.warn(`Task with id ${task.id} is already in the archive, as a descendant of an archived task.`);
         return;
       }
       // Check if the task has any descendants that are already in the archive lane, and remove them
-      const descendantsToRemove = this.getDescendants(task).filter(t => t.status === 'archived');
+      const descendantsToRemove = getDescendants(task).filter(t => t.status === 'archived');
       descendantsToRemove.forEach(d => {
                 archive!.children = archive!.children.filter(t => t.id !== d.id);
       });
@@ -466,7 +452,7 @@ export class BoardService {
     }
     // let taskToFind = this.getTopLevelTasks(tasks);
     // get all the tasks in the lane, including descendants, in an ordered array
-    const orderedLinearizedTasks = this.getDescendants(parent).filter(c => this.isTask(c)) as Task[];
+    const orderedLinearizedTasks = getDescendants(parent).filter(c => isTask(c)) as Task[];
     let index = 0;
     if (direction === 'up' || direction === 'left') {
       // Get smalles index from the tasks
@@ -494,7 +480,7 @@ export class BoardService {
     if (!objs || objs.length === 0) {
       return;
     }
-    if (this.isTasks(objs)) {
+    if (isTasks(objs)) {
       objs = this.getTopLevelTasks(objs);
     }
 
@@ -504,7 +490,7 @@ export class BoardService {
       // remove duplicates
       parents = parents?.filter((p, index) => parents!.findIndex(p2 => p2.id === p.id) === index);
       // remove archive
-      parents = parents?.filter(p => !this.isLane(p) || !p.isArchive);
+      parents = parents?.filter(p => !isLane(p) || !p.isArchive);
     }
 
     if (!parents || parents?.length !== 1) {
@@ -522,7 +508,7 @@ export class BoardService {
 
     while (parent != null) {
       const grandParent = this.findDirectParent([parent]);
-      if (this.isLane(parent)) {
+      if (isLane(parent)) {
         return parent;
       }
       parent = grandParent;
@@ -601,7 +587,7 @@ export class BoardService {
     }
 
     /*
-        if(selectedTasks.find( t => this.getDescendants(t).map( t => t.id ).find(id => id === nearby.id ) )){
+        if(selectedTasks.find( t => getDescendants(t).map( t => t.id ).find(id => id === nearby.id ) )){
             throw new Error(`Cannot switch position of a task with its descendants`);
         }*/
     selectedTasks = this.getTopLevelTasks(selectedTasks);
@@ -650,31 +636,12 @@ export class BoardService {
     this._boards$.next(boards);
   }
 
-  isLane(parent: Container | undefined): parent is Lane {
-    if (!parent) {
-      return false;
-    }
-    return (parent as Lane)._type === 'lane';
-  }
-  isTask(parent: Container | undefined): parent is Task {
-    if (!parent) {
-      return false;
-    }
-    return (parent as Task)._type === 'task';
-  }
-  isLanes(parent: Container[]): parent is Lane[] {
-    return (parent[0] as Lane)._type === 'lane';
-  }
-  isTasks(parent: Container[]): parent is Task[] {
-    return (parent[0] as Task)._type === 'task';
-  }
-
   // retrieves only the tasks higher in the hierarchy
   getTopLevelTasks(tasks: Task[]): Task[] {
     let ret: Task[] = [...tasks];
     // incoming tasks could be related one another. Keep only the top level tasks
     for (const child of tasks) {
-      const descendants = this.getDescendants(child);
+      const descendants = getDescendants(child);
       ret = ret.filter(c => descendants.map(d => d.id).indexOf(c.id) === -1);
     }
     return ret;
@@ -742,8 +709,6 @@ export class BoardService {
       };
       if( prevPriority && children[i].priority !== prevPriority ){
         children.splice(i, 0, getNewTask(lane,''));
-        children.splice(i, 0, getNewTask(lane,''));
-        i++;
         continue;
       }
       prevPriority = children[i].priority;
@@ -756,12 +721,12 @@ export class BoardService {
 
   archiveDones(board: Board, lane: Lane) {
     // this._boards$.getValue();
-    const descendants = this.getDescendants(lane);
-    descendants.filter(t => this.isTask(t) && !isPlaceholder(t) && t.status === 'completed')
+    const descendants = getDescendants(lane);
+    descendants.filter(t => isTask(t) && !isPlaceholder(t) && t.status === 'completed')
       .forEach(d => this.updateStatus(board, d, 'archived'));
     /*
         lane.children = lane.children.filter(t => !t.archived);
-        let descendants = this.getDescendants(lane);
+        let descendants = getDescendants(lane);
         descendants.forEach(d => d.children = d.children.filter(t => !t.archived));
         */
     this.publishBoardUpdate();
@@ -798,10 +763,9 @@ export class BoardService {
   }
 
   /**
-     * Deserializes the given data and updates the state of the board service.
-     * Performs an update on the status basing on the iteration on the app.
-
-     */
+    * Deserializes the given data and updates the state of the board service.
+    * Performs an update on the status basing on the iteration on the app.
+  */
   deserialize(data: string): void {
     const o = JSON.parse(data);
     if (!o.boards) {
@@ -812,110 +776,8 @@ export class BoardService {
       this._editorActiveTask$.next(undefined);
     } else {
       // fixes to existing data and new fields
-      for( const board of o.boards ){
-        board._type = 'board';
-        board.layout = board.layout ?? 'absolute';
-        board.flexColumns = board.flexColumns ?? undefined;
-        const des = this.getDescendants(board);
-        des.forEach(p => {
-          if (!p.creationDate) {
-            p.creationDate = new Date().toISOString() as ISODateString;
-          }
-          if (typeof p.priority == 'undefined') {
-            p.priority = undefined;
-          }
-          if(!p.dates){
-            p.dates = {};
-          }
-          if(this.isTask(p)){
-            if(typeof p.includeInGantt === 'undefined'){
-              p.includeInGantt = false;
-            }
-          }
-
-          if(this.isLane(p)){
-            //p.columnNumber = p.columnNumber ?? 1;
-            //p.index = p.index ?? 0;
-            if(!p.layouts){
-              // @ts-expect-error deserializer
-              p.layouts = getLayouts(p.width);
-            }
-            for( const layout of Object.keys(Layouts) ){
-              const l = layout as Layout;
-              const thisColLayout = p.layouts[l];
-              if( thisColLayout.column > Layouts[l].columns - 1 ){
-                thisColLayout.column = Layouts[l].columns - 1;
-              }
-            }
-          }
-          // delete p.gantt;
-
-          if(this.isLane(p) && typeof p.isArchive === 'undefined'){
-            // @ts-expect-error deserializer
-            p.isArchive = p.archive ?? false;
-
-          }
-          // @ts-expect-error deserializer
-          if(this.isTask(p) && p.archived ){
-            p.status = 'archived';
-            // @ts-expect-error deserializer
-            p.dates.archived = { enter: p.archivedDate ?? new Date().toISOString() as ISODateString };
-          }
-
-          //delete p.archived;
-          // @ts-expect-error deserializer
-          if( p.stateChangeDate && p.status && p.status !== 'archived' ){
-            // @ts-expect-error deserializer
-            p.dates[p.status] = { enter: p.stateChangeDate ?? new Date().toISOString() as ISODateString };
-            //delete p.stateChangeDate;
-          }
-          if( this.isTask(p) && p.creationDate && (!p.dates['todo'] || !p.dates['todo'].enter) ){
-            if(!p.dates['todo']){
-              p.dates['todo'] = {};
-            }
-            p.dates['todo']['enter'] = p.creationDate;
-            // @ts-expect-error deserializer
-            p.dates['todo']['leave'] = p.stateChangeDate;
-          }
-          //delete p.stateChangeDate;
-          
-          // delete p.archivedDate;
-
-          // Archive fix
-          if( this.isLane(p) && p.isArchive ){
-            // Case for archived tasks that are children of archived tasks. They should be moved to the archive lane.
-            const descendants = this.getDescendants(p);
-            const archivedFirstLevel = p.children.filter(c => c.status === 'archived');
-            archivedFirstLevel.forEach(a => {
-              const findInDescendants = descendants.filter(d => d.id === a.id);
-              if(findInDescendants.length > 1){
-                // this is a task that is a child of an archived task. Remove from direct descendants.
-                p.children = p.children.filter(c => c.id !== a.id);
-              }
-            });
-          }
-
-          if (p.tags) {
-
-            p.tags.forEach(t => {
-              if (!t.type) {
-                if (p.textContent.toLowerCase().indexOf(`${tagIdentifiers[0].symbol}${t.tag.toLowerCase()}`) >= 0) {
-                  t.type = tagIdentifiers[0].type;
-                } else if (p.textContent.toLowerCase().indexOf(`${tagIdentifiers[1].symbol}${t.tag.toLowerCase()}`) >= 0) {
-                  t.type = tagIdentifiers[1].type;
-                }
-              }
-            });
-          }
-
-        });
-        des.forEach(p => {
-          if (this.isTask(p) && !p.createdLaneId) {
-            const parentLane = this.findParentLane([p]); // can be archive;
-            const board = this._boards$.getValue().find(b => b.children.find(l => l.id === parentLane?.id));
-            p.createdLaneId = board?.children[0].id ?? '';
-          }
-        });
+      for( let board of o.boards ){
+        board = eventuallyPatch(board);
       }
       this._boards$.next(o.boards);
     }
@@ -924,10 +786,9 @@ export class BoardService {
       this.addNewBoard();
     }
     this.selectFirstBoard();
-
   }
+
   reset() {
     this._boards$.next([]);
   }
-
 }

@@ -80,11 +80,7 @@ import { DpDatePickerModule } from 'ng2-date-picker';
     {
       provide: 'StorageServiceAbstract',
       useClass: environment.storageService,
-    },
-    {
-      provide: 'AiServiceI',
-      useClass: environment.aiService,
-    },
+    }
   ],
   bootstrap: [AppComponent],
   imports: [

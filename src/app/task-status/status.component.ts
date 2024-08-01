@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Board, Container, Status, Statuses } from '../../types/types';
-import { isPlaceholder } from '../../utils/utils';
+import { isPlaceholder, isTask } from '../../utils/utils';
 import { BoardService } from '../../service/board.service';
 
 @Component({
@@ -45,7 +45,7 @@ export class StatusComponent {
   }
 
   isPlaceholder(): boolean {
-    if (this.boardService.isTask(this.container)) {
+    if (isTask(this.container)) {
       return isPlaceholder(this.container);
     }
     return false;
@@ -72,7 +72,7 @@ export class StatusComponent {
   }
 
   isTask(arg0: Container) {
-    return this.boardService.isTask(arg0);
+    return isTask(arg0);
   }
   isArray(arg0: object) {
     return Array.isArray(arg0);
