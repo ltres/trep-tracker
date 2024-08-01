@@ -5,7 +5,7 @@ import tseslint from "typescript-eslint";
 
 export default [
   {
-    files: ["src/**/*.{js,mjs,cjs,ts}"],
+    files: ["src/**/*.{js,mjs,cjs,ts}","tests/**/*.{js,mjs,cjs,ts}"],
     ignores: ["dist/**", "build/**", "node_modules/**"],
     rules: {
       "indent": ["error", 2,  { "SwitchCase": 1 }],
