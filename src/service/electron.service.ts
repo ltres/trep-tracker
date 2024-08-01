@@ -13,7 +13,7 @@ export class ElectronService extends StorageServiceAbstract{
   private statusChangeOutsideApp: Subject<string | null> = new Subject<string | null>();
 
   constructor(
-    private zone: NgZone,
+    protected override  zone: NgZone,
   ) {
     super();
     if(!window.electron) {
@@ -61,6 +61,7 @@ export class ElectronService extends StorageServiceAbstract{
 
   override async createNewStatus(): Promise<boolean> {
     this.storagePath = await window.electron.createFile();
+    this.initWithStoragePath(this.storagePath);
     return true;
   }
 
