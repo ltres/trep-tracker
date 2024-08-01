@@ -8,9 +8,6 @@
 
     @include lane-style(0px);
 
-    &.non-static {
-        border: 2px solid $lane-outline-color;
-    }
 
     &.dragged {
         position: absolute;
