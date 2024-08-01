@@ -17,9 +17,10 @@ jobs:
             { name: 'linux', image: 'ubuntu-latest' },
             { name: 'windows', image: 'windows-latest' },
             { name: 'macos', image: 'macos-latest' },
+            { name: 'linux-arm64', image: 'ubuntu-latest', arch: 'arm64' }
           ]
         node-version: [22.4.x]
-
+        
     runs-on: ${{ matrix.os.image }}
     steps:
       - name: Github checkout
@@ -29,6 +30,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          architecture: ${{ matrix.os.arch || 'x64' }}
+
+      - name: Set up QEMU
+        if: matrix.os.arch == 'arm64'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
 
       - run: npm ci
 
