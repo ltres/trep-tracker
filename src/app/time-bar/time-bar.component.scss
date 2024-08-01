@@ -1,10 +1,21 @@
 @import "../../assets/variables";
 
-.bars{
+.bars {
     width: $time-bar-width;
+    // overflow: hidden;
     // height: 1rem;
 }
-.bar{
+
+.bar {
     height: $time-bars-height;
-    border-radius: $time-bars-border-radius;
+
+    &:first-child {
+        border-top-left-radius: $time-bars-border-radius;
+        border-bottom-left-radius: $time-bars-border-radius;
+    }
+
+    &:last-child {
+        border-top-right-radius: $time-bars-border-radius;
+        border-bottom-right-radius: $time-bars-border-radius;
+    }
 }

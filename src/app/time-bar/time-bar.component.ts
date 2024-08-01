@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { Container, Status } from '../../types/types';
+import { Container, Status, Statuses } from '../../types/types';
 import { formatDate } from '../../utils/utils';
 
 @Component({
@@ -9,8 +9,6 @@ import { formatDate } from '../../utils/utils';
 })
 export class TimeBarComponent {
   @Input() container!: Container; ;
-
-  maxDays = 10;
 
   getTooltip(dateKey: Status):string {
     return `${dateKey}: ${this.getDays(dateKey)} days - from ${formatDate(this.container.dates[dateKey]?.enter)} to ${formatDate(this.container.dates[dateKey]?.leave)}`;
@@ -27,7 +25,9 @@ export class TimeBarComponent {
   }
 
   getWidth(dateKey: Status):string {
-    return (Math.min( this.getDays(dateKey) / this.maxDays, 1) * 100) + '%';
+    const totalDays = Object.keys(this.container.dates).reduce( (sum, date) => sum + this.getDays(date as Status), 0 );
+
+    return (Math.min( this.getDays(dateKey) / totalDays, 1) * 100) + '%';
   }
 
   getDates(): Status[] {
@@ -41,6 +41,6 @@ export class TimeBarComponent {
         ret.push(status);
       }
     }
-    return ret;
+    return ret.sort( (a,b) => Object.keys(Statuses).indexOf(a) - Object.keys(Statuses).indexOf(b) );
   }
 }

@@ -20,17 +20,17 @@
         </div>
     </div>
 </div>
-<div class="dates-n-stuff flex g-05 small translucent">
-    <div *ngIf="task.gantt">
+<div class="dates-n-stuff flex g-05 small">
+    <div class="translucent" *ngIf="task.gantt">
         <ng-container *ngIf="task.gantt.startDate">
             planned for {{task.gantt.startDate | date: 'dd-MM-yy'}}<ng-container *ngIf="task.gantt.duration"> ({{task.gantt.duration}} working days)</ng-container>
         </ng-container>
     </div>
-    <div *ngIf="task.status === 'archived'" class="date-wrapper flex align-items-center g-05">
+    <div *ngIf="task.status === 'archived'" class="translucent date-wrapper flex align-items-center g-05">
         <span>archived on {{parseDate(this.task.dates.archived?.enter) | date: 'dd-MM-yy hh:mm a'}}</span>
         <time-bar [container]="task"></time-bar>
     </div>
-    <div *ngIf="task.status === 'completed'" class="date-wrapper flex align-items-center">
+    <div class="translucent" *ngIf="task.status === 'completed'" class="date-wrapper flex align-items-center">
         completed {{ parseDate(this.task.dates.completed?.enter) | date: 'dd-MM-yy hh:mm a'}}
     </div>
 </div>
