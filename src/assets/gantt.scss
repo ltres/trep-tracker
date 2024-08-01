@@ -104,7 +104,7 @@
 }
 
 .gantt_btn_set.gantt_cancel_btn_set {
-/*     background: #fff;
+    /*     background: #fff;
     color: $gantt-text-color;
     border: 1px solid $gantt-border-color; */
     @include button();
@@ -702,7 +702,7 @@
     z-index: 20000;
     //box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.07);
     font-family: $font-family;
-    @include lane-style();
+    @include lane-style;
     //border-radius: 6px;
     //border: 1px solid $gantt-border-color;
     //background: #fff;
@@ -909,6 +909,7 @@ div.dhx_modal_cover {
     -webkit-user-select: none;
     -moz-user-select: none;
     -moz-user-select: -moz-none;
+
     &.gantt-external-task {
         opacity: $gantt-external-task-opacity;
     }
@@ -1412,11 +1413,11 @@ div.dhx_modal_cover {
     /* -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
     border-radius: 4px; */
-/*     border-width: 0;
+    /*     border-width: 0;
     border-color: $gantt-border-color;
     border-style: solid;
     height: 32px; */
-/*     font-weight: bold;
+    /*     font-weight: bold;
     background: #fff; */
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
@@ -2404,4 +2405,3 @@ div.dhx_modal_cover {
 .gantt-weekend {
     background-color: $gantt-weekend-color;
 }
-

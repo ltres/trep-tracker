@@ -1,73 +1,70 @@
 @import "../../assets/variables";
+@import "../../assets/mixins";
 
-:host{
+:host {
     resize: horizontal;
     display: inline-block;
     min-width: 20rem;
-    // width: 100%;
-    //max-width: $max-lane-width;
-    // z-index: 10;
-    box-shadow: 5px 5px 13px 0px #00000073;
-    outline: 1px solid $lane-outline-color;
-    outline-offset: -1px;
-    border-radius: $border-radius;
-    &.dragged{
+
+    @include lane-style(0px);
+
+    &.non-static {
+        border: 2px solid $lane-outline-color;
+    }
+
+    &.dragged {
         position: absolute;
     }
-    &.active, &.dragged{
+
+    &.active,
+    &.dragged {
         z-index: 100;
     }
 }
 
-.lane-wrapper{
-    padding:$lane-padding;
-    // position: relative;
+.lane-wrapper {
+    padding: $lane-padding;
     display: flex;
     flex-direction: column;
-    //width: 100%;
-    //min-width: $min-width;
-    //max-width: $max-lane-width;
-    // width: 100vw;
-    //height: 100vh;
-    //padding: 2rem;
+
+    backdrop-filter: $frost-blur;
+    background-color: $lane-non-static-background-color;
+
+
+
+    &.static-view {
+        background-color: $lane-static-background-color;
+    }
+
+    &.archive-lane {
+        background-color: $lane-archive-background-color;
+    }
 
 }
 
-.lane-toolbar{
+.lane-toolbar {
     justify-content: flex-end;
     align-items: center;
     //height: 1rem;
 
-    .small{
-        white-space:nowrap;
+    .small {
+        white-space: nowrap;
         cursor: pointer;
     }
 }
-.drag-handle{
+
+.drag-handle {
     flex-grow: 0;
 }
-.lane-title{
-    color:$lane-title-color;
+
+.lane-title {
+    color: $lane-title-color;
     font-size: $title-size;
     font-weight: bold;
 }
 
-.lane-wrapper{
-    backdrop-filter: $frost-blur;
-    background-color: $lane-non-static-background-color;
-    &.static-view{
-        background-color: $lane-static-background-color;
-    }
-    &.archive-lane{
-        background-color: $lane-archive-background-color;
-    }
-}
-.non-static-island{
-    background-color: $lane-non-static-background-color!important;
-    outline: 1px solid $lane-outline-color;
+.non-static-island {
+    background-color: $lane-non-static-background-color !important;
+    outline: 1px solid $static-lane-outline-color;
     outline-offset: -1px;
-}
-
-.lane-wrapper.static-view{
-    // border-right: 1px solid $lane-title-color;
 }

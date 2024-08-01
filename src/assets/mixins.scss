@@ -1,20 +1,20 @@
 @import "./variables";
 
-@mixin lane-style() {
+@mixin lane-style($padding: $lane-padding) {
     box-shadow: 5px 5px 13px 0px #00000073;
-    outline: 1px solid $lane-outline-color;
+    outline: 1px solid $static-lane-outline-color;
     outline-offset: -1px;
     border-radius: $border-radius;
     backdrop-filter: $frost-blur;
     background-color: $lane-non-static-background-color;
-    padding: $lane-padding;
+    padding: $padding;
 }
 
-@mixin button(){
+@mixin button() {
     border: none;
     border-radius: 0;
-    line-height: $font-size * 1.2!important;
-    padding: 0.2rem 1rem!important;
+    line-height: $font-size * 1.2 !important;
+    padding: 0.2rem 1rem !important;
     display: block;
     font: inherit;
     cursor: pointer;
@@ -26,8 +26,10 @@
     gap: 0.25rem;
     align-items: center;
     text-align: center;
-    &:hover, &.active{
-      box-shadow: inset 0 0 0 1px $text-color;
+
+    &:hover,
+    &.active {
+        box-shadow: inset 0 0 0 1px $text-color;
     }
 }
 

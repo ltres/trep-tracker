@@ -2,34 +2,15 @@
 
 <ng-container *ngIf="board.layout === 'absolute'; else flex">
   <ng-container *ngFor="let lane of lanes$ | async;trackBy: trackBy">
-    <lane 
-    class="absolute"
-    [lane]="lane" 
-    [board]="this.board" 
-    [draggableDir]="lane" 
-    [containerEl]="el.nativeElement"
-    [layout]="board.layout"
-    ></lane>
-  </ng-container>  
+    <lane class="absolute" [lane]="lane" [board]="this.board" [draggableDir]="lane" [containerEl]="el.nativeElement" [layout]="board.layout"></lane>
+  </ng-container>
 </ng-container>
 <ng-template #flex>
   <div class="flex column flex-child g-1" *ngFor="let colIndex of getColumnIndexes(board.layout); let last = last">
     <board-toolbar class="static" *ngIf="last" [board]="board"></board-toolbar>
 
     <ng-container *ngFor="let lane of getLanesByColumn$(colIndex) | async;trackBy: trackBy">
-      <lane 
-      class="static"
-      [displayedInFixedLayout]="true"
-      [lane]="lane" 
-      [board]="this.board" 
-      [draggableDir]="lane" 
-      [containerEl]="el.nativeElement"
-      [layout]="board.layout"
-      ></lane>
-    </ng-container>  
+      <lane [displayedInFixedLayout]="true" [lane]="lane" [board]="this.board" [draggableDir]="lane" [containerEl]="el.nativeElement" [layout]="board.layout"></lane>
+    </ng-container>
   </div>
 </ng-template>
-
-
-
-

@@ -7,7 +7,7 @@ $background-color-2: hsl(223, 10%, 15%);
 $modal-backdrop-color: rgba(0, 0, 0, 0.3);
 $ai-background-color: rgb(34, 42, 42);
 
-$frost-blur:blur(5px);
+$frost-blur: blur(5px);
 
 $lane-static-background-color: hsla(223, 20%, 11%, 0.6);
 $lane-non-static-background-color: hsla(223, 45%, 11%, 0.6);
@@ -20,41 +20,46 @@ $big-font-size: 1.4rem;
 $small-font-size: 0.9rem;
 
 $border-radius: calc($font-size/2);
-$archive-color:hsl(54, 80%, 50%);
+$archive-color: hsl(54, 80%, 50%);
 $lane-padding: 0.75rem 1rem;
-
-$translucent-opacity: 0.3;
-$translucent-color: rgba($text-color, $translucent-opacity);
-$lane-outline-color: rgba($text-color, 0.1);;
-
-$editor-active-background:rgba(0, 0, 0, 0.4);
-$selected-background:$text-color;
-
-$todo-color:$text-color;
-$completed-color:hsl(115, 80%, 50%);
-$in-progress-color:hsl(51, 80%, 50%);
-$delegated-color:hsl(167, 90%, 50%);
-$waiting-color:hsl(197, 85%, 50%);
-$archived-color:hsl(115, 81%, 37%);
-$to-be-delegated-color:hsl(177, 80%, 60%);
-$discarded-color: $text-color;
-
-
-$danger-color:hsl(0, 80%, 50%);
-$warning-color:hsl(56, 80%, 50%);
 
 $tag-orange-color: rgb(241, 134, 255);
 $tag-yellow-color: rgb(255, 137, 58);
 $tag-green-color: rgb(255, 97, 97);
 $tag-plus-color: rgb(109, 194, 98);
 
-$priority-0-color: hsl(207, 80%, 50%);
-$priority-1-color:hsl(115, 80%, 50%);
-$priority-2-color:hsl(61, 80%, 50%);
-$priority-3-color:hsl(32, 80%, 50%);
-$priority-4-color:hsl(0, 80%, 50%);
 
-$lane-title-color:hsl(315, 80%, 50%);
+$translucent-opacity: 0.3;
+$translucent-color: rgba($text-color, $translucent-opacity);
+$static-lane-outline-color: rgba($text-color, 0.1);
+$lane-outline-color: rgba($tag-orange-color, 0.1);
+
+
+
+$editor-active-background: rgba(0, 0, 0, 0.4);
+$selected-background: $text-color;
+
+$todo-color: $text-color;
+$completed-color: hsl(115, 80%, 50%);
+$in-progress-color: hsl(51, 80%, 50%);
+$delegated-color: hsl(167, 90%, 50%);
+$waiting-color: hsl(197, 85%, 50%);
+$archived-color: hsl(115, 81%, 37%);
+$to-be-delegated-color: hsl(177, 80%, 60%);
+$discarded-color: $text-color;
+
+
+$danger-color: hsl(0, 80%, 50%);
+$warning-color: hsl(56, 80%, 50%);
+
+
+$priority-0-color: hsl(207, 80%, 50%);
+$priority-1-color: hsl(115, 80%, 50%);
+$priority-2-color: hsl(61, 80%, 50%);
+$priority-3-color: hsl(32, 80%, 50%);
+$priority-4-color: hsl(0, 80%, 50%);
+
+$lane-title-color: hsl(315, 80%, 50%);
 $scrollbar-color: #343d55;
 
 $min-width: 20rem;
@@ -63,10 +68,10 @@ $child-line-width: 1rem;
 
 $board-selection-menu-width: 5rem;
 $board-selection-menu-background-color: #111113;
-$board-padding:1rem;
-$time-bar-width:10rem;
-$time-bars-height:0.5rem;
-$time-bars-border-radius:0.2rem;
+$board-padding: 1rem;
+$time-bar-width: 10rem;
+$time-bars-height: 0.5rem;
+$time-bars-border-radius: 0.2rem;
 
 $task-y-padding: calc($font-size/4);
 
@@ -75,7 +80,7 @@ $gantt-modal-background-color: $lane-non-static-background-color;
 
 $gantt-background-hover-color: $lane-archive-background-color;
 
-$gantt-border-color: $lane-outline-color;
+$gantt-border-color: $static-lane-outline-color;
 $gantt-text-color: $text-color;
 $gantt-weekend-color: $ai-background-color;
 $gantt-link-color: $tag-yellow-color;

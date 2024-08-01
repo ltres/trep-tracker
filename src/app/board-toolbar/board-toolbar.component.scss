@@ -1,9 +1,9 @@
 @import "../../assets/variables";
 
-:host{
-    top:$board-padding;
+:host {
+    top: $board-padding;
     right: $board-padding;
     text-align: right;
     z-index: 99;
- }
- 
+    opacity: 1 !important;
+}

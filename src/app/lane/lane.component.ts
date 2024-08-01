@@ -72,6 +72,11 @@ export class LaneComponent extends ContainerComponent implements OnInit {
   @HostBinding('class.active')
     active: boolean = false;
 
+  @HostBinding('class.non-static')
+  get static(): boolean{
+    return !isStatic(this.lane) && !isArchive(this.lane)
+  }
+
   override get container(): Container {
     return this.lane;
   }
