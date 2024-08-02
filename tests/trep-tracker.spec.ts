@@ -94,6 +94,7 @@ test.describe.serial('Trep Tracker Tasks & lanes - ', () => {
     page.mouse.move(bb?.x + bb?.width - 3,bb?.y + bb?.height - 3)
     page.mouse.down();
     await page.mouse.move(bb?.x + bb?.width + 100, bb?.y + bb?.height - 3);
+    await page.waitForTimeout(1000);
     expect(l).toHaveCSS('width',`${curWidth + 103}px`)
 
   })
@@ -199,6 +200,79 @@ test.describe.serial('Trep Tracker Tasks & lanes - ', () => {
     // expect(await search.locator('span',{hasText:"1 matches"}).count()).toBe(1) TODO fix
 
   });
+
+  test('Task - gantt', async ({ page }) => { 
+    await page.locator('.show-in-gantter').first().click()
+
+    expect(await page.locator('.show-in-gantter.selected').count()).toBe(1);
+    await page.locator('.show-board-gantt').first().click();
+    expect(await page.locator('gantt').count()).toBe(1);
+    expect(await page.locator('.gantt_row_task').count()).toBe(1);
+
+    await page.locator('.close.pointer.absolute').first().click();
+    await page.locator('.show-in-gantter').nth(1).click()
+    expect(await page.locator('.show-in-gantter.selected').count()).toBe(2);
+    await page.locator('.show-board-gantt').first().click();
+    expect(await page.locator('.gantt_row_task').count()).toBe(2);
+
+    expect(page.locator('.gantt_row_task').first()).toHaveText(new RegExp(`${text} ${0}`))
+
+    // switch tasks
+    await page.locator('.gantt_tree_icon.gantt_file').first().hover();
+    await page.mouse.down();
+    await page.locator('.gantt_tree_icon.gantt_file').nth(1).hover();
+    await page.mouse.up();
+    expect(page.locator('.gantt_row_task').first()).toHaveText(new RegExp(`${text} ${1}`))
+
+    // move
+    const ganttBar = page.locator('.gantt_bar_task').first();
+    const bb = await ganttBar.boundingBox();
+    if(!bb){
+      return;
+    }
+    await ganttBar.hover();
+    await page.mouse.down();
+    await page.mouse.move( bb.x + 100 ,bb.y);
+    await page.mouse.up();
+    const bb2 = await ganttBar.boundingBox();
+    expect(bb2?.x).toBeGreaterThan(bb.x + 50)
+
+    // increase duration
+    expect(page.locator('.gantt_last_cell').nth(1)).toHaveText(/[02]/)
+    const dragEl = ganttBar.locator('.gantt_task_drag ').nth(1);
+    const bb3 = await ganttBar.boundingBox();
+    if(!bb3){
+      return;
+    }
+    await dragEl.hover();
+    await page.mouse.down();
+    await page.mouse.move( bb3.x + 300 ,bb3.y + bb3.height / 2);
+    await page.mouse.up();
+    await page.waitForTimeout(1000);
+
+    expect((await page.locator('.gantt_task_line').first().boundingBox())?.x).toBeGreaterThan(200);
+
+  })
+
+  test('Board - add new, activate, change name', async ({ page }) => { 
+    expect(await page.locator('.available-board').count()).toBe(1)
+    await page.locator('.add-board').click();
+    expect(await page.locator('.available-board').count()).toBe(2)
+    await page.locator('.available-board').nth(1).click();
+    expect(await page.locator('task').count()).toBe(0)
+    // change name
+    await page.locator('.board-label').click();
+    await page.keyboard.press('Control+A');
+    await page.keyboard.press('Backspace');
+    await page.keyboard.type("My new board",{delay:writeDelay});
+    expect(await page.locator('.board-selection.active',{hasText: /My new board/}).count()).toBe(1)
+    await page.click('.new-task');
+    expect(await page.locator('task').count()).toBe(1)
+    await page.locator('.available-board').nth(0).click();
+    expect(await page.locator('task').count()).toBe(nOfTasks)
+
+  })
+
 });
 
 function getTaskByContent( page: Page, content: number ): Locator{
