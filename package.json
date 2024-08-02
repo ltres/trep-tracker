@@ -1,6 +1,6 @@
 {
   "name": "trep-tracker",
-  "version": "1.2.1-preview",
+  "version": "1.3.0-alpha",
   "type": "module",
   "license": "MIT",
   "main": "./electron-make-app.js",
