@@ -1,34 +1,15 @@
-<div class="lane-wrapper p-x-05 p-y-025"  
-[class.archive-lane]="isArchive(lane)"
-
-[class.static-view]="isStatic() && (tasks | async)?.length === 0" data-consider-for-overlapping-checks="true">
+<div class="lane-wrapper p-x-05 p-y-025" [class.archive-lane]="isArchive(lane)" [class.static-view]="isStatic() && (tasks | async)?.length === 0" data-consider-for-overlapping-checks="true">
   <div class="lane-toolbar flex align-items-center g-05 ">
-    <div class="grow no-wrap flex align-items-center g-05" >
-      <div class="lane-title   no-wrap" 
-      contenteditable="true" 
-      [(ngModel)]="this.lane.textContent"
-      [board]="board"
-      (ngModelChange)="debounceBoardUpdate()"
-      (onTagsChange)="updateLaneTags($event)"
-      > </div> 
-      <prioritizer 
-      [container]="lane" 
-      [allowEmpty]="true"
-      [multipleSelectable]="true"
-      (onPrioritySelected)="togglePriority($event)"> </prioritizer>
-      <status 
-      (onStatusSelected)="updateStatus($event)" 
-      [allowEmpty]="true"
-      [multipleSelectable]="true"
-      [container]="lane" 
-      [board]="board" 
-      [staticLane]="isStatic()" > </status>
+    <div class="grow no-wrap flex align-items-center g-05">
+      <div class="lane-title   no-wrap" contenteditable="true" [(ngModel)]="this.lane.textContent" [board]="board" (ngModelChange)="debounceBoardUpdate()" (onTagsChange)="updateLaneTags($event)"> </div>
+      <prioritizer [container]="lane" [allowEmpty]="true" [multipleSelectable]="true" (onPrioritySelected)="togglePriority($event)"> </prioritizer>
+      <status (onStatusSelected)="updateStatus($event)" [allowEmpty]="true" [multipleSelectable]="true" [container]="lane" [board]="board" [staticLane]="isStatic()"> </status>
     </div>
     <div class="grow"></div>
     <span [position]="'bottom'" [tooltip]="'Move left'" *ngIf="displayedInFixedLayout && canMove('up')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" (click)="moveLane('up')">↑</span>
-    <span [position]="'bottom'" [tooltip]="'Move right'" *ngIf="displayedInFixedLayout && canMove('down')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow"  (click)="moveLane('down')">↓</span>
-    <span [position]="'bottom'" [tooltip]="'Move left'" *ngIf="displayedInFixedLayout && canMove('left')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow"  (click)="moveLane('left')">←</span>
-    <span [position]="'bottom'" [tooltip]="'Move right'" *ngIf="displayedInFixedLayout && canMove('right')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow"  (click)="moveLane('right')">→</span>
+    <span [position]="'bottom'" [tooltip]="'Move right'" *ngIf="displayedInFixedLayout && canMove('down')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" (click)="moveLane('down')">↓</span>
+    <span [position]="'bottom'" [tooltip]="'Move left'" *ngIf="displayedInFixedLayout && canMove('left')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" (click)="moveLane('left')">←</span>
+    <span [position]="'bottom'" [tooltip]="'Move right'" *ngIf="displayedInFixedLayout && canMove('right')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" (click)="moveLane('right')">→</span>
 
     <span [position]="'bottom'" [tooltip]="'Show child tasks'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" *ngIf="isStatic()" (click)="toggleShowChildren()">
       <span *ngIf="lane.showChildren" class="completed">☑</span>
@@ -49,54 +30,39 @@
         <button class="small no-grow" *ngIf="!isStatic()" (click)="showMoveToBoards=!showMoveToBoards">🚛 Move to board..</button>
         <div *ngIf="showMoveToBoards" class="p-x-05 flex column g-025">
           <ng-container *ngFor="let otherBoard of this.boardService.boards$ | async">
-            <button class="small w-100 flex-child" *ngIf="otherBoard.id !== board.id" (click)="showMoveToBoards = false; boardService.moveToBoard(board, lane, otherBoard)" >{{otherBoard.textContent}}</button>
+            <button class="small w-100 flex-child" *ngIf="otherBoard.id !== board.id" (click)="showMoveToBoards = false; boardService.moveToBoard(board, lane, otherBoard)">{{otherBoard.textContent}}</button>
           </ng-container>
         </div>
         <button class="small danger no-grow" *ngIf="(tasks | async)?.length == 0" (click)="deleteLane()">🗑️ Delete lane</button>
 
         <button class="small no-grow" *ngIf="(isStatic() || isArchive(lane))" (click)="toggleShowChildren()">
           <span *ngIf="lane.showChildren" class="completed">☑</span>
-          <span *ngIf="!lane.showChildren">☐</span> 
-          &nbsp;Show Children 
+          <span *ngIf="!lane.showChildren">☐</span>
+          &nbsp;Show Children
         </button>
-    
-        <button *ngIf="!isStatic() && !isArchive(lane)" class="small no-grow" (click)="createNewTask()">➕ New task</button>
+
+        <button *ngIf="!isStatic() && !isArchive(lane)" class="small no-grow new-task" (click)="createNewTask()">➕ New task</button>
       </lane-menu>
     </div>
 
-    <span [position]="'bottom'" [tooltip]="'Drag'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" drag-on-this="true" class="drag-handle translucent pointer no-grow">⋯</span>
+    <span [position]="'bottom'" [tooltip]="'Drag'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" drag-on-this="true" draggable="true" class="lane drag-handle translucent pointer no-grow">⋯</span>
   </div>
 
   <div *ngFor="let task of (tasks | async);trackBy: trackBy" [class.non-static-island]="isStatic()">
-    <task 
-    [task]="task" 
-    [parent]="lane" 
-    [board]="board" 
-    [lane]="lane" 
-    [draggableDir]="task" 
-    [containerEl]="el.nativeElement"
-    [layout]="board.layout"
-    (onDragStart)="interactingWithChildTasks=true"
-    (onDragEnd)="interactingWithChildTasks=false"
-    (onToggleShowNotes)="interactingWithChildTasks = $event"
-    (createNewTask)="createNewTask()"></task>
+    <task [task]="task" [parent]="lane" [board]="board" [lane]="lane" [draggableDir]="task" [containerEl]="el.nativeElement" [layout]="board.layout" (onDragStart)="interactingWithChildTasks=true" (onDragEnd)="interactingWithChildTasks=false" (onToggleShowNotes)="interactingWithChildTasks = $event" (createNewTask)="createNewTask()"></task>
   </div>
 
   <div *ngIf="isStatic()">
     <div class="static-view flex column">
-        <task *ngFor="let task of (staticTasks | async);trackBy: trackBy" 
-        [staticView]="true"       
-        [showChildren]="lane.showChildren" [task]="task"
-        (onToggleShowNotes)="interactingWithChildTasks = $event"
-        [parent]="lane" [board]="board" [lane]="lane"
-        ></task>
+      <task *ngFor="let task of (staticTasks | async);trackBy: trackBy" [staticView]="true" [showChildren]="lane.showChildren" [task]="task" (onToggleShowNotes)="interactingWithChildTasks = $event" [parent]="lane" [board]="board" [lane]="lane"></task>
     </div>
   </div>
 
   <!-- <p class="floating-label">Lane: {{lane.id}}</p> -->
 
   <div *ngIf="!isStatic()" class="lane-toolbar flex g-05">
-    <div class="grow"></div><button class="small no-grow" (click)="createNewTask()">
+    <div class="grow"></div>
+    <button class="small no-grow new-task" (click)="createNewTask()">
       <span *ngIf="lane.priority" class="warning">⚠</span>
       ➕ New task
     </button>

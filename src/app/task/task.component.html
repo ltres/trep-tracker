@@ -1,5 +1,5 @@
 <div class="task-wrapper g-025" data-consider-for-overlapping-checks="true" [class.editor-active]="this.editorActive" [class.selected]="this.selected" [class.archived]="this.task.status === 'archived'" [class]="this.task.status" [style]="this.task.priority === 4 ? 'font-weight: bolder' : ''" (click)="clickTask()">
-    <div [tooltip]="'Drag'" *ngIf="!isStaticView() && !isPlaceholder()" class="drag-handle translucent pointer" drag-on-this="true">⋮</div>
+    <div [tooltip]="'Drag'" *ngIf="!isStaticView() && !isPlaceholder()" class="drag-handle translucent pointer" drag-on-this="true" draggable="true">⋮</div>
 
     <prioritizer *ngIf="!isPlaceholder()" (onPrioritySelected)="updatePriority($event)" [container]="task" class=""> </prioritizer>
     <status [container]="task" [board]="board" [staticLane]="isStaticView()" (onStatusSelected)="updateStatus($event)" class="m-x-025"></status>

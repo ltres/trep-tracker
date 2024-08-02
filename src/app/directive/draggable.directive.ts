@@ -44,10 +44,6 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
     return this.draggableDir.coordinates?.y;
   }
 
-  @Output() onDragStart: EventEmitter<DragEvent> = new EventEmitter();
-  @Output() onDragEnd: EventEmitter<DragEvent> = new EventEmitter();
-  @Output() onResize: EventEmitter<number | string | undefined> = new EventEmitter();
-
   @HostBinding('class.dragged')
   private get dragged(): string | undefined {
     return this.isBeingDragged ? 'dragged' : '';
@@ -57,6 +53,20 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
   private get width(): number | string | undefined {
     return this.displayedInFixedLayout && !this.isBeingDragged ? '100%' : (isLane(this.draggableDir ) ? (this.draggableDir.layouts[this.layout].width ?? 0) + 'px' : '100%');
   }
+
+  @HostBinding('style.z-index')
+  private get zindex(): number | string | undefined {
+    return this.isBeingDragged ? '99999' : undefined;
+  }
+
+  @HostBinding('style.position')
+  private get position(): number | string | undefined {
+    return this.isBeingDragged ? 'absolute' : undefined;
+  }
+
+  @Output() onDragStart: EventEmitter<DragEvent> = new EventEmitter();
+  @Output() onDragEnd: EventEmitter<DragEvent> = new EventEmitter();
+  @Output() onResize: EventEmitter<number | string | undefined> = new EventEmitter();
 
   private set width(value: number ) {
   // eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -81,11 +91,11 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
   }
 
   ngAfterViewInit(): void {
-  //super.ngOnInit();
     if (this.static) return;
     const el = this.el.nativeElement as HTMLElement;
-    this.draggableEl = el.querySelector('[drag-on-this]:not([draggable])') ?? el;
-    this.draggableEl.setAttribute('draggable', 'true');
+    this.draggableEl = el.querySelector('[drag-on-this]:not([draggable])') ?? el; 
+    //this.draggableEl.setAttribute('draggable', 'true');
+    console.log(this.draggableEl)
   }
 
   ngOnDestroy(): void {
@@ -154,8 +164,8 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
       this.onDragStart.emit($event);
       this.deltaX = $event.clientX - node.getBoundingClientRect().left;
       this.deltaY = $event.clientY - node.getBoundingClientRect().top;
-      node.style.position = 'absolute';
-      //node.style.zIndex = "100";
+      //node.style.position = 'absolute';
+      //node.style.zIndex = "999";
 
       this.draggableDir.coordinates = this.calcRelativeCoordinates($event);
 

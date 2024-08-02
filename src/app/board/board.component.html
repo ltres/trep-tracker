@@ -6,7 +6,7 @@
   </ng-container>
 </ng-container>
 <ng-template #flex>
-  <div class="flex column flex-child g-1" *ngFor="let colIndex of getColumnIndexes(board.layout); let last = last">
+  <div class="flex column board-column flex-child g-1" *ngFor="let colIndex of getColumnIndexes(board.layout); let last = last">
     <board-toolbar class="static" *ngIf="last" [board]="board"></board-toolbar>
 
     <ng-container *ngFor="let lane of getLanesByColumn$(colIndex) | async;trackBy: trackBy">
