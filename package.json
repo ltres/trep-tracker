@@ -21,7 +21,9 @@
     "package": "electron-forge package",
     "make": "node update-versions.cjs && npm run build && electron-forge make",
     "publish": "electron-forge publish",
-    "lint": "npx eslint ./src --fix"
+    "lint": "npx eslint ./src --fix",
+    "test": "npx playwright test",
+    "test-gui": "npx playwright test --ui"
   },
   "productName": "trep-tracker",
   "engines": {
