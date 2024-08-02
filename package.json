@@ -23,7 +23,8 @@
     "publish": "electron-forge publish",
     "lint": "npx eslint ./src --fix",
     "test": "npx playwright test",
-    "test-gui": "npx playwright test --ui"
+    "test-gui": "npx playwright test --ui",
+    "prepare": "husky"
   },
   "productName": "trep-tracker",
   "engines": {
@@ -75,6 +76,7 @@
     "electron-reload": "^2.0.0-alpha.1",
     "eslint": "^9.8.0",
     "globals": "^15.8.0",
+    "husky": "^9.1.4",
     "typescript": "~5.4.2",
     "typescript-eslint": "^8.0.0",
     "wait-on": "^7.2.0"

@@ -2,7 +2,6 @@ import { test, expect, Locator, Page } from '@playwright/test';
 
 const  text = 'Hello World!';
 let lanes;
-let tasks;
 
 let firstLane ;
 let firstTask;
@@ -17,7 +16,6 @@ test.beforeEach(async ({ page }) => {
   await page.goto('http://localhost:4200'); 
   board = page.locator('board');
   lanes = page.locator('lane');
-  tasks = page.locator('task');
 
   firstLane = lanes.first();
   firstTask = page.locator('task', {hasText: new RegExp(`${text} 0`) }).first();
@@ -34,7 +32,7 @@ test.beforeEach(async ({ page }) => {
   expect(await lanes.count()).toBe(1);
 
   // Drag lane to center
-  await drag(page , firstLane.locator('.lane.drag-handle'), 300, 400)
+  await drag(page , firstLane.locator('.lane.drag-handle'), 300, 400, false)
 
   for( let k=0; k<nOfTasks; k++ ){
     await page.click('.new-task');
@@ -67,11 +65,37 @@ test.describe.serial('Trep Tracker Tasks & lanes - ', () => {
 
     await page.keyboard.press('Control+Shift+ArrowUp');
   });
-  test('Task drag', async ({ page }) => {
-    const handle = tasks.nth(1).locator('[draggable="true"]').first();
-    await drag(page, handle, 100, 100 );
+  test('Task drag & Lane resize', async ({ page }) => {
+    const handle = getTaskByContent(page,0).locator('[draggable="true"]').first();
+    await drag(page, handle, 100, 100, true );
     expect(await lanes.count()).toBe(2)
-    expect(await firstLane.locator('task').count()).toBe(0)
+    expect(await firstLane.locator('task').count()).toBe(nOfTasks - 1)
+
+    const handle2 = getTaskByContent(page,1).locator('[draggable="true"]').first();
+    await drag(page, handle2, -200, -100, true );
+    expect(await lanes.count()).toBe(3)
+
+    // drag second over first one
+    const handle3 = getTaskByContent(page,0).locator('[draggable="true"]').first();
+    await drag(page, handle3, -200, -100, true, getTaskByContent(page,1) );
+    expect(await lanes.count()).toBe(3)
+    expect(await page.locator('.child').count()).toBe(1)
+    // remove child
+    await getTaskByContent(page,0).click()
+    await page.keyboard.press('Control+ArrowLeft');
+    expect(await page.locator('.child').count()).toBe(0)
+
+    // resize
+    const l = page.locator('lane').nth(2);
+    const bb = await l.boundingBox()
+    if(!bb) return;
+
+    const curWidth = bb?.width ;
+    page.mouse.move(bb?.x + bb?.width - 3,bb?.y + bb?.height - 3)
+    page.mouse.down();
+    await page.mouse.move(bb?.x + bb?.width + 100, bb?.y + bb?.height - 3);
+    expect(l).toHaveCSS('width',`${curWidth + 103}px`)
+
   })
 
   test('Task notes', async ({ page }) => {
@@ -177,7 +201,11 @@ test.describe.serial('Trep Tracker Tasks & lanes - ', () => {
   });
 });
 
-async function drag( page: Page, locator: Locator, deltax: number, deltay: number ){
+function getTaskByContent( page: Page, content: number ): Locator{
+  return page.locator('task:not(.child)',{hasText: new RegExp(`${text} ${content}`)})
+}
+
+async function drag( page: Page, locator: Locator, deltax: number, deltay: number, task: boolean, targetLocator?: Locator ){
   const dragHandle = locator;
   const box = await dragHandle.boundingBox();
   if (box) {
@@ -186,15 +214,20 @@ async function drag( page: Page, locator: Locator, deltax: number, deltay: numbe
     // await dragHandle.click();
     await page.mouse.down();
   
-    // Drag 100px to the right
-    await page.mouse.move(box.x + box.width / 2 + deltax, box.y + box.height / 2 + deltay, {steps:100});
+    if( targetLocator ){
+      await targetLocator.hover();
+      await page.mouse.up();
+
+    }else{
+      await page.mouse.move(box.x + box.width / 2 + deltax, box.y + box.height / 2 + deltay);
+      // Release the mouse button
+      await page.mouse.up();
   
-    // Release the mouse button
-    await page.mouse.up();
-  
-    // Optional: Verify the new position
-    const newBox = await dragHandle.boundingBox();
-    expect(newBox?.x).toBeCloseTo(box.x + deltax); // Allow some small deviation
+      // Optional: Verify the new position
+      const newBox = await dragHandle.boundingBox();
+      expect((newBox?.x ?? 0)).toBeCloseTo((box.x + deltax) + ( task ? 10 :0 ) ,0); // Allow some small deviation
+    }
+
   } else {
     throw new Error('Element not found or not visible');
   }
