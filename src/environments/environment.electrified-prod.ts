@@ -1,5 +1,5 @@
 import { ElectronService } from '../service/electron.service';
-import { Environment } from './environment';
+import { Environment } from '../types/types';
 
 export const environment: Environment = {
   storageService: ElectronService,
