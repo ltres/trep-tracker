@@ -3,7 +3,7 @@ name: Electron-forge packages release
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*beta'
     branches:
       - master
     
