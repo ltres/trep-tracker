@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - 'v*beta'
-    branches:
-      - master
     
 jobs:
   build:
