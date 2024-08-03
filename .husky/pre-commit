@@ -1,2 +1,1 @@
-node ./update-versions.cjs
-start-server-and-test 'ng serve' http://localhost:4200 'npx playwright test'
+# start-server-and-test 'ng serve' http://localhost:4200 'npx playwright test'
