@@ -27,71 +27,58 @@ import { StatusComponent } from './task-status/status.component';
 import { TooltipDirective } from './directive/tooltip.directive';
 import { TimeBarComponent } from './time-bar/time-bar.component';
 import { environment } from '../environments/environment';
-import { AiAdvisorComponent } from './ai-advisor/ai-advisor.component';
-import { MarkdownModule } from 'ngx-markdown';
 import { LogoComponent } from './dumb/logo/logo.component';
 import { DraggableDirective } from './directive/draggable.directive';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { BoardToolbarComponent } from './board-toolbar/board-toolbar.component';
 import { NotesComponent } from './notes/notes.component';
 import { ClickComponent } from './click/click.component';
 import { ClickService } from '../service/click.service';
 import { UpdateCheckerComponent } from './update-checker/update-checker.component';
 import { GanttComponent } from './gantt/gantt.component';
-import { DpDatePickerModule } from 'ng2-date-picker';
 
-@NgModule({
-  declarations: [
-    AppComponent,
-    BoardComponent,
-    LaneComponent,
-    TaskComponent,
-    ContenteditableDirective,
-    TagsViewerComponent,
-    LaneMenuComponent,
-    BoardSelectionMenuComponent,
-    PrioritizerComponent,
-    ImporterComponent,
-    FontResizerComponent,
-    SearchComponent,
-    ModalComponent,
-    WelcomeWizardManagerComponent,
-    StatusComponent,
-    TooltipDirective,
-    TimeBarComponent,
-    AiAdvisorComponent,
-    LogoComponent,
-    DraggableDirective,
-    BoardToolbarComponent,
-    NotesComponent,
-    ClickComponent,
-    GanttComponent,
-
-    UpdateCheckerComponent,
-  ],
-  providers: [
-    BoardService,
-    KeyboardService,
-    DragService,
-    ContainerComponentRegistryService,
-    TagService,
-    ModalService,
-    ClickService,
-    {
-      provide: 'StorageServiceAbstract',
-      useClass: environment.storageService,
-    }
-  ],
-  bootstrap: [AppComponent],
-  imports: [
-    CommonModule,
-    BrowserModule,
-    FormsModule,
-    ReactiveFormsModule,
-    KeyboardListenerComponent,
-    MarkdownModule.forRoot(),
-    HttpClientModule,
-    DpDatePickerModule,
-  ],
-})
+@NgModule({ declarations: [
+  AppComponent,
+  BoardComponent,
+  LaneComponent,
+  TaskComponent,
+  ContenteditableDirective,
+  TagsViewerComponent,
+  LaneMenuComponent,
+  BoardSelectionMenuComponent,
+  PrioritizerComponent,
+  ImporterComponent,
+  FontResizerComponent,
+  SearchComponent,
+  ModalComponent,
+  WelcomeWizardManagerComponent,
+  StatusComponent,
+  TooltipDirective,
+  TimeBarComponent,
+  LogoComponent,
+  DraggableDirective,
+  BoardToolbarComponent,
+  NotesComponent,
+  ClickComponent,
+  GanttComponent,
+  UpdateCheckerComponent,
+],
+bootstrap: [AppComponent], imports: [CommonModule,
+  BrowserModule,
+  FormsModule,
+  ReactiveFormsModule,
+  KeyboardListenerComponent], providers: [
+  BoardService,
+  KeyboardService,
+  DragService,
+  ContainerComponentRegistryService,
+  TagService,
+  ModalService,
+  ClickService,
+  {
+    provide: 'StorageServiceAbstract',
+    useClass: environment.storageService,
+  },
+  provideHttpClient(withInterceptorsFromDi())
+] })
 export class AppModule { }
