@@ -204,7 +204,7 @@ test.describe.serial('Trep Tracker Tasks & lanes - ', () => {
 
   test('Task - gantt', async ({ page }) => { 
     await page.locator('.show-in-gantter').first().click()
-
+  
     expect(await page.locator('.show-in-gantter.selected').count()).toBe(1);
     await page.locator('.show-board-gantt').first().click();
     expect(await page.locator('gantt').count()).toBe(1);
