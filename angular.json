@@ -29,13 +29,12 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.scss",
-              "node_modules/@angular/cdk/overlay-prebuilt.css"
+              "src/styles.scss"
             ],
             "scripts": []
           },
           "configurations": {
-            "electrified-dev":{
+            "electrified-dev": {
               "deployUrl": "./",
               "baseHref": "./",
               "optimization": false,
@@ -48,7 +47,7 @@
                 }
               ]
             },
-            "electrified-prod":{
+            "electrified-prod": {
               "deployUrl": "./",
               "baseHref": "./",
               "optimization": false,

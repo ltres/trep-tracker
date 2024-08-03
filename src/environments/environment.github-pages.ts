@@ -3,6 +3,6 @@ import { Environment } from '../types/types';
 
 export const environment: Environment = {
   storageService: LocalFileStorageService,
-  userVersion: '1.3.0-alpha',
+  userVersion: '1.4.0-preview',
   environment: 'github-pages',
 };
