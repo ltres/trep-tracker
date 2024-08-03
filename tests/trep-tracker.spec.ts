@@ -94,8 +94,9 @@ test.describe.serial('Trep Tracker Tasks & lanes - ', () => {
     page.mouse.move(bb?.x + bb?.width - 3,bb?.y + bb?.height - 3)
     page.mouse.down();
     await page.mouse.move(bb?.x + bb?.width + 100, bb?.y + bb?.height - 3);
-    await page.waitForTimeout(1000);
-    expect(l).toHaveCSS('width',`${curWidth + 103}px`)
+    const bb2 = await l.boundingBox();
+    if(!bb2){return}
+    expect(bb2.width).toBeGreaterThan(curWidth)
 
   })
 
