@@ -1,6 +1,6 @@
 {
   "name": "trep-tracker",
-  "version": "1.4.2-beta",
+  "version": "1.5.0-beta",
   "type": "module",
   "license": "GPL-3.0",
   "main": "./electron-make-app.js",
