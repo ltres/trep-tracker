@@ -3,6 +3,6 @@ import { Environment } from '../types/types';
 
 export const environment: Environment = {
   storageService: ElectronService,
-  userVersion: '1.5.0-beta',
+  userVersion: '1.6.0-preview',
   environment: 'electrified-prod',
 };

@@ -67,7 +67,7 @@ if (versionBump && versionFileStaged.indexOf('version.json') < 0) {
     console.log(`On branch ${currentBranch}`)
 
     // Set the appropriate suffix
-    suffix = isFeatureBranch ? (suffix || 'preview') : (suffix || '');
+    suffix = isFeatureBranch ? 'preview' : 'beta';
 
     // Construct the new version string
     const newVersion = `${major}.${minor}.${patch}${suffix ? '-' + suffix : ''}`;
