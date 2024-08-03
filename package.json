@@ -1,6 +1,6 @@
 {
   "name": "trep-tracker",
-  "version": "1.4.0-beta",
+  "version": "1.4.1-beta",
   "type": "module",
   "license": "GPL-3.0",
   "main": "./electron-make-app.js",
@@ -22,8 +22,8 @@
     "make": "npm run build && electron-forge make",
     "publish": "electron-forge publish",
     "lint": "npx eslint ./src --fix",
-    "test": "npx playwright test",
-    "test-gui": "npx playwright test --ui",
+    "test": "start-server-and-test 'ng serve' http://localhost:4200 'npx playwright test'",
+    "test-gui": "start-server-and-test 'ng serve' http://localhost:4200 'npx playwright test --ui'",
     "prepare": "husky"
   },
   "productName": "trep-tracker",

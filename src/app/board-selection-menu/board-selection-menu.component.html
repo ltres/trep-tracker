@@ -5,18 +5,17 @@
     <div *ngFor="let board of boards" class="board-selection flex column">
         <div [class.translucent]="!this.boardService.isSelected(board)" class="priorities flex justify-content-end">
             <ng-container *ngFor="let priority of availablePriorities">
-                <ng-container *ngIf="boardService.getTasksHavingPriorityCount$(board,priority) | async as taskCount; else elses">
-                    <div *ngIf="taskCount > 0" class="flex-child priority-{{priority}} flex column align-items-center">
-                        <div>{{taskCount}}</div>
-                        <div>●</div>
-                    </div>
-                </ng-container>
-                <ng-template #elses>
-                    <div class="flex-child selectable flex column align-items-center">
-                        <div>&nbsp;</div>
-                        <div>●</div>
-                    </div>
-                </ng-template>
+                @if(boardService.getTasksHavingPriorityCount$(board,priority) | async; as taskCount){
+                <div *ngIf="taskCount > 0" class="flex-child priority-{{priority}} flex column align-items-center">
+                    <div>{{taskCount}}</div>
+                    <div>●</div>
+                </div>
+                }@else {
+                <div class="flex-child selectable flex column align-items-center">
+                    <div>&nbsp;</div>
+                    <div>●</div>
+                </div>
+                }
             </ng-container>
 
         </div>

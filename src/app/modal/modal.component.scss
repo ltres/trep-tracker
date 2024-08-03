@@ -1,12 +1,12 @@
 @import "../../assets/variables";
 @import "../../assets/mixins";
 
-:host{
+:host {
     position: fixed;
-    top:0;
+    top: 0;
     left: 0;
     background-color: $modal-backdrop-color;
-    width: 100%; 
+    width: 100%;
     height: 100vh;
     z-index: 500;
     display: flex;
@@ -14,13 +14,15 @@
     align-items: center;
 }
 
-.modal-content{
+.modal-content {
     position: absolute;
     width: 30%;
-    min-width: 50rem;
-    height: auto;
-    &.full{
+    // min-width: 50rem;
+    //eight: auto;
+
+    &.full {
         width: 90%;
     }
+
     @include lane-style;
 }

@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { Container, Status, Statuses } from '../../types/types';
+import { Container, Status, states } from '../../types/types';
 import { formatDate } from '../../utils/utils';
 
 @Component({
@@ -41,6 +41,6 @@ export class TimeBarComponent {
         ret.push(status);
       }
     }
-    return ret.sort( (a,b) => Object.keys(Statuses).indexOf(a) - Object.keys(Statuses).indexOf(b) );
+    return ret.sort( (a,b) => Object.keys(states).indexOf(a) - Object.keys(states).indexOf(b) );
   }
 }

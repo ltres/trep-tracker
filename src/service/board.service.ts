@@ -1,5 +1,5 @@
 import {  Inject, Injectable, Injector, NgZone } from '@angular/core';
-import { Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, Statuses, getNewTask } from '../types/types';
+import { Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, states, getNewTask } from '../types/types';
 import { BehaviorSubject, Observable, map } from 'rxjs';
 import { eventuallyPatch, getDescendants, isLane, isPlaceholder, isStatic, isTask, isTasks, setDateSafe } from '../utils/utils';
 import { TagService } from './tag.service';
@@ -693,7 +693,7 @@ export class BoardService {
       }else if( b.priority < a.priority ){
         return -1;
       }else{
-        return Object.keys(Statuses).indexOf(a.status) - Object.keys(Statuses).indexOf(b.status);
+        return Object.keys(states).indexOf(a.status) - Object.keys(states).indexOf(b.status);
       }
     } );
 

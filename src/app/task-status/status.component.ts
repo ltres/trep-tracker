@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Board, Container, Status, Statuses } from '../../types/types';
+import { Board, Container, Status, states } from '../../types/types';
 import { isPlaceholder, isTask } from '../../utils/utils';
 import { BoardService } from '../../service/board.service';
 
@@ -52,12 +52,12 @@ export class StatusComponent {
   }
 
   getAvailableStatuses(): Status[] {
-    return Object.keys(Statuses) as Status[];
+    return Object.keys(states) as Status[];
   }
 
   getSymbol(arg0: Status | undefined): string {
     if (!arg0) return '▫';
-    return Statuses[arg0].icon;
+    return states[arg0].icon;
   }
 
   getTooltip(arg0: Status | string): string {

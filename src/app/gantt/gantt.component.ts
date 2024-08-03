@@ -1,20 +1,25 @@
-import { AfterViewInit, Component, Input } from '@angular/core';
-import { ISODateString, Task } from '../../types/types';
+import { AfterViewInit, ApplicationRef, Component, createComponent, Input } from '@angular/core';
+import { Board, ISODateString, Task } from '../../types/types';
 import { generateUUID, getDescendants, getFirstMentionTag, getIsoString, isTask } from '../../utils/utils';
 import { BoardService } from '../../service/board.service';
 import { Link } from 'dhtmlx-gantt';
 import { gantt, Task as DhtmlxTask } from 'dhtmlx-gantt';
+import { TaskComponent } from '../task/task.component';
 
 @Component({
-  selector: 'gantt[tasks]',
+  selector: 'gantt[tasks][board]',
   templateUrl: './gantt.component.html',
   styleUrl: './gantt.component.scss',
 })
 export class GanttComponent implements AfterViewInit {
   @Input() tasks!: Task[] | undefined | null;
+  @Input() board! : Board;
   fullDescendants: Task[] | undefined;
 
-  constructor(protected boardService: BoardService) { }
+  constructor(
+    protected boardService: BoardService,
+    protected applicationRef: ApplicationRef
+  ) { }
 
   ngAfterViewInit(): void {
     if (!this.tasks) {
@@ -38,11 +43,15 @@ export class GanttComponent implements AfterViewInit {
       text: 'aug',
       title: 'aug',
     });
-    gantt.config['scale_unit'] = 'month';
-    gantt.config['date_scale'] = '%F'; // Full month name
-    gantt.config['subscales'] = [
-      { unit: 'day', step: 1, date: '%j' }, // Day of the month as number
-    ];
+
+    gantt.config.scales = [{
+      unit: 'month',
+      format: '%F'
+    },{
+      unit: 'day',
+      date: '%j'
+    }]
+
     gantt.config.min_column_width = 25; // Set to your desired width in pixels
 
     gantt.config.multiselect = true;
@@ -65,10 +74,23 @@ export class GanttComponent implements AfterViewInit {
           return (a.start_date?.getTime() ?? 0) - (b.start_date?.getTime() ?? 0);
         },
       },
-      { name: 'text', label: 'Task name', min_width: 300, width: '*', tree: true },
+      { name: 'text', label: 'Task name', min_width: 300, width: '*', tree: true, 
+        template: (task) =>{
+          /*
+          const t = this.boardService.getTask(task.id.toString());
+          if(!t){
+            throw new Error("Task not found");
+          }
+          return `<div class="task-wrapper ${t.status}"><span>${states[t.status].icon}</span><span>●</span>   ${t.textContent}</div>`*/
+          return this.getTemplateHTML(task);
+        } },
       { name: 'start_date', label: 'Start time', align: 'center' },
       { name: 'duration', label: 'Duration', align: 'center' },
     ];
+
+    gantt.templates.grid_file = function() {
+      return "";
+    };
     gantt.config.sort = true;
 
     const start = new Date(today.getFullYear(), today.getMonth(), 0);
@@ -321,4 +343,26 @@ export class GanttComponent implements AfterViewInit {
     return task;
   }
 
+  /**Returns the html for a task using the TaskComponent */
+  private getTemplateHTML(task: DhtmlxTask): string{
+    const component = createComponent(TaskComponent, {environmentInjector: this.applicationRef.injector})
+    const t = this.boardService.getTask(task.id.toString());
+    if(!t){
+      throw new Error("Task not found");
+    }
+    component.instance.task = t;
+    component.instance.staticView = true;
+    const l = this.boardService.findParentLane([t]);
+    if(l){
+      component.instance.lane = l;
+      component.instance.parent = l
+    }
+    component.instance.board = this.board;
+    component.instance.enableGanttView = true
+    component.instance.showChildren = false;
+    component.changeDetectorRef.detectChanges();
+    const html = component.location.nativeElement.outerHTML;
+    component.destroy();
+    return html;
+  }
 }

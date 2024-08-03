@@ -102,7 +102,7 @@ export interface Tag {
 export type Priority = 0 | 1 | 2 | 3 | 4;
 export const Priorities: Priority[] = [0, 1, 2, 3, 4];
 
-export const Statuses = {
+export const states = {
   todo: {
     icon: '☐',
   },
@@ -129,7 +129,7 @@ export const Statuses = {
   },
 };
 
-export type Status = keyof typeof Statuses;
+export type Status = keyof typeof states;
 
 export type StateChangeDate = {
     [keyStatus in Status]?: {

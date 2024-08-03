@@ -1,22 +1,15 @@
 <div class="flex align-items-center g-025" *ngIf="!open">
-    <ng-container *ngIf="existPriorities()">
-        <span *ngFor="let priority of priorities" [tooltip]="'Priority ' + priority " 
-        class="selectable priority-{{priority}} active" 
-        (click)="open = !open" >
-            {{getSymbol(priority)}}
-        </span>
-    </ng-container>
-    <span *ngIf="!existPriorities()" class="selectable priority" (click)="open = !open" >{{getSymbol(1)}}</span>
+    @if(existPriorities()){
+    <span *ngFor="let priority of priorities" [tooltip]="'Priority ' + priority " class="selectable priority-{{priority}} active" (click)="open = !open">
+        {{getSymbol(priority)}}
+    </span>
+    }
+
+    <span *ngIf="!existPriorities()" class="selectable priority" (click)="open = !open">{{getSymbol(1)}}</span>
 </div>
 <div class="flex align-items-center g-025" *ngIf="open">
-    <span [tooltip]="'close'" class="selectable cancel" (click)="cancelAndClose()">🗙</span> 
+    <span [tooltip]="'close'" class="selectable cancel" (click)="cancelAndClose()">🗙</span>
 
-    <span 
-    *ngFor="let priority of availablePriorities"
-    [tooltip]="'Priority ' + priority" class="priority selectable priority-{{priority}}"  
-    [class.active]="priorityPresent(priority)"
-    (click)="togglePriority(priority)" >{{getSymbol(priority)}}</span>
+    <span *ngFor="let priority of availablePriorities" [tooltip]="'Priority ' + priority" class="priority selectable priority-{{priority}}" [class.active]="priorityPresent(priority)" (click)="togglePriority(priority)">{{getSymbol(priority)}}</span>
 
-</div> 
-
-
+</div>

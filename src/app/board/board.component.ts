@@ -137,7 +137,7 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
     }, 500);
   }
 
-  trackBy(index: number, lane: Lane): number {
+  hashCode(lane: Lane): number {
     return hashCode(lane.id);
   }
 

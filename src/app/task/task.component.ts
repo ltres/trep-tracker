@@ -21,15 +21,15 @@ import { ClickService } from '../../service/click.service';
   ],
 })
 export class TaskComponent extends ContainerComponent implements OnInit, OnDestroy {
-
   @ViewChild('editor') editor: ElementRef | undefined;
   @Input() task!: Task;
   @Input() lane!: Lane;
   @Input() parent!: Container;
   @Input() board!: Board;
   @Input() staticView: boolean = false;
-
   @Input() showChildren: boolean = true;
+
+  @Input() enableGanttView: boolean = false;
 
   @Output() createNewTask: EventEmitter<void> = new EventEmitter();
   @Output() onToggleShowNotes: EventEmitter<boolean> = new EventEmitter();

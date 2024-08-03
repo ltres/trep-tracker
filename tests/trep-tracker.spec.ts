@@ -208,7 +208,7 @@ test.describe.serial('Trep Tracker Tasks & lanes - ', () => {
     expect(await page.locator('.show-in-gantter.selected').count()).toBe(1);
     await page.locator('.show-board-gantt').first().click();
     expect(await page.locator('gantt').count()).toBe(1);
-    expect(await page.locator('.gantt_row_task').count()).toBe(1);
+    expect(await page.locator('.gantt_row_task').count()).toBe(1); 
 
     await page.locator('.close.pointer.absolute').first().click();
     await page.locator('.show-in-gantter').nth(1).click()
@@ -219,9 +219,9 @@ test.describe.serial('Trep Tracker Tasks & lanes - ', () => {
     expect(page.locator('.gantt_row_task').first()).toHaveText(new RegExp(`${text} ${0}`))
 
     // switch tasks
-    await page.locator('.gantt_tree_icon.gantt_file').first().hover();
+    await page.locator('.gantt_row_task').first().hover();
     await page.mouse.down();
-    await page.locator('.gantt_tree_icon.gantt_file').nth(1).hover();
+    await page.locator('.gantt_row_task').nth(1).hover();
     await page.mouse.up();
     expect(page.locator('.gantt_row_task').first()).toHaveText(new RegExp(`${text} ${1}`))
 
