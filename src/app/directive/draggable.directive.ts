@@ -94,8 +94,6 @@ export class DraggableDirective implements AfterViewInit, AfterViewChecked {
     if (this.static) return;
     const el = this.el.nativeElement as HTMLElement;
     this.draggableEl = el.querySelector('[drag-on-this]:not([draggable])') ?? el; 
-    //this.draggableEl.setAttribute('draggable', 'true');
-    console.log(this.draggableEl)
   }
 
   ngOnDestroy(): void {
