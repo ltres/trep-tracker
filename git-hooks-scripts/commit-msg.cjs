@@ -13,6 +13,7 @@ const commitMsg = process.argv[2];
 const minorBumpRegex = /\[minor\+\]/i;
 const majorBumpRegex = /\[major\+\]/i;
 const patchBumpRegex = /\[patch\+\]/i;
+const versionRegex = /^(\d+)\.(\d+)\.(\d+)(?:-(alpha|beta|preview))?$/;
 
 let versionBump = null;
 
@@ -21,8 +22,10 @@ if (majorBumpRegex.test(commitMsg)) {
 } else if (minorBumpRegex.test(commitMsg)) {
   versionBump = 'minor';
 }else if (patchBumpRegex.test(commitMsg)) {
-    versionBump = 'patch';
-  }
+  versionBump = 'patch';
+}else if ( versionRegex.test(commitMsg) ){
+  versionBump = 'rewrite'
+}
 
 const versionFileStaged = execSync('git diff --name-only --cached').toString().trim();
 
@@ -35,7 +38,6 @@ if (versionBump && versionFileStaged.indexOf('version.json') < 0) {
     console.log(`Current version is ${currentVersion} (from version.json)`)
 
     // Parse the version
-    const versionRegex = /^(\d+)\.(\d+)\.(\d+)(?:-(alpha|beta|preview))?$/;
     const match = currentVersion.match(versionRegex);
 
     if (!match) {
@@ -59,6 +61,9 @@ if (versionBump && versionFileStaged.indexOf('version.json') < 0) {
     }else if( versionBump === 'patch' ){
         patch++;
         console.log(`Patch version bump requested`)
+    }else if( versionBump === 'rewrite' ){
+      const matchCur = commitMsg.match(versionRegex);
+      [, major, minor, patch, suffix] = matchCur; 
     }
 
     // Determine if we're on a feature branch
