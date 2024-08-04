@@ -13,6 +13,8 @@ const commitMsg = process.argv[2];
 const minorBumpRegex = /\[minor\+\]/i;
 const majorBumpRegex = /\[major\+\]/i;
 const patchBumpRegex = /\[patch\+\]/i;
+const checkBumpRegex = /\[(\d+)\.(\d+)\.(\d+)(?:-(alpha|beta|preview))?\]/;
+
 const versionRegex = /^(\d+)\.(\d+)\.(\d+)(?:-(alpha|beta|preview))?$/;
 
 let versionBump = null;
@@ -23,7 +25,7 @@ if (majorBumpRegex.test(commitMsg)) {
   versionBump = 'minor';
 }else if (patchBumpRegex.test(commitMsg)) {
   versionBump = 'patch';
-}else if ( versionRegex.test(commitMsg) ){
+}else if ( checkBumpRegex.test(commitMsg) ){
   versionBump = 'rewrite'
 }
 
@@ -62,7 +64,7 @@ if (versionBump && versionFileStaged.indexOf('version.json') < 0) {
         patch++;
         console.log(`Patch version bump requested`)
     }else if( versionBump === 'rewrite' ){
-      const matchCur = commitMsg.match(versionRegex);
+      const matchCur = commitMsg.match(checkBumpRegex);
       [, major, minor, patch, suffix] = matchCur; 
     }
 
