@@ -25,7 +25,7 @@
     <span [position]="'bottom'" [tooltip]="'Move left'" *ngIf="displayedInFixedLayout && canMove('left')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" (click)="moveLane('left')">←</span>
     <span [position]="'bottom'" [tooltip]="'Move right'" *ngIf="displayedInFixedLayout && canMove('right')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" (click)="moveLane('right')">→</span>
 
-    <span *ngIf="lane.collapsed" (click)="toggleCollapse()" [tooltip]="'Expand tasks'" class="pointer">⇳</span>
+    <span *ngIf="lane.collapsed" (click)="toggleCollapse()" [tooltip]="'Expand tasks'" class="pointer expand">⇳</span>
 
     <span [position]="'bottom'" [tooltip]="'Show child tasks'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" *ngIf="isStatic()" (click)="toggleShowChildren()">
       <span *ngIf="lane.showChildren" class="completed">☑</span>

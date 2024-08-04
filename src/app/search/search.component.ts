@@ -39,6 +39,9 @@ export class SearchComponent {
   private highlightText() {
     this.matchNumber = 0
     this.removeHighlights();
+    if(this.searchPhrase.length === 0){
+      return;
+    }
     this.boardService.parents?.forEach( p => {
       // remove all HTML
       p.searchTextContent = p.textContent.replace(/<[^>]*>/g, '');

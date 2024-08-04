@@ -21,7 +21,7 @@ if (versionFileStaged.indexOf("version.js") >= 0) {
     execSync(`git add ${path.join(__dirname, '..', 'src','environments', '*')}`)
 
     // Amend the commit
-    execSync('git commit --amend --no-edit');
+    execSync('git commit --amend --no-edit --no-verify');
 
     // add the tag
     execSync(`git tag -a v${versionInfo.version} -m "Version bump" HEAD`);

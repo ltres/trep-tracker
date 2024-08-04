@@ -1,7 +1,7 @@
 <div class="flex column">
-    <input #input [(ngModel)]="searchPhrase" (ngModelChange)="change()" (click)="change()" (focus)="onFocus()" (blur)="onBlur()" placeholder="Search tasks.." (keyup)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <input #input [(ngModel)]="searchPhrase" (ngModelChange)="change()" (click)="change()" (focus)="onFocus()" (blur)="onBlur()" placeholder="Search tasks.." class="search-input">
 
-    <span *ngIf="matchNumber">
+    <span *ngIf="matchNumber" class="search-matches">
         {{matchNumber}} matches
     </span>
 </div>

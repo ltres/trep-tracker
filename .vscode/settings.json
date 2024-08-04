@@ -1,4 +1,5 @@
 {
+  "editor.wordWrap": "on",
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit"
   },

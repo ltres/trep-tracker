@@ -156,6 +156,8 @@ test.describe.serial('Trep Tracker Tasks & lanes - ', () => {
 
     const archive = page.locator('lane',{hasText: /Archive/}).first();
     await expect(archive).toBeVisible();
+    expect(await archive.locator('task').count()).toBe(0)
+    await page.locator('lane',{hasText: /Archive/}).locator('.expand').click()
     expect(await archive.locator('task').count()).toBe(1)
 
     // unarchive
@@ -271,7 +273,16 @@ test.describe.serial('Trep Tracker Tasks & lanes - ', () => {
     expect(await page.locator('task').count()).toBe(1)
     await page.locator('.available-board').nth(0).click();
     expect(await page.locator('task').count()).toBe(nOfTasks)
+  })
 
+  test('Board - search', async ({ page }) => {
+    await page.locator('.search-input').hover();
+    await page.locator('.search-input').click();
+    //await page.locator('.search-input').pressSequentially(text);
+    await page.keyboard.type(text, {delay:writeDelay});
+    await page.waitForTimeout(1000);
+
+    expect(page.locator('.search-matches')).toHaveText("2 matches")
   })
 
 });
