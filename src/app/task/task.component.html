@@ -6,10 +6,12 @@
 
     <div class="flex w-100 g-025">
 
-        @if (!enableGanttView) {
-        <div class="task-text-content grow" [class.placeholder]="isPlaceholder()" #editor contenteditable="true" [preventEvents]="!editorActive" [board]="board" [(ngModel)]="task.textContent" (ngModelChange)="debounceBoardUpdate()" (onTagsChange)="updateTaskTags($event)"></div>
-        }@else {
+        @if (enableGanttView) {
         <div innerHTML="{{task.textContent}}"></div>
+        }@else if (task.searchTextContent) {
+        <div innerHTML="{{task.searchTextContent}}"></div>
+        }@else {
+        <div class="task-text-content grow" [class.placeholder]="isPlaceholder()" #editor contenteditable="true" [preventEvents]="!editorActive" [board]="board" [(ngModel)]="task.textContent" (ngModelChange)="debounceBoardUpdate()" (onTagsChange)="updateTaskTags($event)"></div>
         }
 
         <div *ngIf="!enableGanttView" class="task-toolbar relative flex align-items-center g-025">
@@ -33,7 +35,7 @@
         <span>archived on {{parseDate(this.task.dates.archived?.enter) | date: 'dd-MM-yy hh:mm a'}}</span>
         <time-bar [container]="task"></time-bar>
     </div>
-    <div class="translucent" *ngIf="task.status === 'completed'" class="date-wrapper flex align-items-center">
+    <div *ngIf="task.status === 'completed'" class="date-wrapper flex align-items-center translucent">
         completed {{ parseDate(this.task.dates.completed?.enter) | date: 'dd-MM-yy hh:mm a'}}
     </div>
 </div>

@@ -9,8 +9,9 @@ import { BoardService } from '../../service/board.service';
 })
 export class SearchComponent {
   @ViewChild('input') searchInput!: ElementRef;
-  searchPhrase: string | undefined;
+  searchPhrase: string = "";
   matchNumber: number = 0;
+  highlightColor= 'yellow';
   private debounce: ReturnType<typeof setTimeout> | undefined;
 
   constructor(
@@ -19,62 +20,52 @@ export class SearchComponent {
   ) {
     this.boardService.focusSearch$.subscribe(fs => {
       if (fs) {
-        if( this.searchPhrase ){
-          this.highlightText(this.searchPhrase, true);
-        }else{
-          this.focusInput(true);
-        }
+        this.focusInput(true);
+        this.highlightText();       
       }
     });
   }
 
   change(){
-    if(!this.searchPhrase)return;
     if( this.debounce ){
       clearTimeout(this.debounce);
     }
     this.debounce = setTimeout( () => {
-      this.highlightText(this.searchPhrase!, false);
+      this.highlightText();
     },250);
 
   }
 
-  highlightText(searchTerm: string, selectAll: boolean) {
-    this.matchNumber = 0;
-    if(searchTerm.length < 2 )return;
-    document.designMode = 'on';
+  private highlightText() {
+    this.matchNumber = 0
     this.removeHighlights();
-    //var sel = window.getSelection();
-    //sel?.collapse(document.body, 0);
-
-    while (window.find(searchTerm)) {
-      this.matchNumber ++;
-      document.execCommand('HiliteColor', false, 'darkblue');
-      //sel?.collapseToEnd();
-    }
-    document.designMode = 'off';
-    this.focusInput(selectAll);
+    this.boardService.parents?.forEach( p => {
+      // remove all HTML
+      p.searchTextContent = p.textContent.replace(/<[^>]*>/g, '');
+      p.searchTextContent = p.searchTextContent.replace(/\u00A0/g, ' '); //nbsp
+      const curSearchContent = p.searchTextContent;
+      p.searchTextContent = p.searchTextContent.replaceAll(new RegExp(this.searchPhrase!,'ig'), `<span class="search-highlight">${this.searchPhrase}</span>`);
+      if( curSearchContent.length !== p.searchTextContent.length ){
+        this.matchNumber ++;
+      }
+    })
+    this.boardService.publishBoardUpdate()
   }
 
-  removeHighlights() {
-    const highlights = document.querySelectorAll('span[style="background-color: darkblue;"]');
-    highlights.forEach(span => {
-      const parent = span.parentNode;
-      parent?.replaceChild(document.createTextNode(span.textContent ?? ''), span);
-      parent?.normalize();
-    });
+  private removeHighlights() {
+    this.boardService.parents?.forEach( p => {
+      delete p.searchTextContent
+    })
   }
 
   onFocus() {
-    if( this.searchPhrase ){
-      //this.highlightText(this.searchPhrase, false);
-    }
-  //this.boardService.blurSearch();
+    this.highlightText();
   }
 
   onBlur() {
     this.removeHighlights();
     this.boardService.blurSearch();
+    this.boardService.publishBoardUpdate();
   }
 
   private focusInput( selectAll: boolean){

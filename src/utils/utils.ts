@@ -280,11 +280,15 @@ export function eventuallyPatch( board: Board ): Board{
     if(isLane(p)){
       const mayBeOldLane: Lane & {
         archive?: boolean
-        layouts?: LayoutProperties | undefined
+        layouts?: LayoutProperties | undefined,
+        collapsed?: boolean
       } = p
 
       if(!mayBeOldLane.layouts){
         mayBeOldLane.layouts = getLayouts();
+      }
+      if(!mayBeOldLane.collapsed){
+        mayBeOldLane.collapsed = false;
       }
       for( const layout of Object.keys(Layouts) ){
         const l = layout as Layout;

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, HostBinding, Input, OnInit, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
 import { Board, Container, Lane, Layouts, Priority, Status, Tag, Task, getNewTask } from '../../types/types';
 import { BoardService } from '../../service/board.service';
-import { hashCode, isArchive, isStatic } from '../../utils/utils';
+import { hashCode, isArchive, isPlaceholder, isStatic } from '../../utils/utils';
 import { map, Observable, of } from 'rxjs';
 import { TaskComponent } from '../task/task.component';
 import { DragService } from '../../service/drag.service';
@@ -86,9 +86,17 @@ export class LaneComponent extends ContainerComponent implements OnInit {
     return this.boardService.getTasks$(this.lane, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false : true, this.isArchive(this.lane) ? 'archived' : undefined, 'desc');
   }
 
+  get tasksCount(): Observable<number | undefined>{
+    return this.tasks.pipe( map( arr => arr?.filter(t => !isPlaceholder(t)).length ) );
+  }
+
   // Statically displayed tasks, eventually filtered by priority, status.
   get staticTasks(): Observable<Task[] | undefined> {
     return this.boardService.getStaticTasks$(this.board, this.lane.tags, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false : true, this.isArchive(this.lane) ? 'archived' : undefined, 'desc');
+  }
+
+  get staticTasksCount(): Observable<number | undefined>{
+    return this.staticTasks.pipe( map( arr => arr?.filter(t => !isPlaceholder(t)).length ) );
   }
 
   isStatic(): boolean {
@@ -186,6 +194,9 @@ export class LaneComponent extends ContainerComponent implements OnInit {
     return isStatic(this.lane) ?
       this.staticTasks.pipe( map(tasks => tasks?.filter(t => t.includeInGantt) ?? [])) :
       of(this.lane.children.filter(t =>  t.includeInGantt ));
+  }
+  toggleCollapse() {
+    this.lane.collapsed = !this.lane.collapsed
   }
 
 }

@@ -551,6 +551,10 @@ export class BoardService {
     if (!children || children.length === 0) {
       return;
     }
+    if(isTask(parent) && isPlaceholder(parent)){
+      console.warn(`Parent is a placeholder`);
+      return;
+    }
     const boards = this._boards$.getValue();
 
     // incoming tasks could be related one another. Keep only the top level tasks

@@ -18,6 +18,7 @@ export interface Lane extends Container {
     _type: 'lane',
     children: Task[],
     showChildren: boolean,
+    collapsed: boolean,
     isArchive: boolean,
     priority: Priority[] | undefined,
     status: Status[] | undefined,
@@ -50,6 +51,7 @@ export interface Container {
     id: string;
     _type: string,
     textContent: string;
+    searchTextContent?: string,
     children: Container[];
     tags: Tag[];
     creationDate: ISODateString,
@@ -201,6 +203,7 @@ export const getNewLane: (archive: boolean) => Lane = (archive: boolean) => {
     tags: [],
     index: 0,
     showChildren: true,
+    collapsed: archive ? true : false,
     textContent: archive ? 'Archive' : 'Lane ' + id,
     children: [],
     status: undefined,
