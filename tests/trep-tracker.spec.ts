@@ -1,6 +1,7 @@
 import { test, expect, Locator, Page } from '@playwright/test';
 
-const  text = 'Hello World!';
+const text = 'Hello World!';
+const mention = 'mention';
 let lanes;
 
 let firstLane ;
@@ -35,14 +36,7 @@ test.beforeEach(async ({ page }) => {
   await drag(page , firstLane.locator('.lane.drag-handle'), 300, 400, false)
 
   for( let k=0; k<nOfTasks; k++ ){
-    await page.click('.new-task');
-    // write on a task
-    const curTask = page.locator('task').nth(k);
-    await curTask.click()
-    await page.keyboard.press('Control+A');
-    await page.keyboard.press('Backspace');
-    await page.keyboard.type(`${text} ${k}`,{delay:writeDelay});
-    expect(curTask).toHaveText(new RegExp(`${text} ${k}`));
+    await addTask(page, k)
   }
   expect(await page.locator('task').count()).toBe(nOfTasks)
 });
@@ -171,6 +165,67 @@ test.describe.serial('Trep Tracker Tasks & lanes - ', () => {
     const menu = page.locator('board-selection-menu');
     expect(await menu.locator('.priority-1 div',{hasText:`${nOfTasks}`}).count()).toBe(1)
   });
+  test('Task tagz', async ({ page }) => {
+    // add couple tasks
+    for( let k=nOfTasks; k<nOfTasks + 2; k++ ){
+      await addTask(page, k)
+    }
+
+    // add first mention w @ char
+    const firstTask = getTaskByContent(page, 0)
+    await firstTask.click()
+    for(let k= 0; k<text.length; k++){
+      await page.keyboard.press('ArrowRight');
+    }
+    await firstTask.pressSequentially(` @${mention}`)
+    expect(await page.locator('.tag-orange').count()).toBe(1)
+
+    // add second w/o @char
+    const secondTask = getTaskByContent(page, 1)
+    await secondTask.click()
+    for(let k= 0; k<text.length; k++){
+      await page.keyboard.press('ArrowRight');
+    }
+    await secondTask.pressSequentially(` ${mention}`)
+
+    expect(await page.locator('.tag-orange').count()).toBe(2)
+
+    // create static lane, should show 2 tasks
+    await page.locator('.add-lane').click();
+    //await page.waitForSelector('lane:nth-child(1)');
+    const staticLaneLoc = page.locator('lane').nth(1);
+    await staticLaneLoc.locator('.lane-title').click();
+    await page.keyboard.press(`Control+A`)
+    await page.keyboard.type(` ${mention}`,{delay: writeDelay})
+
+    await staticLaneLoc.locator('task').nth(1).waitFor({state:'visible'});
+
+    expect(await staticLaneLoc.locator('task').count()).toBe(2)
+
+    // add another tag to task
+    const thirdTask = getTaskByContent(page, 2)
+    await thirdTask.click()
+    for(let k= 0; k<text.length; k++){
+      await page.keyboard.press('ArrowRight');
+    }
+    await thirdTask.pressSequentially(` ${mention}`)
+    await staticLaneLoc.locator('task').nth(2).waitFor({state:'visible'});
+
+    // static lane should be updated to 3 tasks
+    expect(await staticLaneLoc.locator('task').count()).toBe(3)
+
+    // set static lane priority to 2
+    await staticLaneLoc.locator('.selectable.priority').click();
+    await staticLaneLoc.locator('.priority.priority-2').click();
+    expect(await staticLaneLoc.locator('task').count()).toBe(0)
+    await firstTask.locator('prioritizer').click();
+    await firstTask.locator('.priority.priority-2').click();
+    await staticLaneLoc.locator('task').first().waitFor({state:'visible'});
+
+    expect(await staticLaneLoc.locator('task').count()).toBe(1)
+
+  })
+
   test('Board layouts', async ({ page }) => {
     // Switch layouts
     const toolbar = page.locator('board-toolbar');
@@ -251,7 +306,7 @@ test.describe.serial('Trep Tracker Tasks & lanes - ', () => {
     await page.mouse.down();
     await page.mouse.move( bb3.x + 300 ,bb3.y + bb3.height / 2);
     await page.mouse.up();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(400);
 
     expect((await page.locator('.gantt_task_line').first().boundingBox())?.x).toBeGreaterThan(200);
 
@@ -280,7 +335,7 @@ test.describe.serial('Trep Tracker Tasks & lanes - ', () => {
     await page.locator('.search-input').click();
     //await page.locator('.search-input').pressSequentially(text);
     await page.keyboard.type(text, {delay:writeDelay});
-    await page.waitForTimeout(1000);
+    await page.waitForSelector('.search-matches');
 
     expect(page.locator('.search-matches')).toHaveText("2 matches")
   })
@@ -289,6 +344,17 @@ test.describe.serial('Trep Tracker Tasks & lanes - ', () => {
 
 function getTaskByContent( page: Page, content: number ): Locator{
   return page.locator('task:not(.child)',{hasText: new RegExp(`${text} ${content}`)})
+}
+
+async function addTask(page: Page, k: number){
+  await page.click('.new-task');
+  // write on a task
+  const curTask = page.locator('task').nth(k);
+  await curTask.click()
+  await page.keyboard.press('Control+A');
+  await page.keyboard.press('Backspace');
+  await page.keyboard.type(`${text} ${k}`,{delay:writeDelay});
+  expect(curTask).toHaveText(new RegExp(`${text} ${k}`));
 }
 
 async function drag( page: Page, locator: Locator, deltax: number, deltay: number, task: boolean, targetLocator?: Locator ){

@@ -15,7 +15,7 @@
 
         <div class="flex g-025 align-items-center">
             <button class="show-board-gantt" [tooltip]="'Shows a Gantt chart for the whole board'" position="left" (click)="openGantt()">📊 Gantt..</button>
-            <button (click)="addLane()">➕ Add lane</button>
+            <button (click)="addLane()" class="add-lane">➕ Add lane</button>
         </div>
     </div>
     <span class="pointer" (click)="open=!open" [class]="!open ? 'chevron-down' : 'chevron-up'"></span>
