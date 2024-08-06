@@ -1,10 +1,14 @@
 # trep-tracker 📝
 ![trep-tracker icon](https://github.com/ltres/trep-tracker/blob/2b75c545cfd54d2a2c7a49a9df2060537a59db21/src/assets/icon/ios/AppIcon-40%402x~ipad.png)
 
-`trep-tracker` is a **minimal and minimalistic project manager-oriented task tracker/todo list**, designed to allow tracking TODOs efficiently and focusing on task prioritization and speed of use.
+`trep-tracker` is a **to-the-point and minimalistic project manager-oriented task tracker/todo list**, designed to allow tracking TODOs efficiently and focusing on task prioritization and speed of use.
 
 `trep-tracker` is especially useful for project managers who need to keep track of various tags related to different projects and team members. 
-It allows you to have a clear view of tasks associated with specific projects or colleagues, allowing for quick and efficient monitoring.
+It allows you to have a clear view of tasks associated with specific projects or colleagues, allowing for quick and efficient progress monitoring.
+
+But it works really well also for simpler scenarios, like personal todo lists.
+
+If you have ever used notepad for task tracking, have tried many todo-list apps and got back to notepad because you needed a more efficient tool (like myself), `trep-tracker` may be the app for you.
 
 ## 💻 Try it live: <a href="https://ltres.github.io/trep-tracker/browser/" target="_blank">https://ltres.github.io/trep-tracker/browser/</a> 💻
 The above is a browser-based version, intended to showcase the functionalities that `trep-tracker` offers. 
@@ -21,10 +25,6 @@ Either download and run the latest executable from the <a href="https://github.c
 - People who manage small teams and needs to track activities for colleagues.
 - People who want their TODO app to help them organize and prioritize quickly-noted tasks with views.
 - People who like a straight to the point, minimal approach to TODOs. 
-
-## 🙅‍♂️ Who should NOT use `trep-tracker`
-- People who are looking for a fully fledged, state-of-art, all-in-one TODO tracking solution with all the bells and whistles. 
-- ⬜ TODO find additional points for this list. 
 
 ## ✨ Features & concepts
 ### **Boards**
@@ -56,4 +56,4 @@ Show selected tasks in dynamic gantts!
 `trep-tracker` stores your tasks data in a local '.trptrk' (json) file.
 
 ## 👨‍💻 How is `trep-tracker` made
-`trep-tracker` is built with Angular 17 and packaged with Electron 31.
+`trep-tracker` is built with Angular 18 and packaged with Electron 31.
