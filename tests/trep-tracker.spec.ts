@@ -296,13 +296,14 @@ test.describe.serial('Trep Tracker Tasks & lanes - ', () => {
     expect(bb2?.x).toBeGreaterThan(bb.x + 50)
 
     // increase duration
-    expect(page.locator('.gantt_last_cell').nth(1)).toHaveText(/[02]/)
-    const dragEl = ganttBar.locator('.gantt_task_drag ').nth(1);
+    expect(page.locator('.gantt_last_cell').nth(1)).toHaveText(/[012]/)
+    const dragEl = ganttBar.locator('.task_end_date').first();
     const bb3 = await ganttBar.boundingBox();
     if(!bb3){
       return;
     }
-    await dragEl.hover();
+    await ganttBar.hover();
+    await dragEl.hover({force:true});
     await page.mouse.down();
     await page.mouse.move( bb3.x + 300 ,bb3.y + bb3.height / 2);
     await page.mouse.up();
