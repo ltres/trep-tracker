@@ -36,6 +36,11 @@ import { ClickComponent } from './click/click.component';
 import { ClickService } from '../service/click.service';
 import { UpdateCheckerComponent } from './update-checker/update-checker.component';
 import { GanttComponent } from './gantt/gantt.component';
+import {NoopAnimationsModule} from '@angular/platform-browser/animations';
+
+import { DatePickerComponent } from './date-picker/date-picker.component';
+import { OWL_DATE_TIME_FORMATS, OWL_DATE_TIME_LOCALE, OwlDateTimeModule, OwlNativeDateTimeModule } from '@danielmoncada/angular-datetime-picker';
+import { datePickerFormat, locale } from '../utils/utils';
 
 @NgModule({ declarations: [
   AppComponent,
@@ -62,12 +67,19 @@ import { GanttComponent } from './gantt/gantt.component';
   ClickComponent,
   GanttComponent,
   UpdateCheckerComponent,
+  DatePickerComponent
 ],
-bootstrap: [AppComponent], imports: [CommonModule,
+bootstrap: [AppComponent], 
+imports: [CommonModule,
   BrowserModule,
   FormsModule,
   ReactiveFormsModule,
-  KeyboardListenerComponent], providers: [
+  KeyboardListenerComponent,
+  OwlDateTimeModule,
+  OwlNativeDateTimeModule ,
+  NoopAnimationsModule  
+], 
+providers: [
   BoardService,
   KeyboardService,
   DragService,
@@ -75,6 +87,10 @@ bootstrap: [AppComponent], imports: [CommonModule,
   TagService,
   ModalService,
   ClickService,
+  OwlDateTimeModule,
+  OwlNativeDateTimeModule,
+  {provide: OWL_DATE_TIME_LOCALE, useValue: locale},
+  {provide: OWL_DATE_TIME_FORMATS, useValue: datePickerFormat},
   {
     provide: 'StorageServiceAbstract',
     useClass: environment.storageService,

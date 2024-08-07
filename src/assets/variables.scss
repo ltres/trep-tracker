@@ -43,9 +43,9 @@ $todo-color: $text-color;
 $completed-color: hsl(115, 80%, 50%);
 $in-progress-color: hsl(51, 80%, 50%);
 $delegated-color: hsl(167, 90%, 50%);
-$waiting-color: hsl(197, 85%, 50%);
+$waiting-color: hsl(197, 85%, 70%);
 $archived-color: hsl(115, 81%, 37%);
-$to-be-delegated-color: hsl(177, 80%, 60%);
+$to-be-delegated-color: hsl(266, 80%, 80%);
 $discarded-color: $text-color;
 
 
@@ -90,3 +90,5 @@ $gantt-external-task-color: hsla(293, 100%, 56%, 0.15);
 $gantt-external-task-opacity: 0.5;
 $gantt-project-color: hsla(120, 80%, 50%, 0.3);
 $gantt-progress-color: hsl(293, 100%, 56%, 1);
+
+$picker-active-color: $tag-orange-color;

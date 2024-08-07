@@ -1,6 +1,6 @@
 import { AfterViewInit, ApplicationRef, Component, createComponent, Input } from '@angular/core';
 import { Board, ISODateString, Task } from '../../types/types';
-import { generateUUID, getDescendants, getFirstMentionTag, getIsoString, isTask } from '../../utils/utils';
+import { endOfDay, generateUUID, getDescendants, getFirstMentionTag, getIsoString, isTask, startOfDay } from '../../utils/utils';
 import { BoardService } from '../../service/board.service';
 import { Link } from 'dhtmlx-gantt';
 import { gantt, Task as DhtmlxTask } from 'dhtmlx-gantt';
@@ -97,7 +97,7 @@ export class GanttComponent implements AfterViewInit {
     const end = new Date(today.getFullYear(), today.getMonth() + 4, 0);
 
     gantt.config.work_time = true;
-    gantt.setWorkTime({ hours: [9, 13, 14, 18] });//global working hours. 8:00-12:00, 13:00-17:00
+    gantt.setWorkTime({ hours: [`${startOfDay}:00-${endOfDay}:00`] });//global working hours. 8:00-12:00, 13:00-17:00
     gantt.templates.timeline_cell_class = function (task, date) {
       if (!gantt.isWorkTime(date)) {
         return 'gantt-weekend';
@@ -157,7 +157,7 @@ export class GanttComponent implements AfterViewInit {
       toUpdate.gantt.endDate = getIsoString(typeof data.end_date === 'string' ? formatFunc(data.end_date) : data.start_date);
       toUpdate.gantt.progress = data.progress ?? 0;
       toUpdate.textContent = data.text;
-      toUpdate.gantt.duration = data.duration;
+      // toUpdate.gantt.duration = data.duration;
     }
 
     let order = 0;

@@ -39,7 +39,7 @@ export interface Task extends Container {
         endDate: ISODateString,
         progress: number,
         order?: number,
-        duration?: number,
+        // duration?: number,
         successors: {
             taskId: string
             linkId: string

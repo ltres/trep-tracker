@@ -15,10 +15,13 @@
         }
 
         <div *ngIf="!enableGanttView" class="task-toolbar relative flex align-items-center g-025">
-            <span *ngIf="!isPlaceholder()" [tooltip]="'Toggle show in Gantt chart'" [position]="'left'" [class.selected]="task.includeInGantt" (click)="toggleShowInGantt()" class="show-in-gantter pointer">
+            <span *ngIf="!isPlaceholder() && task.children.length === 0" [tooltip]="'Set start/end dated'" [position]="'top'" [class.selected]="task.gantt?.startDate || task.gantt?.endDate" class="select-dates pointer" (click)="openDatePicker()">
+                📅<date-picker *ngIf="showDatePicker" [startDate]="fromIsoString(task.gantt?.startDate)" [endDate]="fromIsoString(task.gantt?.endDate)" (onDatesSelected)="setDates($event)"></date-picker>
+            </span>
+            <span *ngIf="!isPlaceholder()" [tooltip]="'Toggle show in Gantt chart'" [position]="'top'" [class.selected]="task.includeInGantt" (click)="toggleShowInGantt()" class="show-in-gantter pointer">
                 📊
             </span>
-            <span class="task-notes pointer" *ngIf="!isPlaceholder()" [tooltip]="(task.notes && task.notes.length > 0 ? 'Edit' : 'Create') +' task notes'" [position]="'left'" (click)="toggleShowNotes()" [class.selected]="task.notes && task.notes.length > 0" [class.open]="showNotes">
+            <span class="task-notes pointer" *ngIf="!isPlaceholder()" [tooltip]="(task.notes && task.notes.length > 0 ? 'Edit' : 'Create') +' task notes'" [position]="'top'" (click)="toggleShowNotes()" [class.selected]="task.notes && task.notes.length > 0" [class.open]="showNotes">
                 🗒️
             </span>
             <notes [notes]="task.notes" (onNoteChanged)="storeNotes($event)" *ngIf="showNotes"></notes>
@@ -27,9 +30,7 @@
 </div>
 <div class="dates-n-stuff flex g-05 small">
     <div class="translucent" *ngIf="task.gantt">
-        @if (task.gantt.startDate){
-        planned for {{task.gantt.startDate | date: 'dd-MM-yy'}}@if(task.gantt.duration){ ({{task.gantt.duration}} working days)}
-        }
+        {{getDatesText()}}
     </div>
     <div *ngIf="task.status === 'archived'" class="translucent date-wrapper flex align-items-center g-05">
         <span>archived on {{parseDate(this.task.dates.archived?.enter) | date: 'dd-MM-yy hh:mm a'}}</span>

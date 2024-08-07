@@ -3,8 +3,8 @@ import { Board, Lane, Container, Task, Tag, Status, Priority, ISODateString } fr
 import { BoardService } from '../../service/board.service';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
- 
-import { hashCode, isPlaceholder, setCaretPosition } from '../../utils/utils';
+
+import { formatDate, fromIsoString, getIsoString, getWorkingDays, hashCode, isPlaceholder, setCaretPosition } from '../../utils/utils';
 import { ContainerComponentRegistryService } from '../../service/registry.service';
 import { ContainerComponent } from '../base/base.component';
 import { ClickService } from '../../service/click.service';
@@ -21,6 +21,7 @@ import { ClickService } from '../../service/click.service';
   ],
 })
 export class TaskComponent extends ContainerComponent implements OnInit, OnDestroy {
+
   @ViewChild('editor') editor: ElementRef | undefined;
   @Input() task!: Task;
   @Input() lane!: Lane;
@@ -37,6 +38,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   editorActive: boolean = false;
   selected: boolean = false;
   showNotes: boolean = false;
+  showDatePicker: boolean = false;
   debounce: ReturnType<typeof setTimeout> | undefined;
 
   constructor(
@@ -194,6 +196,27 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     this.task.notes = ev;
     this.boardService.publishBoardUpdate();
   }
+  setDates(dates: [(Date|undefined),(Date|undefined)]) {
+    const today = new Date();
+    const datesNormalized: [Date,Date] = [dates[0] ?? today, dates[1] ?? today];
+    
+    if(!this.task.gantt){
+      this.task.gantt = {
+        startDate: getIsoString(datesNormalized[0]),
+        endDate: getIsoString(datesNormalized[1]),
+        progress: 0,
+        successors:[]
+      };
+    }else{
+      this.task.gantt.startDate = getIsoString(datesNormalized[0]);
+      this.task.gantt.endDate = getIsoString(datesNormalized[1]);
+      this.task.gantt.progress = 0;
+    }
+    this.boardService.publishBoardUpdate();
+    if(Array.isArray(dates)){
+      this.showDatePicker = false;
+    }
+  }
 
   toggleShowNotes() {
     this.showNotes = !this.showNotes;
@@ -203,4 +226,27 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     this.task.includeInGantt = !this.task.includeInGantt;
     this.boardService.publishBoardUpdate();
   }
+
+  getDatesText(): string | undefined {
+    if(this.task.gantt){
+      if( this.task.gantt.startDate === this.task.gantt.endDate ){
+        return `planned ${formatDate(this.task.gantt.startDate)}`
+      }else{
+        return `planned ${formatDate(this.task.gantt.startDate)} ⤳ ${formatDate(this.task.gantt.endDate)} ${ this.task.gantt.startDate && this.task.gantt.endDate ? `(${getWorkingDays(this.task.gantt.startDate, this.task.gantt.endDate)} working days)` : "" }`
+      }
+    }
+    return "";
+  }
+
+  openDatePicker() {
+    this.showDatePicker = true;
+  }
+
+  fromIsoString(d: ISODateString|undefined) {
+    if(!d){
+      return
+    }
+    return fromIsoString(d)
+  }
+    
 }

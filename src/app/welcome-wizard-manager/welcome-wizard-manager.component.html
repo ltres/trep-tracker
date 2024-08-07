@@ -9,10 +9,10 @@
     </div>
     <div class="body">
         <div *ngIf="isElectron" class="buttons flex justify-content-center g-1">
-            <h2  class="text-align-center">
+            <h2 class="text-align-center">
                 Choose an existing status file, or create a new one:
             </h2>
-            <button (click)="openStatusFile()">
+            <button (click)="openStatusFile($event)">
                 Choose existing status file
             </button>
             <button (click)="createNewStatusFile()">
@@ -21,10 +21,10 @@
         </div>
         <div *ngIf="!isElectron" class="buttons flex column">
             <h2 class="text-align-center">
-                This web version stores your data in your browser's local storage.<br/>
+                This web version stores your data in your browser's local storage.<br />
             </h2>
             <h3 class="text-align-center">
-                You can use this to familiarize yourself with the tool.<br/>
+                You can use this to familiarize yourself with the tool.<br />
                 If you like what you see, and would like to try it for your day-by-day tasks, consider downloading the desktop version from the Github page.
             </h3>
             <!--
@@ -41,7 +41,7 @@
                     Create a new status file
                 </button>
             </h4>
-            
+
 
             <input id="status-chooser" type="file" #fileInput (change)="openStatusFile($event)" accept=".trptrk" hidden>
         </div>
