@@ -3,6 +3,7 @@
 {
   "compileOnSave": false,
   "include": ["src/**/*.ts", "src/**/*.d.ts"],
+  "exclude": ["node_modules/**"],
   "compilerOptions": {
     "outDir": "./dist/out-tsc",
     "strict": true,

@@ -39,7 +39,7 @@ import { GanttComponent } from './gantt/gantt.component';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 
 import { DatePickerComponent } from './date-picker/date-picker.component';
-import { OWL_DATE_TIME_FORMATS, OWL_DATE_TIME_LOCALE, OwlDateTimeModule, OwlNativeDateTimeModule } from '@danielmoncada/angular-datetime-picker';
+import { OWL_DATE_TIME_FORMATS, OWL_DATE_TIME_LOCALE, OwlDateTimeModule, OwlNativeDateTimeModule } from '@ltres/angular-datetime-picker';
 import { datePickerFormat, locale } from '../utils/utils';
 
 @NgModule({ declarations: [

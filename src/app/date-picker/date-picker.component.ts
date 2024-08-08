@@ -1,4 +1,5 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from "@angular/core";
+import { Recurrence } from "@ltres/angular-datetime-picker/lib/utils/constants";
 
 const ONE_DAY = 24 * 60 * 60 * 1000;
 
@@ -8,11 +9,12 @@ const ONE_DAY = 24 * 60 * 60 * 1000;
   styleUrl: './date-picker.component.scss'
 })
 export class DatePickerComponent implements AfterViewInit{
-
   @Input() startDate: Date | undefined = new Date(Date.now() - ONE_DAY);
   @Input() endDate: Date | undefined = new Date(Date.now() + ONE_DAY)
   @Output() onDatesSelected:EventEmitter<[(Date|undefined),(Date|undefined)]> = new EventEmitter();
-  
+  @Output() onCancel:EventEmitter<void> = new EventEmitter();
+  @Output() onRecurrenceUpdate:EventEmitter<Recurrence | undefined> = new EventEmitter();
+
   @ViewChild('trigger') trigger: ElementRef<{click:() =>unknown}> | null = null;
   public selectedMoments: Date[] | undefined;
   protected initialized = false;
@@ -39,12 +41,19 @@ export class DatePickerComponent implements AfterViewInit{
     }
     this.onDatesSelected.emit(date)
   }
+
+  protected cancelTrigger(): void {
+    this.onCancel.emit()
+  }
   
   getEndAt(): Date {
     return this.endDate ?? new Date();
   }
   getStartAt(): Date {
     return this.startDate ?? new Date();
+  }
+  updateRecurrence($event: Recurrence) {
+    this.onRecurrenceUpdate.emit($event);
   }
 
 }

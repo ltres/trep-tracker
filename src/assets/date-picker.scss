@@ -572,6 +572,33 @@
     font-size: $font-size * 0.8
 }
 
+.owl-dt-container-recurrence {
+    outline: none;
+    font-size: $font-size * 0.8;
+
+    display: -webkit-box;
+    display: flex;
+    flex-direction: column;
+    -webkit-box-pack: justify;
+    justify-content: space-between;
+    padding: .5em 0;
+
+    .owl-dt-container-recurrence-values {
+        flex-grow: 1;
+        display: grid;
+        padding: 0 .5em;
+        gap: 0.5em;
+        grid-template-columns: 1fr 1fr 1fr;
+
+        >* {
+            flex-basis: 0;
+            flex-wrap: nowrap;
+            display: flex;
+            align-items: center;
+        }
+    }
+}
+
 .owl-dt-container-info .owl-dt-container-range:last-child {
     border-top: 1px solid rgba(0, 0, 0, .12)
 }

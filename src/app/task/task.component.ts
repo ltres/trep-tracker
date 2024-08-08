@@ -8,6 +8,7 @@ import { formatDate, fromIsoString, getIsoString, getWorkingDays, hashCode, isPl
 import { ContainerComponentRegistryService } from '../../service/registry.service';
 import { ContainerComponent } from '../base/base.component';
 import { ClickService } from '../../service/click.service';
+import { Recurrence } from '@ltres/angular-datetime-picker/lib/utils/constants';
 
 @Component({
   selector: 'task[task][lane][parent][board]',
@@ -216,6 +217,18 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     if(Array.isArray(dates)){
       this.showDatePicker = false;
     }
+  }
+  updateRecurrence($event: Recurrence|undefined) {
+    if(!this.task.gantt){
+      this.task.gantt = {
+        startDate: getIsoString(new Date()),
+        endDate: getIsoString(new Date()),
+        progress: 0,
+        successors:[]
+      };
+    }
+    this.task.gantt.recurrence = $event;
+    this.boardService.publishBoardUpdate();
   }
 
   toggleShowNotes() {

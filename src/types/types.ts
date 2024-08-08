@@ -2,6 +2,7 @@ import { Type } from '@angular/core';
 import { generateUUID } from '../utils/utils';
  
 import { StorageServiceAbstract } from './storage';
+import { Recurrence } from '@ltres/angular-datetime-picker/lib/utils/constants';
 
 export type Environment = {
   storageService: Type<StorageServiceAbstract>,
@@ -39,7 +40,7 @@ export interface Task extends Container {
         endDate: ISODateString,
         progress: number,
         order?: number,
-        // duration?: number,
+        recurrence?: Recurrence,
         successors: {
             taskId: string
             linkId: string
