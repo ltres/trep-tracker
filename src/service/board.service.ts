@@ -1,9 +1,10 @@
 import {  Inject, Injectable, Injector, NgZone } from '@angular/core';
 import { Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, states, getNewTask } from '../types/types';
 import { BehaviorSubject, Observable, map } from 'rxjs';
-import { eventuallyPatch, getDescendants, isLane, isPlaceholder, isStatic, isTask, isTasks, setDateSafe } from '../utils/utils';
+import { eventuallyPatch, getDescendants, isLane, isPlaceholder, isStatic, isTask, isTasks } from '../utils/utils';
 import { TagService } from './tag.service';
 import { StorageServiceAbstract } from '../types/storage';
+import { setDateSafe } from '../utils/date-utils';
 
 @Injectable({
   providedIn: 'root',

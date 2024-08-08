@@ -142,7 +142,6 @@ export type StateChangeDate = {
 };
 
 export type ISODateString = `${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`
-export type DayDateString = `${number}-${number}-${number}`
 
 export const addTagsForDoneAndArchived = false;
 

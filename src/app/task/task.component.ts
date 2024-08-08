@@ -4,11 +4,12 @@ import { BoardService } from '../../service/board.service';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
 
-import { formatDate, fromIsoString, getIsoString, getWorkingDays, hashCode, isPlaceholder, setCaretPosition } from '../../utils/utils';
 import { ContainerComponentRegistryService } from '../../service/registry.service';
 import { ContainerComponent } from '../base/base.component';
 import { ClickService } from '../../service/click.service';
 import { Recurrence } from '@ltres/angular-datetime-picker/lib/utils/constants';
+import { getIsoString, getWorkingDays, fromIsoString, formatDate, locale } from '../../utils/date-utils';
+import { setCaretPosition, isPlaceholder, hashCode } from '../../utils/utils';
 
 @Component({
   selector: 'task[task][lane][parent][board]',
@@ -243,9 +244,9 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   getDatesText(): string | undefined {
     if(this.task.gantt){
       if( this.task.gantt.startDate === this.task.gantt.endDate ){
-        return `planned ${formatDate(this.task.gantt.startDate)}`
+        return `planned ${formatDate(this.task.gantt.startDate, locale.long)}`
       }else{
-        return `planned ${formatDate(this.task.gantt.startDate)} ⤳ ${formatDate(this.task.gantt.endDate)} ${ this.task.gantt.startDate && this.task.gantt.endDate ? `(${getWorkingDays(this.task.gantt.startDate, this.task.gantt.endDate)} working days)` : "" }`
+        return `planned ${formatDate(this.task.gantt.startDate,locale.long)} ⤳ ${formatDate(this.task.gantt.endDate,locale.long)} ${ this.task.gantt.startDate && this.task.gantt.endDate ? `(${getWorkingDays(this.task.gantt.startDate, this.task.gantt.endDate)} working days)` : "" }`
       }
     }
     return "";
