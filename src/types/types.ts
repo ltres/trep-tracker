@@ -35,17 +35,25 @@ export interface Task extends Container {
     notes?: string,
     startDate?: ISODateString,
     includeInGantt: boolean,
-    gantt?: {
-        startDate: ISODateString,
-        endDate: ISODateString,
-        progress: number,
-        order?: number,
-        recurrence?: Recurrence,
-        successors: {
-            taskId: string
-            linkId: string
-        }[]
-    }
+    gantt?: GanttData
+}
+
+export type GanttData = {
+  startDate: ISODateString,
+  endDate: ISODateString,
+  originalStartDate?: ISODateString, // for recurrent tasks
+  originalEndDate?: ISODateString, // for recurrent tasks
+  progress: number,
+  order?: number,
+  recurrence?: Recurrence,
+  successors: {
+      taskId: string
+      linkId: string
+  }[]
+}
+
+export interface GanttTask extends Task{
+    gantt: GanttData
 }
 
 export interface Container {
@@ -100,7 +108,7 @@ export type LayoutProperties = {
 
 export interface Tag {
     tag: string;
-    type: string
+    type: TagType
 }
 export type Priority = 0 | 1 | 2 | 3 | 4;
 export const Priorities: Priority[] = [0, 1, 2, 3, 4];
@@ -145,7 +153,14 @@ export type ISODateString = `${number}-${number}-${number}T${number}:${number}:$
 
 export const addTagsForDoneAndArchived = false;
 
-export const tagIdentifiers: { type: string, symbol: string, class: string }[] = [
+export type TagType = 'tag-orange' | 'tag-yellow' | 'tag-green';
+export const TagTypes = {
+  tagOrange: 'tag-orange',
+  tagYellow: 'tag-yellow',
+  tagGreen: 'tag-green',
+};
+
+export const tagIdentifiers: { type: TagType, symbol: string, class: string }[] = [
   {
     type: 'tag-orange',
     symbol: '@',
@@ -156,13 +171,6 @@ export const tagIdentifiers: { type: string, symbol: string, class: string }[] =
     symbol: '#',
     class: 'tag-yellow',
   },
-  /*
-    {
-        type: "tag-plus",
-        symbol: '\\+',
-        class: "tag-plus"
-    },
-    */
   {
     type: 'tag-green',
     symbol: '!',
@@ -172,11 +180,11 @@ export const tagIdentifiers: { type: string, symbol: string, class: string }[] =
 export const tagHtmlWrapper = (kl: string) => (['<span tag="true" class="' + kl + '">', '</span>']);
 export const tagCapturingGroup = (symbol: string) => (`${symbol}([A-Za-z0-9-_]+)`);
 
-export const getNewTask: (lane: Lane, textContent?: string | undefined) => Task = (lane: Lane, textContent?: string | undefined) => {
+export const getNewTask: (lane: Lane | string, textContent?: string | undefined) => Task = (lane: Lane | string, textContent?: string | undefined) => {
   const uuid = generateUUID();
-  return {
+  const t: Task = {
     id: uuid,
-    createdLaneId: lane.id,
+    createdLaneId: typeof lane === 'string' ? lane : lane.id,
     textContent: typeof textContent != 'undefined' ? textContent : `Task ${uuid}`,
     children: [],
     tags: [],
@@ -186,12 +194,12 @@ export const getNewTask: (lane: Lane, textContent?: string | undefined) => Task 
     },
     _type: 'task',
     creationDate: new Date().toISOString() as ISODateString,
-    stateChangeDate: undefined,
-    archived: false,
-    archivedDate: undefined,
     priority: 1,
     status: 'todo',
   };
+  // initGanttData(t, new Date());
+
+  return t
 };
 
 export const archivedLaneId = 'Archive';

@@ -7,11 +7,11 @@ $background-color-2: hsl(223, 10%, 15%);
 $modal-backdrop-color: rgba(0, 0, 0, 0.3);
 $ai-background-color: rgb(34, 42, 42);
 
-$frost-blur: blur(5px);
-
-$lane-static-background-color: hsla(223, 20%, 11%, 0.6);
-$lane-non-static-background-color: hsla(223, 45%, 11%, 0.6);
-$lane-archive-background-color: hsla(41, 20%, 11%, 0.6);
+$frost-blur: blur(4px);
+$lane-opacity: 0.4;
+$lane-static-background-color: hsla(223, 20%, 11%, $lane-opacity);
+$lane-non-static-background-color: hsla(223, 45%, 11%, $lane-opacity);
+$lane-archive-background-color: hsla(41, 20%, 11%, $lane-opacity);
 
 $text-color: #ffffff;
 $font-size: 10px;
@@ -31,6 +31,8 @@ $tag-plus-color: rgb(109, 194, 98);
 
 $translucent-opacity: 0.3;
 $translucent-color: rgba($text-color, $translucent-opacity);
+$half-translucent-opacity: 0.6;
+$half-translucent-color: rgba($text-color, $half-translucent-opacity);
 $static-lane-outline-color: rgba($text-color, 0.1);
 $lane-outline-color: rgba($tag-orange-color, 0.1);
 
@@ -92,3 +94,6 @@ $gantt-project-color: hsla(120, 80%, 50%, 0.3);
 $gantt-progress-color: hsl(293, 100%, 56%, 1);
 
 $picker-active-color: $tag-orange-color;
+
+$almost-there-color: $priority-0-color;
+$just-passed-color: $priority-0-color;

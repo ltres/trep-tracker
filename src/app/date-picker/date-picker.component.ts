@@ -23,8 +23,8 @@ export class DatePickerComponent implements AfterViewInit{
   today = new Date();
 
   ngAfterViewInit(){ 
-    this.startDate = this.startDate ?? new Date(this.today.getFullYear(), this.today.getMonth(), this.today.getDate(), 0, 1, 0);
-    this.endDate = this.endDate ?? new Date(this.today.getFullYear(), this.today.getMonth(), this.today.getDate(), 23, 59, 0);
+    this.startDate = this.startDate ?? new Date(Date.UTC(this.today.getUTCFullYear(), this.today.getUTCMonth(), this.today.getUTCDate(), 0, 1, 0));
+    this.endDate = this.endDate ?? new Date(Date.UTC(this.today.getUTCFullYear(), this.today.getUTCMonth(), this.today.getUTCDate(), 23, 59, 0));
 
     this.selectedMoments =[
       this.startDate,

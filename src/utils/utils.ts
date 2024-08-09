@@ -1,5 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Lane, Task, Status, ISODateString, Container, tagHtmlWrapper, tagIdentifiers, Board, getLayouts, Layout, Layouts, LayoutProperties } from '../types/types';
+import { Lane, Task, Status, ISODateString, Container, tagHtmlWrapper, tagIdentifiers, Board, getLayouts, Layout, Layouts, LayoutProperties, TagTypes, GanttTask } from '../types/types';
+import { Recurrence } from '@ltres/angular-datetime-picker/lib/utils/constants';
+import { GanttConfig } from '../types/config';
+import { addUnitsToDate, toIsoString } from './date-utils';
 
 export function generateUUID(length?: number): string {
   return uuidv4().substring(0, length ?? 6);
@@ -161,8 +164,8 @@ export function hashCode(str: string): number {
   return hash;
 }
 
-export function getFirstMentionTag(task: Task) {
-  const mentionTagType = 'tag-orange';
+export function getFirstMentionTag(task: Task): string | undefined {
+  const mentionTagType = TagTypes.tagOrange;
   const mention = task.tags.find(t => t.type === mentionTagType);
   if (mention) {
     return tagHtmlWrapper(mentionTagType)[0] + tagIdentifiers.find(r => r.type === mentionTagType)?.symbol + mention.tag + tagHtmlWrapper(mentionTagType)[1];
@@ -201,6 +204,91 @@ export function getDescendants(container: Container): Container[] {
   }
 
   return descendants;
+}
+
+/**
+ * Generates a color basing on text hash
+ */
+export function textToHexColor(text: string): string {
+  let hash = 0;
+
+  // Generate a hash from the input text
+  for (let i = 0; i < text.length; i++) {
+    const charCode = text.toLowerCase().charCodeAt(i);
+    hash = (hash * 31 + charCode) % 0xFFFFFF;
+  }
+
+  // Extract RGB components from the hash
+  const r = (hash >> 16) & 0xFF;
+  const g = (hash >> 8) & 0xFF;
+  const b = hash & 0xFF;
+
+  // Convert RGB components to HEX string
+  const hexColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+
+  return hexColor;
+}
+
+/**
+ * Generates a number basing on text hashh
+ * @param to: the limit
+ */
+export function textToNumber(text: string, to?: number): number {
+  let hash = 0;
+
+  for (let i = 0; i < text.length; i++) {
+    const charCode = text.toLowerCase().charCodeAt(i);
+    hash = (hash * 31 + charCode) % (to ?? 256);
+  }
+
+  return hash;
+}
+
+/** Initializes the gantt data for a task.
+   * @param startDate : if set, will be the task start date
+   * Check the gantt-constants for config used.
+  */
+export function initGanttData(task: Task, startDateIso: Date): GanttTask {
+  if( task.gantt ){
+    return task as GanttTask;
+  }
+  let startDate = startDateIso;
+  if (GanttConfig.skipWeekendsInPlanning && (startDate.getUTCDay() == 6 || startDate.getUTCDay() == 0)) {
+    // Plan for next monday
+    startDate = addUnitsToDate( startDate, startDate.getUTCDay() == 0 ? 1 : 2, 'day' );
+  }
+
+  let endDate = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate() + GanttConfig.baseTaskDuration));
+  if (GanttConfig.skipWeekendsInPlanning && (endDate.getUTCDay() == 6 || endDate.getUTCDay() == 0)) {
+    // Plan for next monday
+    endDate = addUnitsToDate( endDate, endDate.getUTCDay() == 0 ? 1 : 2, 'day' );
+  }
+  task.gantt = {
+    startDate: toIsoString(startDate),
+    endDate:  toIsoString(endDate),
+    progress: 0,
+    successors: [],
+    order: 999,
+    recurrence: undefined
+  };
+  return task as GanttTask;
+}
+
+export function getTaskBackgroundColor( text:string ){
+  return `hsl(${textToNumber(text,357)}, 50%, 40%, 0.6)`
+}
+
+export function mapToGanttRecurrence(r : Recurrence): 'day' | 'week' | 'month' | 'year'{
+  switch(r){
+    case 'daily':
+      return "day"
+    case 'weekly':
+      return "week"
+    case 'monthly':
+      return "month";
+    case 'yearly':
+      return "year"
+  }
 }
 
 /**

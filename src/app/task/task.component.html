@@ -32,8 +32,8 @@
     </div>
 </div>
 <div class="dates-n-stuff flex g-05 small">
-    <div class="translucent" *ngIf="task.gantt">
-        {{getDatesText()}}
+    <div class="" *ngIf="task.gantt" [innerHTML]="getDatesText()">
+
     </div>
     <div *ngIf="task.status === 'archived'" class="translucent date-wrapper flex align-items-center g-05">
         <span>archived on {{parseDate(this.task.dates.archived?.enter) | date: 'dd-MM-yy hh:mm a'}}</span>

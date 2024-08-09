@@ -8,8 +8,9 @@ import { ContainerComponentRegistryService } from '../../service/registry.servic
 import { ContainerComponent } from '../base/base.component';
 import { ClickService } from '../../service/click.service';
 import { Recurrence } from '@ltres/angular-datetime-picker/lib/utils/constants';
-import { getIsoString, getWorkingDays, fromIsoString, formatDate, locale } from '../../utils/date-utils';
+import { toIsoString, fromIsoString, formatDate, getDiffInDays } from '../../utils/date-utils';
 import { setCaretPosition, isPlaceholder, hashCode } from '../../utils/utils';
+import { GanttConfig, locale } from '../../types/config';
 
 @Component({
   selector: 'task[task][lane][parent][board]',
@@ -204,14 +205,14 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     
     if(!this.task.gantt){
       this.task.gantt = {
-        startDate: getIsoString(datesNormalized[0]),
-        endDate: getIsoString(datesNormalized[1]),
+        startDate: toIsoString(datesNormalized[0]),
+        endDate: toIsoString(datesNormalized[1]),
         progress: 0,
         successors:[]
       };
     }else{
-      this.task.gantt.startDate = getIsoString(datesNormalized[0]);
-      this.task.gantt.endDate = getIsoString(datesNormalized[1]);
+      this.task.gantt.startDate = toIsoString(datesNormalized[0]);
+      this.task.gantt.endDate = toIsoString(datesNormalized[1]);
       this.task.gantt.progress = 0;
     }
     this.boardService.publishBoardUpdate();
@@ -222,8 +223,8 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   updateRecurrence($event: Recurrence|undefined) {
     if(!this.task.gantt){
       this.task.gantt = {
-        startDate: getIsoString(new Date()),
-        endDate: getIsoString(new Date()),
+        startDate: toIsoString(new Date()),
+        endDate: toIsoString(new Date()),
         progress: 0,
         successors:[]
       };
@@ -243,13 +244,32 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
 
   getDatesText(): string | undefined {
     if(this.task.gantt){
+      const today = new Date();
+      const phraseStart = this.task.gantt.recurrence ? `${this.task.gantt.recurrence} - next` : 'planned'
       if( this.task.gantt.startDate === this.task.gantt.endDate ){
-        return `planned ${formatDate(this.task.gantt.startDate, locale.long)}`
+        return `<span class="translucent">${phraseStart}</span> <span class="half-translucent ${this.getApproachingClass( today, this.task.gantt.startDate )}">${formatDate(this.task.gantt.startDate, locale.long)}</span>`
       }else{
-        return `planned ${formatDate(this.task.gantt.startDate,locale.long)} ⤳ ${formatDate(this.task.gantt.endDate,locale.long)} ${ this.task.gantt.startDate && this.task.gantt.endDate ? `(${getWorkingDays(this.task.gantt.startDate, this.task.gantt.endDate)} working days)` : "" }`
+        return `<span class="translucent">${phraseStart}</span> <span class="half-translucent ${this.getApproachingClass( today, this.task.gantt.startDate )}">${formatDate(this.task.gantt.startDate,locale.long)}</span> <span class="translucent">⤳</span> <span class="half-translucent ${this.getApproachingClass( today, this.task.gantt.endDate )}">${formatDate(this.task.gantt.endDate,locale.long)}</span> ${ this.task.gantt.startDate && this.task.gantt.endDate ? `<span class="translucent">(${getDiffInDays(this.task.gantt.startDate, this.task.gantt.endDate)} days)</span>` : "" }`
       }
     }
     return "";
+  }
+
+  // Returns a CSS class representing how far we are from the task start
+  getApproachingClass(referenceDate: Date, dateToCheck: ISODateString): string {
+    const toCheck = new Date(dateToCheck);
+    const diff = toCheck.getTime() - referenceDate.getTime();
+    if( diff > 0 ){
+      // toCheck in the future
+      if( Math.abs(diff) < GanttConfig.dateFrameForCSSClasses ){
+        return "almost-there"
+      }
+    }else{
+      if( Math.abs(diff) < GanttConfig.dateFrameForCSSClasses ){
+        return "just-passed"
+      }
+    }
+    return ""
   }
 
   openDatePicker() {

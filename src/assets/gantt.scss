@@ -333,6 +333,8 @@
 .gantt_task_row,
 .gantt_row {
     border-bottom: 1px solid $gantt-border-color;
+    border-top: 1px solid $gantt-border-color;
+
 }
 
 .gantt_row,
@@ -2404,4 +2406,17 @@ div.dhx_modal_cover {
 
 .gantt-weekend {
     background-color: $gantt-weekend-color;
+}
+
+.recurrent-task:not(.highlighted) {
+    opacity: .4;
+}
+
+.recurrent-task-row:not(.last),
+.has-recurrence-task-row {
+    border-width: 0px;
+}
+
+.has-recurrence-task-row {
+    border-top: 1px solid $gantt-border-color
 }

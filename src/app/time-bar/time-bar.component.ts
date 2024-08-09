@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { Container, Status, states } from '../../types/types';
-import { formatDate, locale } from '../../utils/date-utils';
+import { formatDate } from '../../utils/date-utils';
+import { locale } from '../../types/config';
 
 @Component({
   selector: 'time-bar[container]',

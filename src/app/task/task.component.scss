@@ -1,7 +1,7 @@
 @import "../../assets/variables";
 
 
-:host{
+:host {
     min-width: calc($min-width / 2);
     //width: 100%;
     display: inline-block;
@@ -11,39 +11,44 @@
     // z-index: 15;
 }
 
-.child{
+.child {
     opacity: 0.85;
 }
 
-.archive{
-    color:$archive-color;
+.archive {
+    color: $archive-color;
 }
 
-.task-wrapper{
+.task-wrapper {
     display: flex;
     align-items: center;
 
     --ngx-editor-text-color: $translucent-color;
+
     //border-left: 1px solid $translucent-color;
-    &.editor-active{
-        background-color: $editor-active-background;   
+    &.editor-active {
+        background-color: $editor-active-background;
     }
-    &.selected{
-        border-left:.15rem solid $text-color;
+
+    &.selected {
+        border-left: .15rem solid $text-color;
         padding-left: 0.25rem;
     }
 
-    .task-toolbar{
-        > *{
+    .task-toolbar {
+        >* {
             opacity: 0;
         }
-        > *.selected{
+
+        >*.selected {
             opacity: 1;
         }
     }
-    &:hover .task-toolbar *{
+
+    &:hover .task-toolbar * {
         opacity: 0.7;
-        &.selected{
+
+        &.selected {
             opacity: 1;
         }
     }
@@ -53,34 +58,36 @@
     padding: $task-y-padding 0;
 }
 
-.editor-wrapper{
+.editor-wrapper {
     align-self: center;
 }
 
-.date-wrapper{
+.date-wrapper {
     white-space: nowrap;
 }
 
-.line{
+.line {
     flex-basis: 1rem;
     flex-grow: 0;
     flex-shrink: 0;
     position: relative;
-    .border-angle{
+
+    .border-angle {
         position: absolute;
-        top:0;
+        top: 0;
         right: 0;
         width: 50%;
-        height:  1rem;
+        height: 1rem;
         border-left: 1px solid $translucent-color;
         border-bottom: 1px solid $translucent-color;
     }
-    .border-line{
+
+    .border-line {
         position: absolute;
-        bottom:0;
+        bottom: 0;
         right: 0;
         width: 50%;
-        height:  calc(100% - 1rem);
+        height: calc(100% - 1rem);
         border-left: 1px solid $translucent-color;
         ///border-bottom: 1px solid $todo-color;
     }

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Board, Tag, tagIdentifiers, tagHtmlWrapper, tagCapturingGroup } from '../types/types';
+import { Board, Tag, tagIdentifiers, tagHtmlWrapper, tagCapturingGroup, TagType } from '../types/types';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { getDescendants, isLane, isStatic } from '../utils/utils';
 import { BoardService } from './board.service';
@@ -62,7 +62,7 @@ export class TagService {
 
     const allTags = this._tags$.getValue().find(t => t.board.id === board.id)?.tags ?? [];
 
-    const tags: { tag: string, type: string }[] = [];
+    const tags: { tag: string, type: TagType }[] = [];
     for (const tagIdentifier of tagIdentifiers) {
       const wrappers = tagHtmlWrapper(tagIdentifier.class);
       const regex = new RegExp(`(${wrappers[0]})?${tagCapturingGroup(tagIdentifier.symbol)}?(${wrappers[1]})?`, 'g');

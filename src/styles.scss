@@ -365,6 +365,11 @@ button {
   opacity: $translucent-opacity;
 }
 
+.half-translucent {
+  //background-color: $translucent-color !important;
+  opacity: $half-translucent-opacity;
+}
+
 [contenteditable="true"] {
   border: none !important;
   outline: none !important;
@@ -454,4 +459,12 @@ select option {
 
 .search-highlight {
   background-color: yellow !important;
+}
+
+.just-passed {
+  color: $just-passed-color
+}
+
+.almost-there {
+  color: $almost-there-color
 }

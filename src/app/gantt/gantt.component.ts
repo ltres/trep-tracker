@@ -1,12 +1,11 @@
 import { AfterViewInit, ApplicationRef, Component, createComponent, Input } from '@angular/core';
-import { Board, ISODateString, Task } from '../../types/types';
+import { Board, GanttTask, getNewTask, TagTypes, Task } from '../../types/types';
 import { BoardService } from '../../service/board.service';
-import { Link } from 'dhtmlx-gantt';
-import { gantt, Task as DhtmlxTask } from 'dhtmlx-gantt';
+import { gantt, Task as DhtmlxTask, GanttStatic, Link as DhtmlxLink } from 'dhtmlx-gantt';
 import { TaskComponent } from '../task/task.component';
-import { Recurrence } from '@ltres/angular-datetime-picker/lib/utils/constants';
-import { startOfDay, endOfDay, getIsoString } from '../../utils/date-utils';
-import { getDescendants, isTask, getFirstMentionTag, generateUUID } from '../../utils/utils';
+import { toIsoString, addUnitsToDate, toUTCDate } from '../../utils/date-utils';
+import { getFirstMentionTag, mapToGanttRecurrence, initGanttData, getTaskBackgroundColor } from '../../utils/utils';
+import {  GanttConfig } from '../../types/config';
 
 @Component({
   selector: 'gantt[tasks][board]',
@@ -14,9 +13,13 @@ import { getDescendants, isTask, getFirstMentionTag, generateUUID } from '../../
   styleUrl: './gantt.component.scss',
 })
 export class GanttComponent implements AfterViewInit {
+
   @Input() tasks!: Task[] | undefined | null;
   @Input() board! : Board;
-  fullDescendants: Task[] | undefined;
+
+  cachedTasks: Task[] | undefined;
+  today = new Date();
+  selectedView: "months" | "days" | "hours" = 'days'
 
   constructor(
     protected boardService: BoardService,
@@ -24,35 +27,169 @@ export class GanttComponent implements AfterViewInit {
   ) { }
 
   ngAfterViewInit(): void {
+    this.setupGantt(gantt);
+
+    this.init();
+  }
+
+  private init(){
     if (!this.tasks) {
-      throw new Error('Tasks must be defined');
+      throw new Error('Tasks must be defined to open gantt');
     }
-    const today = new Date();
+
+    gantt.clearAll();
+
+    if(!this.cachedTasks){
+      this.cachedTasks = [...this.tasks];
+    }
+
+    /** Convert the local datamodel to the one gantt requires */
+    const dataModel = this.toDhtmlxGanttDataModel(this.cachedTasks, [], [], undefined, undefined );
+
+    /** Initial task sort */
+    dataModel.convertedTasks = dataModel.convertedTasks.sort((a, b) => a['order'] - b['order']);
+
+    gantt.parse({data:dataModel.convertedTasks, links: dataModel.convertedLinks});
+
+    gantt.init('gantt');
+
+    this.ganttAfterInitOperations(gantt)
+  }
+
+  /**
+   * Called from the gantt when a task gets modified via the GUI
+   */
+  updateTask(data: DhtmlxTask) {
+    const toUpdate = this.boardService.getTask(data.id.toString());
+    if (!toUpdate || !toUpdate.gantt) {
+      console.log('Task ' + toUpdate?.id + 'not found');
+    } else {
+      if(data.start_date){
+        toUpdate.gantt.startDate = toUTCDate(data.start_date as unknown as string);
+      }
+      if(data.end_date){
+        toUpdate.gantt.endDate = toUTCDate(data.end_date as unknown as string);
+      }
+      toUpdate.gantt.progress = data.progress ?? 0;
+      toUpdate.textContent = data.text;
+      // toUpdate.gantt.duration = data.duration;
+    }
+
+    let order = 0;
+    gantt.eachTask((task) => {
+      const toOrder = this.boardService.getTask(task.id);
+      if (!toOrder || !toOrder.gantt) {
+        console.warn('Task not found');
+        return;
+      }
+      if (toOrder.gantt.order && order === 0) {
+        order = toOrder.gantt.order;
+      }
+      toOrder.gantt.order = order++;
+    });
+
+    this.boardService.publishBoardUpdate();
+    if( data['hasRecurrence'] ){
+      // A recurrence step has been modified. We should redraw the whole gantt
+      this.init();
+    }
+
+  }
+  createTask() {
+    throw new Error('Method not implemented.');
+  }
+  updateLink() {
+    throw new Error('Method not implemented.');
+  }
+  createLink(data: DhtmlxLink) {
+    const source = this.boardService.getTask(data.source.toString());
+    const target = this.boardService.getTask(data.target.toString());
+    if (!source || !target) {
+      throw new Error('Task not found');
+    }
+
+    source.gantt!.successors = source.gantt!.successors ?? [];
+    source.gantt!.successors.push({
+      taskId: target.id,
+      linkId: data.id.toString(),
+    });
+    this.boardService.publishBoardUpdate();
+  }
+  deleteLink(id: string) {
+    this.boardService.allTasks?.forEach(task => {
+      if (task.gantt?.successors) {
+        task.gantt.successors = task.gantt.successors.filter(p => p.linkId !== id);
+      }
+    });
+    this.boardService.publishBoardUpdate();
+  }
+
+  private toDhtmlxGanttDataModel(tasks: Task[], convertedTasks: DhtmlxTask[], convertedLinks: DhtmlxLink[], parentId: string | undefined, tasksCssClass: string | undefined): { convertedTasks: DhtmlxTask[], convertedLinks: DhtmlxLink[] } {
+
+    let order = convertedTasks.length;
+
+    for (const task of tasks) {
+      if(convertedTasks.find(t => t.id === task.id)){
+        continue;
+      }
+      const lastDateInConverted = convertedTasks[convertedTasks.length-1]?.end_date ?? new Date();
+
+      // Init the gantt data and convert
+      const initializedTask = initGanttData(task, lastDateInConverted);
+      const firstResourceTag = task.tags?.find(t => t.type === TagTypes.tagOrange )?.tag;
+      const dhtmlxTask = this.toDhtmlxTask(initializedTask, firstResourceTag ? getTaskBackgroundColor(firstResourceTag) : undefined, order++, parentId, tasksCssClass, false);
+      convertedTasks.push(dhtmlxTask);
+
+      if( initializedTask.gantt?.recurrence ){
+        // Task has recurrence. Generate K temporary 'recurrent-task' rows after this task.
+        this.generateCenteredRecurrence(new Date(),initializedTask, order, initializedTask.id).forEach( (recurrence) => {
+
+          convertedTasks.push(recurrence);
+        });
+      }
+
+      if (task.children.length > 0) {
+        this.toDhtmlxGanttDataModel(task.children, convertedTasks, convertedLinks, task.id, tasksCssClass);
+      }
+
+      // Build task links
+      if (task.gantt?.successors) {
+        for (const successor of task.gantt.successors) {
+          const link: DhtmlxLink = {
+            id: successor.linkId,
+            source: task.id,
+            target: successor.taskId,
+            editable: true,
+            type: '0',
+          };
+          convertedLinks.push(link);
+          // It may happen that a successor is not between the tasks or their descendants. We need to retrieve it and process it.
+          if (tasks.map(t => t.id).indexOf(successor.taskId) < 0) {
+            const retrievedSucc = this.boardService.getTask(successor.taskId);
+            if (!retrievedSucc) {
+              console.error('Task ' + successor.taskId + ' not found');
+            } else {
+              this.toDhtmlxGanttDataModel([retrievedSucc], convertedTasks, convertedLinks, task.id, GanttConfig.externalTaskCssClass);
+            }
+          }
+        }
+      }
+    }
+
+    return {convertedTasks,convertedLinks};
+  }
+
+  /**
+   * Configures the gantt object
+   */
+  private setupGantt(gantt: GanttStatic){
     
     gantt.plugins({
       multiselect: true,
       marker: true,
     });
-    gantt.addMarker({
-      start_date: today,
-      css: 'today',
-      text: 'Today',
-      title: 'Today',
-    });
-    gantt.addMarker({
-      start_date: new Date(2024,7,1),
-      css: 'aug',
-      text: 'aug',
-      title: 'aug',
-    });
 
-    gantt.config.scales = [{
-      unit: 'month',
-      format: '%F'
-    },{
-      unit: 'day',
-      date: '%j'
-    }]
+    this.selectView(this.selectedView);
 
     gantt.config.min_column_width = 25; // Set to your desired width in pixels
 
@@ -78,13 +215,7 @@ export class GanttComponent implements AfterViewInit {
       },
       { name: 'text', label: 'Task name', min_width: 300, width: '*', tree: true, 
         template: (task) =>{
-          /*
-          const t = this.boardService.getTask(task.id.toString());
-          if(!t){
-            throw new Error("Task not found");
-          }
-          return `<div class="task-wrapper ${t.status}"><span>${states[t.status].icon}</span><span>●</span>   ${t.textContent}</div>`*/
-          return this.getTemplateHTML(task);
+          return this.getTaskComponentHTML(task);
         } },
       { name: 'start_date', label: 'Start time', align: 'center' },
       { name: 'duration', label: 'Duration', align: 'center' },
@@ -95,11 +226,11 @@ export class GanttComponent implements AfterViewInit {
     };
     gantt.config.sort = true;
 
-    const start = new Date(today.getFullYear(), today.getMonth(), 0);
-    const end = new Date(today.getFullYear(), today.getMonth() + 4, 0);
+    const start = new Date(Date.UTC(this.today.getUTCFullYear(), this.today.getUTCMonth(), 0));
+    const end = new Date(Date.UTC(this.today.getUTCFullYear(), this.today.getUTCMonth() + GanttConfig.shownMonths, 0));
 
     gantt.config.work_time = true;
-    gantt.setWorkTime({ hours: [`${startOfDay}:00-${endOfDay}:00`] });//global working hours. 8:00-12:00, 13:00-17:00
+    gantt.setWorkTime({ hours: [`${GanttConfig.startOfDay}:00-${GanttConfig.endOfDay}:00`] });//global working hours. 8:00-12:00, 13:00-17:00
     gantt.templates.timeline_cell_class = function (task, date) {
       if (!gantt.isWorkTime(date)) {
         return 'gantt-weekend';
@@ -121,29 +252,45 @@ export class GanttComponent implements AfterViewInit {
       }
     };
     gantt.templates.task_row_class = function(start, end, task){
-      if(task.id.toString().indexOf('temp') >= 0){
+      if(task['isRecurrenceStep'] === true || task['isRecurrenceStep'] === "highlighted" ){
         return "recurrent-task-row";
+      }else if(task['isRecurrenceStep'] === "last"){
+        return "recurrent-task-row last";
       }
+      if( task['hasRecurrence'] ){
+        return "has-recurrence-task-row";
+      }
+
       return "";
     };
 
     gantt.templates.grid_row_class = function(start, end, task) {
-      if(task.id.toString().indexOf('temp') >= 0){
+      if(task['isRecurrenceStep'] === true || task['isRecurrenceStep'] === "highlighted"){
         return "recurrent-task-row";
+      }else if(task['isRecurrenceStep'] === "last"){
+        return "recurrent-task-row last";
+      }
+      if( task['hasRecurrence'] ){
+        return "has-recurrence-task-row";
       }
       return "";
     };
 
     gantt.config.order_branch = true;
-    gantt.clearAll();
-    this.fullDescendants = this.tasks.flatMap(task => getDescendants(task)).concat(this.tasks).filter(t => isTask(t)) as Task[];
-    const dataModel = this.toDhtmlxGanttDataModel(this.tasks, { data: [], links: [] });
-    dataModel.data = dataModel.data.sort((a, b) => a['order'] - b['order']);
-    gantt.parse(dataModel);
+    gantt.config.date_format = "%Y-%m-%d %H:%i";
 
-    gantt.init('gantt');
-    gantt.showDate(today);
-     
+  }
+
+  /**
+   * Performs after init operations and attaches update listeners for tasks and links
+   */
+  private ganttAfterInitOperations(gantt: GanttStatic){
+    gantt.showDate(this.today);
+    gantt.addMarker({ 
+      start_date: new Date(), 
+      css: "today", 
+      title:"Today"
+    });
     if (!(gantt as unknown as {$_initOnce?:boolean}).$_initOnce) {
       (gantt as unknown as {$_initOnce?:boolean}).$_initOnce = true;
 
@@ -155,255 +302,56 @@ export class GanttComponent implements AfterViewInit {
         },
         link: {
           update: () => this.updateLink(),
-          create: (data: Link) => this.createLink(data),
+          create: (data: DhtmlxLink) => this.createLink(data),
           delete: (id: string) => this.deleteLink(id),
         },
       });
     }
   }
 
-  updateTask(data: DhtmlxTask) {
-    const formatFunc = gantt.date.str_to_date('%dd-%mm-%YYYY hh:MM', true);
-    const toUpdate = this.boardService.getTask(data.id.toString());
-    if (!toUpdate || !toUpdate.gantt) {
-      console.log('Task ' + toUpdate?.id + 'not found');
-    } else {
-      toUpdate.gantt.startDate = getIsoString(typeof data.start_date === 'string' ? formatFunc(data.start_date) : data.start_date);
-      toUpdate.gantt.endDate = getIsoString(typeof data.end_date === 'string' ? formatFunc(data.end_date) : data.start_date);
-      toUpdate.gantt.progress = data.progress ?? 0;
-      toUpdate.textContent = data.text;
-      // toUpdate.gantt.duration = data.duration;
-    }
-
-    let order = 0;
-    gantt.eachTask((task) => {
-      const toOrder = this.boardService.getTask(task.id);
-      if (!toOrder || !toOrder.gantt) {
-        console.warn('Task not found');
-        return;
-      }
-      if (toOrder.gantt.order && order === 0) {
-        order = toOrder.gantt.order;
-      }
-      toOrder.gantt.order = order++;
-    });
-
-    this.boardService.publishBoardUpdate();
-
-  }
-  createTask() {
-    throw new Error('Method not implemented.');
-  }
-  updateLink() {
-    throw new Error('Method not implemented.');
-  }
-  createLink(data: Link) {
-    const source = this.boardService.getTask(data.source.toString());
-    const target = this.boardService.getTask(data.target.toString());
-    if (!source || !target) {
-      throw new Error('Task not found');
-    }
-
-    source.gantt!.successors = source.gantt!.successors ?? [];
-    source.gantt!.successors.push({
-      taskId: target.id,
-      linkId: data.id.toString(),
-    });
-    this.boardService.publishBoardUpdate();
-  }
-  deleteLink(id: string) {
-    this.boardService.allTasks?.forEach(task => {
-      if (task.gantt?.successors) {
-        task.gantt.successors = task.gantt.successors.filter(p => p.linkId !== id);
-      }
-    });
-    this.boardService.publishBoardUpdate();
-  }
-
-  toDhtmlxGanttDataModel(tasks: Task[], runningObject: { data: DhtmlxTask[], links: Link[], latestEndDate?: ISODateString }, parentId?: string, cssClass?: string): { data: DhtmlxTask[], links: Link[] } {
-
-    // remove duplicates:
-    tasks = tasks.reduce((acc: Task[], task) => {
-      if (!acc.find(t => t.id === task.id) && !runningObject.data.find(t => t.id === task.id)) {
-        acc.push(task);
-      }
-      return acc;
-    }, []);
-
-    let prevBase: Task | undefined;
-    for (const task of tasks) {
-      this.initGanttData(task, prevBase, runningObject.latestEndDate);
-      const resourceTag = task.tags?.find(t => t.type === 'tag-orange')?.tag;
-      //standard task
-      const dhtmlxTask: DhtmlxTask = {
-        id: task.id,
-        text: task.textContent,
-        type: task.children.length > 0 ? 'project' : 'task',
-        start_date: new Date(task.gantt!.startDate),
-        end_date: new Date(task.gantt!.endDate),
-        parent: parentId,
-        progress: task.gantt?.progress ?? 0,
-        css: cssClass,
-        row_height: cssClass === "recurrent-task" ? 10 : undefined,
-        //bar_height: cssClass === "recurrent-task" ? 50 : undefined,
-        color: resourceTag ? `hsl(${this.textToNumber(resourceTag,357)}, 50%, 40%, 0.6)` : undefined,
-        order: task.gantt?.order ?? 999,
-        mention: getFirstMentionTag(task),
-        recurrence: task.gantt?.recurrence,
-        //auto_scheduling: true,
-        open: true,
-      };
-      if( task.gantt?.recurrence ){
-        const recChildren: Task[] = []
-        let order = task.gantt?.order ?? 0;
-        for( let i = 1; i<10; i++ ){
-          const startDate = gantt.date.add(dhtmlxTask.start_date ?? new Date(), i, this.mapToGanttRecurrence(task.gantt.recurrence));
-          const endDate = gantt.date.add(dhtmlxTask.end_date ?? new Date(), i, this.mapToGanttRecurrence(task.gantt.recurrence));
-          recChildren.push({
-            id: `${task.id}-temp-${order}`,
-            textContent: "",
-            _type: 'task',
-            children: [],
-            createdLaneId: '',
-            priority: 0,
-            status: 'todo',
-            includeInGantt: false,
-            tags: [],
-            creationDate: new Date().toISOString() as ISODateString,
-            dates: {},
-            gantt:{
-              startDate: startDate.toISOString() as ISODateString,
-              endDate: endDate.toISOString() as ISODateString,
-              progress: 0,
-              successors: [],
-              order: order++
-            }
-          })
-          this.toDhtmlxGanttDataModel(recChildren, runningObject, task.id, "recurrent-task");   
-        }
-      }
-
-      runningObject.latestEndDate = task.children.length > 0 ? runningObject.latestEndDate : task.gantt!.endDate;
-
-      if (!parentId) {
-        delete dhtmlxTask.parent;
-      }
-
-      if (task.children.length > 0) {
-        this.toDhtmlxGanttDataModel(task.children, runningObject, task.id);
-      }
-
-      runningObject.data.push(dhtmlxTask);
-
-      // links
-      if (task.gantt?.successors) {
-        for (const succ of task.gantt.successors) {
-          const link: Link = {
-            id: succ.linkId,
-            source: task.id,
-            target: succ.taskId,
-            editable: true,
-            type: '0',
-          };
-          runningObject.links.push(link);
-          // It may happen that a successor is not between the tasks or their descendants. We need to retrieve it and process it.
-          if (this.fullDescendants && this.fullDescendants.map(t => t.id).indexOf(succ.taskId) < 0) {
-            const retrievedSucc = this.boardService.getTask(succ.taskId);
-            if (!retrievedSucc) {
-              console.error('Task ' + succ.taskId + ' not found');
-            } else {
-              // this.tasks?.push(retrievedSucc);
-              this.toDhtmlxGanttDataModel([retrievedSucc], runningObject, undefined, 'gantt-external-task');
-            }
-          }
-        }
-      } else {
-        if (prevBase && 1 !== 1) {
-          const link: Link = {
-            id: generateUUID(),
-            source: prevBase.id,
-            target: task.id,
-            editable: true,
-            type: '0',
-          };
-          runningObject.links.push(link);
-        }
-      }
-      prevBase = task;
-    }
-
-    return runningObject;
-  }
-
-  private textToHexColor(text: string): string {
-    let hash = 0;
-
-    // Generate a hash from the input text
-    for (let i = 0; i < text.length; i++) {
-      const charCode = text.toLowerCase().charCodeAt(i);
-      hash = (hash * 31 + charCode) % 0xFFFFFF;
-    }
-
-    // Extract RGB components from the hash
-    const r = (hash >> 16) & 0xFF;
-    const g = (hash >> 8) & 0xFF;
-    const b = hash & 0xFF;
-
-    // Convert RGB components to HEX string
-    const hexColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-
-    return hexColor;
-  }
-
-  private textToNumber(text: string, to?: number): number {
-    let hash = 0;
-
-    for (let i = 0; i < text.length; i++) {
-      const charCode = text.toLowerCase().charCodeAt(i);
-      hash = (hash * 31 + charCode) % (to ?? 256);
-    }
-
-    return hash;
-  }
-
-  private initGanttData(task: Task, previousTask?: Task, latestEndDate?: ISODateString): Task {
-    const baseDuration = 2;
-    let startDate = new Date();
-    if (previousTask && previousTask.gantt?.endDate && previousTask.children.length === 0) {
-      startDate = new Date(previousTask.gantt.endDate);
-    } else if (latestEndDate) {
-      startDate = new Date(latestEndDate);
-    }
-    if (startDate.getDay() == 6 || startDate.getDay() == 0) {
-      // weekend
-      startDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
-    }
-
-    const plusTwo = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + baseDuration);
-    task.gantt = {
-      startDate: task.gantt?.startDate ?? getIsoString(startDate),
-      endDate: task.gantt?.endDate ?? getIsoString(plusTwo),
+  /**
+   * Converts a local task to a DHX task
+   */
+  private toDhtmlxTask(task:GanttTask, color: string | undefined, order: number, parentId: string | undefined, cssClass: string | undefined, isRecurrenceStep: boolean | "highlighted" | "last" ): DhtmlxTask{
+    const isProject = task.children.length > 0; 
+    const dhtmlxTask: DhtmlxTask = {
+      id: task.id,
+      text: isRecurrenceStep ? "" : task.textContent,
+      type: isProject ? 'project' : 'task',
+      start_date: isProject? undefined : new Date(task.gantt.startDate),
+      end_date:  isProject? undefined : new Date(task.gantt.endDate),
+      parent: parentId,
       progress: task.gantt?.progress ?? 0,
-      successors: task.gantt?.successors ?? [],
-      order: task.gantt?.order ?? 999,
-      recurrence: task.gantt?.recurrence
+      css: cssClass,
+      row_height: isRecurrenceStep && isRecurrenceStep !== 'highlighted' ? GanttConfig.recurrentTaskHeight : undefined,
+      bar_height: isRecurrenceStep && isRecurrenceStep !== 'highlighted'? GanttConfig.recurrentTaskHeight : undefined,
+      color,
+      order: order,
+      mention: getFirstMentionTag(task),
+      hasRecurrence: task.gantt.recurrence,
+      isRecurrenceStep: isRecurrenceStep,
+      readonly: !!isRecurrenceStep,
+      open: true,
+      trepTask: task
     };
-    return task;
+    if(!parentId){
+      delete dhtmlxTask.parent
+    }
+    return dhtmlxTask;
   }
 
-  /**Returns the html for a task using the TaskComponent */
-  private getTemplateHTML(task: DhtmlxTask): string{
-    if(task['css'] === "recurrent-task"){
+  /**
+   *  Returns the html for a task using the TaskComponent 
+   */
+  private getTaskComponentHTML(task: DhtmlxTask): string{
+    if(task['isRecurrenceStep']){
       return ""
     }
     const component = createComponent(TaskComponent, {environmentInjector: this.applicationRef.injector})
-    let t = this.boardService.getTask(task.id.toString());
+    const t = task['trepTask'] as GanttTask;
     if(!t){
       // may be a recurrence
-      t = this.boardService.getTask( task.id.toString().replaceAll(/-temp-\d+/g,"") );
-      if(!t){
-        throw new Error("Task not found");
-      }
+      throw new Error("Task not found");
     }
     component.instance.task = t;
     component.instance.staticView = true;
@@ -420,16 +368,84 @@ export class GanttComponent implements AfterViewInit {
     component.destroy();
     return html;
   }
-  private mapToGanttRecurrence(r : Recurrence){
-    switch(r){
-      case 'daily':
-        return "day"
-      case 'weekly':
-        return "week"
-      case 'monthly':
-        return "month";
-      case 'yearly':
-        return "year"
+
+  /**
+   * Starting from the task, generates an array of recurrences centered about the provided date.
+   * Task could originally have been planned in the past, so this is accounted for.
+   * If the date is inside a recurrence date, the task will be shown in full, otherwise it will be rendered as a recurrence step.
+   * If the date is not inside a recurrence date, the next recurrence will be shown in full.
+   * @param date the date on which to center
+   * @param task the recurrent task
+   */
+  private generateCenteredRecurrence( date: Date, task: GanttTask, order: number, parentId: string | undefined ): DhtmlxTask[]{
+    if(!task.gantt?.recurrence){
+      return [];
     }
+    const firstResourceTag = task.tags?.find(t => t.type === TagTypes.tagOrange )?.tag;
+    const ret : DhtmlxTask[] = []
+    /*
+    // get previous:
+    for( let i = -GanttConfig.recurrenceIterationsShown / 2 + 1; i < 0 ; i++  ){
+      const recurrenceStartDate = addUnitsToDate(task.gantt.startDate, i, mapToGanttRecurrence(task.gantt.recurrence));
+      const recurrenceEndDate = addUnitsToDate(task.gantt.endDate, i, mapToGanttRecurrence(task.gantt.recurrence));
+      const child = initGanttData( getNewTask(task.createdLaneId, `${task.id}-recurrence-${i}` ) , new Date());
+      child.gantt.startDate = toIsoString(recurrenceStartDate);
+      child.gantt.endDate = toIsoString(recurrenceEndDate);
+      ret.push( this.toDhtmlxTask(child, order++, parentId, GanttConfig.recurrentTaskCssClass, true));
+    }
+      
+    // central recurrence:
+    const centeredChild = initGanttData( getNewTask(task.createdLaneId, `` ) , new Date());
+    centeredChild.gantt.startDate = task.gantt.startDate;
+    centeredChild.gantt.endDate = task.gantt.endDate;
+    ret.push(this.toDhtmlxTask(centeredChild, order++, parentId, GanttConfig.recurrentTaskCssClass + " highlighted" , "highlighted" ));
+*/
+    // get next:
+    for( let i = -1; i < GanttConfig.recurrenceIterationsShown / 2 + 1; i++  ){
+      if( i == 0) continue;
+      const recurrenceStartDate = addUnitsToDate(task.gantt.startDate, i, mapToGanttRecurrence(task.gantt.recurrence));
+      const recurrenceEndDate = addUnitsToDate(task.gantt.endDate, i, mapToGanttRecurrence(task.gantt.recurrence));
+      const child = initGanttData( getNewTask(task.createdLaneId, `${task.id}-recurrence-${i}` ) , new Date());
+      child.gantt.startDate = toIsoString(recurrenceStartDate);
+      child.gantt.endDate = toIsoString(recurrenceEndDate);
+      ret.push( this.toDhtmlxTask(child, firstResourceTag ? getTaskBackgroundColor(firstResourceTag) : undefined, order++, parentId, GanttConfig.recurrentTaskCssClass, true) );
+    }
+
+    return ret
   }
+
+  protected selectView(view: "months" | "days" | "hours") {
+    this.selectedView = view;
+    switch( this.selectedView ){
+      case "months":
+        gantt.config.scales = [{
+          unit: 'month',
+          format: '%F'
+        }]
+        break
+      case "days":
+        gantt.config.scales = [{
+          unit: 'month',
+          format: '%F'
+        },{
+          unit: 'day',
+          date: '%j'
+        }]
+        break;
+      case "hours":
+        gantt.config.scales = [{
+          unit: 'month',
+          format: '%F'
+        },{
+          unit: 'day',
+          date: '%j'
+        },{
+          unit: 'hour',
+          date: '%H'
+        }]
+        break;    
+    }
+    gantt.render()
+  }
+
 }

@@ -1,10 +1,10 @@
 import {  Inject, Injectable, Injector, NgZone } from '@angular/core';
-import { Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, states, getNewTask } from '../types/types';
+import { Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, states, getNewTask, ISODateString } from '../types/types';
 import { BehaviorSubject, Observable, map } from 'rxjs';
 import { eventuallyPatch, getDescendants, isLane, isPlaceholder, isStatic, isTask, isTasks } from '../utils/utils';
 import { TagService } from './tag.service';
 import { StorageServiceAbstract } from '../types/storage';
-import { setDateSafe } from '../utils/date-utils';
+import { setDateSafe, toIsoString } from '../utils/date-utils';
 
 @Injectable({
   providedIn: 'root',
@@ -50,6 +50,7 @@ export class BoardService {
     });
 
     this._boards$.subscribe(b => {
+      const date = new Date();
       console.warn('Boards updated', this.boardUpdateCounter++);
       let allTasks: Task[] = [];
       let allLanes: Lane[] = [];
@@ -65,10 +66,11 @@ export class BoardService {
 
         allLanes = allLanes.concat(board.children);
       });
+      allTasks.filter( t => t.gantt?.recurrence ).forEach(t => this.centerRecurrence(t, toIsoString(date)))
       this._allTasks$.next(allTasks);
       this._allLanes$.next(allLanes);
       this._allParents$.next([...allTasks, ...allLanes, ...this.boards]);
-
+      
       // Store status:
       if(storageService.isStatusPresent()){
         this.storageService.writeToStatus({ boards: b });
@@ -765,6 +767,74 @@ export class BoardService {
     currentBoard.children = currentBoard.children.filter(c => c.id !== lane.id);
     targetBoard.children.unshift(lane);
     this.publishBoardUpdate();
+  }
+
+  /**
+   * Takes a recurrent task and shift the new start and end dates basing on the task recurrence, if needed
+   * @param dateToCenter 
+   * @param task 
+   * @returns 
+   */
+  private centerRecurrence( task: Task, dateToCenter: ISODateString): void {
+    const today = new Date(dateToCenter);
+
+    if(!task.gantt?.recurrence){
+      return;
+    }
+
+    const currentStartDate = new Date(task.gantt.startDate);
+    const currentEndDate = new Date(task.gantt.endDate);
+
+    let latestDiff = Infinity;
+    while (true) {
+      const currentDiff = currentStartDate.getTime() - today.getTime();
+      if( currentStartDate && currentEndDate && currentStartDate?.getTime() - today.getTime() < 0 && currentEndDate?.getTime() - today.getTime() > 0 ){
+        // exit case: start date is in the past, but end date in the future. Recurrence includes today
+        if(!task.gantt.originalStartDate){
+          task.gantt.originalStartDate = task.gantt.startDate
+          task.gantt.originalEndDate = task.gantt.endDate
+        }
+        task.gantt.startDate = toIsoString(currentStartDate);
+        task.gantt.endDate = toIsoString(currentEndDate)
+        return;
+      }else if( currentDiff > 0 && latestDiff < 0 ){
+        // exit case: latest recurrence start was in the past, current start is in the future
+        if(!task.gantt.originalStartDate){
+          task.gantt.originalStartDate = task.gantt.startDate
+          task.gantt.originalEndDate = task.gantt.endDate
+        }
+        task.gantt.startDate = toIsoString(currentStartDate);
+        task.gantt.endDate =  toIsoString(currentEndDate)
+        return;
+      }else if( Math.abs(currentDiff) > Math.abs(latestDiff) ){
+        return;
+      }
+
+      // Next: 
+      latestDiff = currentDiff;
+  
+      switch (task.gantt.recurrence) {
+        case 'daily':
+          currentStartDate.setUTCDate(currentStartDate.getUTCDate() + 1);
+          currentEndDate.setUTCDate(currentEndDate.getUTCDate() + 1);
+          break;
+        case 'weekly':
+          currentStartDate.setUTCDate(currentStartDate.getUTCDate() + 7);
+          currentEndDate.setUTCDate(currentEndDate.getUTCDate() + 7);
+          break;
+        case 'monthly':
+          currentStartDate.setUTCMonth(currentStartDate.getUTCMonth() + 1);
+          currentEndDate.setUTCMonth(currentEndDate.getUTCMonth() + 1);
+          break;
+        case 'yearly':
+          currentStartDate.setUTCFullYear(currentStartDate.getUTCFullYear() + 1);
+          currentEndDate.setUTCFullYear(currentEndDate.getUTCFullYear() + 1);
+          break;
+        default:
+          throw new Error('Invalid recurrence type');
+      }
+    }
+  
   }
 
   /**

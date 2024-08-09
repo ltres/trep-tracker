@@ -1,13 +1,5 @@
 import { Container, Status, ISODateString } from "../types/types";
 
-export const locale = {
-  short:"it",
-  long: "it-IT"
-}
-
-export const startOfDay = 9;
-export const endOfDay = 18
-
 // learn more about this from
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DateTimeFormat
 export const datePickerFormat = {
@@ -26,7 +18,7 @@ export function setDateSafe(container: Container, status: Status, enterOrLeave: 
       container.dates[status]![enterOrLeave] = date.toISOString() as ISODateString;
 }
   
-export function getIsoString(date: Date): ISODateString {
+export function toIsoString(date: Date): ISODateString {
   return date.toISOString() as ISODateString;
 }
 
@@ -34,8 +26,8 @@ export function fromIsoString(date: ISODateString): Date {
   return new Date(date);
 }
   
-export function getDiffInDays(date: Date, date2: Date){
-  return (date2.getTime() - date.getTime()) / ( 1000 * 3600 * 24 )
+export function getDiffInDays(date: ISODateString, date2: ISODateString){
+  return Math.round((new Date(date2).getTime() - new Date(date).getTime()) / ( 1000 * 3600 * 24 ) * 10) / 10
 }
   
 export function getWorkingDays(startDate: ISODateString, endDate: ISODateString) {
@@ -46,19 +38,44 @@ export function getWorkingDays(startDate: ISODateString, endDate: ISODateString)
   
   while (currentDate < end) {
     // Check if the current day is a weekday (Monday-Friday)
-    if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
+    if (currentDate.getUTCDay() !== 0 && currentDate.getUTCDay() !== 6) {
       workingDays++;
     }
-    currentDate.setDate(currentDate.getDate() + 1);
+    currentDate.setUTCDate(currentDate.getUTCDate() + 1);
   }
   
   return Math.abs(workingDays);
 }
+
+export function toUTCDate( date: string ): ISODateString{
+  // Parse the local date string
+  const [datePart, timePart] = date.split(' ');
+  const [year, month, day] = datePart.split('-').map(Number);
+  const [hours, minutes] = timePart.split(':').map(Number);
   
+  // Create a Date object (in local time)
+  const localDate = new Date(year, month - 1, day, hours, minutes);
+  
+  // Format the UTC date as a string (ISO format)
+  return localDate.toISOString() as ISODateString;
+}
+
 export function formatDate(date: ISODateString | undefined, locale: string) {
   if(!date){
     console.warn("format date called on empty object");
     return ""
   }
   return new Date(date).toLocaleDateString(locale);
+}
+
+export function addToDate( date: Date | ISODateString, years: number, months: number, days: number ){
+  const toWork = typeof date === 'string' ? new Date(date) : date;
+  const toReturn = new Date( Date.UTC(toWork.getUTCFullYear() + years, toWork.getUTCMonth() + months, toWork.getUTCDate() + days) );
+  return toReturn
+}
+
+export function addUnitsToDate( date: Date | ISODateString, amount: number, unit: 'day'| 'week' | 'month' | 'year' ){
+  const toWork = typeof date === 'string' ? new Date(date) : date;
+  const toReturn = new Date( Date.UTC(toWork.getUTCFullYear() + ( unit === 'year' ? amount : 0 ), toWork.getUTCMonth() + ( unit === 'month' ? amount : 0 ), toWork.getUTCDate() + ( unit === 'day' ? amount : ( unit === 'week' ? amount * 7 : 0 ) ), toWork.getUTCHours(), toWork.getUTCMinutes(), toWork.getUTCSeconds(), toWork.getUTCMilliseconds() ));
+  return toReturn
 }
