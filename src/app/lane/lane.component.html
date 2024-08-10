@@ -93,5 +93,5 @@
 </div>
 
 <ng-template #gantt>
-  <gantt [tasks]="getGanttTasks$() | async" [board]="board"></gantt>
+  <gantt [tasks]="getGanttTasks$() | async" [lane]="lane" [board]="board"></gantt>
 </ng-template>

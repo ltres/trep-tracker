@@ -15,10 +15,10 @@
         }
 
         <div *ngIf="!enableGanttView" class="task-toolbar relative flex align-items-center g-025">
-            <span *ngIf="!isPlaceholder() && task.children.length === 0" [class.selected]="task.gantt?.startDate || task.gantt?.endDate" class="select-dates pointer" (click)="openDatePicker()">
+            <span *ngIf="!isPlaceholder() && task.children.length === 0" [class.selected]="(task.gantt?.startDate || task.gantt?.endDate) && task.gantt?.showData !== false" class="select-dates pointer" (click)="openDatePicker()">
                 <span *ngIf="task.gantt?.recurrence" [tooltip]="'Recurrent (' + task.gantt?.recurrence + ')'" [position]="'top'">↻</span>
                 <span [tooltip]="'Set start/end dated'" [position]="'top'">📅</span>
-                <date-picker *ngIf="showDatePicker" [startDate]="fromIsoString(task.gantt?.startDate)" [endDate]="fromIsoString(task.gantt?.endDate)" (onDatesSelected)="setDates($event)" (onRecurrenceUpdate)="updateRecurrence($event)"></date-picker>
+                <date-picker *ngIf="showDatePicker" [startDate]="fromIsoString(task.gantt?.startDate)" [endDate]="fromIsoString(task.gantt?.endDate)" [recurrence]="task.gantt?.recurrence" (onDatesSelected)="setDates($event)" (onCancel)="setDates(undefined)" (onRecurrenceUpdate)="updateRecurrence($event)"></date-picker>
             </span>
 
             <span *ngIf="!isPlaceholder()" [tooltip]="'Toggle show in Gantt chart'" [position]="'top'" [class.selected]="task.includeInGantt" (click)="toggleShowInGantt()" class="show-in-gantter pointer">
@@ -31,8 +31,8 @@
         </div>
     </div>
 </div>
-<div class="dates-n-stuff flex g-05 small">
-    <div class="" *ngIf="task.gantt" [innerHTML]="getDatesText()">
+<div *ngIf="task.gantt && task.gantt.showData !== false" class="dates-n-stuff flex g-05 small">
+    <div class="" [innerHTML]="getDatesText()">
 
     </div>
     <div *ngIf="task.status === 'archived'" class="translucent date-wrapper flex align-items-center g-05">

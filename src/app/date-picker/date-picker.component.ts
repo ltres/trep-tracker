@@ -1,5 +1,7 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from "@angular/core";
 import { Recurrence } from "@ltres/angular-datetime-picker/lib/utils/constants";
+import { locale } from "../../types/config";
+import { DateTimeAdapter } from "@ltres/angular-datetime-picker";
 
 const ONE_DAY = 24 * 60 * 60 * 1000;
 
@@ -11,7 +13,9 @@ const ONE_DAY = 24 * 60 * 60 * 1000;
 export class DatePickerComponent implements AfterViewInit{
   @Input() startDate: Date | undefined = new Date(Date.now() - ONE_DAY);
   @Input() endDate: Date | undefined = new Date(Date.now() + ONE_DAY)
-  @Output() onDatesSelected:EventEmitter<[(Date|undefined),(Date|undefined)]> = new EventEmitter();
+  @Input() recurrence: Recurrence | undefined;
+
+  @Output() onDatesSelected:EventEmitter<[Date, Date]> = new EventEmitter();
   @Output() onCancel:EventEmitter<void> = new EventEmitter();
   @Output() onRecurrenceUpdate:EventEmitter<Recurrence | undefined> = new EventEmitter();
 
@@ -22,9 +26,13 @@ export class DatePickerComponent implements AfterViewInit{
   dateTime = false
   today = new Date();
 
+  constructor(dateTimeAdapter: DateTimeAdapter<unknown>){
+    dateTimeAdapter.setLocale(locale.long);
+  }
+
   ngAfterViewInit(){ 
-    this.startDate = this.startDate ?? new Date(Date.UTC(this.today.getUTCFullYear(), this.today.getUTCMonth(), this.today.getUTCDate(), 0, 1, 0));
-    this.endDate = this.endDate ?? new Date(Date.UTC(this.today.getUTCFullYear(), this.today.getUTCMonth(), this.today.getUTCDate(), 23, 59, 0));
+    this.startDate = this.startDate ?? new Date(this.today.getFullYear(), this.today.getMonth(), this.today.getDate(), 0, 1, 0);
+    this.endDate = this.endDate ??  new Date(this.today.getFullYear(), this.today.getMonth(), this.today.getDate(), 23, 59, 0);
 
     this.selectedMoments =[
       this.startDate,
@@ -34,12 +42,12 @@ export class DatePickerComponent implements AfterViewInit{
     this.trigger?.nativeElement.click();
   }
 
-  protected selectedTrigger(date: [(Date|undefined),(Date|undefined)] | undefined): void {
-    if(!date){
+  protected selectedTrigger(date: Date | Date[]): void {
+    if(!date || !Array.isArray(date) || date.length !== 2){
       console.warn("Undefined date");
       return;
     }
-    this.onDatesSelected.emit(date)
+    this.onDatesSelected.emit([date[0],date[1]])
   }
 
   protected cancelTrigger(): void {
@@ -51,6 +59,9 @@ export class DatePickerComponent implements AfterViewInit{
   }
   getStartAt(): Date {
     return this.startDate ?? new Date();
+  }
+  getRecurrence(): Recurrence | undefined {
+    return this.recurrence
   }
   updateRecurrence($event: Recurrence) {
     this.onRecurrenceUpdate.emit($event);

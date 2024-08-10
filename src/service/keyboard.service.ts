@@ -103,7 +103,7 @@ export class KeyboardService {
         if (!parentObject || !isLane(parentObject) || !isTask(sibling)) {
           throw new Error('Wrong parent or sibling');
         }
-        const task = getNewTask(parentObject,'');
+        const task = getNewTask(parentObject, undefined, '');
         /*
         let lane = isLane(parent) ? parent : this.boardService.findParentLane([parent]);
         if (!lane) {

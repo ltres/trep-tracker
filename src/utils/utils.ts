@@ -264,11 +264,11 @@ export function initGanttData(task: Task, startDateIso: Date): GanttTask {
     endDate = addUnitsToDate( endDate, endDate.getUTCDay() == 0 ? 1 : 2, 'day' );
   }
   task.gantt = {
+    showData: true,
     startDate: toIsoString(startDate),
     endDate:  toIsoString(endDate),
     progress: 0,
     successors: [],
-    order: 999,
     recurrence: undefined
   };
   return task as GanttTask;
@@ -289,6 +289,10 @@ export function mapToGanttRecurrence(r : Recurrence): 'day' | 'week' | 'month' |
     case 'yearly':
       return "year"
   }
+}
+
+export function getRecurrenceId(taskId: string, index: number){
+  return `${taskId}-recurrence-${index}`
 }
 
 /**
@@ -317,10 +321,36 @@ export function eventuallyPatch( board: Board ): Board{
         archivedDate?: ISODateString,
         stateChangeDate?: ISODateString,
         createdLaneId?: string | undefined;
+        order?: number;
       } = p
+
+      // cleanup successors
+      if(mayBeOldTask.gantt?.successors){
+        for( const succ of  mayBeOldTask.gantt.successors){
+          if(!des.find( d => d.id === succ.taskId)){
+            mayBeOldTask.gantt.successors = mayBeOldTask.gantt.successors.filter( s => s.taskId !== succ.taskId )
+          }
+        }
+      }
+
+      // cleanup orders
+      if(mayBeOldTask.gantt?.order){
+        for( const ord of  Object.keys(mayBeOldTask.gantt.order)){
+          if(ord === 'board'){
+            // Skip board order
+            continue;
+          }
+          if(!des.find( d => d.id === ord)){
+            delete mayBeOldTask.gantt.order[ord]
+          }
+        }
+      }
 
       if(typeof mayBeOldTask.includeInGantt === 'undefined'){
         mayBeOldTask.includeInGantt = false;
+      }
+      if( typeof mayBeOldTask.order === 'number' ){
+        delete mayBeOldTask.order
       }
       if(!mayBeOldTask.dates){
         mayBeOldTask.dates = {}

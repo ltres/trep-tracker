@@ -1,15 +1,5 @@
+import { datePickerFormat, locale } from "../types/config";
 import { Container, Status, ISODateString } from "../types/types";
-
-// learn more about this from
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DateTimeFormat
-export const datePickerFormat = {
-  fullPickerInput: {year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: false},
-  datePickerInput: {year: 'numeric', month: 'numeric', day: 'numeric', hour12: false},
-  timePickerInput: {hour: 'numeric', minute: 'numeric', hour12: false},
-  monthYearLabel: {year: 'numeric', month: 'short', hour12: false},
-  dateA11yLabel: {year: 'numeric', month: 'long', day: 'numeric', hour12: false},
-  monthYearA11yLabel: {year: 'numeric', month: 'long', hour12: false},
-};
 
 export function setDateSafe(container: Container, status: Status, enterOrLeave: 'enter' | 'leave', date: Date) {
   if (!container.dates[status]) {
@@ -60,12 +50,18 @@ export function toUTCDate( date: string ): ISODateString{
   return localDate.toISOString() as ISODateString;
 }
 
-export function formatDate(date: ISODateString | undefined, locale: string) {
+export function formatDate(date: ISODateString | Date | undefined) {
   if(!date){
     console.warn("format date called on empty object");
     return ""
   }
-  return new Date(date).toLocaleDateString(locale);
+  const dateTimeFormat = new Intl.DateTimeFormat(locale.long, datePickerFormat.baseDateFormat);
+  const parts = dateTimeFormat.formatToParts(typeof date === 'string' ? new Date(date) : date);
+  let out = locale.dateFormat
+  for(const part of ["day","month","year","timeZoneName"]){
+    out = out.replace(part, parts.find( p => p.type === part )?.value ?? "" )
+  }
+  return out
 }
 
 export function addToDate( date: Date | ISODateString, years: number, months: number, days: number ){

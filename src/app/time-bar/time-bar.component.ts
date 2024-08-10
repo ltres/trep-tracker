@@ -1,7 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { Container, Status, states } from '../../types/types';
 import { formatDate } from '../../utils/date-utils';
-import { locale } from '../../types/config';
 
 @Component({
   selector: 'time-bar[container]',
@@ -12,7 +11,7 @@ export class TimeBarComponent {
   @Input() container!: Container; ;
 
   getTooltip(dateKey: Status):string {
-    return `${dateKey}: ${this.getDays(dateKey)} days - from ${formatDate(this.container.dates[dateKey]?.enter,locale.long)} to ${formatDate(this.container.dates[dateKey]?.leave,locale.long)}`;
+    return `${dateKey}: ${this.getDays(dateKey)} days - from ${formatDate(this.container.dates[dateKey]?.enter)} to ${formatDate(this.container.dates[dateKey]?.leave)}`;
   }
 
   getDays(dateKey: Status):number {

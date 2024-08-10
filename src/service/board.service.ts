@@ -715,7 +715,7 @@ export class BoardService {
 
       };
       if( prevPriority && children[i].priority !== prevPriority ){
-        children.splice(i, 0, getNewTask(lane,''));
+        children.splice(i, 0, getNewTask(lane, undefined, ''));
         continue;
       }
       prevPriority = children[i].priority;

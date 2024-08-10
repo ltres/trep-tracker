@@ -39,12 +39,16 @@ export interface Task extends Container {
 }
 
 export type GanttData = {
+  showData?: boolean,
   startDate: ISODateString,
   endDate: ISODateString,
   originalStartDate?: ISODateString, // for recurrent tasks
   originalEndDate?: ISODateString, // for recurrent tasks
   progress: number,
-  order?: number,
+  order?: {
+    board?: number,
+    [laneId: string]: number | undefined
+  },
   recurrence?: Recurrence,
   successors: {
       taskId: string
@@ -180,12 +184,12 @@ export const tagIdentifiers: { type: TagType, symbol: string, class: string }[] 
 export const tagHtmlWrapper = (kl: string) => (['<span tag="true" class="' + kl + '">', '</span>']);
 export const tagCapturingGroup = (symbol: string) => (`${symbol}([A-Za-z0-9-_]+)`);
 
-export const getNewTask: (lane: Lane | string, textContent?: string | undefined) => Task = (lane: Lane | string, textContent?: string | undefined) => {
-  const uuid = generateUUID();
+export const getNewTask: (lane: Lane | string, id: string | undefined, textContent: string | undefined ) => Task = (lane: Lane | string, id: string | undefined, textContent?: string | undefined) => {
+  const taskId = id ?? generateUUID()
   const t: Task = {
-    id: uuid,
+    id: taskId,
     createdLaneId: typeof lane === 'string' ? lane : lane.id,
-    textContent: typeof textContent != 'undefined' ? textContent : `Task ${uuid}`,
+    textContent: typeof textContent != 'undefined' ? textContent : `Task ${taskId}`,
     children: [],
     tags: [],
     includeInGantt: false,
