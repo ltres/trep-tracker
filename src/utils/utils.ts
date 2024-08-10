@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Lane, Task, Status, ISODateString, Container, tagHtmlWrapper, tagIdentifiers, Board, getLayouts, Layout, Layouts, LayoutProperties, TagTypes, GanttTask } from '../types/types';
+import { Lane, Task, Status, ISODateString, Container, tagHtmlWrapper, tagIdentifiers, Board, getLayouts, Layout, Layouts, LayoutProperties, TagTypes, GanttTask, RecurringGanttTask } from '../types/types';
 import { Recurrence } from '@ltres/angular-datetime-picker/lib/utils/constants';
 import { GanttConfig } from '../types/config';
 import { addUnitsToDate, toIsoString } from './date-utils';
@@ -185,6 +185,21 @@ export function isTask(parent: Container | undefined): parent is Task {
   }
   return (parent as Task)._type === 'task';
 }
+
+export function isGanttTask(parent: Container | undefined): parent is GanttTask {
+  if (!parent) {
+    return false;
+  }
+  return isTask(parent) && !!parent.gantt;
+}
+
+export function isRecurringGanttTask(parent: Container | undefined): parent is RecurringGanttTask {
+  if (!parent) {
+    return false;
+  }
+  return isGanttTask(parent) && !!parent.gantt.recurrence;
+}
+
 export function isLanes(parent: Container[]): parent is Lane[] {
   return (parent[0] as Lane)._type === 'lane';
 }
@@ -248,11 +263,11 @@ export function textToNumber(text: string, to?: number): number {
    * @param startDate : if set, will be the task start date
    * Check the gantt-constants for config used.
   */
-export function initGanttData(task: Task, startDateIso: Date): GanttTask {
+export function initGanttData(task: Task, startDateIso?: Date | undefined): GanttTask {
   if( task.gantt ){
     return task as GanttTask;
   }
-  let startDate = startDateIso;
+  let startDate = startDateIso ?? new Date();
   if (GanttConfig.skipWeekendsInPlanning && (startDate.getUTCDay() == 6 || startDate.getUTCDay() == 0)) {
     // Plan for next monday
     startDate = addUnitsToDate( startDate, startDate.getUTCDay() == 0 ? 1 : 2, 'day' );

@@ -1,7 +1,7 @@
 import {  Inject, Injectable, Injector, NgZone } from '@angular/core';
-import { Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, states, getNewTask, ISODateString } from '../types/types';
+import { Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, states, getNewTask, ISODateString, RecurringGanttTask } from '../types/types';
 import { BehaviorSubject, Observable, map } from 'rxjs';
-import { eventuallyPatch, getDescendants, isLane, isPlaceholder, isStatic, isTask, isTasks } from '../utils/utils';
+import { eventuallyPatch, getDescendants, isLane, isPlaceholder, isRecurringGanttTask, isStatic, isTask, isTasks } from '../utils/utils';
 import { TagService } from './tag.service';
 import { StorageServiceAbstract } from '../types/storage';
 import { setDateSafe, toIsoString } from '../utils/date-utils';
@@ -66,7 +66,7 @@ export class BoardService {
 
         allLanes = allLanes.concat(board.children);
       });
-      allTasks.filter( t => t.gantt?.recurrence ).forEach(t => this.centerRecurrence(t, toIsoString(date)))
+      allTasks.filter( t => t.gantt?.recurrence ).filter( t => isRecurringGanttTask(t) ).forEach(t => this.adjustNextRecurrence(t, toIsoString(date)))
       this._allTasks$.next(allTasks);
       this._allLanes$.next(allLanes);
       this._allParents$.next([...allTasks, ...allLanes, ...this.boards]);
@@ -770,17 +770,13 @@ export class BoardService {
   }
 
   /**
-   * Takes a recurrent task and shift the new start and end dates basing on the task recurrence, if needed
+   * Takes a recurrent task and shift the new start and end dates basing on the task recurrence and task original start and end dates, if needed
    * @param dateToCenter 
    * @param task 
    * @returns 
    */
-  private centerRecurrence( task: Task, dateToCenter: ISODateString): void {
+  private adjustNextRecurrence( task: RecurringGanttTask, dateToCenter: ISODateString): void {
     const today = new Date(dateToCenter);
-
-    if(!task.gantt?.recurrence){
-      return;
-    }
 
     const currentStartDate = new Date(task.gantt.startDate);
     const currentEndDate = new Date(task.gantt.endDate);
@@ -790,21 +786,13 @@ export class BoardService {
       const currentDiff = currentStartDate.getTime() - today.getTime();
       if( currentStartDate && currentEndDate && currentStartDate?.getTime() - today.getTime() < 0 && currentEndDate?.getTime() - today.getTime() > 0 ){
         // exit case: start date is in the past, but end date in the future. Recurrence includes today
-        if(!task.gantt.originalStartDate){
-          task.gantt.originalStartDate = task.gantt.startDate
-          task.gantt.originalEndDate = task.gantt.endDate
-        }
-        task.gantt.startDate = toIsoString(currentStartDate);
-        task.gantt.endDate = toIsoString(currentEndDate)
+        task.gantt.nextRecurrenceStartDate = toIsoString(currentStartDate);
+        task.gantt.nextRecurrenceEndDate = toIsoString(currentEndDate)
         return;
       }else if( currentDiff > 0 && latestDiff < 0 ){
         // exit case: latest recurrence start was in the past, current start is in the future
-        if(!task.gantt.originalStartDate){
-          task.gantt.originalStartDate = task.gantt.startDate
-          task.gantt.originalEndDate = task.gantt.endDate
-        }
-        task.gantt.startDate = toIsoString(currentStartDate);
-        task.gantt.endDate =  toIsoString(currentEndDate)
+        task.gantt.nextRecurrenceStartDate = toIsoString(currentStartDate);
+        task.gantt.nextRecurrenceEndDate =  toIsoString(currentEndDate)
         return;
       }else if( Math.abs(currentDiff) > Math.abs(latestDiff) ){
         return;

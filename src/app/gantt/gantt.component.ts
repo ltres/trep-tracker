@@ -1,10 +1,10 @@
 import { AfterViewInit, ApplicationRef, Component, createComponent, Input, OnDestroy } from '@angular/core';
-import { Board, GanttTask, getNewTask, Lane, TagTypes, Task } from '../../types/types';
+import { Board, GanttTask, getNewTask, Lane, RecurringGanttTask, TagTypes, Task } from '../../types/types';
 import { BoardService } from '../../service/board.service';
 import { gantt, Task as DhtmlxTask, GanttStatic, Link as DhtmlxLink } from 'dhtmlx-gantt';
 import { TaskComponent } from '../task/task.component';
 import { toIsoString, addUnitsToDate, toUTCDate, formatDate } from '../../utils/date-utils';
-import { getFirstMentionTag, mapToGanttRecurrence, initGanttData, getTaskBackgroundColor, getRecurrenceId } from '../../utils/utils';
+import { getFirstMentionTag, mapToGanttRecurrence, initGanttData, getTaskBackgroundColor, getRecurrenceId, isRecurringGanttTask } from '../../utils/utils';
 import {  GanttConfig } from '../../types/config';
 
 @Component({
@@ -126,9 +126,9 @@ export class GanttComponent implements AfterViewInit, OnDestroy {
     });
 
     this.boardService.publishBoardUpdate();
-    if( data['hasRecurrence'] ){
+    if( isRecurringGanttTask(toUpdate) ){
       // A recurrence step has been modified. We should redraw the related recurrences:
-      const newRecurrences = this.generateCenteredRecurrence( toUpdate, 0, data.parent?.toString() )
+      const newRecurrences = this.generateCenteredRecurrences( toUpdate, 0, data.parent?.toString() )
       
       newRecurrences.forEach((rec) => {
         const t = gantt.getTask(rec.id);
@@ -194,9 +194,9 @@ export class GanttComponent implements AfterViewInit, OnDestroy {
       const dhtmlxTask = this.toDhtmlxTask(initializedTask, firstResourceTag ? getTaskBackgroundColor(firstResourceTag) : undefined, order++, parentId, tasksCssClass, false, undefined);
       convertedTasks.push(dhtmlxTask);
 
-      if( initializedTask.gantt?.recurrence ){
+      if( isRecurringGanttTask(initializedTask) ){
         // Task has recurrence. Generate K temporary 'recurrent-task' rows after this task.
-        this.generateCenteredRecurrence(initializedTask, order, initializedTask.id).forEach( (recurrence) => {
+        this.generateCenteredRecurrences(initializedTask, order, initializedTask.id).forEach( (recurrence) => {
 
           convertedTasks.push(recurrence);
         });
@@ -390,8 +390,8 @@ export class GanttComponent implements AfterViewInit, OnDestroy {
       id: task.id,
       text: isRecurrenceStep ? "" : task.textContent,
       type: isProject ? 'project' : 'task',
-      start_date: isProject? undefined : new Date(task.gantt.startDate),
-      end_date:  isProject? undefined : new Date(task.gantt.endDate),
+      start_date: isProject ? undefined : isRecurringGanttTask(task) ? new Date(task.gantt.nextRecurrenceStartDate) : new Date(task.gantt.startDate),
+      end_date:  isProject ? undefined : isRecurringGanttTask(task) ? new Date(task.gantt.nextRecurrenceEndDate) : new Date(task.gantt.endDate),
       parent: parentId,
       progress: task.gantt?.progress ?? 0,
       css: cssClass,
@@ -449,7 +449,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy {
    * If the date is not inside a recurrence date, the next recurrence will be shown in full.
    * @param task the recurrent task
    */
-  private generateCenteredRecurrence(  task: GanttTask, order: number, parentId: string | undefined ): DhtmlxTask[]{
+  private generateCenteredRecurrences(  task: RecurringGanttTask, order: number, parentId: string | undefined ): DhtmlxTask[]{
     if(!task.gantt?.recurrence){
       return [];
     }
@@ -474,8 +474,8 @@ export class GanttComponent implements AfterViewInit, OnDestroy {
 */
     // get next:
     for( let i = -1; i < GanttConfig.recurrenceIterationsShown / 2 + 1; i++  ){
-      const recurrenceStartDate = addUnitsToDate(task.gantt.startDate, i, mapToGanttRecurrence(task.gantt.recurrence));
-      const recurrenceEndDate = addUnitsToDate(task.gantt.endDate, i, mapToGanttRecurrence(task.gantt.recurrence));
+      const recurrenceStartDate = addUnitsToDate(task.gantt.nextRecurrenceStartDate, i, mapToGanttRecurrence(task.gantt.recurrence));
+      const recurrenceEndDate = addUnitsToDate(task.gantt.nextRecurrenceEndDate, i, mapToGanttRecurrence(task.gantt.recurrence));
       const child = initGanttData( getNewTask(task.createdLaneId, getRecurrenceId(task.id, i), undefined ) , new Date());
       child.gantt.startDate = toIsoString(recurrenceStartDate);
       child.gantt.endDate = toIsoString(recurrenceEndDate);

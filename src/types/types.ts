@@ -42,8 +42,8 @@ export type GanttData = {
   showData?: boolean,
   startDate: ISODateString,
   endDate: ISODateString,
-  originalStartDate?: ISODateString, // for recurrent tasks
-  originalEndDate?: ISODateString, // for recurrent tasks
+  nextRecurrenceStartDate?: ISODateString, // for recurrent tasks
+  nextRecurrenceEndDate?: ISODateString, // for recurrent tasks
   progress: number,
   order?: {
     board?: number,
@@ -58,6 +58,14 @@ export type GanttData = {
 
 export interface GanttTask extends Task{
     gantt: GanttData
+}
+
+export interface RecurringGanttTask extends Task{
+  gantt: GanttData & { 
+    recurrence: Recurrence,
+    nextRecurrenceStartDate: ISODateString, // for recurrent tasks
+    nextRecurrenceEndDate: ISODateString, // for recurrent tasks
+  }
 }
 
 export interface Container {

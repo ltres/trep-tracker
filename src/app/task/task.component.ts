@@ -9,7 +9,7 @@ import { ContainerComponent } from '../base/base.component';
 import { ClickService } from '../../service/click.service';
 import { Recurrence } from '@ltres/angular-datetime-picker/lib/utils/constants';
 import { toIsoString, fromIsoString, formatDate, getDiffInDays } from '../../utils/date-utils';
-import { setCaretPosition, isPlaceholder, hashCode } from '../../utils/utils';
+import { setCaretPosition, isPlaceholder, hashCode, initGanttData, isRecurringGanttTask } from '../../utils/utils';
 import { GanttConfig } from '../../types/config';
 
 @Component({
@@ -209,19 +209,13 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
       const datesNormalized: [Date,Date] = [dates[0] ?? today, dates[1] ?? today];
     
       if(!this.task.gantt){
-        this.task.gantt = {
-          showData: true,
-          startDate: toIsoString(datesNormalized[0]),
-          endDate: toIsoString(datesNormalized[1]),
-          progress: 0,
-          successors:[]
-        };
-      }else{
-        this.task.gantt.showData = true;
-        this.task.gantt.startDate = toIsoString(datesNormalized[0]);
-        this.task.gantt.endDate = toIsoString(datesNormalized[1]);
-        this.task.gantt.progress = 0;
+        initGanttData(this.task, undefined);
       }
+      this.task.gantt!.showData = true;
+      this.task.gantt!.startDate = toIsoString(datesNormalized[0]);
+      this.task.gantt!.endDate = toIsoString(datesNormalized[1]);
+      
+      this.task.gantt!.progress = 0;
     }
 
     this.boardService.publishBoardUpdate();
@@ -231,15 +225,10 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   }
   updateRecurrence($event: Recurrence|undefined) {
     if(!this.task.gantt){
-      this.task.gantt = {
-        showData: true,
-        startDate: toIsoString(new Date()),
-        endDate: toIsoString(new Date()),
-        progress: 0,
-        successors:[]
-      };
+      initGanttData(this.task, undefined);
     }
-    this.task.gantt.recurrence = $event;
+    const ganttData = this.task.gantt!;
+    ganttData.recurrence = $event;
     this.boardService.publishBoardUpdate();
   }
 
@@ -255,11 +244,11 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   getDatesText(): string | undefined {
     if(this.task.gantt){
       const today = new Date();
-      const phraseStart = this.task.gantt.recurrence ? `${this.task.gantt.recurrence} - next` : 'planned'
+      const phraseStart = isRecurringGanttTask(this.task) ? `${this.task.gantt.recurrence} - next` : 'planned'
       if( this.task.gantt.startDate === this.task.gantt.endDate ){
-        return `<span class="translucent">${phraseStart}</span> <span class="half-translucent ${this.getApproachingClass( today, this.task.gantt.startDate )}">${formatDate(this.task.gantt.startDate)}</span>`
+        return `<span class="translucent">${phraseStart}</span> <span class="half-translucent ${this.getApproachingClass( today, this.task.gantt.startDate )}">${isRecurringGanttTask(this.task) ? formatDate(this.task.gantt.nextRecurrenceStartDate) : formatDate(this.task.gantt.startDate)}</span>`
       }else{
-        return `<span class="translucent">${phraseStart}</span> <span class="half-translucent ${this.getApproachingClass( today, this.task.gantt.startDate )}">${formatDate(this.task.gantt.startDate)}</span> <span class="translucent">⤳</span> <span class="half-translucent ${this.getApproachingClass( today, this.task.gantt.endDate )}">${formatDate(this.task.gantt.endDate)}</span> ${ this.task.gantt.startDate && this.task.gantt.endDate ? `<span class="translucent">(${getDiffInDays(this.task.gantt.startDate, this.task.gantt.endDate)} days)</span>` : "" }`
+        return `<span class="translucent">${phraseStart}</span> <span class="half-translucent ${this.getApproachingClass( today, this.task.gantt.startDate )}">${isRecurringGanttTask(this.task) ? formatDate(this.task.gantt.nextRecurrenceStartDate) : formatDate(this.task.gantt.startDate)}</span> <span class="translucent">⤳</span> <span class="half-translucent ${this.getApproachingClass( today, this.task.gantt.endDate )}">${isRecurringGanttTask(this.task) ? formatDate(this.task.gantt.nextRecurrenceEndDate) : formatDate(this.task.gantt.endDate)}</span> ${ this.task.gantt.startDate && this.task.gantt.endDate ? `<span class="translucent">(${getDiffInDays(this.task.gantt.startDate, this.task.gantt.endDate)} days)</span>` : "" }`
       }
     }
     return "";
