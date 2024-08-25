@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Board, Tag, tagIdentifiers, tagHtmlWrapper, tagCapturingGroup, TagType } from '../types/types';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { getDescendants, isLane, isStatic } from '../utils/utils';
 import { BoardService } from './board.service';
+import { Board, Tag, TagType } from '../types/types';
+import { tagIdentifiers, tagHtmlWrapper, tagCapturingGroup } from '../types/constants';
 
 @Injectable({
   providedIn: 'root',

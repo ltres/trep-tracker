@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, HostBinding, Input, OnInit, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
-import { Board, Container, Lane, Layouts, Priority, Status, Tag, Task, getNewTask } from '../../types/types';
+import { Board, Container, Lane, Priority, Status, Tag, Task, getNewTask } from '../../types/types';
 import { BoardService } from '../../service/board.service';
 import { hashCode, isArchive, isPlaceholder, isStatic } from '../../utils/utils';
 import { map, Observable, of } from 'rxjs';
@@ -9,6 +9,7 @@ import { KeyboardService } from '../../service/keyboard.service';
 import { ContainerComponentRegistryService } from '../../service/registry.service';
 import { ContainerComponent } from '../base/base.component';
 import { ModalService } from '../../service/modal.service';
+import { layoutValues } from '../../types/constants';
 
 @Component({
   selector: 'lane[lane][board]',
@@ -177,7 +178,7 @@ export class LaneComponent extends ContainerComponent implements OnInit {
     }else if(direction === 'left'){
       return this.lane.layouts[this.board.layout].column > 0;
     }else if(direction === 'right'){
-      return this.lane.layouts[this.board.layout].column < Layouts[this.board.layout].columns - 1;
+      return this.lane.layouts[this.board.layout].column < layoutValues[this.board.layout].columns - 1;
     }
     return false;
   }

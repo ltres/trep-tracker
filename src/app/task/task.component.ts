@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, forwardRef, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { Board, Lane, Container, Task, Tag, Status, Priority, ISODateString } from '../../types/types';
+import { Board, Lane, Container, Task, Tag, Status, Priority, ISODateString, Recurrence } from '../../types/types';
 import { BoardService } from '../../service/board.service';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
@@ -7,10 +7,9 @@ import { KeyboardService } from '../../service/keyboard.service';
 import { ContainerComponentRegistryService } from '../../service/registry.service';
 import { ContainerComponent } from '../base/base.component';
 import { ClickService } from '../../service/click.service';
-import { Recurrence } from '@ltres/angular-datetime-picker/lib/utils/constants';
 import { toIsoString, fromIsoString, formatDate, getDiffInDays } from '../../utils/date-utils';
 import { setCaretPosition, isPlaceholder, hashCode, initGanttData, isRecurringGanttTask } from '../../utils/utils';
-import { GanttConfig } from '../../types/config';
+import { ganttConfig } from '../../types/constants';
 
 @Component({
   selector: 'task[task][lane][parent][board]',
@@ -244,7 +243,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   getDatesText(): string | undefined {
     if(this.task.gantt){
       const today = new Date();
-      const phraseStart = isRecurringGanttTask(this.task) ? `${this.task.gantt.recurrence} - next` : 'planned'
+      const phraseStart = isRecurringGanttTask(this.task) ? `${this.task.gantt.recurrence.toString()} - next` : 'planned'
       if( this.task.gantt.startDate === this.task.gantt.endDate ){
         return `<span class="translucent">${phraseStart}</span> <span class="half-translucent ${this.getApproachingClass( today, this.task.gantt.startDate )}">${isRecurringGanttTask(this.task) ? formatDate(this.task.gantt.nextRecurrenceStartDate) : formatDate(this.task.gantt.startDate)}</span>`
       }else{
@@ -260,11 +259,11 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     const diff = toCheck.getTime() - referenceDate.getTime();
     if( diff > 0 ){
       // toCheck in the future
-      if( Math.abs(diff) < GanttConfig.dateFrameForCSSClasses ){
+      if( Math.abs(diff) < ganttConfig.dateFrameForCSSClasses ){
         return "almost-there"
       }
     }else{
-      if( Math.abs(diff) < GanttConfig.dateFrameForCSSClasses ){
+      if( Math.abs(diff) < ganttConfig.dateFrameForCSSClasses ){
         return "just-passed"
       }
     }

@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from "@angular/core";
-import { Recurrence } from "@ltres/angular-datetime-picker/lib/utils/constants";
-import { locale } from "../../types/config";
+import { locale } from "../../types/constants";
 import { DateTimeAdapter } from "@ltres/angular-datetime-picker";
+import { Recurrence } from "../../types/types";
 
 const ONE_DAY = 24 * 60 * 60 * 1000;
 

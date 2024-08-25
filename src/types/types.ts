@@ -2,7 +2,8 @@ import { Type } from '@angular/core';
 import { generateUUID } from '../utils/utils';
  
 import { StorageServiceAbstract } from './storage';
-import { Recurrence } from '@ltres/angular-datetime-picker/lib/utils/constants';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { layoutValues, recurrenceValues, timeframeValues, statusValues, priorityValues } from './constants';
 
 export type Environment = {
   storageService: Type<StorageServiceAbstract>,
@@ -85,30 +86,11 @@ export interface Container {
     },
 }
 
-export const Layouts = {
-  absolute: {
-    columns: 1,
-    symbol: 'Free',
-  },
-  flex1: {
-    columns: 1,
-    symbol: '☐',
-  },
-  flex2: {
-    columns: 2,
-    symbol: '☐☐',
-  },
-  flex3: {
-    columns: 3,
-    symbol: '☐☐☐',
-  },
-  flex4: {
-    columns: 4,
-    symbol: '☐☐☐☐',
-  },
-};
+export type Layout = keyof typeof layoutValues;
 
-export type Layout = keyof typeof Layouts;
+export type Recurrence =  typeof recurrenceValues[number];
+
+export type Timeframe =  typeof timeframeValues[number];
 
 export type LayoutProperties = {
     [K in Layout]: {
@@ -122,37 +104,9 @@ export interface Tag {
     tag: string;
     type: TagType
 }
-export type Priority = 0 | 1 | 2 | 3 | 4;
-export const Priorities: Priority[] = [0, 1, 2, 3, 4];
+export type Priority = typeof priorityValues[number];
 
-export const states = {
-  todo: {
-    icon: '☐',
-  },
-  'in-progress': {
-    icon: '🛠️',
-  },
-  'to-be-delegated': {
-    icon: '🙇',
-  },
-  delegated: {
-    icon: '👦🏼',
-  },
-  waiting: {
-    icon: '⏳',
-  },
-  completed: {
-    icon: '✅',
-  },
-  discarded: {
-    icon: '🗑️',
-  },
-  archived: {
-    icon: '📂',
-  },
-};
-
-export type Status = keyof typeof states;
+export type Status = keyof typeof statusValues;
 
 export type StateChangeDate = {
     [keyStatus in Status]?: {
@@ -162,35 +116,7 @@ export type StateChangeDate = {
 };
 
 export type ISODateString = `${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`
-
-export const addTagsForDoneAndArchived = false;
-
 export type TagType = 'tag-orange' | 'tag-yellow' | 'tag-green';
-export const TagTypes = {
-  tagOrange: 'tag-orange',
-  tagYellow: 'tag-yellow',
-  tagGreen: 'tag-green',
-};
-
-export const tagIdentifiers: { type: TagType, symbol: string, class: string }[] = [
-  {
-    type: 'tag-orange',
-    symbol: '@',
-    class: 'tag-orange',
-  },
-  {
-    type: 'tag-yellow',
-    symbol: '#',
-    class: 'tag-yellow',
-  },
-  {
-    type: 'tag-green',
-    symbol: '!',
-    class: 'tag-green',
-  },
-];
-export const tagHtmlWrapper = (kl: string) => (['<span tag="true" class="' + kl + '">', '</span>']);
-export const tagCapturingGroup = (symbol: string) => (`${symbol}([A-Za-z0-9-_]+)`);
 
 export const getNewTask: (lane: Lane | string, id: string | undefined, textContent: string | undefined ) => Task = (lane: Lane | string, id: string | undefined, textContent?: string | undefined) => {
   const taskId = id ?? generateUUID()
@@ -213,8 +139,6 @@ export const getNewTask: (lane: Lane | string, id: string | undefined, textConte
 
   return t
 };
-
-export const archivedLaneId = 'Archive';
 
 export const getNewLane: (archive: boolean) => Lane = (archive: boolean) => {
   const id = generateUUID();

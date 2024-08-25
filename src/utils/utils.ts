@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Lane, Task, Status, ISODateString, Container, tagHtmlWrapper, tagIdentifiers, Board, getLayouts, Layout, Layouts, LayoutProperties, TagTypes, GanttTask, RecurringGanttTask } from '../types/types';
-import { Recurrence } from '@ltres/angular-datetime-picker/lib/utils/constants';
-import { GanttConfig } from '../types/config';
+
+import { ganttConfig, layoutValues, tagHtmlWrapper, tagIdentifiers, tagTypes } from '../types/constants';
 import { addUnitsToDate, toIsoString } from './date-utils';
+import { Lane, Status, Container, GanttTask, RecurringGanttTask, Recurrence, Board, ISODateString, LayoutProperties, getLayouts, Layout, Task } from '../types/types';
 
 export function generateUUID(length?: number): string {
   return uuidv4().substring(0, length ?? 6);
@@ -165,7 +165,7 @@ export function hashCode(str: string): number {
 }
 
 export function getFirstMentionTag(task: Task): string | undefined {
-  const mentionTagType = TagTypes.tagOrange;
+  const mentionTagType = tagTypes.tagOrange;
   const mention = task.tags.find(t => t.type === mentionTagType);
   if (mention) {
     return tagHtmlWrapper(mentionTagType)[0] + tagIdentifiers.find(r => r.type === mentionTagType)?.symbol + mention.tag + tagHtmlWrapper(mentionTagType)[1];
@@ -268,13 +268,13 @@ export function initGanttData(task: Task, startDateIso?: Date | undefined): Gant
     return task as GanttTask;
   }
   let startDate = startDateIso ?? new Date();
-  if (GanttConfig.skipWeekendsInPlanning && (startDate.getUTCDay() == 6 || startDate.getUTCDay() == 0)) {
+  if (ganttConfig.skipWeekendsInPlanning && (startDate.getUTCDay() == 6 || startDate.getUTCDay() == 0)) {
     // Plan for next monday
     startDate = addUnitsToDate( startDate, startDate.getUTCDay() == 0 ? 1 : 2, 'day' );
   }
 
-  let endDate = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate() + GanttConfig.baseTaskDuration));
-  if (GanttConfig.skipWeekendsInPlanning && (endDate.getUTCDay() == 6 || endDate.getUTCDay() == 0)) {
+  let endDate = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate() + ganttConfig.baseTaskDuration));
+  if (ganttConfig.skipWeekendsInPlanning && (endDate.getUTCDay() == 6 || endDate.getUTCDay() == 0)) {
     // Plan for next monday
     endDate = addUnitsToDate( endDate, endDate.getUTCDay() == 0 ? 1 : 2, 'day' );
   }
@@ -295,15 +295,16 @@ export function getTaskBackgroundColor( text:string ){
 
 export function mapToGanttRecurrence(r : Recurrence): 'day' | 'week' | 'month' | 'year'{
   switch(r){
-    case 'daily':
+    case 'daily'.toString():
       return "day"
-    case 'weekly':
+    case 'weekly'.toString():
       return "week"
-    case 'monthly':
+    case 'monthly'.toString():
       return "month";
-    case 'yearly':
+    case 'yearly'.toString():
       return "year"
   }
+  return "day"
 }
 
 export function getRecurrenceId(taskId: string, index: number){
@@ -399,11 +400,11 @@ export function eventuallyPatch( board: Board ): Board{
       if(!mayBeOldLane.collapsed){
         mayBeOldLane.collapsed = false;
       }
-      for( const layout of Object.keys(Layouts) ){
+      for( const layout of Object.keys(layoutValues) ){
         const l = layout as Layout;
         const thisColLayout = mayBeOldLane.layouts[l];
-        if( thisColLayout.column > Layouts[l].columns - 1 ){
-          thisColLayout.column = Layouts[l].columns - 1;
+        if( thisColLayout.column > layoutValues[l].columns - 1 ){
+          thisColLayout.column = layoutValues[l].columns - 1;
         }
       }
 

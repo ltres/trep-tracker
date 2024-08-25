@@ -1,7 +1,8 @@
 import { AfterContentInit, Component } from '@angular/core';
 import { BoardService } from '../../service/board.service';
-import { Board, Priorities, Priority } from '../../types/types';
+import { Board, Priority } from '../../types/types';
 import { Observable } from 'rxjs';
+import { priorityValues } from '../../types/constants';
 
 @Component({
   selector: 'board-selection-menu',
@@ -12,7 +13,7 @@ import { Observable } from 'rxjs';
 export class BoardSelectionMenuComponent implements AfterContentInit{
 
   boards: Board[] | undefined;
-  availablePriorities: Priority[] = Priorities;
+  availablePriorities: readonly Priority[] = priorityValues;
 
   open: boolean = true;
 

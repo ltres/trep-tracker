@@ -1,9 +1,10 @@
 import { Component, Input, TemplateRef, ViewChild } from '@angular/core';
 import { BoardService } from '../../service/board.service';
-import { Board, Layout, Layouts, Tag, Task } from '../../types/types';
+import { Board, Layout, Tag, Task } from '../../types/types';
 import { ModalService } from '../../service/modal.service';
 import { Observable, map } from 'rxjs';
 import { isPlaceholder } from '../../utils/utils';
+import { layoutValues } from '../../types/constants';
 
 @Component({
   selector: 'board-toolbar[board]',
@@ -22,7 +23,7 @@ export class BoardToolbarComponent {
   ) { }
 
   getLayouts(): Layout[] {
-    return Object.keys(Layouts) as Layout[];
+    return Object.keys(layoutValues) as Layout[];
   }
 
   setLayout(layout: Layout) {
@@ -57,7 +58,7 @@ export class BoardToolbarComponent {
   }
 
   getLayoutSymbol(layout: Layout) {
-    return Layouts[layout].symbol;
+    return layoutValues[layout].symbol;
   }
 
   openGantt() {

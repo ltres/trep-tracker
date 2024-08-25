@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Container, Priorities, Priority } from '../../types/types';
+import { Container, Priority } from '../../types/types';
+import { priorityValues } from '../../types/constants';
 
 @Component({
   selector: 'prioritizer[container]',
@@ -17,7 +18,7 @@ export class PrioritizerComponent {
 
     protected open: boolean = false;
 
-    availablePriorities: Priority[] = Priorities;
+    availablePriorities: readonly Priority[] = priorityValues;
 
     get priorities(): Priority[] {
       return Array.isArray(this.container.priority) ? this.container.priority : (typeof this.container.priority !== 'undefined' ? [this.container.priority] : []);

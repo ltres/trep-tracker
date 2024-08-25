@@ -1,4 +1,4 @@
-import { datePickerFormat, locale } from "../types/config";
+import { datePickerFormat, locale } from "../types/constants";
 import { Container, Status, ISODateString } from "../types/types";
 
 export function setDateSafe(container: Container, status: Status, enterOrLeave: 'enter' | 'leave', date: Date) {

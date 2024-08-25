@@ -120,17 +120,18 @@ export class KeyboardService {
         const { task } = this.getLastSelectedTaskData();
         if( isPlaceholder(task) ){
           const bottomTask = this.boardService.getTaskInDirection(this.boardService.selectedTasks, e.key === 'Delete' ? 'down' : 'up');
-          if (!bottomTask) {
-            return;
-          }
+
           const lane = this.boardService.findParentLane([task]);
           if (!lane) {
             return;
           }
           this.boardService.deleteTask(task);
-          this.boardService.activateEditorOnTask(lane, bottomTask, 0);
           this.boardService.clearSelectedTasks();
-          this.boardService.addToSelection(lane,bottomTask);
+
+          if(bottomTask){
+            this.boardService.activateEditorOnTask(lane, bottomTask, 0);
+            this.boardService.addToSelection(lane,bottomTask);
+          }
         }
       }
     });

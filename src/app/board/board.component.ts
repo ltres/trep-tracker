@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, HostBinding, HostListener, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { Board, Container, Lane, Layout, Layouts, Tag } from '../../types/types';
+import { Board, Container, Lane, Layout, Tag } from '../../types/types';
 import { BoardService } from '../../service/board.service';
 import { Observable } from 'rxjs';
 import { LaneComponent } from '../lane/lane.component';
@@ -8,6 +8,7 @@ import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
 import { ContainerComponent } from '../base/base.component';
 import { ContainerComponentRegistryService } from '../../service/registry.service';
+import { layoutValues } from '../../types/constants';
 
 @Component({
   selector: 'board',
@@ -147,15 +148,15 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
   }
 
   getLayouts(): Layout[] {
-    return Object.keys(Layouts) as Layout[];
+    return Object.keys(layoutValues) as Layout[];
   }
 
   getColumnIndexes(layout: Layout): number[] {
-    return Array.from({ length: Layouts[layout].columns }, (_,index) => index);
+    return Array.from({ length: layoutValues[layout].columns }, (_,index) => index);
   }
 
   getLayoutSymbol(layout: Layout) {
-    return Layouts[layout].symbol;
+    return layoutValues[layout].symbol;
   }
 
 }

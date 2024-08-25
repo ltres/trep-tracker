@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
-import { Container, Status, states } from '../../types/types';
+import { Container, Status } from '../../types/types';
 import { formatDate } from '../../utils/date-utils';
+import { statusValues } from '../../types/constants';
 
 @Component({
   selector: 'time-bar[container]',
@@ -41,6 +42,6 @@ export class TimeBarComponent {
         ret.push(status);
       }
     }
-    return ret.sort( (a,b) => Object.keys(states).indexOf(a) - Object.keys(states).indexOf(b) );
+    return ret.sort( (a,b) => Object.keys(statusValues).indexOf(a) - Object.keys(statusValues).indexOf(b) );
   }
 }

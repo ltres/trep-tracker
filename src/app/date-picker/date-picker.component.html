@@ -2,5 +2,5 @@
 
     <input [selectMode]="'range'" [ngModel]="selectedMoments" (ngModelChange)="selectedTrigger($event)" [owlDateTime]="date_range_component" style="width: 0px!important;">
     <span #trigger [owlDateTimeTrigger]="date_range_component"></span>
-    <owl-date-time [startAt]="getStartAt()" [endAt]="getEndAt()" [recurrence]="getRecurrence()" #date_range_component (confirmSelectedChange)="selectedTrigger($event)" (cancelClicked)="cancelTrigger()" (recurrenceChange)="updateRecurrence($event)">
+    <owl-date-time [startAt]="getStartAt()" [endAt]="getEndAt()" #date_range_component (confirmSelectedChange)="selectedTrigger($event)" (cancelClicked)="cancelTrigger()">
     </owl-date-time>

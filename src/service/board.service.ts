@@ -1,10 +1,11 @@
 import {  Inject, Injectable, Injector, NgZone } from '@angular/core';
-import { Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, states, getNewTask, ISODateString, RecurringGanttTask } from '../types/types';
+import { Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, ISODateString, RecurringGanttTask } from '../types/types';
 import { BehaviorSubject, Observable, map } from 'rxjs';
 import { eventuallyPatch, getDescendants, isLane, isPlaceholder, isRecurringGanttTask, isStatic, isTask, isTasks } from '../utils/utils';
 import { TagService } from './tag.service';
 import { StorageServiceAbstract } from '../types/storage';
 import { setDateSafe, toIsoString } from '../utils/date-utils';
+import { statusValues } from '../types/constants';
 
 @Injectable({
   providedIn: 'root',
@@ -700,7 +701,7 @@ export class BoardService {
       }else if( b.priority < a.priority ){
         return -1;
       }else{
-        return Object.keys(states).indexOf(a.status) - Object.keys(states).indexOf(b.status);
+        return Object.keys(statusValues).indexOf(a.status) - Object.keys(statusValues).indexOf(b.status);
       }
     } );
 
@@ -802,19 +803,19 @@ export class BoardService {
       latestDiff = currentDiff;
   
       switch (task.gantt.recurrence) {
-        case 'daily':
+        case 'daily'.toString():
           currentStartDate.setUTCDate(currentStartDate.getUTCDate() + 1);
           currentEndDate.setUTCDate(currentEndDate.getUTCDate() + 1);
           break;
-        case 'weekly':
+        case 'weekly'.toString():
           currentStartDate.setUTCDate(currentStartDate.getUTCDate() + 7);
           currentEndDate.setUTCDate(currentEndDate.getUTCDate() + 7);
           break;
-        case 'monthly':
+        case 'monthly'.toString():
           currentStartDate.setUTCMonth(currentStartDate.getUTCMonth() + 1);
           currentEndDate.setUTCMonth(currentEndDate.getUTCMonth() + 1);
           break;
-        case 'yearly':
+        case 'yearly'.toString():
           currentStartDate.setUTCFullYear(currentStartDate.getUTCFullYear() + 1);
           currentEndDate.setUTCFullYear(currentEndDate.getUTCFullYear() + 1);
           break;

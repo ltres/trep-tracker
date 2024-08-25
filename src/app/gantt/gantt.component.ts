@@ -1,11 +1,11 @@
 import { AfterViewInit, ApplicationRef, Component, createComponent, Input, OnDestroy } from '@angular/core';
-import { Board, GanttTask, getNewTask, Lane, RecurringGanttTask, TagTypes, Task } from '../../types/types';
+import { Board, GanttTask, getNewTask, Lane, RecurringGanttTask, Task } from '../../types/types';
 import { BoardService } from '../../service/board.service';
 import { gantt, Task as DhtmlxTask, GanttStatic, Link as DhtmlxLink } from 'dhtmlx-gantt';
 import { TaskComponent } from '../task/task.component';
 import { toIsoString, addUnitsToDate, toUTCDate, formatDate } from '../../utils/date-utils';
 import { getFirstMentionTag, mapToGanttRecurrence, initGanttData, getTaskBackgroundColor, getRecurrenceId, isRecurringGanttTask } from '../../utils/utils';
-import {  GanttConfig } from '../../types/config';
+import {  ganttConfig, tagTypes } from '../../types/constants';
 
 @Component({
   selector: 'gantt[tasks][board]',
@@ -190,7 +190,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy {
 
       // Init the gantt data and convert
       const initializedTask = initGanttData(task, lastDateInConverted);
-      const firstResourceTag = task.tags?.find(t => t.type === TagTypes.tagOrange )?.tag;
+      const firstResourceTag = task.tags?.find(t => t.type === tagTypes.tagOrange )?.tag;
       const dhtmlxTask = this.toDhtmlxTask(initializedTask, firstResourceTag ? getTaskBackgroundColor(firstResourceTag) : undefined, order++, parentId, tasksCssClass, false, undefined);
       convertedTasks.push(dhtmlxTask);
 
@@ -223,7 +223,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy {
             if (!retrievedSucc) {
               console.error('Task ' + successor.taskId + ' not found');
             } else {
-              this.toDhtmlxGanttDataModel([retrievedSucc], convertedTasks, convertedLinks, task.id, GanttConfig.externalTaskCssClass);
+              this.toDhtmlxGanttDataModel([retrievedSucc], convertedTasks, convertedLinks, task.id, ganttConfig.externalTaskCssClass);
             }
           }
         }
@@ -278,7 +278,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy {
       { name: 'duration', label: 'Duration', align: 'center',  width: 50, },
     ];
 
-    gantt.config.grid_width = GanttConfig.columnsWidth;
+    gantt.config.grid_width = ganttConfig.columnsWidth;
 
     gantt.templates.grid_file = function() {
       return "";
@@ -286,10 +286,10 @@ export class GanttComponent implements AfterViewInit, OnDestroy {
     gantt.config.sort = true;
 
     const start = new Date(Date.UTC(this.today.getUTCFullYear(), this.today.getUTCMonth(), 0));
-    const end = new Date(Date.UTC(this.today.getUTCFullYear(), this.today.getUTCMonth() + GanttConfig.shownMonths, 0));
+    const end = new Date(Date.UTC(this.today.getUTCFullYear(), this.today.getUTCMonth() + ganttConfig.shownMonths, 0));
 
     gantt.config.work_time = true;
-    gantt.setWorkTime({ hours: [`${GanttConfig.startOfDay}:00-${GanttConfig.endOfDay}:00`] });//global working hours. 8:00-12:00, 13:00-17:00
+    gantt.setWorkTime({ hours: [`${ganttConfig.startOfDay}:00-${ganttConfig.endOfDay}:00`] });//global working hours. 8:00-12:00, 13:00-17:00
     gantt.templates.timeline_cell_class = function (task, date) {
       if (!gantt.isWorkTime(date)) {
         return 'gantt-weekend';
@@ -395,8 +395,8 @@ export class GanttComponent implements AfterViewInit, OnDestroy {
       parent: parentId,
       progress: task.gantt?.progress ?? 0,
       css: cssClass,
-      row_height: isRecurrenceStep && isRecurrenceStep !== 'highlighted' ? GanttConfig.recurrentTaskHeight : undefined,
-      bar_height: isRecurrenceStep && isRecurrenceStep !== 'highlighted'? GanttConfig.recurrentTaskHeight : undefined,
+      row_height: isRecurrenceStep && isRecurrenceStep !== 'highlighted' ? ganttConfig.recurrentTaskHeight : undefined,
+      bar_height: isRecurrenceStep && isRecurrenceStep !== 'highlighted'? ganttConfig.recurrentTaskHeight : undefined,
       color,
       order: order,
       mention: getFirstMentionTag(task),
@@ -453,7 +453,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy {
     if(!task.gantt?.recurrence){
       return [];
     }
-    const firstResourceTag = task.tags?.find(t => t.type === TagTypes.tagOrange )?.tag;
+    const firstResourceTag = task.tags?.find(t => t.type === tagTypes.tagOrange )?.tag;
     const ret : DhtmlxTask[] = []
     /*
     // get previous:
@@ -473,13 +473,13 @@ export class GanttComponent implements AfterViewInit, OnDestroy {
     ret.push(this.toDhtmlxTask(centeredChild, order++, parentId, GanttConfig.recurrentTaskCssClass + " highlighted" , "highlighted" ));
 */
     // get next:
-    for( let i = -1; i < GanttConfig.recurrenceIterationsShown / 2 + 1; i++  ){
+    for( let i = -1; i < ganttConfig.recurrenceIterationsShown / 2 + 1; i++  ){
       const recurrenceStartDate = addUnitsToDate(task.gantt.nextRecurrenceStartDate, i, mapToGanttRecurrence(task.gantt.recurrence));
       const recurrenceEndDate = addUnitsToDate(task.gantt.nextRecurrenceEndDate, i, mapToGanttRecurrence(task.gantt.recurrence));
       const child = initGanttData( getNewTask(task.createdLaneId, getRecurrenceId(task.id, i), undefined ) , new Date());
       child.gantt.startDate = toIsoString(recurrenceStartDate);
       child.gantt.endDate = toIsoString(recurrenceEndDate);
-      ret.push( this.toDhtmlxTask(child, firstResourceTag ? getTaskBackgroundColor(firstResourceTag) : undefined, order++, parentId, GanttConfig.recurrentTaskCssClass, true, i) );
+      ret.push( this.toDhtmlxTask(child, firstResourceTag ? getTaskBackgroundColor(firstResourceTag) : undefined, order++, parentId, ganttConfig.recurrentTaskCssClass, true, i) );
     }
 
     return ret

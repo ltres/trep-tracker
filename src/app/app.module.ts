@@ -40,7 +40,7 @@ import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 
 import { DatePickerComponent } from './date-picker/date-picker.component';
 import { OWL_DATE_TIME_FORMATS, OWL_DATE_TIME_LOCALE, OwlDateTimeModule, OwlNativeDateTimeModule } from '@ltres/angular-datetime-picker';
-import { datePickerFormat, locale } from '../types/config';
+import { datePickerFormat, locale } from '../types/constants';
 
 @NgModule({ declarations: [
   AppComponent,
