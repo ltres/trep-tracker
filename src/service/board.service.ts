@@ -1,10 +1,10 @@
 import {  Inject, Injectable, Injector, NgZone } from '@angular/core';
-import { Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, ISODateString, RecurringGanttTask } from '../types/types';
+import { Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, ISODateString, RecurringGanttTask, Timeframe } from '../types/types';
 import { BehaviorSubject, Observable, map } from 'rxjs';
 import { eventuallyPatch, getDescendants, isLane, isPlaceholder, isRecurringGanttTask, isStatic, isTask, isTasks } from '../utils/utils';
 import { TagService } from './tag.service';
 import { StorageServiceAbstract } from '../types/storage';
-import { setDateSafe, toIsoString } from '../utils/date-utils';
+import { addUnitsToDate, fromIsoString, setDateSafe, toIsoString } from '../utils/date-utils';
 import { statusValues } from '../types/constants';
 
 @Injectable({
@@ -141,7 +141,7 @@ export class BoardService {
     );
   }
 
-  getStaticTasks$(board: Board,tags: Tag[] | undefined, priority: Priority | Priority[] | undefined, status: Status | Status[] | undefined, excldeArchived: boolean, sort: keyof StateChangeDate | undefined, sortOrder?: 'asc' | 'desc'): Observable<Task[] | undefined> {
+  getStaticTasks$(board: Board,tags: Tag[] | undefined, priority: Priority | Priority[] | undefined, status: Status | Status[] | undefined, startTimeframe: Timeframe | undefined, endTimeframe: Timeframe | undefined, excldeArchived: boolean, sort: keyof StateChangeDate | undefined, sortOrder?: 'asc' | 'desc'): Observable<Task[] | undefined> {
     return this._boards$.pipe(
       map(boards => {
         const b = boards.find(b => b.id === board.id);
@@ -168,6 +168,68 @@ export class BoardService {
           }else{
             res = res?.filter(t => t.status === status);
           }
+        }
+        if(startTimeframe){
+          // get tasks within the given timeframe. Account for recurrences.
+          const now = new Date();
+          let startDate = now; 
+          switch(startTimeframe){
+            case 'no':
+              throw new Error("Recurrence filter requested with no recurrence");
+            case '6 hours':
+              startDate = addUnitsToDate(now, 6, 'hour');
+              break;
+            case '24 hours':
+              startDate = addUnitsToDate(now, 1, 'day');
+              break;
+            case 'week':
+              startDate = addUnitsToDate(now, 1, 'week');
+              break;
+            case 'month':
+              startDate = addUnitsToDate(now, 1, 'month');
+              break;
+            default:
+              break;
+          }
+          res = res?.filter(t => {
+            if(!t.gantt) return false;
+            if( fromIsoString(t.gantt.nextRecurrenceStartDate ?? t.gantt.startDate) > now 
+              && fromIsoString(t.gantt.nextRecurrenceStartDate ?? t.gantt.startDate) < startDate ){
+              return true;
+            }
+            return false;
+          });
+        }
+        if(endTimeframe){
+          // get tasks within the given timeframe. Account for recurrences.
+          const now = new Date();
+          let endDate = now; 
+          switch(endTimeframe){
+            case 'no':
+              throw new Error("Recurrence filter requested with no recurrence");
+            case '6 hours':
+              endDate = addUnitsToDate(now, 6, 'hour');
+              break;
+            case '24 hours':
+              endDate = addUnitsToDate(now, 1, 'day');
+              break;
+            case 'week':
+              endDate = addUnitsToDate(now, 1, 'week');
+              break;
+            case 'month':
+              endDate = addUnitsToDate(now, 1, 'month');
+              break;
+            default:
+              break;
+          }
+          res = res?.filter(t => {
+            if(!t.gantt) return false;
+            if( fromIsoString(t.gantt.nextRecurrenceEndDate ?? t.gantt.endDate) > now 
+              && fromIsoString(t.gantt.nextRecurrenceEndDate ?? t.gantt.endDate) < endDate ){
+              return true;
+            }
+            return false;
+          });
         }
         if(excldeArchived){
           res = res?.filter(t => t.status !== 'archived' && !isPlaceholder(t));

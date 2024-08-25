@@ -24,6 +24,8 @@ export interface Lane extends Container {
     isArchive: boolean,
     priority: Priority[] | undefined,
     status: Status[] | undefined,
+    endTimeframe: Timeframe | undefined,
+    startTimeframe: Timeframe | undefined,
     layouts: LayoutProperties
 }
 
@@ -151,6 +153,8 @@ export const getNewLane: (archive: boolean) => Lane = (archive: boolean) => {
     textContent: archive ? 'Archive' : 'Lane ' + id,
     children: [],
     status: undefined,
+    startTimeframe: undefined,
+    endTimeframe: undefined,
     _type: 'lane',
     dates: {},
     isArchive: archive,
@@ -236,5 +240,6 @@ export type VersionCheckResponse = {
 export type PickerOutput = { 
   dates: [Date, Date], 
   recurrence: Recurrence | undefined, 
-  
-} | { timeframe: Timeframe }
+} | { 
+  timeframe: [Timeframe | undefined, Timeframe | undefined] 
+}

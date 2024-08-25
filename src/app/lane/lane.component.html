@@ -9,6 +9,10 @@
 
       <prioritizer [container]="lane" [allowEmpty]="true" [multipleSelectable]="true" (onPrioritySelected)="togglePriority($event)"> </prioritizer>
       <status (onStatusSelected)="updateStatus($event)" [allowEmpty]="true" [multipleSelectable]="true" [container]="lane" [board]="board" [staticLane]="isStatic()"> </status>
+      <span [class.translucent]="!lane.endTimeframe" class="select-dates pointer" (click)="openDatePicker()">
+        <span [tooltip]="'Set timeframe'" [position]="'top'">📅</span>
+        <date-picker *ngIf="showDatePicker" [showTimeframes]="true" [hideCalendar]="true" [selectedTimeframe]="[lane.startTimeframe,lane.endTimeframe]" (onSetClicked)="setTimeframe($event)" (onCancel)="setTimeframe(undefined)"></date-picker>
+      </span>
       <div class="task-count translucent">
         @if(isStatic()){
         {{staticTasksCount | async}}
@@ -89,6 +93,8 @@
       ➕ New task
     </button>
   </div>
+  }@else{
+  <span (click)="toggleCollapse()" class="pointer">...</span>
   }
 </div>
 

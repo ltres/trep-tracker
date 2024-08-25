@@ -14,10 +14,12 @@ export class DatePickerComponent implements AfterViewInit{
   @ViewChild('trigger') trigger: ElementRef<{click:() =>unknown}> | null = null;
   @Input() showRecurrences = false;
   @Input() showTimeframes = false;
+  @Input() hideCalendar = false;
 
   @Input() startDate: Date | undefined = new Date(Date.now() - ONE_DAY);
   @Input() endDate: Date | undefined = new Date(Date.now() + ONE_DAY)
   @Input() selectedRecurrence: Recurrence | undefined;
+  @Input() selectedTimeframe: [Timeframe | undefined, Timeframe | undefined] = [undefined, undefined];
 
   @Output() onSetClicked: EventEmitter<PickerOutput> = new EventEmitter();
   @Output() onCancel:EventEmitter<void> = new EventEmitter();
@@ -25,8 +27,6 @@ export class DatePickerComponent implements AfterViewInit{
   public selectedMoments: Date[] | undefined;
   protected recurrenceValues = recurrenceValues
   protected timeframeValues= timeframeValues
-
-  protected selectedTimeframe: Timeframe | undefined
 
   protected initialized = false;
 
@@ -75,6 +75,10 @@ export class DatePickerComponent implements AfterViewInit{
   }
   getStartAt(): Date {
     return this.startDate ?? new Date();
+  }
+
+  deleteTimeframes(){
+    this.selectedTimeframe = [undefined,undefined];
   }
 
 }

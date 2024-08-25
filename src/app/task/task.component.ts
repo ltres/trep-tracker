@@ -1,3 +1,4 @@
+/* eslint-disable no-fallthrough */
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, forwardRef, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { Board, Lane, Container, Task, Tag, Status, Priority, ISODateString, PickerOutput } from '../../types/types';
 import { BoardService } from '../../service/board.service';
@@ -9,7 +10,7 @@ import { ContainerComponent } from '../base/base.component';
 import { ClickService } from '../../service/click.service';
 import { toIsoString, fromIsoString, formatDate, getDiffInDays } from '../../utils/date-utils';
 import { setCaretPosition, isPlaceholder, hashCode, initGanttData, isRecurringGanttTask } from '../../utils/utils';
-import { ganttConfig } from '../../types/constants';
+import { millisForMagnitudeStep } from '../../types/constants';
 
 @Component({
   selector: 'task[task][lane][parent][board]',
@@ -255,21 +256,46 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     return getDiffInDays(date1,date2)
   }
 
-  // Returns a CSS class representing how far we are from the task start
-  getApproachingClass(referenceDate: ISODateString, dateToCheck: ISODateString): string {
+  // Returns a number representing how much the dateToCheck is after or before the referenceDate in millisForMagnitudeStep
+  getProximityMagnitude(referenceDate: ISODateString, dateToCheck: ISODateString): number{
     const toCheck = new Date(dateToCheck);
     const diff = toCheck.getTime() - new Date(referenceDate).getTime();
-    if( diff > 0 ){
-      // toCheck in the future
-      if( Math.abs(diff) < ganttConfig.dateFrameForCSSClasses ){
-        return "almost-there"
-      }
-    }else{
-      if( Math.abs(diff) < ganttConfig.dateFrameForCSSClasses ){
-        return "just-passed"
-      }
+    return Math.floor(diff / millisForMagnitudeStep)
+  }
+
+  getProximityIcons( dateToCheck: ISODateString, caseToCheck: "start" | "end" ): string{
+    const prox = this.getProximityMagnitude(new Date().toISOString() as ISODateString, dateToCheck);
+    switch(prox){
+      case 2:
+        return this.task.status === 'completed' || this.task.status === 'discarded' || this.task.status === 'archived' ? "" : "<span class='small translucent'>⏰</span>"
+      case 1:
+        return this.task.status === 'completed' || this.task.status === 'discarded' || this.task.status === 'archived' ? "" : "<span class='half-translucent'>⏰</span>"
+      case 0:
+        return this.task.status === 'completed' || this.task.status === 'discarded' || this.task.status === 'archived' ? "" : "<span>⏰</span>"
+      case -1:
+        switch(caseToCheck){
+          case "start":
+            return this.task.status === 'todo' || this.task.status === 'to-be-delegated' ? "<span class='small translucent'>😱</span>" : "";
+          case "end":
+            return this.task.status === 'completed' || this.task.status === 'discarded' || this.task.status === 'archived' ? "" : "<span class='small translucent'>😱</span>";
+        }
+      case -2:
+        switch(caseToCheck){
+          case "start":
+            return this.task.status === 'todo' || this.task.status === 'to-be-delegated' ? "<span class='small half-translucent'>😱</span>" : "";
+          case "end":
+            return this.task.status === 'completed' || this.task.status === 'discarded' || this.task.status === 'archived' ? "" : "<span class='small half-translucent'>😱</span>";
+        }
+      case -3:
+        switch(caseToCheck){
+          case "start":
+            return this.task.status === 'todo' || this.task.status === 'to-be-delegated' ? "<span>😱</span>" : "";
+          case "end":
+            return this.task.status === 'completed' || this.task.status === 'discarded' || this.task.status === 'archived' ? "" : "<span>😱</span>";
+        }
+      default: 
+        return "";
     }
-    return ""
   }
 
   openDatePicker() {

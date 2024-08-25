@@ -10,7 +10,6 @@ export const ganttConfig = {
   recurrenceIterationsShown: 10,
   startOfDay:9,
   endOfDay:18,
-  dateFrameForCSSClasses: 1000 * 3600 * 2,
   columnsWidth: 500
 }
 export const locale = {
@@ -46,6 +45,7 @@ export const recurrenceValues = [
 ] as const
 
 export const timeframeValues = [
+  "no",
   "6 hours",
   "24 hours",
   "week",
@@ -133,3 +133,6 @@ export const addTagsForDoneAndArchived = false;
 
 export const tagHtmlWrapper = (kl: string) => (['<span tag="true" class="' + kl + '">', '</span>']);
 export const tagCapturingGroup = (symbol: string) => (`${symbol}([A-Za-z0-9-_]+)`);
+
+export const expiredTasksStillVisibleHours = 6;
+export const millisForMagnitudeStep = 1000 * 3600 * 24; // one day

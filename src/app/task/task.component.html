@@ -33,15 +33,9 @@
 </div>
 <div *ngIf="task.gantt && task.gantt.showData !== false" class="dates-n-stuff flex g-05 small">
     <div class="">
-        <ng-container *ngTemplateOutlet="datesText"></ng-container>
+        <ng-container [ngTemplateOutlet]="datesText" [ngTemplateOutletContext]="{task:task}"></ng-container>
     </div>
-    <div *ngIf="task.status === 'archived'" class="translucent date-wrapper flex align-items-center g-05">
-        <span>archived on {{parseDate(this.task.dates.archived?.enter) | date: 'dd-MM-yy hh:mm a'}}</span>
-        <time-bar [container]="task"></time-bar>
-    </div>
-    <div *ngIf="task.status === 'completed'" class="date-wrapper flex align-items-center translucent">
-        completed {{ parseDate(this.task.dates.completed?.enter) | date: 'dd-MM-yy hh:mm a'}}
-    </div>
+
 </div>
 
 <div *ngIf="showChildren" class="task-children-wrapper g-025 ">
@@ -57,7 +51,7 @@
 
 </div>
 
-<ng-template #datesText>
+<ng-template #datesText let-task="task">
     @if(task.gantt){
     <span class="translucent">
         @if(isRecurringGanttTask(task)){
@@ -66,17 +60,27 @@
         planned
         }
     </span>
-    <span class="half-translucent {{this.getApproachingClass( getToday(), task.gantt.nextRecurrenceStartDate ?? task.gantt.startDate )}}">
-        {{formatDate( task.gantt.nextRecurrenceStartDate ?? task.gantt.startDate)}}
-    </span>
+    <span [innerHTML]="getProximityIcons(task.gantt.nextRecurrenceStartDate ?? task.gantt.startDate, 'start')"></span>
+    <span class="half-translucent">{{formatDate( task.gantt.nextRecurrenceStartDate ?? task.gantt.startDate)}}</span>
     @if( task.gantt.startDate !== task.gantt.endDate){
-    <span class="translucent">⤳</span>
-    <span class="half-translucent {{this.getApproachingClass( getToday(), task.gantt.nextRecurrenceEndDate ?? task.gantt.endDate )}}">
-        {{formatDate( task.gantt.nextRecurrenceEndDate ?? task.gantt.endDate)}}
-    </span>
-    <span class="translucent">({{getDiffInDays(this.task.gantt.startDate, this.task.gantt.endDate)}} day{{getDiffInDays(this.task.gantt.startDate, this.task.gantt.endDate)>1 ? "s": ""}})</span>
+    <span class="translucent"> ⤳ </span>
+    <span [innerHTML]="getProximityIcons(task.gantt.nextRecurrenceEndDate ?? task.gantt.endDate,'end')"></span>
+    <span class="half-translucent">{{formatDate( task.gantt.nextRecurrenceEndDate ?? task.gantt.endDate)}}</span>
+
+    <span class="translucent"> ({{getDiffInDays(this.task.gantt.startDate, this.task.gantt.endDate)}} day{{getDiffInDays(this.task.gantt.startDate, this.task.gantt.endDate)>1 ? "s": ""}})</span>
     }
     }
+    @if(task.status === 'archived'){
+    <span class="translucent">, archived </span>+
+    <span class="half-translucent">{{formatDate( this.task.dates.archived?.enter)}}</span>
+    <time-bar [container]="task"></time-bar>
+    }
+
+    @if(task.status === 'completed'){
+    <span class="translucent">, completed </span>
+    <span class="half-translucent">{{formatDate( this.task.dates.completed?.enter)}}</span>
+    }
+
 
 
 

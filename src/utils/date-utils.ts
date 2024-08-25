@@ -61,7 +61,7 @@ export function formatDate(date: ISODateString | Date | undefined) {
   for(const part of ["day","month","year","timeZoneName"]){
     out = out.replace(part, parts.find( p => p.type === part )?.value ?? "" )
   }
-  return out
+  return out.trim()
 }
 
 export function addToDate( date: Date | ISODateString, years: number, months: number, days: number ){
@@ -70,8 +70,8 @@ export function addToDate( date: Date | ISODateString, years: number, months: nu
   return toReturn
 }
 
-export function addUnitsToDate( date: Date | ISODateString, amount: number, unit: 'day'| 'week' | 'month' | 'year' ){
+export function addUnitsToDate( date: Date | ISODateString, amount: number, unit: 'hour' | 'day'| 'week' | 'month' | 'year' ){
   const toWork = typeof date === 'string' ? new Date(date) : date;
-  const toReturn = new Date( Date.UTC(toWork.getUTCFullYear() + ( unit === 'year' ? amount : 0 ), toWork.getUTCMonth() + ( unit === 'month' ? amount : 0 ), toWork.getUTCDate() + ( unit === 'day' ? amount : ( unit === 'week' ? amount * 7 : 0 ) ), toWork.getUTCHours(), toWork.getUTCMinutes(), toWork.getUTCSeconds(), toWork.getUTCMilliseconds() ));
+  const toReturn = new Date( Date.UTC(toWork.getUTCFullYear() + ( unit === 'year' ? amount : 0 ), toWork.getUTCMonth() + ( unit === 'month' ? amount : 0 ), toWork.getUTCDate() + ( unit === 'day' ? amount : ( unit === 'week' ? amount * 7 : 0 ) ), toWork.getUTCHours() + ( unit === 'hour' ? amount : 0 ), toWork.getUTCMinutes(), toWork.getUTCSeconds(), toWork.getUTCMilliseconds() ));
   return toReturn
 }

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, HostBinding, Input, OnInit, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
-import { Board, Container, Lane, Priority, Status, Tag, Task, getNewTask } from '../../types/types';
+import { Board, Container, Lane, PickerOutput, Priority, Status, Tag, Task, getNewTask } from '../../types/types';
 import { BoardService } from '../../service/board.service';
 import { hashCode, isArchive, isPlaceholder, isStatic } from '../../utils/utils';
 import { map, Observable, of } from 'rxjs';
@@ -23,6 +23,7 @@ import { layoutValues } from '../../types/constants';
   ],
 })
 export class LaneComponent extends ContainerComponent implements OnInit {
+
   @ViewChildren(TaskComponent, { read: ElementRef }) taskComponentsElRefs: QueryList<ElementRef> | undefined;
   @ViewChildren(TaskComponent) taskComponents: QueryList<TaskComponent> | undefined;
   @Input() lane!: Lane;
@@ -36,6 +37,7 @@ export class LaneComponent extends ContainerComponent implements OnInit {
   interactingWithChildTasks = false;
   showMoveToBoards = false;
   debounce: ReturnType<typeof setTimeout> | undefined;
+  showDatePicker: boolean = false;
 
   constructor(
     protected boardService: BoardService,
@@ -93,7 +95,7 @@ export class LaneComponent extends ContainerComponent implements OnInit {
 
   // Statically displayed tasks, eventually filtered by priority, status.
   get staticTasks(): Observable<Task[] | undefined> {
-    return this.boardService.getStaticTasks$(this.board, this.lane.tags, this.lane.priority, this.lane.status, this.isArchive(this.lane) ? false : true, this.isArchive(this.lane) ? 'archived' : undefined, 'desc');
+    return this.boardService.getStaticTasks$(this.board, this.lane.tags, this.lane.priority, this.lane.status, this.lane.startTimeframe, this.lane.endTimeframe, this.isArchive(this.lane) ? false : true, this.isArchive(this.lane) ? 'archived' : undefined, 'desc');
   }
 
   get staticTasksCount(): Observable<number | undefined>{
@@ -198,6 +200,20 @@ export class LaneComponent extends ContainerComponent implements OnInit {
   }
   toggleCollapse() {
     this.lane.collapsed = !this.lane.collapsed
+  }
+
+  openDatePicker() {
+    this.showDatePicker = true;
+  }
+
+  setTimeframe(event: PickerOutput | undefined) {
+    if(! event || !('timeframe' in event)){
+      throw new Error("No timeframe for lane");
+    }
+    this.lane.startTimeframe = event.timeframe[0] !== 'no' ? event.timeframe[0] : undefined;
+    this.lane.endTimeframe = event.timeframe[1] !== 'no' ? event.timeframe[1] : undefined;
+    this.boardService.publishBoardUpdate();
+    this.showDatePicker = false;
   }
 
 }
