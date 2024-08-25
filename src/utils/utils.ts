@@ -197,7 +197,7 @@ export function isRecurringGanttTask(parent: Container | undefined): parent is R
   if (!parent) {
     return false;
   }
-  return isGanttTask(parent) && !!parent.gantt.recurrence;
+  return isGanttTask(parent) && !!parent.gantt.recurrence && !!parent.gantt.nextRecurrenceStartDate && !!parent.gantt.nextRecurrenceEndDate;
 }
 
 export function isLanes(parent: Container[]): parent is Lane[] {

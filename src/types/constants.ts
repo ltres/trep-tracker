@@ -38,6 +38,7 @@ export const datePickerFormat: {
 };
 
 export const recurrenceValues = [
+  "no",
   "daily",
   "weekly",
   "monthly",

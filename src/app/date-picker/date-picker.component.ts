@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from "@angular/core";
-import { locale } from "../../types/constants";
+import { locale, recurrenceValues, timeframeValues } from "../../types/constants";
 import { DateTimeAdapter } from "@ltres/angular-datetime-picker";
-import { Recurrence } from "../../types/types";
+import { PickerOutput, Recurrence, Timeframe } from "../../types/types";
 
 const ONE_DAY = 24 * 60 * 60 * 1000;
 
@@ -11,16 +11,23 @@ const ONE_DAY = 24 * 60 * 60 * 1000;
   styleUrl: './date-picker.component.scss'
 })
 export class DatePickerComponent implements AfterViewInit{
+  @ViewChild('trigger') trigger: ElementRef<{click:() =>unknown}> | null = null;
+  @Input() showRecurrences = false;
+  @Input() showTimeframes = false;
+
   @Input() startDate: Date | undefined = new Date(Date.now() - ONE_DAY);
   @Input() endDate: Date | undefined = new Date(Date.now() + ONE_DAY)
-  @Input() recurrence: Recurrence | undefined;
+  @Input() selectedRecurrence: Recurrence | undefined;
 
-  @Output() onDatesSelected:EventEmitter<[Date, Date]> = new EventEmitter();
+  @Output() onSetClicked: EventEmitter<PickerOutput> = new EventEmitter();
   @Output() onCancel:EventEmitter<void> = new EventEmitter();
-  @Output() onRecurrenceUpdate:EventEmitter<Recurrence | undefined> = new EventEmitter();
 
-  @ViewChild('trigger') trigger: ElementRef<{click:() =>unknown}> | null = null;
   public selectedMoments: Date[] | undefined;
+  protected recurrenceValues = recurrenceValues
+  protected timeframeValues= timeframeValues
+
+  protected selectedTimeframe: Timeframe | undefined
+
   protected initialized = false;
 
   dateTime = false
@@ -41,16 +48,25 @@ export class DatePickerComponent implements AfterViewInit{
     this.initialized = true
     this.trigger?.nativeElement.click();
   }
-
-  protected selectedTrigger(date: Date | Date[]): void {
-    if(!date || !Array.isArray(date) || date.length !== 2){
-      console.warn("Undefined date");
-      return;
+  
+  protected setButtonClicked( date: Date | Date[] | [null,null] ): void {
+    if(!date || !Array.isArray(date) || date.length !== 2 || date[0] === null || date[1] === null ){
+      // no dates, timeframe?
+      if(!this.selectedTimeframe){
+        throw new Error("No dates nor timeframe selected");
+      }
+      this.onSetClicked.emit({
+        timeframe: this.selectedTimeframe
+      })
+    }else{
+      this.onSetClicked.emit({
+        dates: date as [Date,Date],
+        recurrence: this.selectedRecurrence
+      })
     }
-    this.onDatesSelected.emit([date[0],date[1]])
   }
 
-  protected cancelTrigger(): void {
+  protected cancelClicked(): void {
     this.onCancel.emit()
   }
   
@@ -59,12 +75,6 @@ export class DatePickerComponent implements AfterViewInit{
   }
   getStartAt(): Date {
     return this.startDate ?? new Date();
-  }
-  getRecurrence(): Recurrence | undefined {
-    return this.recurrence
-  }
-  updateRecurrence($event: Recurrence) {
-    this.onRecurrenceUpdate.emit($event);
   }
 
 }

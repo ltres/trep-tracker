@@ -18,7 +18,7 @@
             <span *ngIf="!isPlaceholder() && task.children.length === 0" [class.selected]="(task.gantt?.startDate || task.gantt?.endDate) && task.gantt?.showData !== false" class="select-dates pointer" (click)="openDatePicker()">
                 <span *ngIf="task.gantt?.recurrence" [tooltip]="'Recurrent (' + task.gantt?.recurrence + ')'" [position]="'top'">↻</span>
                 <span [tooltip]="'Set start/end dated'" [position]="'top'">📅</span>
-                <date-picker *ngIf="showDatePicker" [startDate]="fromIsoString(task.gantt?.startDate)" [endDate]="fromIsoString(task.gantt?.endDate)" [recurrence]="task.gantt?.recurrence" (onDatesSelected)="setDates($event)" (onCancel)="setDates(undefined)" (onRecurrenceUpdate)="updateRecurrence($event)"></date-picker>
+                <date-picker *ngIf="showDatePicker" [showRecurrences]="true" [startDate]="fromIsoString(task.gantt?.startDate)" [endDate]="fromIsoString(task.gantt?.endDate)" [selectedRecurrence]="task.gantt?.recurrence" (onSetClicked)="setDates($event)" (onCancel)="setDates(undefined)"></date-picker>
             </span>
 
             <span *ngIf="!isPlaceholder()" [tooltip]="'Toggle show in Gantt chart'" [position]="'top'" [class.selected]="task.includeInGantt" (click)="toggleShowInGantt()" class="show-in-gantter pointer">
@@ -32,8 +32,8 @@
     </div>
 </div>
 <div *ngIf="task.gantt && task.gantt.showData !== false" class="dates-n-stuff flex g-05 small">
-    <div class="" [innerHTML]="getDatesText()">
-
+    <div class="">
+        <ng-container *ngTemplateOutlet="datesText"></ng-container>
     </div>
     <div *ngIf="task.status === 'archived'" class="translucent date-wrapper flex align-items-center g-05">
         <span>archived on {{parseDate(this.task.dates.archived?.enter) | date: 'dd-MM-yy hh:mm a'}}</span>
@@ -56,3 +56,28 @@
     </ng-container>
 
 </div>
+
+<ng-template #datesText>
+    @if(task.gantt){
+    <span class="translucent">
+        @if(isRecurringGanttTask(task)){
+        {{task.gantt.recurrence}} - next
+        }@else{
+        planned
+        }
+    </span>
+    <span class="half-translucent {{this.getApproachingClass( getToday(), task.gantt.nextRecurrenceStartDate ?? task.gantt.startDate )}}">
+        {{formatDate( task.gantt.nextRecurrenceStartDate ?? task.gantt.startDate)}}
+    </span>
+    @if( task.gantt.startDate !== task.gantt.endDate){
+    <span class="translucent">⤳</span>
+    <span class="half-translucent {{this.getApproachingClass( getToday(), task.gantt.nextRecurrenceEndDate ?? task.gantt.endDate )}}">
+        {{formatDate( task.gantt.nextRecurrenceEndDate ?? task.gantt.endDate)}}
+    </span>
+    <span class="translucent">({{getDiffInDays(this.task.gantt.startDate, this.task.gantt.endDate)}} day{{getDiffInDays(this.task.gantt.startDate, this.task.gantt.endDate)>1 ? "s": ""}})</span>
+    }
+    }
+
+
+
+</ng-template>

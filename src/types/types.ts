@@ -40,7 +40,7 @@ export interface Task extends Container {
 }
 
 export type GanttData = {
-  showData?: boolean,
+  showData?: boolean, // activates when 'cancel' button is clicked and prevents dates data to be displayed
   startDate: ISODateString,
   endDate: ISODateString,
   nextRecurrenceStartDate?: ISODateString, // for recurrent tasks
@@ -232,3 +232,9 @@ export type VersionCheckResponse = {
     currentVersion: string,
     changeLog: string
 }
+
+export type PickerOutput = { 
+  dates: [Date, Date], 
+  recurrence: Recurrence | undefined, 
+  
+} | { timeframe: Timeframe }
