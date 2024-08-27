@@ -61,27 +61,33 @@
         }
     </span>
     <span [innerHTML]="getProximityIcons(task.gantt.nextRecurrenceStartDate ?? task.gantt.startDate, 'start')"></span>
-    <span class="half-translucent">{{formatDate( task.gantt.nextRecurrenceStartDate ?? task.gantt.startDate)}}</span>
+    <ng-container [ngTemplateOutlet]="date" [ngTemplateOutletContext]="{date: task.gantt.nextRecurrenceStartDate ?? task.gantt.startDate }"></ng-container>
     @if( task.gantt.startDate !== task.gantt.endDate){
     <span class="translucent"> ⤳ </span>
     <span [innerHTML]="getProximityIcons(task.gantt.nextRecurrenceEndDate ?? task.gantt.endDate,'end')"></span>
-    <span class="half-translucent">{{formatDate( task.gantt.nextRecurrenceEndDate ?? task.gantt.endDate)}}</span>
-
+    <ng-container [ngTemplateOutlet]="date" [ngTemplateOutletContext]="{date: task.gantt.nextRecurrenceEndDate ?? task.gantt.endDate }"></ng-container>
     <span class="translucent"> ({{getDiffInDays(this.task.gantt.startDate, this.task.gantt.endDate)}} day{{getDiffInDays(this.task.gantt.startDate, this.task.gantt.endDate)>1 ? "s": ""}})</span>
     }
     }
     @if(task.status === 'archived'){
     <span class="translucent">, archived </span>+
-    <span class="half-translucent">{{formatDate( this.task.dates.archived?.enter)}}</span>
+    <ng-container [ngTemplateOutlet]="date" [ngTemplateOutletContext]="{date: this.task.dates.archived?.enter }"></ng-container>
     <time-bar [container]="task"></time-bar>
     }
 
     @if(task.status === 'completed'){
     <span class="translucent">, completed </span>
-    <span class="half-translucent">{{formatDate( this.task.dates.completed?.enter)}}</span>
+    <ng-container [ngTemplateOutlet]="date" [ngTemplateOutletContext]="{date: this.task.dates.completed?.enter }"></ng-container>
     }
+</ng-template>
 
-
-
-
+<ng-template #date let-date="date">
+    @if(getDiffInDays(getToday(), date) > 0){
+    <span class="half-translucent pointer" [tooltip]="formatDate(date,'fullDateFormat') + ' - in ' + getDiffInDays(getToday(), date) + ' day' + ( getDiffInDays(getToday(), date) != 1 ? 's' : '' )">{{formatDate(date)}}</span>
+    }@else if(getDiffInDays(getToday(), date) == 0){
+    <span class="half-translucent pointer" [tooltip]="formatDate(date,'fullDateFormat') + ' - today'">{{formatDate(date)}}</span>
+    }
+    @else{
+    <span class="half-translucent pointer" [tooltip]="formatDate(date,'fullDateFormat') + ' - ' + -getDiffInDays(getToday(), date) + ' day' + ( -getDiffInDays(getToday(), date) != 1 ? 's' : '' ) + ' ago'">{{formatDate(date)}}</span>
+    }
 </ng-template>

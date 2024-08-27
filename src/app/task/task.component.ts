@@ -10,7 +10,7 @@ import { ContainerComponent } from '../base/base.component';
 import { ClickService } from '../../service/click.service';
 import { toIsoString, fromIsoString, formatDate, getDiffInDays } from '../../utils/date-utils';
 import { setCaretPosition, isPlaceholder, hashCode, initGanttData, isRecurringGanttTask } from '../../utils/utils';
-import { millisForMagnitudeStep } from '../../types/constants';
+import { datePickerFormat, millisForMagnitudeStep } from '../../types/constants';
 
 @Component({
   selector: 'task[task][lane][parent][board]',
@@ -248,8 +248,8 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     return isRecurringGanttTask(task);
   }
 
-  formatDate(date: ISODateString){
-    return formatDate(date);
+  formatDate(date: ISODateString, format?: string){
+    return formatDate(date, format ? datePickerFormat[format] : undefined );
   }
 
   getDiffInDays(date1: ISODateString, date2: ISODateString){

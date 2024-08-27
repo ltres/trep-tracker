@@ -50,12 +50,15 @@ export function toUTCDate( date: string ): ISODateString{
   return localDate.toISOString() as ISODateString;
 }
 
-export function formatDate(date: ISODateString | Date | undefined) {
+export function formatDate(date: ISODateString | Date | undefined, format?: Intl.DateTimeFormatOptions ) {
   if(!date){
     console.warn("format date called on empty object");
     return ""
   }
-  const dateTimeFormat = new Intl.DateTimeFormat(locale.long, datePickerFormat.baseDateFormat);
+  const dateTimeFormat = new Intl.DateTimeFormat(locale.long, format ?? datePickerFormat.baseDateFormat);
+  if( format ){
+    return dateTimeFormat.format(typeof date === 'string' ? new Date(date) : date);
+  }
   const parts = dateTimeFormat.formatToParts(typeof date === 'string' ? new Date(date) : date);
   let out = locale.dateFormat
   for(const part of ["day","month","year","timeZoneName"]){

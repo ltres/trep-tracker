@@ -27,6 +27,7 @@ export const datePickerFormat: {
   [key:string]: Intl.DateTimeFormatOptions
 }  = {
   baseDateFormat: {year: 'numeric', month: 'numeric', day: 'numeric', hour12: false, timeZone: locale.timeZone,  ...locale.showTimezoneInfo && {timeZoneName: "short"}},
+  fullDateFormat: {year: 'numeric', month: 'numeric', day: 'numeric', hour12: false, hour: 'numeric', minute: 'numeric', timeZone: locale.timeZone, timeZoneName: "short"},
 
   fullPickerInput: {year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: false, timeZone: locale.timeZone, ...locale.showTimezoneInfo && {timeZoneName: "short"}},
   datePickerInput: {year: 'numeric', month: 'numeric', day: 'numeric', hour12: false, timeZone: locale.timeZone,  ...locale.showTimezoneInfo && {timeZoneName: "short"}},
