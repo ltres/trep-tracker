@@ -9,10 +9,10 @@ import { priorityValues } from '../../types/constants';
   styleUrl: './prioritizer.component.scss',
 })
 export class PrioritizerComponent {
-
     @Input() container!: Container;
     @Input() multipleSelectable: boolean = false;
     @Input() allowEmpty: boolean = false;
+    @Input() tooltip = "Set priority";
 
     @Output() onPrioritySelected = new EventEmitter<Priority[] | Priority | undefined>();
 

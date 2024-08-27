@@ -13,6 +13,7 @@ export class StatusComponent {
   @Input() container!: Container;
   @Input() board!: Board;
   @Input() staticLane!: boolean;
+  @Input() tooltip = "Set status";
 
   @Input() multipleSelectable: boolean = false;
   @Input() allowEmpty: boolean = false;

@@ -16,7 +16,7 @@ export const locale = {
   short:"it",
   long: "it-IT",
   timeZone: "Europe/Rome",
-  showTimezoneInfo: true,
+  showTimezoneInfo: false,
   dateFormat: "day-month-year timeZoneName"
 }
 

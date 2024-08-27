@@ -6,14 +6,17 @@ import { Directive, ElementRef, HostListener, Input } from '@angular/core';
 export class TooltipDirective {
   @Input('tooltip') tooltip: string = '';
 
-  @Input('position') position: string | undefined;
+  @Input('position') position: "top" | "bottom" | "left" | "right" | undefined = "top";
+
+  body = document.querySelector('body')!
+  el: HTMLDivElement | undefined;
 
   constructor(
     private element: ElementRef,
   ) { }
 
-  @HostListener('mouseenter')
-  onMouseEnter(  ) {
+  @HostListener('mouseenter', ['$event'])
+  onMouseEnter( ) {
     this.element.nativeElement.style.position = 'relative';
     const tooltip = document.createElement('div');
     tooltip.classList.add('tooltip');
@@ -21,31 +24,45 @@ export class TooltipDirective {
     tooltip.innerHTML = this.tooltip;
     tooltip.style.position = 'absolute';
     tooltip.style.whiteSpace = 'nowrap';
-    if(!this.position || this.position === 'top' || this.position === 'bottom'){
-      tooltip.style.bottom = this.position && this.position === 'bottom' ? '-250%' : '150%';
-    }else{
-      tooltip.style.top = '0';
+    this.body.appendChild(tooltip);
+
+    const bbox = (this.element.nativeElement as HTMLElement).getBoundingClientRect()
+    switch(this.position){
+      case "top":
+        tooltip.style.top = `${bbox.top - tooltip.getBoundingClientRect().height}px`;
+        tooltip.style.left = `${bbox.left}px`;
+        break;
+      case "bottom" :
+        tooltip.style.top = `${bbox.top + tooltip.getBoundingClientRect().height}px`;
+        tooltip.style.left = `${bbox.left}px`;
+        break;
+      case "left":
+        tooltip.style.top = `${bbox.top}px`;
+        tooltip.style.right = `${bbox.left}px`;
+        break;
+      case "right" :
+        tooltip.style.top = `${bbox.top}px`;
+        tooltip.style.left = `${bbox.right}px`;
+        break;
+          
     }
-    if(this.position && this.position === 'left'){
-      tooltip.style.right = '120%';
-    }else{
-      tooltip.style.left = '0';
-    }
+
     tooltip.style.backgroundColor = 'black';
     tooltip.style.color = 'white';
     //tooltip.style.padding = '5px';
     tooltip.style.borderRadius = '5px';
     tooltip.style.zIndex = '1000';
-    this.element.nativeElement.appendChild(tooltip);
+    this.el = tooltip
 
   }
   @HostListener('mouseleave')
   onMouseLeave() {
+
     this.element.nativeElement.style.position = 'unset';
     this.element.nativeElement.style.overflowX = '';
 
-    (this.element.nativeElement as HTMLElement).removeChild(this.element.nativeElement.querySelector('.tooltip'));
-
+    this.el?.remove();
+    document.querySelectorAll('.tooltip').forEach( n => n.remove())
   }
 
 }

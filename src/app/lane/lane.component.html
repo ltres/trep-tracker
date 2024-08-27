@@ -7,10 +7,10 @@
       <div class="lane-title no-wrap" contenteditable="true" [(ngModel)]="this.lane.textContent" [board]="board" (ngModelChange)="debounceBoardUpdate()" (onTagsChange)="updateLaneTags($event)"> </div>
       }
 
-      <prioritizer [container]="lane" [allowEmpty]="true" [multipleSelectable]="true" (onPrioritySelected)="togglePriority($event)"> </prioritizer>
-      <status (onStatusSelected)="updateStatus($event)" [allowEmpty]="true" [multipleSelectable]="true" [container]="lane" [board]="board" [staticLane]="isStatic()"> </status>
+      <prioritizer [container]="lane" [allowEmpty]="true" [multipleSelectable]="true" (onPrioritySelected)="togglePriority($event)" [tooltip]="'Set priority filter'"> </prioritizer>
+      <status (onStatusSelected)="updateStatus($event)" [allowEmpty]="true" [multipleSelectable]="true" [container]="lane" [board]="board" [staticLane]="isStatic()" [tooltip]="'Set status filter'"> </status>
       <span [class.translucent]="!lane.endTimeframe" class="select-dates pointer" (click)="openDatePicker()">
-        <span [tooltip]="'Set timeframe'" [position]="'top'">📅</span>
+        <span [tooltip]="'Set timeframe filter'" [position]="'top'">📅</span>
         <date-picker *ngIf="showDatePicker" [showTimeframes]="true" [hideCalendar]="true" [selectedTimeframe]="[lane.startTimeframe,lane.endTimeframe]" (onSetClicked)="setTimeframe($event)" (onCancel)="setTimeframe(undefined)"></date-picker>
       </span>
       <div class="task-count translucent">
@@ -24,21 +24,21 @@
 
 
     <div class="grow"></div>
-    <span [position]="'bottom'" [tooltip]="'Move left'" *ngIf="displayedInFixedLayout && canMove('up')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" (click)="moveLane('up')">↑</span>
-    <span [position]="'bottom'" [tooltip]="'Move right'" *ngIf="displayedInFixedLayout && canMove('down')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" (click)="moveLane('down')">↓</span>
-    <span [position]="'bottom'" [tooltip]="'Move left'" *ngIf="displayedInFixedLayout && canMove('left')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" (click)="moveLane('left')">←</span>
-    <span [position]="'bottom'" [tooltip]="'Move right'" *ngIf="displayedInFixedLayout && canMove('right')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" (click)="moveLane('right')">→</span>
+    <span [position]="'top'" [tooltip]="'Move left'" *ngIf="displayedInFixedLayout && canMove('up')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" (click)="moveLane('up')">↑</span>
+    <span [position]="'top'" [tooltip]="'Move right'" *ngIf="displayedInFixedLayout && canMove('down')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" (click)="moveLane('down')">↓</span>
+    <span [position]="'top'" [tooltip]="'Move left'" *ngIf="displayedInFixedLayout && canMove('left')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" (click)="moveLane('left')">←</span>
+    <span [position]="'top'" [tooltip]="'Move right'" *ngIf="displayedInFixedLayout && canMove('right')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" (click)="moveLane('right')">→</span>
 
     <span *ngIf="lane.collapsed" (click)="toggleCollapse()" [tooltip]="'Expand tasks'" class="pointer expand">⇳</span>
 
-    <span [position]="'bottom'" [tooltip]="'Show child tasks'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" *ngIf="isStatic()" (click)="toggleShowChildren()">
+    <span [position]="'top'" [tooltip]="'Show child tasks'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" *ngIf="isStatic()" (click)="toggleShowChildren()">
       <span *ngIf="lane.showChildren" class="completed">☑</span>
       <span *ngIf="!lane.showChildren">☐</span>
     </span>
 
     <div class="no-grow relative flex align-items-center">
 
-      <div [position]="'bottom'" [tooltip]="'Lane menu'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small  no-grow" (click)="menuOpen = !menuOpen; $event.stopPropagation()">☰</div>
+      <div [position]="'top'" [tooltip]="'Lane menu'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small  no-grow" (click)="menuOpen = !menuOpen; $event.stopPropagation()">☰</div>
       <lane-menu *ngIf="menuOpen" [lane]="lane" (onClose)="menuOpen = false">
         <button class="small no-grow" *ngIf="!isStatic() && !isArchive(lane) " (click)="autoSort()">✨ Auto-sort tasks</button>
 
@@ -70,7 +70,7 @@
       </lane-menu>
     </div>
 
-    <span [position]="'bottom'" [tooltip]="'Drag'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" drag-on-this="true" draggable="true" class="lane drag-handle translucent pointer no-grow">⋯</span>
+    <span [position]="'top'" [tooltip]="'Drag'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" drag-on-this="true" draggable="true" class="lane drag-handle translucent pointer no-grow">⋯</span>
   </div>
 
   @if(!lane.collapsed){
@@ -94,7 +94,7 @@
     </button>
   </div>
   }@else{
-  <span (click)="toggleCollapse()" class="pointer">...</span>
+  <span (click)="toggleCollapse()" class="pointer" [tooltip]="'Show tasks..'">...</span>
   }
 </div>
 

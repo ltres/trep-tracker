@@ -49,8 +49,8 @@ export class DatePickerComponent implements AfterViewInit{
     this.trigger?.nativeElement.click();
   }
   
-  protected setButtonClicked( date: Date | Date[] | [null,null] ): void {
-    if(!date || !Array.isArray(date) || date.length !== 2 || date[0] === null || date[1] === null ){
+  protected setButtonClicked( date: Date | (Date | null)[] ): void {
+    if(!date || !Array.isArray(date) || date.length !== 2 || date[0] === null ){
       // no dates, timeframe?
       if(!this.selectedTimeframe){
         throw new Error("No dates nor timeframe selected");
@@ -60,7 +60,7 @@ export class DatePickerComponent implements AfterViewInit{
       })
     }else{
       this.onSetClicked.emit({
-        dates: date as [Date,Date],
+        dates: [date[0], date[1] ?? date[0]],
         recurrence: this.selectedRecurrence
       })
     }
