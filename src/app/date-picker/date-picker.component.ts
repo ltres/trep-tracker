@@ -50,7 +50,7 @@ export class DatePickerComponent implements AfterViewInit{
   }
   
   protected setButtonClicked( date: Date | (Date | null)[] ): void {
-    if(!date || !Array.isArray(date) || date.length !== 2 || date[0] === null ){
+    if(this.showTimeframes || !date || !Array.isArray(date) || date.length !== 2 || date[0] === null ){
       // no dates, timeframe?
       if(!this.selectedTimeframe){
         throw new Error("No dates nor timeframe selected");

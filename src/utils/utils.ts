@@ -149,7 +149,7 @@ export function getNextStatus(t: Task): Status {
 
 export function isStatic(lane: Lane): boolean {
   const isTagged = lane.tags ? lane.tags.length > 0 : false;
-  const cond = lane.priority !== undefined || lane.status !== undefined || lane.endTimeframe !== undefined; 
+  const cond = lane.priority !== undefined || lane.status !== undefined || lane.endTimeframe !== undefined || lane.startTimeframe !== undefined; 
   const cond2 = false; //lane.children.length === 0
   return isTagged || cond || cond2;
 }

@@ -1,4 +1,4 @@
-<board-toolbar class="absolute" *ngIf="board.layout === 'absolute'" [board]="board"></board-toolbar>
+<board-toolbar class="absolute" clazz="absolute" *ngIf="board.layout === 'absolute'" [board]="board"></board-toolbar>
 
 @if(board.layout === 'absolute'){
 @for (lane of lanes$ | async; track hashCode(lane)) {
@@ -7,7 +7,7 @@
 
 }@else {
 <div class="flex column board-column flex-child g-1" *ngFor="let colIndex of getColumnIndexes(board.layout); let last = last">
-  <board-toolbar class="static" *ngIf="last" [board]="board"></board-toolbar>
+  <board-toolbar class="static flex justify-content-end" clazz="static" *ngIf="last" [board]="board"></board-toolbar>
   @for (lane of getLanesByColumn$(colIndex) | async; track hashCode(lane)) {
   <lane [displayedInFixedLayout]="true" [lane]="lane" [board]="this.board" [draggableDir]="lane" [containerEl]="el.nativeElement" [layout]="board.layout"></lane>
   }

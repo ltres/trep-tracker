@@ -223,6 +223,11 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
           const ganttData = this.task.gantt!;
           ganttData.recurrence = pickerOutput.recurrence === 'no' ? undefined : pickerOutput.recurrence;
           this.boardService.publishBoardUpdate();
+        }else{
+          delete this.task.gantt?.recurrence;
+          delete this.task.gantt?.nextRecurrenceEndDate;
+          delete this.task.gantt?.nextRecurrenceStartDate;
+
         }
       }else if( 'timeframe' in pickerOutput ){
         throw new Error("Trying to set a timeframe on a task")

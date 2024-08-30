@@ -21,7 +21,10 @@ $small-font-size: 0.9rem;
 
 $border-radius: calc($font-size/2);
 $archive-color: hsl(54, 80%, 50%);
-$lane-padding: 0.75rem 1rem;
+$lane-padding-y: 0.75rem;
+$lane-padding-x: 1rem;
+
+$lane-padding: $lane-padding-y $lane-padding-x;
 
 $tag-orange-color: rgb(241, 134, 255);
 $tag-yellow-color: rgb(255, 137, 58);

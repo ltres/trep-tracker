@@ -66,11 +66,11 @@
     <span class="translucent"> ⤳ </span>
     <span [innerHTML]="getProximityIcons(task.gantt.nextRecurrenceEndDate ?? task.gantt.endDate,'end')"></span>
     <ng-container [ngTemplateOutlet]="date" [ngTemplateOutletContext]="{date: task.gantt.nextRecurrenceEndDate ?? task.gantt.endDate }"></ng-container>
-    <span class="translucent"> ({{getDiffInDays(this.task.gantt.startDate, this.task.gantt.endDate)}} day{{getDiffInDays(this.task.gantt.startDate, this.task.gantt.endDate)>1 ? "s": ""}})</span>
+    <span class="translucent"> ({{getDiffInDays(this.task.gantt.startDate, this.task.gantt.endDate)}} day{{getDiffInDays(this.task.gantt.startDate, this.task.gantt.endDate) != 1 ? "s": ""}})</span>
     }
     }
     @if(task.status === 'archived'){
-    <span class="translucent">, archived </span>+
+    <span class="translucent">, archived </span>
     <ng-container [ngTemplateOutlet]="date" [ngTemplateOutletContext]="{date: this.task.dates.archived?.enter }"></ng-container>
     <time-bar [container]="task"></time-bar>
     }

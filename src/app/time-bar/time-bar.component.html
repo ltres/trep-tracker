@@ -1,6 +1,6 @@
 <div class="bars flex">
     <ng-container *ngFor="let date of getDates()">
-        <div *ngIf="getWidth(date) !== '0%'" class="bar grow {{date}}-background" position="left" [tooltip]="getTooltip(date)" [style.width]="getWidth(date)">
+        <div *ngIf="getWidth(date) !== '0%'" class="bar grow {{date}}-background" position="top" [tooltip]="getTooltip(date)" [style.width]="getWidth(date)">
 
         </div>
     </ng-container>

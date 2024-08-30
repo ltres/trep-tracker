@@ -1,26 +1,23 @@
-<div class="board-toolbar flex column align-items-end p-05 g-05">
+<div (click)="menuOpen = !menuOpen" [class.open]="menuOpen" class="pointer board-menu inline-flex column g-05 align-items-end sticky">
     <div class="flex justify-content-end">
         <label class="translucent">Board:&nbsp;</label>
         <div contenteditable="true" [(ngModel)]="board.textContent" [board]="board" (ngModelChange)="debounceBoardUpdate()" (onTagsChange)="updateBoardTags($event)" class="board-label"></div>
         <!-- <prioritizer [container]="board" class="m-x-025"> </prioritizer> -->
     </div>
-
-    <div *ngIf="open" class="flex column align-items-end g-05">
+    <div [tooltip]="'Open board menu'" [position]="'left'" class="board-menu-tab inline-flex g-05">
+        <span>☰</span>
+    </div>
+    <div *ngIf="menuOpen" class="board-menu-content flex column g-05">
         <div class="flex g-025 align-items-center">
             <label class="translucent">Layout:&nbsp;</label>
-            <button class="layout {{layout}}" *ngFor="let layout of getLayouts()" (click)="setLayout(layout)" [class.active]="board.layout === layout" position="left" [tooltip]="layout + ' layout'">{{getLayoutSymbol(layout)}}</button>
+            <button class="layout {{layout}}" *ngFor="let layout of getLayouts()" (click)="setLayout(layout)" [class.active]="board.layout === layout" position="top" [tooltip]="layout + ' layout'">{{getLayoutSymbol(layout)}}</button>
         </div>
 
         <search></search>
 
         <div class="flex g-025 align-items-center">
-            <button class="show-board-gantt" [tooltip]="'Shows a Gantt chart for the whole board'" position="left" (click)="openGantt()">📊 Gantt..</button>
+            <button class="show-board-gantt" [tooltip]="'Shows a Gantt chart for the whole board'" position="top" (click)="openGantt()">📊 Gantt..</button>
             <button (click)="addLane()" class="add-lane">➕ Add lane</button>
         </div>
     </div>
-    <span class="pointer" (click)="open=!open" [class]="!open ? 'chevron-down' : 'chevron-up'"></span>
-
 </div>
-<ng-template #gantt>
-    <gantt [tasks]="getGanttTasks$() | async" [board]="board"></gantt>
-</ng-template>

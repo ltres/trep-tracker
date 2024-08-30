@@ -134,8 +134,21 @@ p {
   position: absolute;
 }
 
+.inline-block {
+  display: inline-bloc;
+}
+
+
 .static {
   position: static;
+}
+
+.fixed {
+  position: fixed;
+}
+
+.sticky {
+  position: sticky;
 }
 
 button {
@@ -144,6 +157,14 @@ button {
 
 .flex {
   display: flex;
+}
+
+.inline-flex {
+  display: inline-flex;
+}
+
+.always-on-top {
+  z-index: 1010;
 }
 
 .flex-child {

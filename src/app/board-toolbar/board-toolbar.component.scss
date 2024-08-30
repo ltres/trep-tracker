@@ -1,9 +1,20 @@
 @import "../../assets/variables";
+@import "../../assets/mixins";
 
 :host {
-    top: $board-padding;
-    right: $board-padding;
-    text-align: right;
-    z-index: 99;
-    opacity: 1 !important;
+    &.absolute {
+        height: 100%;
+        right: $board-padding;
+        top: $board-padding;
+    }
+
+}
+
+.board-menu {
+    top: $lane-padding-y;
+    @include lane-style;
+
+    &.open {
+        z-index: 1010;
+    }
 }

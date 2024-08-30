@@ -16,8 +16,7 @@ export class TooltipDirective {
   ) { }
 
   @HostListener('mouseenter', ['$event'])
-  onMouseEnter( ) {
-    this.element.nativeElement.style.position = 'relative';
+  onMouseEnter( ) {    
     const tooltip = document.createElement('div');
     tooltip.classList.add('tooltip');
     tooltip.classList.add('standard');
@@ -38,7 +37,7 @@ export class TooltipDirective {
         break;
       case "left":
         tooltip.style.top = `${bbox.top}px`;
-        tooltip.style.right = `${bbox.left}px`;
+        tooltip.style.left = `${bbox.left - tooltip.getBoundingClientRect().width}px`;
         break;
       case "right" :
         tooltip.style.top = `${bbox.top}px`;
@@ -57,10 +56,6 @@ export class TooltipDirective {
   }
   @HostListener('mouseleave')
   onMouseLeave() {
-
-    this.element.nativeElement.style.position = 'unset';
-    this.element.nativeElement.style.overflowX = '';
-
     this.el?.remove();
     document.querySelectorAll('.tooltip').forEach( n => n.remove())
   }

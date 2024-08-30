@@ -1,4 +1,4 @@
-import { Component, Input, TemplateRef, ViewChild } from '@angular/core';
+import { Component, HostBinding, Input, TemplateRef, ViewChild } from '@angular/core';
 import { BoardService } from '../../service/board.service';
 import { Board, Layout, Tag, Task } from '../../types/types';
 import { ModalService } from '../../service/modal.service';
@@ -7,16 +7,21 @@ import { isPlaceholder } from '../../utils/utils';
 import { layoutValues } from '../../types/constants';
 
 @Component({
-  selector: 'board-toolbar[board]',
+  selector: 'board-toolbar[board][clazz]',
   templateUrl: './board-toolbar.component.html',
   styleUrl: './board-toolbar.component.scss',
 })
 export class BoardToolbarComponent {
   @ViewChild('gantt') ganttTemplate: TemplateRef<unknown> | null = null;
-
   @Input() board!: Board;
+
+  @HostBinding('class')
+  @Input() clazz!: string;
+
   debounce: ReturnType<typeof setTimeout> | undefined;
   open: boolean = true;
+  menuOpen = false;
+
   constructor(
     protected boardService: BoardService,
     protected modalService: ModalService,
