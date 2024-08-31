@@ -15,10 +15,10 @@ export function overlaps(DOMRect: DOMRect | undefined, DOMRect2: DOMRect | undef
         && DOMRect.y < DOMRect2.y + DOMRect2.height && DOMRect.y + DOMRect.height > DOMRect2.y;
 }
 
-export function cursorIsInside(event: DragEvent, DOMRect: DOMRect | undefined): boolean {
+export function cursorIsInside(x: number, y: number, DOMRect: DOMRect | undefined): boolean {
   if (!DOMRect) return false;
-  return DOMRect.x < event.clientX && event.clientX < DOMRect.x + DOMRect.width &&
-        DOMRect.y < event.clientY && event.clientY < DOMRect.y + DOMRect.height;
+  return DOMRect.x < x && x < DOMRect.x + DOMRect.width &&
+        DOMRect.y < y && y < DOMRect.y + DOMRect.height;
 }
 
 export function setCaretPosition(editableDiv: HTMLElement, position: number) {

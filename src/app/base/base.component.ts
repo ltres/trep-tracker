@@ -22,7 +22,7 @@ export abstract class ContainerComponent implements OnInit, OnDestroy{
     public el: ElementRef,
   ) { }
 
-  abstract get container(): Container | undefined;
+  abstract get container(): Container;
 
   set subscriptions(subscriptions: Subscription) {
     this._subscriptions.push(subscriptions);

@@ -45,7 +45,7 @@
                 <div class="border-angle"></div>
                 <div *ngIf="!last" class="border-line"></div>
             </div>
-            <task [draggableDir]="task" [containerEl]="el.nativeElement" [layout]="'absolute'" class="child" [staticView]="isStaticView()" [parent]="this.task" [task]="child" [board]="this.board" [lane]="this.lane"></task>
+            <task [draggableDir]="child" [containerEl]="el.nativeElement" [layout]="'absolute'" class="child" [staticView]="isStaticView()" [parent]="this.task" [task]="child" [board]="this.board" [lane]="this.lane"></task>
         </div>
     </ng-container>
 
