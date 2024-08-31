@@ -1,5 +1,5 @@
 <div class="task-wrapper g-025" data-consider-for-overlapping-checks="true" [class.editor-active]="this.editorActive" [class.selected]="this.selected" [class.archived]="this.task.status === 'archived'" [class]="this.task.status" [style]="this.task.priority === 4 ? 'font-weight: bolder' : ''" (click)="clickTask()">
-    <div [tooltip]="'Drag'" *ngIf="!isStaticView() && !isPlaceholder()" class="drag-handle translucent pointer" drag-on-this="true" draggable="true">⋮</div>
+    <div [tooltip]="'Drag'" *ngIf="!isStaticView() && !isPlaceholder()" class="drag-handle translucent" drag-on-this="true" draggable="true">⋮</div>
 
     <prioritizer *ngIf="!isPlaceholder()" (onPrioritySelected)="updatePriority($event)" [container]="task" class=""> </prioritizer>
     <status [container]="task" [board]="board" [staticLane]="isStaticView()" (onStatusSelected)="updateStatus($event)" class="m-x-025"></status>
@@ -18,7 +18,7 @@
             <span *ngIf="!isPlaceholder() && task.children.length === 0" [class.selected]="(task.gantt?.startDate || task.gantt?.endDate) && task.gantt?.showData !== false" class="select-dates pointer" (click)="openDatePicker()">
                 <span *ngIf="task.gantt?.recurrence" [tooltip]="'Recurrent (' + task.gantt?.recurrence + ')'" [position]="'top'">↻</span>
                 <span [tooltip]="'Set start/end dated'" [position]="'top'">📅</span>
-                <date-picker *ngIf="showDatePicker" [showRecurrences]="true" [startDate]="fromIsoString(task.gantt?.startDate)" [endDate]="fromIsoString(task.gantt?.endDate)" [selectedRecurrence]="task.gantt?.recurrence" (onSetClicked)="setDates($event)" (onCancel)="setDates(undefined)"></date-picker>
+                <date-picker *ngIf="showDatePicker" [dateDisplayConfig]="board.datesConfig" [showRecurrences]="true" [startDate]="fromIsoString(task.gantt?.startDate)" [endDate]="fromIsoString(task.gantt?.endDate)" [selectedRecurrence]="task.gantt?.recurrence" (onSetClicked)="setDates($event)" (onCancel)="setDates(undefined)" (onClose)="showDatePicker=false"></date-picker>
             </span>
 
             <span *ngIf="!isPlaceholder()" [tooltip]="'Toggle show in Gantt chart'" [position]="'top'" [class.selected]="task.includeInGantt" (click)="toggleShowInGantt()" class="show-in-gantter pointer">
@@ -72,7 +72,7 @@
     @if(task.status === 'archived'){
     <span class="translucent">, archived </span>
     <ng-container [ngTemplateOutlet]="date" [ngTemplateOutletContext]="{date: this.task.dates.archived?.enter }"></ng-container>
-    <time-bar [container]="task"></time-bar>
+    <time-bar [container]="task" [boardDatesConfig]="this.board.datesConfig"></time-bar>
     }
 
     @if(task.status === 'completed'){

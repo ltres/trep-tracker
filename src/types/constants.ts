@@ -1,4 +1,6 @@
-import { TagType } from "./types";
+import { OwlDateTimeFormats } from "@ltres/angular-datetime-picker";
+import { DateDisplayConfig, TagType } from "./types";
+import { formatDate } from "../utils/date-utils";
 
 export const ganttConfig = {
   baseTaskDuration : 2,
@@ -12,30 +14,82 @@ export const ganttConfig = {
   endOfDay:18,
   columnsWidth: 500
 }
-export const locale = {
-  short:"it",
-  long: "it-IT",
-  timeZone: "Europe/Rome",
-  showTimezoneInfo: false,
-  dateFormat: "day-month-year timeZoneName"
-}
 
 // learn more about this from
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DateTimeFormat
-export const datePickerFormat: {
-  baseDateFormat: Intl.DateTimeFormatOptions
-  [key:string]: Intl.DateTimeFormatOptions
-}  = {
-  baseDateFormat: {year: 'numeric', month: 'numeric', day: 'numeric', hour12: false, timeZone: locale.timeZone,  ...locale.showTimezoneInfo && {timeZoneName: "short"}},
-  fullDateFormat: {year: 'numeric', month: 'numeric', day: 'numeric', hour12: false, hour: 'numeric', minute: 'numeric', timeZone: locale.timeZone, timeZoneName: "short"},
+export const dateFormats: {[key:string]: Intl.DateTimeFormatOptions} = {
+  boardDateFormat: {
+    year: 'numeric', 
+    month: 'numeric', 
+    day: 'numeric', 
+    hour12: false, 
+    timeZoneName: "short"
+  },
+  //Picker formats below
+  fullDateFormat: {
+    year: 'numeric', 
+    month: 'numeric', 
+    day: 'numeric', 
+    hour12: false, 
+    hour: 'numeric', 
+    minute: 'numeric', 
+    timeZoneName: "short"
+  },
+  fullPickerInput: {
+    year: 'numeric', 
+    month: 'numeric', 
+    day: 'numeric', 
+    hour: 'numeric', 
+    minute: 'numeric', 
+    hour12: false, 
+    timeZoneName: "short"
+  },
+  datePickerInput: {
+    year: 'numeric', 
+    month: 'numeric', 
+    day: 'numeric', 
+    hour12: false, 
+    timeZoneName: "short"
+  },
+  timePickerInput: {
+    hour: 'numeric', 
+    minute: 'numeric', 
+    hour12: false
+  },
+  monthYearLabel: {
+    year: 'numeric', 
+    month: 'short', 
+    hour12: false
+  },
+  dateA11yLabel: {
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric', 
+    hour12: false
+  },
+  monthYearA11yLabel: {
+    year: 'numeric', 
+    month: 'long', 
+    hour12: false
+  },
+} as const;
 
-  fullPickerInput: {year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: false, timeZone: locale.timeZone, ...locale.showTimezoneInfo && {timeZoneName: "short"}},
-  datePickerInput: {year: 'numeric', month: 'numeric', day: 'numeric', hour12: false, timeZone: locale.timeZone,  ...locale.showTimezoneInfo && {timeZoneName: "short"}},
-  timePickerInput: {hour: 'numeric', minute: 'numeric', hour12: false},
-  monthYearLabel: {year: 'numeric', month: 'short', hour12: false},
-  dateA11yLabel: {year: 'numeric', month: 'long', day: 'numeric', hour12: false},
-  monthYearA11yLabel: {year: 'numeric', month: 'long', hour12: false},
-};
+/**
+ * Object that is passed to the datePicker in order to display dates
+ * @param dateDisplayConfig 
+ * @returns 
+ */
+export const datePickerFormatFuncz: ( dateDisplayConfig: DateDisplayConfig ) => OwlDateTimeFormats = (dateDisplayConfig: DateDisplayConfig) => {
+  return {
+    parseInput: ( d:Date ) => formatDate( d, {...dateDisplayConfig, dateFormat: dateFormats["boardDateFormat"] } ),
+    fullPickerInput: ( d:Date ) => formatDate( d, dateDisplayConfig ),
+    datePickerInput: ( d:Date ) => formatDate( d, {...dateDisplayConfig, dateFormat: dateFormats["datePickerInput"] } ),
+    timePickerInput: ( d:Date ) => formatDate( d, {...dateDisplayConfig, dateFormat: dateFormats["timePickerInput"] } ),
+    monthYearLabel: ( d:Date ) => formatDate( d, {...dateDisplayConfig, dateFormat: dateFormats["monthYearLabel"] } ),
+    dateA11yLabel: ( d:Date ) => formatDate( d, {...dateDisplayConfig, dateFormat: dateFormats["dateA11yLabel"] } ),
+    monthYearA11yLabel: ( d:Date ) => formatDate( d, {...dateDisplayConfig, dateFormat: dateFormats["monthYearA11yLabel"] } ),
+  }
+} ;
 
 export const recurrenceValues = [
   "no",
@@ -137,3 +191,5 @@ export const tagCapturingGroup = (symbol: string) => (`${symbol}([A-Za-z0-9-_]+)
 
 export const expiredTasksStillVisibleHours = 6;
 export const millisForMagnitudeStep = 1000 * 3600 * 24; // one day
+
+export const timezoneValues = Intl.supportedValuesOf('timeZone');

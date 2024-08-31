@@ -1,20 +1,22 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from "@angular/core";
-import { locale, recurrenceValues, timeframeValues } from "../../types/constants";
+import { datePickerFormatFuncz, recurrenceValues, timeframeValues } from "../../types/constants";
 import { DateTimeAdapter } from "@ltres/angular-datetime-picker";
-import { PickerOutput, Recurrence, Timeframe } from "../../types/types";
+import { DateDisplayConfig, PickerOutput, Recurrence, Timeframe } from "../../types/types";
 
 const ONE_DAY = 24 * 60 * 60 * 1000;
 
 @Component({
-  selector: 'date-picker',
+  selector: 'date-picker[dateDisplayConfig]',
   templateUrl: './date-picker.component.html',
   styleUrl: './date-picker.component.scss'
 })
 export class DatePickerComponent implements AfterViewInit{
+
   @ViewChild('trigger') trigger: ElementRef<{click:() =>unknown}> | null = null;
   @Input() showRecurrences = false;
   @Input() showTimeframes = false;
   @Input() hideCalendar = false;
+  @Input() dateDisplayConfig!:DateDisplayConfig
 
   @Input() startDate: Date | undefined = new Date(Date.now() - ONE_DAY);
   @Input() endDate: Date | undefined = new Date(Date.now() + ONE_DAY)
@@ -23,6 +25,7 @@ export class DatePickerComponent implements AfterViewInit{
 
   @Output() onSetClicked: EventEmitter<PickerOutput> = new EventEmitter();
   @Output() onCancel:EventEmitter<void> = new EventEmitter();
+  @Output() onClose:EventEmitter<void> = new EventEmitter();
 
   public selectedMoments: Date[] | undefined;
   protected recurrenceValues = recurrenceValues
@@ -33,11 +36,14 @@ export class DatePickerComponent implements AfterViewInit{
   dateTime = false
   today = new Date();
 
-  constructor(dateTimeAdapter: DateTimeAdapter<unknown>){
-    dateTimeAdapter.setLocale(locale.long);
+  constructor(private dateTimeAdapter: DateTimeAdapter<unknown>){
+   
   }
 
   ngAfterViewInit(){ 
+    this.dateTimeAdapter.setLocale("it-IT");
+    this.dateTimeAdapter.setDateTimeFormats( datePickerFormatFuncz(this.dateDisplayConfig) );
+
     this.startDate = this.startDate ?? new Date(this.today.getFullYear(), this.today.getMonth(), this.today.getDate(), 0, 1, 0);
     this.endDate = this.endDate ??  new Date(this.today.getFullYear(), this.today.getMonth(), this.today.getDate(), 23, 59, 0);
 
@@ -79,6 +85,9 @@ export class DatePickerComponent implements AfterViewInit{
 
   deleteTimeframes(){
     this.selectedTimeframe = [undefined,undefined];
+  }
+  emitClose() {
+    this.onClose.emit();
   }
 
 }

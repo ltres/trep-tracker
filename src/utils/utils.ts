@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import { ganttConfig, layoutValues, tagHtmlWrapper, tagIdentifiers, tagTypes } from '../types/constants';
+import { dateFormats, ganttConfig, layoutValues, tagHtmlWrapper, tagIdentifiers, tagTypes } from '../types/constants';
 import { addUnitsToDate, toIsoString } from './date-utils';
-import { Lane, Status, Container, GanttTask, RecurringGanttTask, Recurrence, Board, ISODateString, LayoutProperties, getLayouts, Layout, Task } from '../types/types';
+import { Lane, Status, Container, GanttTask, RecurringGanttTask, Recurrence, Board, ISODateString, LayoutProperties, getLayouts, Layout, Task, getDefaultLocale } from '../types/types';
 
 export function generateUUID(length?: number): string {
   return uuidv4().substring(0, length ?? 6);
@@ -185,6 +185,12 @@ export function isTask(parent: Container | undefined): parent is Task {
   }
   return (parent as Task)._type === 'task';
 }
+export function isBoard(parent: Container | undefined): parent is Board {
+  if (!parent) {
+    return false;
+  }
+  return (parent as Board)._type === 'board';
+}
 
 export function isGanttTask(parent: Container | undefined): parent is GanttTask {
   if (!parent) {
@@ -319,6 +325,13 @@ export function getRecurrenceId(taskId: string, index: number){
 export function eventuallyPatch( board: Board ): Board{
   board._type = 'board';
   board.layout = board.layout ?? 'absolute';
+  if(!board.datesConfig){
+    board.datesConfig = {
+      locale: getDefaultLocale(),
+      dateFormat: dateFormats['boardDateFormat']
+    }
+  }
+
   const des = getDescendants(board);
   des.forEach(p => {
     if (!p.creationDate) {

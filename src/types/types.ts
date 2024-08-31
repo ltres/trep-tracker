@@ -3,7 +3,7 @@ import { generateUUID } from '../utils/utils';
  
 import { StorageServiceAbstract } from './storage';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { layoutValues, recurrenceValues, timeframeValues, statusValues, priorityValues } from './constants';
+import { layoutValues, recurrenceValues, timeframeValues, statusValues, priorityValues, timezoneValues, dateFormats } from './constants';
 
 export type Environment = {
   storageService: Type<StorageServiceAbstract>,
@@ -14,6 +14,7 @@ export interface Board extends Container {
     layout: Layout
     children: Lane[],
     _type: 'board',
+    datesConfig: DateDisplayConfig
 }
 
 export interface Lane extends Container {
@@ -214,8 +215,19 @@ export const getNewBoard: (firstLane: Lane) => Board = (firstLane: Lane) => (
     stateChangeDate: undefined,
     archived: false,
     archivedDate: undefined,
+    datesConfig: {
+      locale: getDefaultLocale(),
+      showTimezoneInfo: false,
+      dateFormat: { ...dateFormats['boardDateFormat'], timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, timeZoneName: "short"}
+    }
   }
 );
+
+export function getDefaultLocale() {
+  if (navigator.languages != undefined) 
+    return navigator.languages[0]; 
+  return navigator.language;
+}
 
 export type VersionCheckRequest = {
     UUID: string,
@@ -243,3 +255,12 @@ export type PickerOutput = {
 } | { 
   timeframe: [Timeframe | undefined, Timeframe | undefined] 
 }
+
+export type DateDisplayConfig ={
+  locale: Locale,
+  dateFormat: Intl.DateTimeFormatOptions
+}
+
+export type Timezone = typeof timezoneValues[number];
+export type Locale = string;
+export type DateFormat = keyof typeof dateFormats;

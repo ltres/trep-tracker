@@ -11,7 +11,7 @@
       <status (onStatusSelected)="updateStatus($event)" [allowEmpty]="true" [multipleSelectable]="true" [container]="lane" [board]="board" [staticLane]="isStatic()" [tooltip]="'Set status filter'"> </status>
       <span [class.translucent]="!lane.endTimeframe && !lane.startTimeframe" class="select-dates pointer" (click)="openDatePicker()">
         <span [tooltip]="'Set timeframe filter'" [position]="'top'">📅</span>
-        <date-picker *ngIf="showDatePicker" [showTimeframes]="true" [hideCalendar]="true" [selectedTimeframe]="[lane.startTimeframe,lane.endTimeframe]" (onSetClicked)="setTimeframe($event)" (onCancel)="setTimeframe(undefined)"></date-picker>
+        <date-picker *ngIf="showDatePicker" [dateDisplayConfig]="board.datesConfig" [showTimeframes]="true" [hideCalendar]="true" [selectedTimeframe]="[lane.startTimeframe,lane.endTimeframe]" (onSetClicked)="setTimeframe($event)" (onCancel)="setTimeframe(undefined)"></date-picker>
       </span>
       <div class="task-count translucent">
         @if(isStatic()){
@@ -70,7 +70,7 @@
       </lane-menu>
     </div>
 
-    <span [position]="'top'" [tooltip]="'Drag'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" drag-on-this="true" draggable="true" class="lane drag-handle translucent pointer no-grow">⋯</span>
+    <span [position]="'top'" [tooltip]="'Drag'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" drag-on-this="true" draggable="true" class="lane drag-handle translucent no-grow">⋯</span>
   </div>
 
   @if(!lane.collapsed){

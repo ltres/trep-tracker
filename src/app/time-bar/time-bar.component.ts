@@ -1,18 +1,19 @@
 import { Component, Input } from '@angular/core';
-import { Container, Status } from '../../types/types';
+import { DateDisplayConfig, Container, Status } from '../../types/types';
 import { formatDate } from '../../utils/date-utils';
 import { statusValues } from '../../types/constants';
 
 @Component({
-  selector: 'time-bar[container]',
+  selector: 'time-bar[container][boardDatesConfig]',
   templateUrl: './time-bar.component.html',
   styleUrl: './time-bar.component.scss',
 })
 export class TimeBarComponent {
   @Input() container!: Container; ;
+  @Input() boardDatesConfig!: DateDisplayConfig;
 
   getTooltip(dateKey: Status):string {
-    return `${dateKey}: ${this.getDays(dateKey)} days - from ${formatDate(this.container.dates[dateKey]?.enter)} to ${formatDate(this.container.dates[dateKey]?.leave)}`;
+    return `${dateKey}: ${this.getDays(dateKey)} days - from ${formatDate(this.container.dates[dateKey]?.enter, this.boardDatesConfig)} to ${formatDate(this.container.dates[dateKey]?.leave, this.boardDatesConfig)}`;
   }
 
   getDays(dateKey: Status):number {

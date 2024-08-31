@@ -36,8 +36,11 @@ export class KeyboardService {
         // Focus search input
         this.boardService.focusSearch();
       }else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-        const { caretPos } = this.getLastSelectedTaskData();
-
+        const res = this.getLastSelectedTaskData();
+        if(!res){
+          return
+        }
+        const caretPos = res.caretPos
         const nearby = e?.key === 'ArrowDown' ? this.boardService.getTaskInDirection(this.boardService.selectedTasks, 'down') : this.boardService.getTaskInDirection(this.boardService.selectedTasks, 'up');
         if (!nearby) {
           return;
@@ -84,7 +87,11 @@ export class KeyboardService {
           return;
         }
         // Create new task
-        const { caretPos } = this.getLastSelectedTaskData();
+        const res = this.getLastSelectedTaskData();
+        if(!res){
+          return
+        }
+        const caretPos = res.caretPos
 
         e.stopPropagation();
         e.stopImmediatePropagation();
@@ -116,8 +123,11 @@ export class KeyboardService {
         this.boardService.addToSelection(parentObject, task);
       }else if(e.key === 'Backspace' || e.key === 'Delete'){
         // Delete placeholder
-
-        const { task } = this.getLastSelectedTaskData();
+        const res = this.getLastSelectedTaskData();
+        if(!res){
+          return
+        }
+        const task = res.task
         if( isPlaceholder(task) ){
           const bottomTask = this.boardService.getTaskInDirection(this.boardService.selectedTasks, e.key === 'Delete' ? 'down' : 'up');
 
@@ -137,10 +147,10 @@ export class KeyboardService {
     });
   }
 
-  private getLastSelectedTaskData(): {task: Task, el: Node | undefined, caretPos: number} {
+  private getLastSelectedTaskData(): {task: Task, el: Node | undefined, caretPos: number} | undefined {
     const task = this.boardService.lastSelectedTask?.task;
     if (!task) {
-      throw new Error('Cannot find lane or task');
+      return undefined
     }
     let el: Node | undefined;
     this.registry.componentRegistry.forEach(c => {

@@ -1,5 +1,4 @@
-import { datePickerFormat, locale } from "../types/constants";
-import { Container, Status, ISODateString } from "../types/types";
+import { Container, Status, ISODateString, DateDisplayConfig } from "../types/types";
 
 export function setDateSafe(container: Container, status: Status, enterOrLeave: 'enter' | 'leave', date: Date) {
   if (!container.dates[status]) {
@@ -50,21 +49,13 @@ export function toUTCDate( date: string ): ISODateString{
   return localDate.toISOString() as ISODateString;
 }
 
-export function formatDate(date: ISODateString | Date | undefined, format?: Intl.DateTimeFormatOptions ) {
+export function formatDate(date: ISODateString | Date | undefined, config: DateDisplayConfig ) {
   if(!date){
     console.warn("format date called on empty object");
     return ""
   }
-  const dateTimeFormat = new Intl.DateTimeFormat(locale.long, format ?? datePickerFormat.baseDateFormat);
-  if( format ){
-    return dateTimeFormat.format(typeof date === 'string' ? new Date(date) : date);
-  }
-  const parts = dateTimeFormat.formatToParts(typeof date === 'string' ? new Date(date) : date);
-  let out = locale.dateFormat
-  for(const part of ["day","month","year","timeZoneName"]){
-    out = out.replace(part, parts.find( p => p.type === part )?.value ?? "" )
-  }
-  return out.trim()
+  const dateTimeFormat = new Intl.DateTimeFormat(config.locale, config.dateFormat );
+  return dateTimeFormat.format(typeof date === 'string' ? new Date(date) : date);
 }
 
 export function addToDate( date: Date | ISODateString, years: number, months: number, days: number ){

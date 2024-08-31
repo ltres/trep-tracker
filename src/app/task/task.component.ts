@@ -1,6 +1,6 @@
 /* eslint-disable no-fallthrough */
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, forwardRef, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { Board, Lane, Container, Task, Tag, Status, Priority, ISODateString, PickerOutput } from '../../types/types';
+import { Board, Lane, Container, Task, Tag, Status, Priority, ISODateString, PickerOutput, DateFormat } from '../../types/types';
 import { BoardService } from '../../service/board.service';
 import { DragService } from '../../service/drag.service';
 import { KeyboardService } from '../../service/keyboard.service';
@@ -10,7 +10,7 @@ import { ContainerComponent } from '../base/base.component';
 import { ClickService } from '../../service/click.service';
 import { toIsoString, fromIsoString, formatDate, getDiffInDays } from '../../utils/date-utils';
 import { setCaretPosition, isPlaceholder, hashCode, initGanttData, isRecurringGanttTask } from '../../utils/utils';
-import { datePickerFormat, millisForMagnitudeStep } from '../../types/constants';
+import {  millisForMagnitudeStep } from '../../types/constants';
 
 @Component({
   selector: 'task[task][lane][parent][board]',
@@ -253,8 +253,9 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     return isRecurringGanttTask(task);
   }
 
-  formatDate(date: ISODateString, format?: string){
-    return formatDate(date, format ? datePickerFormat[format] : undefined );
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  formatDate(date: ISODateString, format?: DateFormat){
+    return formatDate(date, this.board.datesConfig );
   }
 
   getDiffInDays(date1: ISODateString, date2: ISODateString){

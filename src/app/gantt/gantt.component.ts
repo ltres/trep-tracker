@@ -273,7 +273,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy {
         } },
       { name: 'start_date', label: 'Starts', align: 'center',  width: 100, template: (task) => {
         if(!task.start_date)return;
-        return `<span class="${ task['isRecurrenceStep'] ? 'translucent' : "" }">${formatDate(toIsoString(task.start_date))}</span>`;
+        return `<span class="${ task['isRecurrenceStep'] ? 'translucent' : "" }">${formatDate(toIsoString(task.start_date), this.board.datesConfig)}</span>`;
       } },
       { name: 'duration', label: 'Duration', align: 'center',  width: 50, },
     ];

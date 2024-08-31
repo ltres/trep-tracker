@@ -39,8 +39,8 @@ import { GanttComponent } from './gantt/gantt.component';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 
 import { DatePickerComponent } from './date-picker/date-picker.component';
-import { OWL_DATE_TIME_FORMATS, OWL_DATE_TIME_LOCALE, OwlDateTimeModule, OwlNativeDateTimeModule } from '@ltres/angular-datetime-picker';
-import { datePickerFormat, locale } from '../types/constants';
+import { OWL_DATE_TIME_FORMATS, OwlDateTimeModule, OwlNativeDateTimeModule } from '@ltres/angular-datetime-picker';
+import { dateFormats } from '../types/constants';
 
 @NgModule({ declarations: [
   AppComponent,
@@ -89,8 +89,7 @@ providers: [
   ClickService,
   OwlDateTimeModule,
   OwlNativeDateTimeModule,
-  {provide: OWL_DATE_TIME_LOCALE, useValue: locale.short},
-  {provide: OWL_DATE_TIME_FORMATS, useValue: datePickerFormat},
+  {provide: OWL_DATE_TIME_FORMATS, useValue: dateFormats},
   {
     provide: 'StorageServiceAbstract',
     useClass: environment.storageService,

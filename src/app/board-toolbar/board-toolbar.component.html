@@ -1,23 +1,75 @@
-<div (click)="menuOpen = !menuOpen" [class.open]="menuOpen" class="pointer board-menu inline-flex column g-05 align-items-end sticky">
+<div [class.open]="menuOpen" class=" board-menu inline-flex column g-05 align-items-end sticky">
     <div class="flex justify-content-end">
         <label class="translucent">Board:&nbsp;</label>
         <div contenteditable="true" [(ngModel)]="board.textContent" [board]="board" (ngModelChange)="debounceBoardUpdate()" (onTagsChange)="updateBoardTags($event)" class="board-label"></div>
         <!-- <prioritizer [container]="board" class="m-x-025"> </prioritizer> -->
     </div>
-    <div [tooltip]="'Open board menu'" [position]="'left'" class="board-menu-tab inline-flex g-05">
+    <div (click)="menuOpen = !menuOpen" [tooltip]="!menuOpen ? 'Open board menu' : ''" [position]="'left'" class="board-menu-tab pointer inline-flex g-05">
         <span>☰</span>
     </div>
-    <div *ngIf="menuOpen" class="board-menu-content flex column g-05">
+    <div [class.hidden]="!menuOpen" class="board-menu-content flex column g-05">
+        <label class="translucent">Board layout:</label>
         <div class="flex g-025 align-items-center">
-            <label class="translucent">Layout:&nbsp;</label>
-            <button class="layout {{layout}}" *ngFor="let layout of getLayouts()" (click)="setLayout(layout)" [class.active]="board.layout === layout" position="top" [tooltip]="layout + ' layout'">{{getLayoutSymbol(layout)}}</button>
+            <button class="layout l-{{layout}}" *ngFor="let layout of getLayouts()" (click)="setLayout(layout)" [class.active]="board.layout === layout" position="top" [tooltip]="layout + ' layout'">{{getLayoutSymbol(layout)}}</button>
         </div>
+        <label class="translucent m-t-05">Search:</label>
 
         <search></search>
+        <label class="translucent m-t-05">Actions:</label>
 
         <div class="flex g-025 align-items-center">
-            <button class="show-board-gantt" [tooltip]="'Shows a Gantt chart for the whole board'" position="top" (click)="openGantt()">📊 Gantt..</button>
+            <button class="show-board-gantt" [tooltip]="'Shows a Gantt chart for the whole board'" position="top" (click)="openGantt()">📊 Show Gantt..</button>
             <button (click)="addLane()" class="add-lane">➕ Add lane</button>
         </div>
+
+        <hr class="translucent m-t-05" />
+        <label class="half-translucent m-t-05">Dates preferences</label>
+
+        <label class="translucent m-t-05">Locale</label>
+        <div class="flex g-025 align-items-center">
+            <input list="locales" name="locale" [value]="board.datesConfig.locale" (change)="setLocale($event)">
+
+            <datalist id="locales">
+                <option *ngFor="let val of getLocales()" [value]="val">{{getLocaleNiceName(val)}} </option>
+            </datalist>
+        </div>
+
+        <label class="translucent m-t-05">Timezone</label>
+        <div class="flex g-025 align-items-center">
+            <input list="timezones" name="timezone" [value]="board.datesConfig.dateFormat.timeZone" (change)="setTimezone($event)">
+
+            <datalist id="timezones">
+                <option *ngFor="let val of getTimezones()" [value]="val">{{val}} </option>
+            </datalist>
+        </div>
+
+        <label class="translucent m-t-05">Show timezone info</label>
+        <ng-container [ngTemplateOutlet]="attribute" [ngTemplateOutletContext]="{attribute: 'timeZoneName' }"></ng-container>
+
+        <label class="translucent m-t-05">Use 12-hour time</label>
+        <ng-container [ngTemplateOutlet]="attribute" [ngTemplateOutletContext]="{attribute: 'hour12', skipNo:true }"></ng-container>
+
+        <label class="translucent m-t-05">Show year</label>
+        <ng-container [ngTemplateOutlet]="attribute" [ngTemplateOutletContext]="{attribute: 'year' }"></ng-container>
+
+        <label class="translucent m-t-05">Show month</label>
+        <ng-container [ngTemplateOutlet]="attribute" [ngTemplateOutletContext]="{attribute: 'month' }"></ng-container>
+
+        <label class="translucent m-t-05">Show weekday</label>
+        <ng-container [ngTemplateOutlet]="attribute" [ngTemplateOutletContext]="{attribute: 'weekday' }"></ng-container>
+
+        <label class="translucent m-t-05">Show day</label>
+        <ng-container [ngTemplateOutlet]="attribute" [ngTemplateOutletContext]="{attribute: 'day' }"></ng-container>
+
+        <label class="translucent m-t-05">Show time</label>
+        <ng-container [ngTemplateOutlet]="attribute" [ngTemplateOutletContext]="{attribute: 'time' }"></ng-container>
+
     </div>
 </div>
+
+<ng-template #attribute let-attribute="attribute" let-skipNo="skipNo">
+    <div class="flex g-025 align-items-center">
+        <button *ngFor="let val of getAvailablePropValues(attribute)" (click)="setFormatPropValue(attribute, val)" [class.active]="match(attribute,val)">{{beautify(val)}}</button>
+        <button *ngIf="!skipNo" (click)="setFormatPropValue(attribute, undefined)" [class.active]="match(attribute,undefined)">No</button>
+    </div>
+</ng-template>

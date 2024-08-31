@@ -1,6 +1,6 @@
 <input [selectMode]="'range'" [ngModel]="selectedMoments" [owlDateTime]="date_range_component" style="width: 0px!important;">
 <span #trigger [owlDateTimeTrigger]="date_range_component"></span>
-<owl-date-time [startAt]="getStartAt()" [endAt]="getEndAt()" [hideCalendar]="hideCalendar" #date_range_component (confirmSelectedChange)="setButtonClicked($event)" (cancelClicked)="cancelClicked()" (dateSelected)="deleteTimeframes()">
+<owl-date-time [startAt]="getStartAt()" [endAt]="getEndAt()" [hideCalendar]="hideCalendar" #date_range_component (confirmSelectedChange)="setButtonClicked($event)" (cancelClicked)="cancelClicked()" (dateSelected)="deleteTimeframes()" (afterPickerClosed)="emitClose()">
     <ng-template *ngIf="showTimeframes" #header>
         <ng-container *ngTemplateOutlet="timeframe"></ng-container>
     </ng-template>

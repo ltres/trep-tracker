@@ -19,9 +19,7 @@ a {
   color: $text-color;
 }
 
-input {
-  width: 100%;
-}
+
 
 body {
   margin: 0;
@@ -216,6 +214,10 @@ button {
 
 .right {
   right: 0;
+}
+
+.hidden {
+  display: none;
 }
 
 .text-align-center {
@@ -413,14 +415,18 @@ button {
 }
 
 input,
-textarea {
+textarea,
+input:-internal-autofill-selected {
+  color-scheme: dark;
   font-family: 'JetBrains Mono';
   overflow: visible;
-  background-color: $background-color;
-  color: $text-color;
+  background-color: $background-color !important;
+  color: $text-color !important;
   outline: none;
   border-color: transparent;
   border: 1px solid $translucent-color;
+  width: 100%;
+  font-size: $font-size
 }
 
 .chevron-down:after {
@@ -488,4 +494,8 @@ select option {
 
 .almost-there {
   color: $almost-there-color
+}
+
+.drag-handle {
+  cursor: grabbing;
 }
