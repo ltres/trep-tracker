@@ -1,8 +1,9 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Board, Container, Status } from '../../types/types';
-import { isPlaceholder, isTask } from '../../utils/utils';
+import { isPlaceholder } from '../../utils/utils';
 import { BoardService } from '../../service/board.service';
 import { statusValues } from '../../types/constants';
+import { isTask } from '../../utils/guards';
 
 @Component({
   selector: 'status[container][staticLane][board]',

@@ -9,8 +9,9 @@ import { ContainerComponentRegistryService } from '../../service/registry.servic
 import { ContainerComponent } from '../base/base.component';
 import { ClickService } from '../../service/click.service';
 import { toIsoString, fromIsoString, formatDate, getDiffInDays } from '../../utils/date-utils';
-import { setCaretPosition, isPlaceholder, hashCode, initGanttData, isRecurringGanttTask } from '../../utils/utils';
+import { setCaretPosition, isPlaceholder, hashCode, initGanttData } from '../../utils/utils';
 import {  millisForMagnitudeStep } from '../../types/constants';
+import { isRecurringGanttTask } from '../../utils/guards';
 
 @Component({
   selector: 'task[task][lane][parent][board]',

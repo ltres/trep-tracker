@@ -1,4 +1,4 @@
-import { Container, Status, ISODateString, DateDisplayConfig } from "../types/types";
+import { Container, Status, ISODateString, DateDisplayConfig, Timezone } from "../types/types";
 
 export function setDateSafe(container: Container, status: Status, enterOrLeave: 'enter' | 'leave', date: Date) {
   if (!container.dates[status]) {
@@ -69,3 +69,21 @@ export function addUnitsToDate( date: Date | ISODateString, amount: number, unit
   const toReturn = new Date( Date.UTC(toWork.getUTCFullYear() + ( unit === 'year' ? amount : 0 ), toWork.getUTCMonth() + ( unit === 'month' ? amount : 0 ), toWork.getUTCDate() + ( unit === 'day' ? amount : ( unit === 'week' ? amount * 7 : 0 ) ), toWork.getUTCHours() + ( unit === 'hour' ? amount : 0 ), toWork.getUTCMinutes(), toWork.getUTCSeconds(), toWork.getUTCMilliseconds() ));
   return toReturn
 }
+
+export function getTimezoneShortName(timeZone: Timezone): string{
+  try{
+    const tz1 = Intl.DateTimeFormat("ia", {
+      timeZoneName: "short",
+      timeZone,
+    })
+    if(!tz1) return "";
+    const format = tz1.formatToParts()
+    if(!format)return "";
+    return format.find((i) => i.type === "timeZoneName")?.value ?? "";
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  }catch(e){
+  
+    return ""
+  }
+  
+};

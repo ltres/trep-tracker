@@ -1,11 +1,12 @@
 import {  Inject, Injectable, Injector, NgZone } from '@angular/core';
 import { Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, ISODateString, RecurringGanttTask, Timeframe } from '../types/types';
 import { BehaviorSubject, Observable, map } from 'rxjs';
-import { eventuallyPatch, getDescendants, isLane, isPlaceholder, isRecurringGanttTask, isStatic, isTask, isTasks } from '../utils/utils';
+import { eventuallyPatch, getDescendants, isPlaceholder,  isStatic, } from '../utils/utils';
 import { TagService } from './tag.service';
 import { StorageServiceAbstract } from '../types/storage';
 import { addUnitsToDate, fromIsoString, setDateSafe, toIsoString } from '../utils/date-utils';
 import { statusValues } from '../types/constants';
+import { isTask, isRecurringGanttTask, isLane, isTasks } from '../utils/guards';
 
 @Injectable({
   providedIn: 'root',

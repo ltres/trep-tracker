@@ -4,8 +4,9 @@ import { BoardService } from '../../service/board.service';
 import { gantt, Task as DhtmlxTask, GanttStatic, Link as DhtmlxLink } from 'dhtmlx-gantt';
 import { TaskComponent } from '../task/task.component';
 import { toIsoString, addUnitsToDate, toUTCDate, formatDate } from '../../utils/date-utils';
-import { getFirstMentionTag, mapToGanttRecurrence, initGanttData, getTaskBackgroundColor, getRecurrenceId, isRecurringGanttTask } from '../../utils/utils';
+import { getFirstMentionTag, mapToGanttRecurrence, initGanttData, getTaskBackgroundColor, getRecurrenceId } from '../../utils/utils';
 import {  ganttConfig, tagTypes } from '../../types/constants';
+import { isRecurringGanttTask } from '../../utils/guards';
 
 @Component({
   selector: 'gantt[tasks][board]',

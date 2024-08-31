@@ -9,7 +9,8 @@ import { KeyboardService } from '../../service/keyboard.service';
 import { ContainerComponentRegistryService } from '../../service/registry.service';
 import { ContainerComponent } from '../base/base.component';
 import { ModalService } from '../../service/modal.service';
-import { layoutValues } from '../../types/constants';
+import { layoutValues, tagIdentifiers } from '../../types/constants';
+import {  isPriorityArray,  isStatusArray,  isTagArray } from '../../utils/guards';
 
 @Component({
   selector: 'lane[lane][board]',
@@ -214,6 +215,17 @@ export class LaneComponent extends ContainerComponent implements OnInit {
     this.lane.endTimeframe = event.timeframe[1] !== 'no' ? event.timeframe[1] : undefined;
     this.boardService.publishBoardUpdate();
     this.showDatePicker = false;
+  }
+
+  beautifyOrList(arg0: (Status | Priority | Tag)[]) {
+    if(isStatusArray(arg0)){
+      return arg0.map( s => `<span class="${s}">${s}</span>`).join(" or ")
+    }else if(isPriorityArray(arg0)){
+      return arg0.map( s => `<span class="priority-${s}">${s}</span>`).join(" or ")
+    }else if( isTagArray(arg0) ){
+      return arg0.map( t => `<span tag="true" class="${t.type}">${tagIdentifiers.find( ta => ta.type == t.type)?.symbol}${t.tag}</span>`).join(" or ")
+    }
+    return "";
   }
 
 }

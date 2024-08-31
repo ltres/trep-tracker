@@ -2,7 +2,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { dateFormats, ganttConfig, layoutValues, tagHtmlWrapper, tagIdentifiers, tagTypes } from '../types/constants';
 import { addUnitsToDate, toIsoString } from './date-utils';
-import { Lane, Status, Container, GanttTask, RecurringGanttTask, Recurrence, Board, ISODateString, LayoutProperties, getLayouts, Layout, Task, getDefaultLocale } from '../types/types';
+import { Lane, Status, Container, GanttTask, Recurrence, Board, ISODateString, LayoutProperties, getLayouts, Layout, Task, getDefaultLocale } from '../types/types';
+import { isTask, isLane } from './guards';
 
 export function generateUUID(length?: number): string {
   return uuidv4().substring(0, length ?? 6);
@@ -171,46 +172,6 @@ export function getFirstMentionTag(task: Task): string | undefined {
     return tagHtmlWrapper(mentionTagType)[0] + tagIdentifiers.find(r => r.type === mentionTagType)?.symbol + mention.tag + tagHtmlWrapper(mentionTagType)[1];
   }
   return '';
-}
-
-export function isLane(parent: Container | undefined): parent is Lane {
-  if (!parent) {
-    return false;
-  }
-  return (parent as Lane)._type === 'lane';
-}
-export function isTask(parent: Container | undefined): parent is Task {
-  if (!parent) {
-    return false;
-  }
-  return (parent as Task)._type === 'task';
-}
-export function isBoard(parent: Container | undefined): parent is Board {
-  if (!parent) {
-    return false;
-  }
-  return (parent as Board)._type === 'board';
-}
-
-export function isGanttTask(parent: Container | undefined): parent is GanttTask {
-  if (!parent) {
-    return false;
-  }
-  return isTask(parent) && !!parent.gantt;
-}
-
-export function isRecurringGanttTask(parent: Container | undefined): parent is RecurringGanttTask {
-  if (!parent) {
-    return false;
-  }
-  return isGanttTask(parent) && !!parent.gantt.recurrence && !!parent.gantt.nextRecurrenceStartDate && !!parent.gantt.nextRecurrenceEndDate;
-}
-
-export function isLanes(parent: Container[]): parent is Lane[] {
-  return (parent[0] as Lane)._type === 'lane';
-}
-export function isTasks(parent: Container[]): parent is Task[] {
-  return (parent[0] as Task)._type === 'task';
 }
 
 /**

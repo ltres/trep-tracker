@@ -4,7 +4,8 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { BoardService } from './board.service';
 import { ContainerComponentRegistryService } from './registry.service';
 import { Container, Task, getNewTask } from '../types/types';
-import { getCaretPosition, isLane, isPlaceholder, isTask } from '../utils/utils';
+import { getCaretPosition, isPlaceholder } from '../utils/utils';
+import { isLane, isTask } from '../utils/guards';
 
 @Injectable({
   providedIn: 'root',

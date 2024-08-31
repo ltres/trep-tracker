@@ -33,7 +33,7 @@ export class TooltipDirective {
         break;
       case "bottom" :
         tooltip.style.top = `${bbox.top + tooltip.getBoundingClientRect().height}px`;
-        tooltip.style.left = `${bbox.left}px`;
+        tooltip.style.left = `${bbox.left - tooltip.getBoundingClientRect().width}px`;
         break;
       case "left":
         tooltip.style.top = `${bbox.top}px`;

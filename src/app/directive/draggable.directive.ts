@@ -14,7 +14,7 @@ import { BoardService } from '../../service/board.service';
 import { DragService } from '../../service/drag.service';
 import { Container, Lane, Layout } from '../../types/types';
 import { ContainerComponent } from '../base/base.component';
-import { isLane } from '../../utils/utils';
+import { isLane } from '../../utils/guards';
 
 @Directive({
   selector: '[draggableDir][containerEl][layout]',

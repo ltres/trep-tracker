@@ -226,7 +226,11 @@ button {
 
 .w-100 {
   width: 100%;
+}
 
+.h-0 {
+  height: 0 !important;
+  overflow: hidden;
 }
 
 .grow {
@@ -498,4 +502,17 @@ select option {
 
 .drag-handle {
   cursor: grabbing;
+}
+
+.colored-title {
+  color: $lane-title-color;
+  font-size: $title-size;
+  font-weight: bold;
+}
+
+.pill {
+  background-color: $pill-background-color;
+  color: $pill-color;
+  padding: 0.2rem 0.5rem;
+  border-radius: $border-radius;
 }

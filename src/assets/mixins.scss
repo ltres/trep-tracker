@@ -12,9 +12,10 @@
 
 @mixin button() {
     border: none;
-    border-radius: 0;
+    border-radius: 2px;
+
     line-height: $font-size * 1.2 !important;
-    padding: 0.2rem 1rem !important;
+    padding: $button-padding !important;
     display: block;
     font: inherit;
     cursor: pointer;

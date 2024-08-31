@@ -7,6 +7,7 @@ import { Observable, map } from 'rxjs';
 import { isPlaceholder } from '../../utils/utils';
 import { layoutValues } from '../../types/constants';
 import ISO6391 from 'iso-639-1';
+import { getTimezoneShortName } from '../../utils/date-utils';
 
 @Component({
   selector: 'board-toolbar[board][clazz]',
@@ -24,6 +25,8 @@ export class BoardToolbarComponent {
   debounce: ReturnType<typeof setTimeout> | undefined;
   open: boolean = true;
   menuOpen = false;
+  showDatesPreferences: boolean = false;
+  showActions: boolean = true;
 
   constructor(
     protected boardService: BoardService,
@@ -146,6 +149,19 @@ export class BoardToolbarComponent {
   setTimezone($event: Event) {
     this.board.datesConfig.dateFormat.timeZone = ($event.target as HTMLInputElement).value;
     this.debounceBoardUpdate();
+  }
+
+  names: {[key:string]: string} = {}
+  getTimezoneNiceName(t: Timezone) {
+    let shortName = ""
+    if(this.names[t]){
+      shortName = this.names[t]
+    }else{
+      this.names[t] = getTimezoneShortName(t);
+      shortName = this.names[t]
+    }
+
+    return `${t} - ${shortName}`
   }
 
 }

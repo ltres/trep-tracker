@@ -23,7 +23,9 @@ export const dateFormats: {[key:string]: Intl.DateTimeFormatOptions} = {
     month: 'numeric', 
     day: 'numeric', 
     hour12: false, 
-    timeZoneName: "short"
+    hour: '2-digit', 
+    minute: '2-digit',
+    timeZoneName: undefined
   },
   //Picker formats below
   fullDateFormat: {

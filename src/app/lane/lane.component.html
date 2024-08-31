@@ -2,28 +2,31 @@
   <div class="lane-toolbar flex align-items-center g-05 ">
     <div class="grow no-wrap flex align-items-center g-05">
       @if(lane.searchTextContent) {
-      <div class="lane-title no-wrap" innerHTML="{{lane.searchTextContent}}"></div>
+      <div class="colored-title no-wrap" innerHTML="{{lane.searchTextContent}}"></div>
       }@else {
-      <div class="lane-title no-wrap" contenteditable="true" [(ngModel)]="this.lane.textContent" [board]="board" (ngModelChange)="debounceBoardUpdate()" (onTagsChange)="updateLaneTags($event)"> </div>
+      <div class="colored-title no-wrap" contenteditable="true" [(ngModel)]="this.lane.textContent" [board]="board" (ngModelChange)="debounceBoardUpdate()" (onTagsChange)="updateLaneTags($event)"> </div>
       }
 
       <prioritizer [container]="lane" [allowEmpty]="true" [multipleSelectable]="true" (onPrioritySelected)="togglePriority($event)" [tooltip]="'Set priority filter'"> </prioritizer>
       <status (onStatusSelected)="updateStatus($event)" [allowEmpty]="true" [multipleSelectable]="true" [container]="lane" [board]="board" [staticLane]="isStatic()" [tooltip]="'Set status filter'"> </status>
       <span [class.translucent]="!lane.endTimeframe && !lane.startTimeframe" class="select-dates pointer" (click)="openDatePicker()">
-        <span [tooltip]="'Set timeframe filter'" [position]="'top'">📅</span>
+        <span [tooltip]="'Set timeframe filter'" [position]="'top'">📅 </span>
         <date-picker *ngIf="showDatePicker" [dateDisplayConfig]="board.datesConfig" [showTimeframes]="true" [hideCalendar]="true" [selectedTimeframe]="[lane.startTimeframe,lane.endTimeframe]" (onSetClicked)="setTimeframe($event)" (onCancel)="setTimeframe(undefined)"></date-picker>
       </span>
       <div class="task-count translucent">
-        @if(isStatic()){
-        {{staticTasksCount | async}}
-        }@else {
-        {{tasksCount | async}}
-        } tasks
+        @if(!isStatic()){
+        {{tasksCount | async}} tasks
+        }
       </div>
     </div>
 
 
     <div class="grow"></div>
+    <div class="task-count translucent m-r-05">
+      @if(isStatic()){
+      <span class="pill">static</span>
+      }
+    </div>
     <span [position]="'top'" [tooltip]="'Move left'" *ngIf="displayedInFixedLayout && canMove('up')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" (click)="moveLane('up')">↑</span>
     <span [position]="'top'" [tooltip]="'Move right'" *ngIf="displayedInFixedLayout && canMove('down')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" (click)="moveLane('down')">↓</span>
     <span [position]="'top'" [tooltip]="'Move left'" *ngIf="displayedInFixedLayout && canMove('left')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" (click)="moveLane('left')">←</span>
@@ -38,7 +41,7 @@
 
     <div class="no-grow relative flex align-items-center">
 
-      <div [position]="'top'" [tooltip]="'Lane menu'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small  no-grow" (click)="menuOpen = !menuOpen; $event.stopPropagation()">☰</div>
+      <div [position]="'top'" [tooltip]="'Open lane menu'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small  no-grow" (click)="menuOpen = !menuOpen; $event.stopPropagation()">☰</div>
       <lane-menu *ngIf="menuOpen" [lane]="lane" (onClose)="menuOpen = false">
         <button class="small no-grow" *ngIf="!isStatic() && !isArchive(lane) " (click)="autoSort()">✨ Auto-sort tasks</button>
 
@@ -71,6 +74,37 @@
     </div>
 
     <span [position]="'top'" [tooltip]="'Drag'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" drag-on-this="true" draggable="true" class="lane drag-handle translucent no-grow">⋯</span>
+  </div>
+
+  <div *ngIf="isStatic()" class="lane-text m-b-05 half-translucent small">
+    Showing
+    <span *ngIf="lane.status" [innerHTML]="beautifyOrList(lane.status)"></span>
+    tasks
+    <span *ngIf="lane.priority">with
+      @if(lane.priority.length === 1){
+      <span class="priority-{{lane.priority[0]}}">priority </span>
+      }@else{
+      priority
+      }
+
+    </span>
+    <span *ngIf="lane.priority" [innerHTML]="beautifyOrList(lane.priority)"></span>
+    <span *ngIf="lane.tags && lane.tags.length > 0" class="tag"> tagged with </span>
+    <span *ngIf="lane.tags && lane.tags.length > 0" [innerHTML]="beautifyOrList(lane.tags)" class="tag"></span>
+
+    @if((lane.priority || lane.tags.length !== 0) && (lane.startTimeframe || lane.endTimeframe)){,}
+    <span class="timeframes">
+      @if(lane.startTimeframe){
+      starting @if(lane.startTimeframe.indexOf('hours') >= 0){in the} next {{lane.startTimeframe}}
+      }
+      @if(lane.startTimeframe && lane.endTimeframe){
+      and
+      }
+      @if(lane.endTimeframe){
+      ending @if(lane.endTimeframe.indexOf('hours') >= 0){in the} next {{lane.endTimeframe}}
+      }
+      ({{staticTasksCount | async}} {{(staticTasksCount | async) === 1 ? 'task' : 'tasks'}})
+    </span>
   </div>
 
   @if(!lane.collapsed){
