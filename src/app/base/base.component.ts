@@ -21,7 +21,6 @@ export abstract class ContainerComponent implements OnInit, OnDestroy{
     protected registry: ContainerComponentRegistryService,
     public el: ElementRef,
   ) { }
-
   abstract get container(): Container;
 
   set subscriptions(subscriptions: Subscription) {
@@ -29,10 +28,8 @@ export abstract class ContainerComponent implements OnInit, OnDestroy{
   }
 
   ngOnInit(): void {
-    this.registry.componentInitialized(this);
   }
   ngOnDestroy(): void {
     this._subscriptions.forEach(subscription => subscription.unsubscribe());
-    this.registry.componentDestroyed(this);
   }
 }

@@ -1,25 +1,12 @@
-
-
 <!-- <ai-advisor *ngIf="board" [board]="board"></ai-advisor> -->
 <main class="main flex" ondragover="event.preventDefault()">
 
     <div class="column-1 flex column">
-        <board *ngIf="board" [board]="board"></board>
+        <board *ngIf="board && board.layout !== 'absolute'" [board]="board"></board>
+        <board *ngIf="board && board.layout === 'absolute'" [board]="board" droppable [container]="board" [executeOnDropReceived]="receiveDrop.bind(this)"></board>
 
         <div class="bottom-bar flex g-1">
-        <!-- <div>
-                <button (click)="reset()">Add board</button>
-            </div> -->
-           
-            <!-- <tags-viewer class="flex grow wrap"></tags-viewer> -->
-            <div>
-                <!-- 
-                <font-resizer></font-resizer>
-                <importer *ngIf="getFirstLane()" [lane]="getFirstLane()"></importer>-->
-                <!-- <storage></storage> -->
-            </div>
             <keyboard-listener></keyboard-listener>
-            
         </div>
     </div>
     <board-selection-menu class="column-2 flex"></board-selection-menu>

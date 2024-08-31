@@ -1,4 +1,4 @@
-<div class="lane-wrapper p-x-05 p-y-025" [class.archive-lane]="isArchive(lane)" [class.static-view]="isStatic() && (tasks | async)?.length === 0" data-consider-for-overlapping-checks="true">
+<div class="lane-wrapper p-x-05 p-y-025" [class.archive-lane]="isArchive(lane)" [class.static-view]="isStatic() && (tasks | async)?.length === 0" droppable [container]="lane" [executeOnDropReceived]="receiveDrop.bind(this)">
   <div class="lane-toolbar flex align-items-center g-05 ">
     <div class="grow no-wrap flex align-items-center g-05">
       @if(lane.searchTextContent) {
@@ -27,10 +27,7 @@
       <span class="pill">static</span>
       }
     </div>
-    <span [position]="'top'" [tooltip]="'Move left'" *ngIf="displayedInFixedLayout && canMove('up')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" (click)="moveLane('up')">↑</span>
-    <span [position]="'top'" [tooltip]="'Move right'" *ngIf="displayedInFixedLayout && canMove('down')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" (click)="moveLane('down')">↓</span>
-    <span [position]="'top'" [tooltip]="'Move left'" *ngIf="displayedInFixedLayout && canMove('left')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" (click)="moveLane('left')">←</span>
-    <span [position]="'top'" [tooltip]="'Move right'" *ngIf="displayedInFixedLayout && canMove('right')" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" (click)="moveLane('right')">→</span>
+
 
     <span *ngIf="lane.collapsed" (click)="toggleCollapse()" [tooltip]="'Expand tasks'" class="pointer expand">⇳</span>
 

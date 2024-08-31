@@ -399,7 +399,7 @@ export class BoardService {
      * If a lane becomes empty after removing the task, it is also removed from the board.
      * Finally, the new floating lane is added to the board and the updated boards are emitted.
      */
-  addFloatingLane(board: Board, x: number, y: number, children: Task[] | undefined, archive: boolean): Lane {
+  addFloatingLane(board: Board, x: number, y: number, children: Task[] | undefined, archive: boolean, width: number): Lane {
     const boards = this._boards$.getValue();
     const activeBoard = boards.find(b => b.id === board.id);
     if (!activeBoard) {
@@ -409,6 +409,7 @@ export class BoardService {
 
     const newLane: Lane = getNewLane(archive);
     newLane.coordinates = { x, y };
+    newLane.layouts.absolute.width = width;
     activeBoard.children.push(newLane);
 
     if (children) {
@@ -466,7 +467,7 @@ export class BoardService {
       }
       if (!archive) {
         // create the archive
-        archive = this.addFloatingLane(board, 0, 0, undefined, true);
+        archive = this.addFloatingLane(board, 0, 0, undefined, true, 300);
       }
       // Check if the task is already displayed in the archive lane (can be a descendant of an archived task)
       const descendants = getDescendants(archive);
@@ -498,7 +499,7 @@ export class BoardService {
         lane.children.push(task);
       } else {
         console.warn(`Cannot find lane with id ${task.createdLaneId}`);
-        const lane = this.addFloatingLane(board, 0, 0, [task], false);
+        const lane = this.addFloatingLane(board, 0, 0, [task], false, 300);
         task.createdLaneId = lane.id;
       }
 

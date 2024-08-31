@@ -46,7 +46,7 @@ export function isStatus(parent: unknown): parent is Status {
 }
 
 export function isStatusArray(parent: unknown[]): parent is Status[] {
-  return isStatus(parent[0])
+  return Array.isArray(parent) && isStatus(parent[0])
 }
 
 export function isPriority(parent: unknown): parent is Priority {
@@ -54,13 +54,13 @@ export function isPriority(parent: unknown): parent is Priority {
 }
 
 export function isPriorityArray(parent: unknown[]): parent is Priority[] {
-  return isPriority(parent[0])
+  return Array.isArray(parent) && isPriority(parent[0])
 }
 
-export function isTag(parent: unknown): parent is Tag {
-  return !!(parent as Tag).tag
+export function isTag(parent: unknown | undefined): parent is Tag {
+  return !!parent && !!(parent as Tag).tag
 }
 
-export function isTagArray(parent: unknown[]): parent is Tag[] {
-  return isTag(parent[0])
+export function isTagArray(parent: unknown | unknown[]): parent is Tag[] {
+  return Array.isArray(parent) && isTag(parent[0])
 }

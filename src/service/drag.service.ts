@@ -38,35 +38,25 @@ export class DragService {
       console.info('Drag end event', event);
       const draggedObject = event.dragged;
       const board = event.board;
-      const draggedComponent = event.component;
-      const { deltaX, deltaY } = event;
       if (!draggedObject || !board) {
         console.warn('Dragged component has no object');
         return;
       }
       const {clientX:x, clientY:y } = event.event
 
-      if(isLane(draggedObject)) {
-        if( board.layout === 'absolute' ){
-          console.info("Dragged a lane in an absolute layout, nothing to do");
-          return;
-        }
-        return;
-      }else if(isTask(draggedObject)){
+      if(isTask(draggedObject) || isLane(draggedObject)){
         // look for overlapped component in the registry
-        const overlappedComponent = this.registryService.getComponentsAtCoordinates(x,y).filter( c => c !== draggedComponent );
-        if (!overlappedComponent || overlappedComponent.length === 0) {
-          // NO Overlap case:
-          this.boardService.addFloatingLane(board, event.event.clientX - deltaX + window.scrollX, event.event.clientY - deltaY + window.scrollY, [draggedObject], false);
-          console.info('No overlapped component found, adding floating lane');
+        const overlappedDroppable = this.registryService.getDroppablessAtCoordinates(x,y).filter( c => c.container !== draggedObject);
+        if (!overlappedDroppable || overlappedDroppable.length === 0) {
+          console.warn('No overlapped droppable found');
           return;
         } else {
           // Overlap case:
           // we have a collection of overlapped components, sort them task first and take the first one
 
-          const { container: overlappedObject } = overlappedComponent[0];
+          const { container: overlappedObject } = overlappedDroppable[0];
           if (!overlappedObject) {
-            console.info('Overlapped component has no object');
+            console.warn('Overlapped component has no object');
             return;
           }
           // exclude the possibility that parents get dragged into children
@@ -79,8 +69,8 @@ export class DragService {
           if( overlappedObject.id === draggedObject.id && overlappedObject._type === draggedObject._type) {
             throw new Error('Dragged object and overlapped object are the same');
           }
-
-          this.boardService.addAsChild(overlappedObject, [draggedObject]);
+          // execute on first of stack
+          overlappedDroppable[0].executeOnDropReceived(draggedObject, event.event);
         }
       }else{
         console.warn("Dragging of this kind of object is not currently managed")

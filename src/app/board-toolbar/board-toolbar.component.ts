@@ -65,7 +65,7 @@ export class BoardToolbarComponent {
     this.boardService.addFloatingLane(this.board,
       window.innerWidth / 2,
       window.innerHeight / 2, [],
-      false);
+      false, 300);
   }
 
   getLayoutSymbol(layout: Layout) {

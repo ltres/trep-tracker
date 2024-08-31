@@ -9,6 +9,7 @@ import { KeyboardService } from '../../service/keyboard.service';
 import { ContainerComponent } from '../base/base.component';
 import { ContainerComponentRegistryService } from '../../service/registry.service';
 import { layoutValues } from '../../types/constants';
+import { isLane, isTask } from '../../utils/guards';
 
 @Component({
   selector: 'board',
@@ -58,12 +59,26 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
     public override el: ElementRef,
     private cdr: ChangeDetectorRef,
   ) {
-  //super(boardService, dragService, keyboardService, registry,el);
     super(registry, el);
-
-  // this.taskService = taskService;
   }
+   
+  receiveDrop( column: number, layout: Layout, container: Container, event?: DragEvent){
+    if(isLane(container)){
+      if(this.board.layout === 'absolute'){
+        // Nothing to do
+      }else{
+        container.layouts[layout].column = column;
+        this.boardService.publishBoardUpdate()
+      }
+    }else if(isTask(container)){
+      this.boardService.addFloatingLane(this.board, (event?.clientX) ?? 0 + window.scrollX , (event?.clientY) ?? 0 + window.scrollY, [container], false, 300);
+    }else{
+      throw new Error("Object not droppable on board")
+    }
+  };
+
   override ngOnInit(): void {
+    super.ngOnInit();
     this.boardService.boards$.subscribe(() => {
       this.cdr.detectChanges();
     });
@@ -116,7 +131,7 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
     this.boardService.addFloatingLane(this.board,
       this.el.nativeElement.getBoundingClientRect().width / 2,
       this.el.nativeElement.getBoundingClientRect().height / 2, [],
-      false);
+      false, 300);
   }
 
   updateBoardTags($event: Tag[]) {

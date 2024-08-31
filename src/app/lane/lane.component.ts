@@ -10,7 +10,7 @@ import { ContainerComponentRegistryService } from '../../service/registry.servic
 import { ContainerComponent } from '../base/base.component';
 import { ModalService } from '../../service/modal.service';
 import { layoutValues, tagIdentifiers } from '../../types/constants';
-import {  isPriorityArray,  isStatusArray,  isTagArray } from '../../utils/guards';
+import {  isPriorityArray,  isStatusArray,  isTagArray, isTask } from '../../utils/guards';
 
 @Component({
   selector: 'lane[lane][board]',
@@ -24,7 +24,6 @@ import {  isPriorityArray,  isStatusArray,  isTagArray } from '../../utils/guard
   ],
 })
 export class LaneComponent extends ContainerComponent implements OnInit {
-
   @ViewChildren(TaskComponent, { read: ElementRef }) taskComponentsElRefs: QueryList<ElementRef> | undefined;
   @ViewChildren(TaskComponent) taskComponents: QueryList<TaskComponent> | undefined;
   @Input() lane!: Lane;
@@ -51,6 +50,13 @@ export class LaneComponent extends ContainerComponent implements OnInit {
     super(registry, el);
 
   }
+  receiveDrop(container: Container){
+    if( !isTask(container) ){
+      throw new Error("Cannot drop something that is not a task on a lane")
+    }
+    this.boardService.addAsChild(this.lane, [container]);
+  };
+
   override ngOnInit(): void {
     super.ngOnInit();
     this.boardService.boards$.subscribe( () => {

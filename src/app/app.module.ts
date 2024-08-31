@@ -41,6 +41,7 @@ import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import { DatePickerComponent } from './date-picker/date-picker.component';
 import { OWL_DATE_TIME_FORMATS, OwlDateTimeModule, OwlNativeDateTimeModule } from '@ltres/angular-datetime-picker';
 import { dateFormats } from '../types/constants';
+import { DroppableDirective } from './directive/droppable.directive';
 
 @NgModule({ declarations: [
   AppComponent,
@@ -67,7 +68,8 @@ import { dateFormats } from '../types/constants';
   ClickComponent,
   GanttComponent,
   UpdateCheckerComponent,
-  DatePickerComponent
+  DatePickerComponent,
+  DroppableDirective
 ],
 bootstrap: [AppComponent], 
 imports: [CommonModule,

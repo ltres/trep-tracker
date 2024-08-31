@@ -2,9 +2,10 @@ import { AfterViewInit, ApplicationRef, Component, Inject } from '@angular/core'
 
 import { BoardService } from '../service/board.service';
 import { Observable } from 'rxjs';
-import { Board, Lane } from '../types/types';
+import { Board, Container, Lane } from '../types/types';
 import { ModalService } from '../service/modal.service';
 import { StorageServiceAbstract } from '../types/storage';
+import { isLane, isTask } from '../utils/guards';
 
 @Component({
   selector: 'app-root',
@@ -15,7 +16,7 @@ import { StorageServiceAbstract } from '../types/storage';
 })
 export class AppComponent implements AfterViewInit {
   title = 'trep-tracker';
-  board: Board | undefined;
+  board!: Board;
   displayModal = false;
   constructor(
     private boardService: BoardService,
@@ -24,9 +25,21 @@ export class AppComponent implements AfterViewInit {
     private appRef: ApplicationRef,
   ) { }
 
+  receiveDrop( container: Container, event?: DragEvent){
+    if(isLane(container)){
+      // Nothing to do
+    }else if(isTask(container)){
+      this.boardService.addFloatingLane(this.board, (event?.clientX) ?? 0 + window.scrollX , (event?.clientY) ?? 0 + window.scrollY, [container], false, 300);
+    }else{
+      throw new Error("Object not droppable on board")
+    }
+  };
+
   ngAfterViewInit(): void {
     this.boardService.selectedBoard$.subscribe(board => {
-      setTimeout(() => { this.board = board; });
+      setTimeout(() => { 
+        if(!board)return; 
+        this.board = board; });
       //this.board = board
     });
     this.modalService.displayModal$.subscribe(display => {

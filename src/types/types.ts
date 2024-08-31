@@ -264,3 +264,14 @@ export type DateDisplayConfig ={
 export type Timezone = typeof timezoneValues[number];
 export type Locale = string;
 export type DateFormat = keyof typeof dateFormats;
+
+export type AddFloatingLaneParams ={
+  board: Board, 
+  x: number, 
+  y: number, 
+  children: Task[] | undefined, 
+  archive: boolean, 
+  width: number,
+  layout?: Layout,
+  columnIndex: number
+}

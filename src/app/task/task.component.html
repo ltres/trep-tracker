@@ -1,4 +1,4 @@
-<div class="task-wrapper g-025" data-consider-for-overlapping-checks="true" [class.editor-active]="this.editorActive" [class.selected]="this.selected" [class.archived]="this.task.status === 'archived'" [class]="this.task.status" [style]="this.task.priority === 4 ? 'font-weight: bolder' : ''" (click)="clickTask()">
+<div class="task-wrapper g-025" droppable [container]="task" [executeOnDropReceived]="receiveDrop.bind(this)" [class.editor-active]="this.editorActive" [class.selected]="this.selected" [class.archived]="this.task.status === 'archived'" [class]="this.task.status" [style]="this.task.priority === 4 ? 'font-weight: bolder' : ''" (click)="clickTask()">
     <div [tooltip]="'Drag'" *ngIf="!isStaticView() && !isPlaceholder()" class="drag-handle translucent" drag-on-this="true" draggable="true">⋮</div>
 
     <prioritizer *ngIf="!isPlaceholder()" (onPrioritySelected)="updatePriority($event)" [container]="task" class=""> </prioritizer>

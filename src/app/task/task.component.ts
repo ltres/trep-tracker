@@ -11,7 +11,7 @@ import { ClickService } from '../../service/click.service';
 import { toIsoString, fromIsoString, formatDate, getDiffInDays } from '../../utils/date-utils';
 import { setCaretPosition, isPlaceholder, hashCode, initGanttData } from '../../utils/utils';
 import {  millisForMagnitudeStep } from '../../types/constants';
-import { isRecurringGanttTask } from '../../utils/guards';
+import { isRecurringGanttTask, isTask } from '../../utils/guards';
 
 @Component({
   selector: 'task[task][lane][parent][board]',
@@ -25,7 +25,6 @@ import { isRecurringGanttTask } from '../../utils/guards';
   ],
 })
 export class TaskComponent extends ContainerComponent implements OnInit, OnDestroy {
-
   @ViewChild('editor') editor: ElementRef | undefined;
   @Input() task!: Task;
   @Input() lane!: Lane;
@@ -55,9 +54,15 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     protected cdr: ChangeDetectorRef,
   ) {
     super(registry, el);
-
   }
-
+  
+  receiveDrop(container: Container){
+    if( !isTask(container) ){
+      throw new Error("Cannot drop something that is not a task on a task")
+    }
+    this.boardService.addAsChild(this.task, [container]);
+  };
+  
   override get container(): Container {
     return this.task;
   }
