@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Component, HostBinding, Input, TemplateRef, ViewChild } from '@angular/core';
 import { BoardService } from '../../service/board.service';
-import { Board, Layout, Locale, Tag, Task, Timezone } from '../../types/types';
+import { AddFloatingLaneParams, Board, Layout, Locale, Tag, Task, Timezone } from '../../types/types';
 import { ModalService } from '../../service/modal.service';
 import { Observable, map } from 'rxjs';
 import { isPlaceholder } from '../../utils/utils';
@@ -62,10 +62,15 @@ export class BoardToolbarComponent {
   }
 
   addLane() {
-    this.boardService.addFloatingLane(this.board,
-      window.innerWidth / 2,
-      window.innerHeight / 2, [],
-      false, 300);
+    const params: AddFloatingLaneParams ={
+      board:this.board, 
+      x: window.innerWidth / 2, 
+      y:window.innerHeight / 2, 
+      children: [], 
+      archive:false, 
+      width:300
+    }
+    this.boardService.addFloatingLane(params);
   }
 
   getLayoutSymbol(layout: Layout) {

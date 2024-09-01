@@ -2,7 +2,7 @@ import { AfterViewInit, ApplicationRef, Component, Inject } from '@angular/core'
 
 import { BoardService } from '../service/board.service';
 import { Observable } from 'rxjs';
-import { Board, Container, Lane } from '../types/types';
+import { AddFloatingLaneParams, Board, Container, Lane } from '../types/types';
 import { ModalService } from '../service/modal.service';
 import { StorageServiceAbstract } from '../types/storage';
 import { isLane, isTask } from '../utils/guards';
@@ -29,7 +29,15 @@ export class AppComponent implements AfterViewInit {
     if(isLane(container)){
       // Nothing to do
     }else if(isTask(container)){
-      this.boardService.addFloatingLane(this.board, (event?.clientX) ?? 0 + window.scrollX , (event?.clientY) ?? 0 + window.scrollY, [container], false, 300);
+      const params: AddFloatingLaneParams ={
+        board: this.board, 
+        x:(event?.clientX) ?? 0, 
+        y:(event?.clientY) ?? 0, 
+        children: [container], 
+        archive:false, 
+        width:300
+      }
+      this.boardService.addFloatingLane(params);
     }else{
       throw new Error("Object not droppable on board")
     }

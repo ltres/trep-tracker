@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, HostBinding, HostListener, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { Board, Container, Lane, Layout, Tag } from '../../types/types';
+import { AddFloatingLaneParams, Board, Container, Lane, Layout, Tag } from '../../types/types';
 import { BoardService } from '../../service/board.service';
 import { Observable } from 'rxjs';
 import { LaneComponent } from '../lane/lane.component';
@@ -71,7 +71,20 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
         this.boardService.publishBoardUpdate()
       }
     }else if(isTask(container)){
-      this.boardService.addFloatingLane(this.board, (event?.clientX) ?? 0 + window.scrollX , (event?.clientY) ?? 0 + window.scrollY, [container], false, 300);
+      const params: AddFloatingLaneParams ={
+        board: this.board, 
+        x:(event?.clientX) ?? 0 + window.scrollX, 
+        y:(event?.clientY) ?? 0 + window.scrollY, 
+        children: [container],
+        position: {
+          layout,
+          column,
+          order: 0
+        },
+        archive:false, 
+        width:300
+      }
+      this.boardService.addFloatingLane(params);
     }else{
       throw new Error("Object not droppable on board")
     }
@@ -128,10 +141,15 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
   }
 
   addLane() {
-    this.boardService.addFloatingLane(this.board,
-      this.el.nativeElement.getBoundingClientRect().width / 2,
-      this.el.nativeElement.getBoundingClientRect().height / 2, [],
-      false, 300);
+    const params: AddFloatingLaneParams ={
+      board:this.board, 
+      x:this.el.nativeElement.getBoundingClientRect().width / 2, 
+      y:this.el.nativeElement.getBoundingClientRect().height / 2, 
+      children: [], 
+      archive:false, 
+      width:300
+    }
+    this.boardService.addFloatingLane(params);
   }
 
   updateBoardTags($event: Tag[]) {

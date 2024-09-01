@@ -8,8 +8,11 @@
 }@else {
 <div droppable [container]="board" [executeOnDropReceived]="receiveDrop.bind(this, colIndex, board.layout)" class="flex column board-column flex-child g-1" *ngFor="let colIndex of getColumnIndexes(board.layout); let last = last">
   <board-toolbar class="static flex justify-content-end" clazz="static" *ngIf="last" [board]="board"></board-toolbar>
+
+
   @for (lane of getLanesByColumn$(colIndex) | async; track hashCode(lane)) {
   <lane [displayedInFixedLayout]="true" [lane]="lane" [board]="this.board" [draggableDir]="lane" [containerEl]="el.nativeElement" [layout]="board.layout"></lane>
+  <div droppable [container]="board" [executeOnDropReceived]="receiveDrop.bind(this, colIndex, board.layout)" class="dumb-dropzone m-x-1"></div>
   }
 </div>
 }

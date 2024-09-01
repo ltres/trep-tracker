@@ -269,9 +269,12 @@ export type AddFloatingLaneParams ={
   board: Board, 
   x: number, 
   y: number, 
-  children: Task[] | undefined, 
+  children: Task[], 
   archive: boolean, 
-  width: number,
-  layout?: Layout,
-  columnIndex: number
+  width?: number,
+  position?:{
+    layout: Layout,
+    column: number,
+    order: number;
+  }
 }

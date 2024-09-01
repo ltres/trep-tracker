@@ -5,7 +5,7 @@
     outline: 1px solid $static-lane-outline-color;
     outline-offset: -1px;
     border-radius: $border-radius;
-    backdrop-filter: $frost-blur;
+    // backdrop-filter: $frost-blur;
     background-color: $lane-non-static-background-color;
     padding: $padding;
 }

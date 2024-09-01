@@ -105,8 +105,13 @@
   </div>
 
   @if(!lane.collapsed){
-  <div *ngFor="let task of (tasks | async);trackBy: trackBy" [class.non-static-island]="isStatic()">
-    <task [task]="task" [parent]="lane" [board]="board" [lane]="lane" [draggableDir]="task" [containerEl]="el.nativeElement" [layout]="board.layout" (onDragStart)="interactingWithChildTasks=true" (onDragEnd)="interactingWithChildTasks=false" (onToggleShowNotes)="interactingWithChildTasks = $event" (createNewTask)="createNewTask()"></task>
+  <div [class.non-static-island]="isStatic()" class="lane-task-container flex column">
+    <ng-container *ngFor="let task of (tasks | async);trackBy: trackBy">
+      <task [task]="task" [parent]="lane" [board]="board" [lane]="lane" [draggableDir]="task" [containerEl]="el.nativeElement" [layout]="board.layout" (onDragStart)="interactingWithChildTasks=true" (onDragEnd)="interactingWithChildTasks=false" (onToggleShowNotes)="interactingWithChildTasks = $event" (createNewTask)="createNewTask()"></task>
+
+      <div droppable [container]="task" [executeOnDropReceived]="receiveDrop.bind(this)" class="dumb-dropzone m-x-1"></div>
+    </ng-container>
+
   </div>
 
   <div *ngIf="isStatic()">

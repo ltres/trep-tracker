@@ -1,5 +1,5 @@
 import {  Inject, Injectable, Injector, NgZone } from '@angular/core';
-import { Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, ISODateString, RecurringGanttTask, Timeframe } from '../types/types';
+import { Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, ISODateString, RecurringGanttTask, Timeframe, AddFloatingLaneParams } from '../types/types';
 import { BehaviorSubject, Observable, map } from 'rxjs';
 import { eventuallyPatch, getDescendants, isPlaceholder,  isStatic, } from '../utils/utils';
 import { TagService } from './tag.service';
@@ -399,7 +399,9 @@ export class BoardService {
      * If a lane becomes empty after removing the task, it is also removed from the board.
      * Finally, the new floating lane is added to the board and the updated boards are emitted.
      */
-  addFloatingLane(board: Board, x: number, y: number, children: Task[] | undefined, archive: boolean, width: number): Lane {
+  addFloatingLane(params: AddFloatingLaneParams): Lane {
+    const {board, x, y, children, archive, width, position} = params;
+
     const boards = this._boards$.getValue();
     const activeBoard = boards.find(b => b.id === board.id);
     if (!activeBoard) {
@@ -409,7 +411,17 @@ export class BoardService {
 
     const newLane: Lane = getNewLane(archive);
     newLane.coordinates = { x, y };
-    newLane.layouts.absolute.width = width;
+    if(width){
+      newLane.layouts.absolute.width = width;
+    }
+    if(position){
+      newLane.layouts[position.layout] = { 
+        width: width ?? 300,
+        column: position.column,
+        order: position.order
+      };
+    }
+
     activeBoard.children.push(newLane);
 
     if (children) {
@@ -467,7 +479,10 @@ export class BoardService {
       }
       if (!archive) {
         // create the archive
-        archive = this.addFloatingLane(board, 0, 0, undefined, true, 300);
+        const params: AddFloatingLaneParams ={
+          board, x:0, y:0, children: [], archive:true, width:300
+        }
+        archive = this.addFloatingLane(params);
       }
       // Check if the task is already displayed in the archive lane (can be a descendant of an archived task)
       const descendants = getDescendants(archive);
@@ -499,7 +514,10 @@ export class BoardService {
         lane.children.push(task);
       } else {
         console.warn(`Cannot find lane with id ${task.createdLaneId}`);
-        const lane = this.addFloatingLane(board, 0, 0, [task], false, 300);
+        const params: AddFloatingLaneParams ={
+          board, x:0, y:0, children: [task], archive:false, width:300
+        }
+        const lane = this.addFloatingLane(params);
         task.createdLaneId = lane.id;
       }
 

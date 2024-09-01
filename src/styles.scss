@@ -516,3 +516,17 @@ select option {
   padding: 0.2rem 0.5rem;
   border-radius: $border-radius;
 }
+
+.something-is-dragging {
+  outline: 1px dashed $translucent-color !important;
+  outline-offset: -1px;
+}
+
+.dumb-dropzone {
+  display: none;
+}
+
+.dumb-dropzone.something-is-dragging {
+  display: block;
+  min-height: 2rem;
+}
