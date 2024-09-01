@@ -28,20 +28,20 @@ export class TooltipDirective {
     const bbox = (this.element.nativeElement as HTMLElement).getBoundingClientRect()
     switch(this.position){
       case "top":
-        tooltip.style.top = `${bbox.top - tooltip.getBoundingClientRect().height}px`;
-        tooltip.style.left = `${bbox.left}px`;
+        tooltip.style.top = `${bbox.top - tooltip.getBoundingClientRect().height + window.scrollY}px`;
+        tooltip.style.left = `${bbox.left + window.scrollX}px`;
         break;
       case "bottom" :
-        tooltip.style.top = `${bbox.top + tooltip.getBoundingClientRect().height}px`;
-        tooltip.style.left = `${bbox.left - tooltip.getBoundingClientRect().width}px`;
+        tooltip.style.top = `${bbox.top + tooltip.getBoundingClientRect().height + window.scrollY}px`;
+        tooltip.style.left = `${bbox.left - tooltip.getBoundingClientRect().width + window.scrollX}px`;
         break;
       case "left":
-        tooltip.style.top = `${bbox.top}px`;
-        tooltip.style.left = `${bbox.left - tooltip.getBoundingClientRect().width}px`;
+        tooltip.style.top = `${bbox.top + window.scrollY}px`;
+        tooltip.style.left = `${bbox.left - tooltip.getBoundingClientRect().width + window.scrollX}px`;
         break;
       case "right" :
-        tooltip.style.top = `${bbox.top}px`;
-        tooltip.style.left = `${bbox.right}px`;
+        tooltip.style.top = `${bbox.top + window.scrollY}px`;
+        tooltip.style.left = `${bbox.right + window.scrollX}px`;
         break;
           
     }

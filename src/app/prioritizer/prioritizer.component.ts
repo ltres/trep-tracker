@@ -32,7 +32,7 @@ export class PrioritizerComponent {
     togglePriority(priority: Priority) {
       let toRet: Priority[] | Priority | undefined;
       if (this.multipleSelectable) {
-        let priorities = this.container.priority as Priority[] | undefined;
+        let priorities = (Array.isArray(this.container.priority) ? this.container.priority : [this.container.priority]).filter(p => p) as Priority[] | undefined;
         priorities = priorities?.includes(priority) ? priorities.filter(s => s !== priority) : (priorities ? [...priorities, priority] : [priority]);
         if (priorities.length === 0 && this.allowEmpty) {
           priorities = undefined;

@@ -218,6 +218,7 @@ export class LaneComponent extends ContainerComponent implements OnInit {
   }
   toggleCollapse() {
     this.lane.collapsed = !this.lane.collapsed
+    this.boardService.publishBoardUpdate();
   }
 
   openDatePicker() {

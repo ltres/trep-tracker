@@ -29,7 +29,8 @@
     </div>
 
 
-    <span *ngIf="lane.collapsed" (click)="toggleCollapse()" [tooltip]="'Expand tasks'" class="pointer expand">⇳</span>
+    <span *ngIf="lane.collapsed" (click)="toggleCollapse()" [tooltip]="'Expand tasks'" class="pointer expand">▼</span>
+    <span *ngIf="!lane.collapsed" (click)="toggleCollapse()" [tooltip]="'Collapse tasks'" class="pointer expand">▲</span>
 
     <span [position]="'top'" [tooltip]="'Show child tasks'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" *ngIf="isStatic()" (click)="toggleShowChildren()">
       <span *ngIf="lane.showChildren" class="completed">☑</span>
@@ -62,8 +63,8 @@
         </button>
 
         <button class="small no-grow" (click)="toggleCollapse()">
-          <span *ngIf="lane.collapsed">⇳ Expand tasks</span>
-          <span *ngIf="!lane.collapsed">🗜 Collapse tasks</span>
+          <span *ngIf="lane.collapsed">▼ Expand tasks</span>
+          <span *ngIf="!lane.collapsed">▲ Collapse tasks</span>
         </button>
 
         <button *ngIf="!isStatic() && !isArchive(lane)" class="small no-grow new-task" (click)="createNewTask()">➕ New task</button>
