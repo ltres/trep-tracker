@@ -529,10 +529,10 @@ select option {
 }
 
 .dumb-dropzone {
-  display: none;
+  min-height: 0;
+  transition: min-height 0.25s ease-out;
 }
 
 .dumb-dropzone.something-is-dragging {
-  display: block;
   min-height: 1rem;
 }

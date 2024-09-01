@@ -84,7 +84,7 @@ export class DroppableDirective implements OnInit, OnDestroy {
     }));
     this._subscriptions.push(this.dragService.dragChecksEnded$.subscribe( ()=> {
       this.somethingIsDragging = false;
-      this.el.nativeElement.classList.remove('something-is-dragging');
+      this.el.nativeElement.classList.remove('something-is-dragging')
       this.el.nativeElement.classList.remove('something-is-dragging-and-i-am-hovered')
 
     }));
