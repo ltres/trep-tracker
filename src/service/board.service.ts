@@ -848,7 +848,7 @@ export class BoardService {
     this._focusSearch$.next(false);
   }
 
-  reorderLayoutColumn(board: Board, lane: Lane, direction?: string) {
+  moveLaneInColumn(board: Board, lane: Lane, direction?: string) {
     const colChildren = board.children.filter(l => l.layouts[board.layout].column === lane.layouts[board.layout].column).sort((a, b) => a.layouts[board.layout].order - b.layouts[board.layout].order);
     if(direction){
       const index = colChildren.findIndex(c => c.id === lane.id);

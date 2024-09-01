@@ -517,7 +517,13 @@ select option {
   border-radius: $border-radius;
 }
 
+/*
 .something-is-dragging {
+  outline: 1px dashed $translucent-color !important;
+  outline-offset: -1px;
+}*/
+
+.something-is-dragging.something-is-dragging-and-i-am-hovered {
   outline: 1px dashed $translucent-color !important;
   outline-offset: -1px;
 }
@@ -528,5 +534,5 @@ select option {
 
 .dumb-dropzone.something-is-dragging {
   display: block;
-  min-height: 2rem;
+  min-height: 1rem;
 }

@@ -4,7 +4,7 @@ import { ContainerComponentRegistryService } from "../../service/registry.servic
 import { DragService } from "../../service/drag.service";
 import { Subscription } from "rxjs";
 import { isBoard, isLane, isTask } from "../../utils/guards";
-import { getDescendants, isStatic } from "../../utils/utils";
+import { cursorIsInside, getDescendants, isStatic } from "../../utils/utils";
 import { BoardService } from "../../service/board.service";
 
 /**
@@ -17,6 +17,7 @@ export class DroppableDirective implements OnInit, OnDestroy {
   @Input() droppable!: number; // the priority for stacked dropzones
   @Input() container!: Container;
 
+  somethingIsDragging = false;
   /**
    * Function to execute whenever a container is dropped on this directive
    */
@@ -76,13 +77,25 @@ export class DroppableDirective implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.registryService.componentInitialized(this);
     this._subscriptions.push(this.dragService.dragStartEvent$.subscribe( c => {
+      this.somethingIsDragging = true;
       if( this.canBeDroppedHere(c) ){
         this.el.nativeElement.classList.add('something-is-dragging')
       }
     }));
-    this._subscriptions.push(this.dragService.dragEndEvent$.subscribe( ()=> {
-      this.el.nativeElement.classList.remove('something-is-dragging')
+    this._subscriptions.push(this.dragService.dragChecksEnded$.subscribe( ()=> {
+      this.somethingIsDragging = false;
+      this.el.nativeElement.classList.remove('something-is-dragging');
+      this.el.nativeElement.classList.remove('something-is-dragging-and-i-am-hovered')
+
     }));
+    this._subscriptions.push(this.dragService.draggingCoodinates$.subscribe( (c) => {
+      if(!this.somethingIsDragging) return;
+      if( cursorIsInside(c.x,c.y, this.el.nativeElement.getBoundingClientRect()) ){
+        this.el.nativeElement.classList.add('something-is-dragging-and-i-am-hovered')
+      }else{
+        this.el.nativeElement.classList.remove('something-is-dragging-and-i-am-hovered')
+      }
+    }))
   }
   ngOnDestroy(): void {
     this.registryService.componentDestroyed(this);

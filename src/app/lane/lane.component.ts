@@ -182,10 +182,10 @@ export class LaneComponent extends ContainerComponent implements OnInit {
 
   moveLane(direction: 'right' | 'left' | 'up' | 'down') {
     if(direction === 'up' || direction === 'down'){
-      this.boardService.reorderLayoutColumn(this.board, this.lane, direction);
+      this.boardService.moveLaneInColumn(this.board, this.lane, direction);
     }else{
       this.lane.layouts[this.board.layout].column = this.lane.layouts[this.board.layout].column + (direction === 'right' ? 1 : -1);
-      this.boardService.reorderLayoutColumn(this.board, this.lane);
+      this.boardService.moveLaneInColumn(this.board, this.lane);
     }
 
     this.boardService.publishBoardUpdate();

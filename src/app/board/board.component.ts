@@ -62,12 +62,20 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
     super(registry, el);
   }
    
-  receiveDrop( column: number, layout: Layout, container: Container, event?: DragEvent){
+  receiveDrop( column: number, layout: Layout, preceedingLane: Lane | undefined, container: Container, event?: DragEvent){
     if(isLane(container)){
       if(this.board.layout === 'absolute'){
         // Nothing to do
       }else{
         container.layouts[layout].column = column;
+
+        // redistribute the indexes for the column
+        this.board.children = this.board.children.filter( c => c.id !== container.id );
+        this.board.children.splice( preceedingLane ? this.board.children.map(c => c.id).indexOf(preceedingLane?.id) + 1 : 0 , 0, container )
+        this.board.children.filter( c => c.layouts[this.board.layout].column === column ).forEach( (child,index) => {
+          child.layouts[layout].order = index;
+        })
+
         this.boardService.publishBoardUpdate()
       }
     }else if(isTask(container)){
@@ -84,7 +92,15 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
         archive:false, 
         width:300
       }
-      this.boardService.addFloatingLane(params);
+      const lane = this.boardService.addFloatingLane(params);
+      this.board.children = this.board.children.filter( c => c.id !== lane.id );
+      this.board.children.splice( preceedingLane ? this.board.children.map(c => c.id).indexOf(preceedingLane?.id) + 1 : 0 , 0, lane )
+      this.board.children.filter( c => c.layouts[this.board.layout].column === column ).forEach( (child,index) => {
+        child.layouts[layout].order = index;
+      })
+
+      this.boardService.publishBoardUpdate()
+
     }else{
       throw new Error("Object not droppable on board")
     }

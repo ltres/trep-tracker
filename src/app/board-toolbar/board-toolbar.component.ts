@@ -65,10 +65,15 @@ export class BoardToolbarComponent {
     const params: AddFloatingLaneParams ={
       board:this.board, 
       x: window.innerWidth / 2, 
-      y:window.innerHeight / 2, 
+      y: window.innerHeight / 2, 
       children: [], 
       archive:false, 
-      width:300
+      width:300,
+      position: {
+        layout: this.board.layout,
+        column: 0,
+        order: 0
+      }
     }
     this.boardService.addFloatingLane(params);
   }

@@ -15,6 +15,7 @@ import { Container, Lane, Layout } from '../../types/types';
 import { ContainerComponent } from '../base/base.component';
 import { isLane } from '../../utils/guards';
 import { dragStartTreshold } from '../../types/constants';
+import { Subscription, take } from 'rxjs';
 
 @Directive({
   selector: '[draggableDir][containerEl][layout]',
@@ -40,6 +41,8 @@ export class DraggableDirective implements AfterViewChecked, AfterViewInit {
   @Output() onDragEnd: EventEmitter<DragEvent> = new EventEmitter();
   @Output() onResize: EventEmitter<number | string | undefined> = new EventEmitter();
 
+  dragCheckSub: Subscription | undefined;
+
   constructor(
     public el: ElementRef,
     private ngZone: NgZone,
@@ -52,6 +55,7 @@ export class DraggableDirective implements AfterViewChecked, AfterViewInit {
    * Initialize persisted width for non-absolute layouts
    */
   ngAfterViewInit(): void {
+
     if(this.layout !== 'absolute'){
       (this.el.nativeElement as HTMLElement).style.width = '100%';
     }else if(isLane(this.draggableDir) && this.draggableDir.layouts[this.layout].width){
@@ -86,20 +90,31 @@ export class DraggableDirective implements AfterViewChecked, AfterViewInit {
 
     this.ngZone.runOutsideAngular(() => {
       const node = this.el.nativeElement as HTMLElement;
-
-      // Element will pass from a fixed layout (positioned relative to the viewport) to an absolute layout (positioned to the container). We need to account for the window scroll in order to position correctly if the viewport is scrolled
-      node.style.position = '';
-      node.style.zIndex = "";
-
-      node.style.top = ($event.clientY - this.deltaY + window.scrollY) + 'px';
-      node.style.left = ($event.clientX - this.deltaX + window.scrollX) + 'px';
-
       if (this.static) return;
-      document.body.classList.remove('dragging');
+
+      this.dragService.dragChecksEnded$.pipe(take(1)).subscribe( () => {
+        // Element will pass from a fixed layout (positioned relative to the viewport) to an absolute layout (positioned to the container). We need to account for the window scroll in order to position correctly if the viewport is scrolled
+        node.style.position = '';
+        node.style.zIndex = "";
+        
+        node.style.top = ($event.clientY - this.deltaY + window.scrollY) + 'px';
+        node.style.left = ($event.clientX - this.deltaX + window.scrollX) + 'px';
+        
+        document.body.classList.remove('dragging');
+  
+        // persist the new element position for this layout:
+        if(isLane(this.draggableDir) && this.layout === 'absolute'){
+          this.draggableDir.coordinates = {
+            x: ($event.clientX - this.deltaX + window.scrollX),
+            y: ($event.clientY - this.deltaY + window.scrollY),
+          }
+          this.boardService.publishBoardUpdate()
+        }
+      })
 
       const board = this.boardService.selectedBoard;
       if( !board ) return;
-      this.dragService.publishDragEvent(
+      this.dragService.publishDragEndEvent(
         this.draggableDir,
         this.host,
         $event,
@@ -109,15 +124,6 @@ export class DraggableDirective implements AfterViewChecked, AfterViewInit {
       );
 
       this.onDragEnd.emit($event);
-
-      // persist the new element position for this layout:
-      if(isLane(this.draggableDir) && this.layout === 'absolute'){
-        this.draggableDir.coordinates = {
-          x: ($event.clientX - this.deltaX + window.scrollX),
-          y: ($event.clientY - this.deltaY + window.scrollY),
-        }
-        this.boardService.publishBoardUpdate()
-      }
 
       $event.stopPropagation();
       $event.stopImmediatePropagation();
@@ -141,6 +147,8 @@ export class DraggableDirective implements AfterViewChecked, AfterViewInit {
       this.onDragStart.emit($event);
       this.dragService.publishDragStartEvent(this.draggableDir)
     }
+
+    this.dragService.publishDraggingCoordinates($event.clientX, $event.clientY );
 
     $event.stopPropagation();
     $event.stopImmediatePropagation();
