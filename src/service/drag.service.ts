@@ -1,11 +1,9 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import {  getDescendants} from '../utils/utils';
 import { BoardService } from './board.service';
 import { ContainerComponentRegistryService } from './registry.service';
 import { ContainerComponent } from '../app/base/base.component';
 import { Board, Container } from '../types/types';
-import { isTask, isLane } from '../utils/guards';
 
 @Injectable({
   providedIn: 'root',

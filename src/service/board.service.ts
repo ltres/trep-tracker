@@ -602,6 +602,14 @@ export class BoardService {
     return undefined;
   }
 
+  /**
+   * Adds the tasks as a sibling (before or after) the provided task. Removes the tasks from other parents.
+   * @param parent 
+   * @param sibling 
+   * @param tasks 
+   * @param position 
+   * @returns 
+   */
   addAsSiblings(parent: Container, sibling: Task | undefined, tasks: Task[] | undefined, position: 'before' | 'after' = 'before') {
     if (!tasks || tasks.length === 0) {
       return;
@@ -633,7 +641,13 @@ export class BoardService {
 
   }
 
-  addAsChild(parent: Container, children: Task[] | undefined) {
+  /**
+   * Adds the task(s) to the container, removing them from any other parent. Performs top level reduction for tasks.
+   * @param parent 
+   * @param children 
+   * @returns 
+   */
+  addAsChild(parent: Container, children: Task[] | undefined, topPosition:boolean = false) {
     if (!children || children.length === 0) {
       return;
     }
@@ -658,7 +672,11 @@ export class BoardService {
     // add the child to the parent, if it is not already there
     children.forEach(child => {
       if (!parent.children.find(c => c.id === child.id)) {
-        parent.children.push(child);
+        if(topPosition){
+          parent.children.unshift(child)
+        }else{
+          parent.children.push(child)
+        }
       }
     });
 
@@ -671,6 +689,7 @@ export class BoardService {
     // Publish the changes
     this._boards$.next(boards);
   }
+
   switchPosition(selectedTasks: Task[] | undefined, direction: 'ArrowUp' | 'ArrowDown') {
     if (!selectedTasks || selectedTasks.length === 0) {
       return;

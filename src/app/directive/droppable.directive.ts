@@ -14,6 +14,7 @@ import { BoardService } from "../../service/board.service";
   selector: '[droppable][container][executeOnDropReceived]',
 })
 export class DroppableDirective implements OnInit, OnDestroy {
+  @Input() droppable!: number; // the priority for stacked dropzones
   @Input() container!: Container;
 
   /**

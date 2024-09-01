@@ -25,8 +25,7 @@ export class ContainerComponentRegistryService {
     const comps = this._droppableRegistry$.getValue();
     const overlappedComponent = comps
       .sort((a, b) => {
-        const typeOrder:{[key:string]: number} = { task: 1, lane: 2, board: 3 };
-        return (typeOrder[a.container._type] ?? 4) - (typeOrder[b.container._type] ?? 4);
+        return a.droppable - b.droppable;
       })
       .filter(mayBeOverlapped => {
         return cursorIsInside(x,y, mayBeOverlapped.el.nativeElement.getBoundingClientRect());

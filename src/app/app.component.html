@@ -3,7 +3,7 @@
 
     <div class="column-1 flex column">
         <board *ngIf="board && board.layout !== 'absolute'" [board]="board"></board>
-        <board *ngIf="board && board.layout === 'absolute'" [board]="board" droppable [container]="board" [executeOnDropReceived]="receiveDrop.bind(this)"></board>
+        <board *ngIf="board && board.layout === 'absolute'" [board]="board" [droppable]="10" [container]="board" [executeOnDropReceived]="receiveDrop.bind(this)"></board>
 
         <div class="bottom-bar flex g-1">
             <keyboard-listener></keyboard-listener>

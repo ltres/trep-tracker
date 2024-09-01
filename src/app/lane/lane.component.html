@@ -1,4 +1,4 @@
-<div class="lane-wrapper p-x-05 p-y-025" [class.archive-lane]="isArchive(lane)" [class.static-view]="isStatic() && (tasks | async)?.length === 0" droppable [container]="lane" [executeOnDropReceived]="receiveDrop.bind(this)">
+<div class="lane-wrapper p-x-05 p-y-025" [class.archive-lane]="isArchive(lane)" [class.static-view]="isStatic() && (tasks | async)?.length === 0" [droppable]="6" [container]="lane" [executeOnDropReceived]="receiveDrop.bind(this)">
   <div class="lane-toolbar flex align-items-center g-05 ">
     <div class="grow no-wrap flex align-items-center g-05">
       @if(lane.searchTextContent) {
@@ -106,10 +106,12 @@
 
   @if(!lane.collapsed){
   <div [class.non-static-island]="isStatic()" class="lane-task-container flex column">
+    <div [droppable]="5" [container]="lane" [executeOnDropReceived]="receiveDropToDumb.bind(this, undefined)" *ngIf="((tasks | async) ?? []).length  > 0" class="dumb-dropzone m-x-1"></div>
+
     <ng-container *ngFor="let task of (tasks | async);trackBy: trackBy">
       <task [task]="task" [parent]="lane" [board]="board" [lane]="lane" [draggableDir]="task" [containerEl]="el.nativeElement" [layout]="board.layout" (onDragStart)="interactingWithChildTasks=true" (onDragEnd)="interactingWithChildTasks=false" (onToggleShowNotes)="interactingWithChildTasks = $event" (createNewTask)="createNewTask()"></task>
 
-      <div droppable [container]="task" [executeOnDropReceived]="receiveDrop.bind(this)" class="dumb-dropzone m-x-1"></div>
+      <div [droppable]="5" [container]="lane" [executeOnDropReceived]="receiveDropToDumb.bind(this, task)" class="dumb-dropzone m-x-1"></div>
     </ng-container>
 
   </div>

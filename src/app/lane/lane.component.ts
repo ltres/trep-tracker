@@ -57,6 +57,17 @@ export class LaneComponent extends ContainerComponent implements OnInit {
     this.boardService.addAsChild(this.lane, [container]);
   };
 
+  receiveDropToDumb(precedingTask: Task | undefined, container: Container){
+    if( !isTask(container) ){
+      throw new Error("Cannot drop something that is not a task on a lane")
+    }
+    if(!precedingTask){
+      this.boardService.addAsChild(this.lane, [container], true);
+    }else{
+      this.boardService.addAsSiblings(this.lane, precedingTask, [container], 'after');
+    }
+  };
+
   override ngOnInit(): void {
     super.ngOnInit();
     this.boardService.boards$.subscribe( () => {
