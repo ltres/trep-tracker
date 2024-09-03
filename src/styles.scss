@@ -511,20 +511,21 @@ select option {
 }
 
 .pill {
-  background-color: $pill-background-color;
-  color: $pill-color;
+  border: 1px solid $pill-border-color;
+  color: $pill-border-color;
   padding: 0.2rem 0.5rem;
-  border-radius: $border-radius;
+  border-radius: 12px;
+
 }
 
-/*
+
 .something-is-dragging {
   outline: 1px dashed $translucent-color !important;
   outline-offset: -1px;
-}*/
+}
 
 .something-is-dragging.something-is-dragging-and-i-am-hovered {
-  outline: 1px dashed $translucent-color !important;
+  outline: 1px dashed $half-translucent-color !important;
   outline-offset: -1px;
 }
 

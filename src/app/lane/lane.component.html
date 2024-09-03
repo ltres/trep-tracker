@@ -24,7 +24,7 @@
     <div class="grow"></div>
     <div class="task-count translucent m-r-05">
       @if(isStatic()){
-      <span class="pill">static</span>
+      <span [tooltip]="'This lane is a view'" class="pill pointer">static</span>
       }
     </div>
 
@@ -107,12 +107,12 @@
 
   @if(!lane.collapsed){
   <div [class.non-static-island]="isStatic()" class="lane-task-container flex column">
-    <div [droppable]="5" [container]="lane" [executeOnDropReceived]="receiveDropToDumb.bind(this, undefined)" *ngIf="((tasks | async) ?? []).length  > 0" class="dumb-dropzone m-x-1"></div>
+    <div [droppable]="5" [container]="lane" [executeOnDropReceived]="receiveDropToDumb.bind(this, undefined)" *ngIf="((tasks | async) ?? []).length  > 0" class="dumb-dropzone"></div>
 
     <ng-container *ngFor="let task of (tasks | async);trackBy: trackBy">
       <task [task]="task" [parent]="lane" [board]="board" [lane]="lane" [draggableDir]="task" [containerEl]="el.nativeElement" [layout]="board.layout" (onDragStart)="interactingWithChildTasks=true" (onDragEnd)="interactingWithChildTasks=false" (onToggleShowNotes)="interactingWithChildTasks = $event" (createNewTask)="createNewTask()"></task>
 
-      <div [droppable]="5" [container]="lane" [executeOnDropReceived]="receiveDropToDumb.bind(this, task)" class="dumb-dropzone m-x-1"></div>
+      <div *ngIf="!isPlaceholder(task)" [droppable]="5" [container]="lane" [executeOnDropReceived]="receiveDropToDumb.bind(this, task)" class="dumb-dropzone"></div>
     </ng-container>
 
   </div>
@@ -133,7 +133,7 @@
     </button>
   </div>
   }@else{
-  <span (click)="toggleCollapse()" class="pointer" [tooltip]="'Expand'">...</span>
+  <span (click)="toggleCollapse()" class="inline-block pointer" [tooltip]="'Expand'">...</span>
   }
 </div>
 

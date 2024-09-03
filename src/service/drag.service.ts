@@ -22,7 +22,7 @@ export class DragService {
   
   private _dragStartEvent$:Subject<Container> = new Subject<Container>();
   private _dragChecksEnded$:Subject<boolean> = new Subject<boolean>();
-  private _draggingCoordinates$:Subject<{x:number,y:number}> = new Subject<{x:number,y:number}>();
+  private _draggingCoordinates$:Subject<{x:number, y:number, c:Container}> = new Subject<{x:number,y:number, c:Container}>();
 
   constructor(
         private boardService: BoardService,
@@ -39,7 +39,11 @@ export class DragService {
       } else {
         // Overlap case:
         // execute on first of stack
-        overlappedDroppable[0].executeOnDropReceived(draggedObject, event.event);
+        if(overlappedDroppable[0].canBeDroppedHere(draggedObject)){
+          overlappedDroppable[0].executeOnDropReceived(draggedObject, event.event);
+        }else{
+          console.warn("Faulty drop")
+        }
       }
       this._dragChecksEnded$.next(true)
       
@@ -52,8 +56,8 @@ export class DragService {
   publishDragStartEvent(dragged: Container) {
     this._dragStartEvent$.next(dragged);
   }
-  publishDraggingCoordinates(x:number,y:number) {
-    this._draggingCoordinates$.next({x,y});
+  publishDraggingCoordinates(x:number,y:number, c:Container) {
+    this._draggingCoordinates$.next({x,y,c});
   }
 
   get dragEndEvent$(): Observable<{ dragged: Container, event: DragEvent } | undefined> {
@@ -68,7 +72,7 @@ export class DragService {
     return this._dragChecksEnded$;
   }
 
-  get draggingCoodinates$(): Observable<{x:number,y:number}> {
+  get draggingCoodinates$(): Observable<{x:number,y:number, c:Container}> {
     return this._draggingCoordinates$;
   }
 }

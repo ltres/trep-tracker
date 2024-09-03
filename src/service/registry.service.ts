@@ -1,7 +1,7 @@
 
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { cursorIsInside } from '../utils/utils';
+import { cursorDistance } from '../utils/utils';
 import { DroppableDirective } from '../app/directive/droppable.directive';
 
 /**
@@ -28,7 +28,7 @@ export class ContainerComponentRegistryService {
         return a.droppable - b.droppable;
       })
       .filter(mayBeOverlapped => {
-        return cursorIsInside(x,y, mayBeOverlapped.el.nativeElement.getBoundingClientRect());
+        return cursorDistance(x,y, mayBeOverlapped.el.nativeElement.getBoundingClientRect()) < 0 ;
       });
     return overlappedComponent
   }

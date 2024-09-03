@@ -187,7 +187,7 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
     }, 500);
   }
 
-  hashCode(lane: Lane): number {
+  hashCode(idx:number, lane: Lane): number {
     return hashCode(lane.id);
   }
 

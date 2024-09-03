@@ -15,10 +15,24 @@ export function overlaps(DOMRect: DOMRect | undefined, DOMRect2: DOMRect | undef
         && DOMRect.y < DOMRect2.y + DOMRect2.height && DOMRect.y + DOMRect.height > DOMRect2.y;
 }
 
-export function cursorIsInside(x: number, y: number, DOMRect: DOMRect | undefined): boolean {
-  if (!DOMRect) return false;
-  return DOMRect.x < x && x < DOMRect.x + DOMRect.width &&
-        DOMRect.y < y && y < DOMRect.y + DOMRect.height;
+/**
+ * Returns -1 if the coordinates are inside the rect, otherwise the distance between the coordinates and the rect
+ * @param x 
+ * @param y 
+ * @param DOMRect 
+ * @returns 
+ */
+export function cursorDistance(x: number, y: number, DOMRect: DOMRect | undefined): number {
+  if (!DOMRect) return 0;
+  if( x > DOMRect.left && x < DOMRect.right &&
+        y > DOMRect.top && y < DOMRect.bottom){
+    return -1
+  };
+
+  const dx = Math.max(DOMRect.left - x, 0, x - DOMRect.right);
+  const dy = Math.max(DOMRect.top - y, 0, y - DOMRect.bottom);
+  
+  return Math.sqrt(dx * dx + dy * dy);
 }
 
 export function setCaretPosition(editableDiv: HTMLElement, position: number) {

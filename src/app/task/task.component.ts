@@ -60,7 +60,11 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     if( !isTask(container) ){
       throw new Error("Cannot drop something that is not a task on a task")
     }
-    this.boardService.addAsChild(this.task, [container]);
+    if( isPlaceholder(this.task) ){
+      this.boardService.addAsSiblings(this.lane, this.task, [container], 'after', true);
+    }else{
+      this.boardService.addAsChild(this.task, [container]);
+    }
   };
   
   override get container(): Container {

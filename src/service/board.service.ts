@@ -610,7 +610,7 @@ export class BoardService {
    * @param position 
    * @returns 
    */
-  addAsSiblings(parent: Container, sibling: Task | undefined, tasks: Task[] | undefined, position: 'before' | 'after' = 'before') {
+  addAsSiblings(parent: Container, sibling: Task | undefined, tasks: Task[] | undefined, position: 'before' | 'after' = 'before', removeSibling:boolean = false) {
     if (!tasks || tasks.length === 0) {
       return;
     }
@@ -630,7 +630,10 @@ export class BoardService {
         throw new Error(`Cannot find sibling with id ${sibling.id} in parent with id ${parent.id}`);
       }
       // add the task before or after the sibling
-      parent.children.splice(position === 'before' ? index : index + 1, 0, ...tasks);
+      parent.children.splice(position === 'before' ? index : index + 1,  0, ...tasks);
+      if(removeSibling){
+        parent.children = parent.children.filter( c => c.id !== sibling.id)
+      }
     } else {
       // add the task at the end of the parent
       parent.children = parent.children.concat(tasks);

@@ -24,6 +24,7 @@ import {  isPriorityArray,  isStatusArray,  isTagArray, isTask } from '../../uti
   ],
 })
 export class LaneComponent extends ContainerComponent implements OnInit {
+
   @ViewChildren(TaskComponent, { read: ElementRef }) taskComponentsElRefs: QueryList<ElementRef> | undefined;
   @ViewChildren(TaskComponent) taskComponents: QueryList<TaskComponent> | undefined;
   @Input() lane!: Lane;
@@ -173,7 +174,7 @@ export class LaneComponent extends ContainerComponent implements OnInit {
   }
 
   trackBy(index: number, task: Task): number {
-    return hashCode(task.id);
+    return hashCode(index + task.id);
   }
   togglePriority(prio: Priority[] | Priority | undefined) {
     this.lane.priority = Array.isArray(prio) ? prio : (prio ? [prio] : undefined);
@@ -244,6 +245,9 @@ export class LaneComponent extends ContainerComponent implements OnInit {
       return arg0.map( t => `<span tag="true" class="${t.type}">${tagIdentifiers.find( ta => ta.type == t.type)?.symbol}${t.tag}</span>`).join(" or ")
     }
     return "";
+  }
+  isPlaceholder(t: Task) {
+    return isPlaceholder(t)
   }
 
 }

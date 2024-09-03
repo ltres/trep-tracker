@@ -197,3 +197,4 @@ export const millisForMagnitudeStep = 1000 * 3600 * 24; // one day
 export const timezoneValues = Intl.supportedValuesOf('timeZone');
 
 export const dragStartTreshold = 30;
+export const dragProximityTreshold = 10;

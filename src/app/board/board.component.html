@@ -1,20 +1,20 @@
 <board-toolbar class="absolute" clazz="absolute" *ngIf="board.layout === 'absolute'" [board]="board"></board-toolbar>
 
 @if(board.layout === 'absolute'){
-@for (lane of lanes$ | async; track hashCode(lane)) {
+@for (lane of lanes$ | async; track hashCode($index, lane)) {
 <lane class="absolute" [lane]="lane" [board]="this.board" [draggableDir]="lane" [containerEl]="el.nativeElement" [layout]="board.layout"></lane>
 }
 
 }@else {
-<div [droppable]="8" [container]="board" [executeOnDropReceived]="receiveDrop.bind(this, colIndex, board.layout, undefined)" class="flex column board-column flex-child g-05" *ngFor="let colIndex of getColumnIndexes(board.layout); let last = last">
+<div class="flex column board-column flex-child g-05" *ngFor="let colIndex of getColumnIndexes(board.layout); let last = last">
   <board-toolbar class="static flex justify-content-end" clazz="static" *ngIf="last" [board]="board"></board-toolbar>
 
-  <div *ngIf="((getLanesByColumn$(colIndex) | async) ?? []).length > 0" [droppable]="7" [container]="board" [executeOnDropReceived]="receiveDrop.bind(this, colIndex, board.layout, undefined)" class="dumb-dropzone m-x-1"></div>
+  <div [droppable]="7" [container]="board" [executeOnDropReceived]="receiveDrop.bind(this, colIndex, board.layout, undefined)" [class.grow]="((getLanesByColumn$(colIndex) | async) ?? []).length == 0" class="dumb-dropzone m-x-1"></div>
 
-  @for (lane of getLanesByColumn$(colIndex) | async; track hashCode(lane)) {
-  <lane [displayedInFixedLayout]="true" [lane]="lane" [board]="this.board" [draggableDir]="lane" [containerEl]="el.nativeElement" [layout]="board.layout"></lane>
+  <ng-container *ngFor="let lane of getLanesByColumn$(colIndex) | async; trackBy: hashCode; let lastLane = last">
+    <lane [displayedInFixedLayout]="true" [lane]="lane" [board]="this.board" [draggableDir]="lane" [containerEl]="el.nativeElement" [layout]="board.layout"></lane>
 
-  <div [droppable]="7" [container]="board" [executeOnDropReceived]="receiveDrop.bind(this, colIndex, board.layout, lane)" class="dumb-dropzone m-x-1"></div>
-  }
+    <div [droppable]="7" [container]="board" [executeOnDropReceived]="receiveDrop.bind(this, colIndex, board.layout, lane)" class="dumb-dropzone m-x-1" [class.grow]="lastLane"></div>
+  </ng-container>
 </div>
 }

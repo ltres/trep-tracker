@@ -148,7 +148,7 @@ export class DraggableDirective implements AfterViewChecked, AfterViewInit {
       this.dragService.publishDragStartEvent(this.draggableDir)
     }
 
-    this.dragService.publishDraggingCoordinates($event.clientX, $event.clientY );
+    this.dragService.publishDraggingCoordinates($event.clientX, $event.clientY, this.draggableDir );
 
     $event.stopPropagation();
     $event.stopImmediatePropagation();
