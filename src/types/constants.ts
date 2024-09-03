@@ -12,7 +12,8 @@ export const ganttConfig = {
   recurrenceIterationsShown: 10,
   startOfDay:9,
   endOfDay:18,
-  columnsWidth: 500
+  columnsWidth: 500,
+  undefinedDurationTaskHours: 4
 }
 
 // learn more about this from

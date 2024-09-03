@@ -53,7 +53,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy {
     }
 
     /** Exclude tasks having showData = false */
-    this.tasks = this.tasks.filter( t => !t.gantt || t.gantt.showData === true ).sort( (t1,t2) => {
+    this.tasks = this.tasks.filter( t => !t.gantt || t.gantt.showData !== false ).sort( (t1,t2) => {
       if(!this.lane){
         // Gantt for board
         return (t1.gantt?.order?.board ?? 0) - (t2.gantt?.order?.board ?? 0)

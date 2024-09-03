@@ -75,3 +75,7 @@
         <button *ngIf="!skipNo" (click)="setFormatPropValue(attribute, undefined)" [class.active]="match(attribute,undefined)">No</button>
     </div>
 </ng-template>
+
+<ng-template #gantt>
+    <gantt [tasks]="getGanttTasks$() | async" [board]="board"></gantt>
+</ng-template>
