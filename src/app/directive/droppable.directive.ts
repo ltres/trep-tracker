@@ -44,9 +44,9 @@ export class DroppableDirective implements OnInit, OnDestroy {
       }else if( isLane(d) ){
         return false; // lane on lane
       }else if( isTask(d) ){
-        if( this.container.children.map( c => c.id ).includes(d.id) ){
+        /*if( this.container.children.map( c => c.id ).includes(d.id) ){
           return false; // task drop on the same parent lane
-        }
+        }*/
         return true; // task on lane
       }else if( isBoard(d) ){
         return false; // board on lane
@@ -73,6 +73,9 @@ export class DroppableDirective implements OnInit, OnDestroy {
       }else if( isBoard(d) ){
         return false; // board on lane
       }
+    }else{
+      // Dumb dropzone case
+      return true
     }
     return false
   }
