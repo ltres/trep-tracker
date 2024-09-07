@@ -355,6 +355,37 @@ test.describe.serial('Trep Tracker Tasks & lanes - ', () => {
     expect(page.locator('.search-matches')).toHaveText("2 matches")
   })
 
+  test('Task - picker and dates', async ({ page }) => {
+    const nextMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, new Date().getDate());
+    await firstTask!.hover();
+    await expect(firstTask!.locator('.select-dates')).toBeVisible();
+
+    await firstTask!.locator('.select-dates').click();
+    await expect(page.locator('owl-date-time-month-view')).toHaveCount(1);
+
+    await page.locator('.owl-dt-control-content.owl-dt-control-button-content').nth(1).click();
+    await page.locator('.owl-dt-calendar-cell-content',{hasText: nextMonth.toLocaleString('default', { year: 'numeric' })}).click();
+    await page.locator('.owl-dt-calendar-cell-content',{hasText: nextMonth.toLocaleString('default', { month: 'short' })}).click();
+    await page.locator('.owl-dt-calendar-cell-content',{hasText: /^ 1 $/}).first().click();
+    await expect(page.locator('.owl-dt-control-content.owl-dt-container-range-content').nth(0)).toContainText(`${nextMonth.getMonth() + 1}/1/${nextMonth.getFullYear()}`)
+    await expect(page.locator('.owl-dt-control-content.owl-dt-container-range-content').nth(1).locator('.owl-dt-container-info-value')).toBeEmpty()
+    await page.locator('.owl-dt-calendar-cell-content',{hasText: /^ 2 $/}).first().click();
+    await expect(page.locator('.owl-dt-control-content.owl-dt-container-range-content').nth(1)).toContainText(`${nextMonth.getMonth() + 1}/2/${nextMonth.getFullYear()}`)
+    await page.locator('.owl-dt-control-button-content').last().click();
+    await expect(page.locator('.dates-n-stuff').nth(0)).toContainText(`planned`)
+    await expect(page.locator('.dates-n-stuff').nth(0)).toContainText(`${nextMonth.getMonth() + 1}/1/${nextMonth.getFullYear()}`)
+    await expect(page.locator('.dates-n-stuff').nth(0)).toContainText(`${nextMonth.getMonth() + 1}/2/${nextMonth.getFullYear()}`)
+    await boardMenu!.click();
+    await page.locator('.add-lane').last().click();
+    await expect(page.locator('lane')).toHaveCount(2);
+    await page.locator('lane').last().locator('.select-dates').click();
+    await expect(page.locator('owl-date-time-container')).toHaveCount(1);
+    await page.locator('.recurrence-option ').nth(4).click();
+    await page.locator('.owl-dt-control-button-content').last().click();
+    await expect(page.locator('lane').last().locator('task')).toHaveCount(1);
+
+  })
+
 });
 
 function getTaskByContent( page: Page, content: number ): Locator{
