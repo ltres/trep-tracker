@@ -249,5 +249,8 @@ export class LaneComponent extends ContainerComponent implements OnInit {
   isPlaceholder(t: Task) {
     return isPlaceholder(t)
   }
+  toggleLaneMenu() {
+    this.menuOpen = !this.menuOpen
+  }
 
 }
