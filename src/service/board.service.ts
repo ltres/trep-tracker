@@ -1,12 +1,12 @@
 import {  Inject, Injectable, Injector, NgZone } from '@angular/core';
-import { Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, ISODateString, RecurringGanttTask, Timeframe, AddFloatingLaneParams } from '../types/types';
+import { Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, Timeframe, AddFloatingLaneParams, RecurringTask, Recurrence, GanttTask, RecurringTaskChild } from '../types/types';
 import { BehaviorSubject, Observable, map } from 'rxjs';
-import { eventuallyPatch, getDescendants, isPlaceholder,  isStatic, } from '../utils/utils';
+import { eventuallyPatch, getDescendants, initGanttData, isPlaceholder,  isStatic, } from '../utils/utils';
 import { TagService } from './tag.service';
 import { StorageServiceAbstract } from '../types/storage';
-import { addUnitsToDate, fromIsoString, setDateSafe, toIsoString } from '../utils/date-utils';
-import { statusValues } from '../types/constants';
-import { isTask, isRecurringGanttTask, isLane, isTasks } from '../utils/guards';
+import { addUnitsToDate, fromIsoString, setDateSafe, shiftByRecurrence, toIsoString } from '../utils/date-utils';
+import { recurringChildrenLimit, statusValues } from '../types/constants';
+import { isTask, isLane, isTasks, assertIsRecurringTaskChild, isRecurringTask, isRecurringTaskChild, assertIsGanttTask, assertIsRecurringTask } from '../utils/guards';
 
 @Injectable({
   providedIn: 'root',
@@ -52,7 +52,7 @@ export class BoardService {
     });
 
     this._boards$.subscribe(b => {
-      const date = new Date();
+      // const date = new Date();
       console.warn('Boards updated', this.boardUpdateCounter++);
       let allTasks: Task[] = [];
       let allLanes: Lane[] = [];
@@ -68,7 +68,12 @@ export class BoardService {
 
         allLanes = allLanes.concat(board.children);
       });
-      allTasks.filter( t => t.gantt?.recurrence ).filter( t => isRecurringGanttTask(t) ).forEach(t => this.adjustNextRecurrence(t, toIsoString(date)))
+      // recurring child management:
+      allTasks.filter( t => isRecurringTask(t) ).filter(t => t.status !== 'archived').forEach(t => {
+        const recurrences = this.manageRecurringChildren(t);
+        allTasks = allTasks.concat(recurrences);
+      })
+
       this._allTasks$.next(allTasks);
       this._allLanes$.next(allLanes);
       this._allParents$.next([...allTasks, ...allLanes, ...this.boards]);
@@ -194,8 +199,8 @@ export class BoardService {
           }
           res = res?.filter(t => {
             if(!t.gantt) return false;
-            if( fromIsoString(t.gantt.nextRecurrenceStartDate ?? t.gantt.startDate) > now 
-              && fromIsoString(t.gantt.nextRecurrenceStartDate ?? t.gantt.startDate) < startDate ){
+            if( fromIsoString(t.gantt.startDate) > now 
+              && fromIsoString(t.gantt.startDate) < startDate ){
               return true;
             }
             return false;
@@ -225,8 +230,8 @@ export class BoardService {
           }
           res = res?.filter(t => {
             if(!t.gantt) return false;
-            if( fromIsoString(t.gantt.nextRecurrenceEndDate ?? t.gantt.endDate) > now 
-              && fromIsoString(t.gantt.nextRecurrenceEndDate ?? t.gantt.endDate) < endDate ){
+            if( fromIsoString(t.gantt.endDate) > now 
+              && fromIsoString(t.gantt.endDate) < endDate ){
               return true;
             }
             return false;
@@ -433,7 +438,7 @@ export class BoardService {
     return newLane;
   }
 
-  updateStatus(board: Board, container: Container, status: Status | Status[] | undefined) {
+  updateStatus(board: Board | undefined, container: Container, status: Status | Status[] | undefined) {
     const boards = this._boards$.getValue();
     status = status && Array.isArray(status) ? status : (status ? [status] : undefined);
     if( isLane(container) ){
@@ -457,7 +462,7 @@ export class BoardService {
 
         container.status = s;
         setDateSafe(container, s, 'enter', new Date());
-        if( isTask(container) ){
+        if( isTask(container) && board ){
           this.evaluateArchiveMove(board, container);
         }
       }
@@ -472,11 +477,18 @@ export class BoardService {
   private evaluateArchiveMove(board: Board, task: Task) {
     let archive = board.children.find(l => l.isArchive);
     if (task.status === 'archived') {
-      const lane = this.findParentLane([task]);
-      if (lane) {
+      const parent = this.findDirectParent([task])
+      if (parent) {
         // Removal from the original lane
-        lane.children = lane.children.filter(t => t.id !== task.id);
+        parent.children = parent.children.filter(t => t.id !== task.id);
       }
+
+      // task could be a recurrence child:
+      const recurrenceParent = this.allTasks?.filter(t => isRecurringTask(t)).find( t => t.recurrences.map(r => r.id).find(t => t === task.id) );
+      if( recurrenceParent ){
+        recurrenceParent.recurrences = recurrenceParent.recurrences.filter(t => t.id !== task.id);
+      }
+
       if (!archive) {
         // create the archive
         const params: AddFloatingLaneParams ={
@@ -506,19 +518,29 @@ export class BoardService {
         console.warn(`Task with id ${task.id} is not a first level task in the archive.`);
         return;
       }
+
+      // if the task was a recurrence child, put it back on the parent
+      if( isRecurringTaskChild(task) ){
+        const p = this._allTasks$.getValue()?.find(p => p.id === task.gantt!.fatherRecurringTaskId);
+        if( p && isRecurringTask(p) ){
+          p.recurrences.push( task );
+          p.recurrences.sort( (r1,r2) => r1.gantt.recurringChildIndex - r2.gantt.recurringChildIndex )
+        }
+      }else{
       // send the task back to the original lane
       // Identify the original lane
-      const lane = this._allParents$.getValue()?.find(p => p.id === task.createdLaneId);
-      if (lane) {
+        const lane = this._allParents$.getValue()?.find(p => p.id === task.createdLaneId);
+        if (lane) {
         // add the task to the original lane
-        lane.children.push(task);
-      } else {
-        console.warn(`Cannot find lane with id ${task.createdLaneId}`);
-        const params: AddFloatingLaneParams ={
-          board, x:0, y:0, children: [task], archive:false, width:300
+          lane.children.push(task);
+        } else {
+          console.warn(`Cannot find lane with id ${task.createdLaneId}`);
+          const params: AddFloatingLaneParams ={
+            board, x:0, y:0, children: [task], archive:false, width:300
+          }
+          const lane = this.addFloatingLane(params);
+          task.createdLaneId = lane.id;
         }
-        const lane = this.addFloatingLane(params);
-        task.createdLaneId = lane.id;
       }
 
       // remove the task from the archive
@@ -873,61 +895,119 @@ export class BoardService {
     targetBoard.children.unshift(lane);
     this.publishBoardUpdate();
   }
+  
+  /**
+   * Sets start and end date on a task, transforming it into a GanttTask (initializes gantt data if missing). If a recurrence is provided, reinitializes recurrence data (old data is erased)
+   * @param task 
+   * @param start 
+   * @param end 
+   * @param recurrence 
+   */
+  setTaskDates(task: Task, start: Date, end: Date, recurrence? :Recurrence): GanttTask {
+    if(!task.gantt){
+      initGanttData(task, undefined);
+    }
+    let datesChanged = false;
+    task.gantt!.showData = true;
+    if( task.gantt!.startDate !== toIsoString(start) || task.gantt!.endDate !== toIsoString(end) ){
+      datesChanged = true;
+    }
+    task.gantt!.startDate = toIsoString(start);
+    task.gantt!.endDate = toIsoString(end);
+    
+    task.gantt!.progress = 0;
+    assertIsGanttTask(task);
+
+    if( recurrence && recurrence !== 'no' ){
+      if(!task.gantt){
+        initGanttData(task, undefined);
+      }
+  
+      task.gantt.recurrence = recurrence;
+      task.gantt.displayRecurrence = true;
+      task.recurrences = [];
+      assertIsRecurringTask(task);
+      
+      if( datesChanged || recurrence !== task.gantt.recurrence){
+        task.recurrences = [];
+      }
+    }else{
+      delete task.gantt?.recurrence;
+    }
+
+    this.publishBoardUpdate();
+    return task;
+  }
 
   /**
-   * Takes a recurrent task and shift the new start and end dates basing on the task recurrence and task original start and end dates, if needed
+   * Takes a recurrent task and manages its recurring children.
+   * Keep the children in a 'todo' state to a certain threshold.
+   * Discards 'todo' children in the past.
    * @param dateToCenter 
    * @param task 
    * @returns 
-   */
-  private adjustNextRecurrence( task: RecurringGanttTask, dateToCenter: ISODateString): void {
-    const today = new Date(dateToCenter);
+  */
+  manageRecurringChildren( task: RecurringTask ): RecurringTaskChild[] {
+    const today = new Date();
 
-    const currentStartDate = new Date(task.gantt.startDate);
-    const currentEndDate = new Date(task.gantt.endDate);
-
-    let latestDiff = Infinity;
-    while (true) {
-      const currentDiff = currentStartDate.getTime() - today.getTime();
-      if( currentStartDate && currentEndDate && currentStartDate?.getTime() - today.getTime() < 0 && currentEndDate?.getTime() - today.getTime() > 0 ){
-        // exit case: start date is in the past, but end date in the future. Recurrence includes today
-        task.gantt.nextRecurrenceStartDate = toIsoString(currentStartDate);
-        task.gantt.nextRecurrenceEndDate = toIsoString(currentEndDate)
-        return;
-      }else if( currentDiff > 0 && latestDiff < 0 ){
-        // exit case: latest recurrence start was in the past, current start is in the future
-        task.gantt.nextRecurrenceStartDate = toIsoString(currentStartDate);
-        task.gantt.nextRecurrenceEndDate =  toIsoString(currentEndDate)
-        return;
-      }else if( Math.abs(currentDiff) > Math.abs(latestDiff) ){
-        return;
+    // Update status for children that are in the past and still in todo:
+    task.recurrences.filter( c => {
+      if(c.status === 'todo' && new Date(c.gantt.endDate) < today){
+        return true;
       }
+      return false;
+    }).forEach( c => this.updateStatus(undefined, c, 'discarded') )
 
-      // Next: 
-      latestDiff = currentDiff;
-  
-      switch (task.gantt.recurrence) {
-        case 'daily'.toString():
-          currentStartDate.setUTCDate(currentStartDate.getUTCDate() + 1);
-          currentEndDate.setUTCDate(currentEndDate.getUTCDate() + 1);
-          break;
-        case 'weekly'.toString():
-          currentStartDate.setUTCDate(currentStartDate.getUTCDate() + 7);
-          currentEndDate.setUTCDate(currentEndDate.getUTCDate() + 7);
-          break;
-        case 'monthly'.toString():
-          currentStartDate.setUTCMonth(currentStartDate.getUTCMonth() + 1);
-          currentEndDate.setUTCMonth(currentEndDate.getUTCMonth() + 1);
-          break;
-        case 'yearly'.toString():
-          currentStartDate.setUTCFullYear(currentStartDate.getUTCFullYear() + 1);
-          currentEndDate.setUTCFullYear(currentEndDate.getUTCFullYear() + 1);
-          break;
-        default:
-          throw new Error('Invalid recurrence type');
+    const recurrencesToConsider = task.recurrences.filter( t => t.status === 'todo' )
+
+    if( recurrencesToConsider.length >= recurringChildrenLimit ){
+      return task.recurrences
+    }
+
+    const latestTask = recurrencesToConsider.length > 0 ? recurrencesToConsider[recurrencesToConsider.length - 1] : task
+
+    // dates to begin the calculation could be the original task dates or the latest task recurrence child
+    const originalStartDate = new Date(latestTask.gantt.startDate);
+    const originalEndDate = new Date(latestTask.gantt.endDate);
+
+    let childStartDate = originalStartDate;
+    let childEndDate = originalEndDate;
+
+    let currentRecurringChildIndex = task.recurrences.length > 0 ? Math.max(...task.recurrences.map( r => r.gantt.recurringChildIndex )) + 1 : 0
+
+    const originalDatesInThePast = originalStartDate < today && originalEndDate < today;
+    if(originalDatesInThePast){
+      // we need to find the first recurrence which has the end date in the future to display it as first recurrence:
+      while( childEndDate < today ){
+        childStartDate = shiftByRecurrence(childStartDate, task.gantt.recurrence);
+        childEndDate = shiftByRecurrence(childEndDate, task.gantt.recurrence)
       }
     }
-  
+    // now we have the date for the first child that is running today or is in the future.
+    // Calculate the next child dates accordingly:
+    for( let k = 0; k < recurringChildrenLimit - recurrencesToConsider.length; k++ ){
+      // Calculate the next child dates accordingly:
+
+      // Manage following children:
+      const nextChild = getNewTask(task.createdLaneId, undefined, task.textContent);
+      nextChild.gantt = {
+        showData: true,
+        startDate: toIsoString(childStartDate),
+        endDate: toIsoString(childEndDate),
+        progress: 0,
+        recurringChildIndex: currentRecurringChildIndex++,
+        fatherRecurringTaskId: task.id,
+        successors:[]
+      }
+      assertIsRecurringTaskChild(nextChild);
+      task.recurrences.push(nextChild);
+
+      childStartDate = shiftByRecurrence(childStartDate, task.gantt.recurrence);
+      childEndDate =  shiftByRecurrence(childEndDate, task.gantt.recurrence);
+    }
+
+    return task.recurrences
+
   }
 
   /**

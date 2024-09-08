@@ -8,10 +8,10 @@ import { KeyboardService } from '../../service/keyboard.service';
 import { ContainerComponentRegistryService } from '../../service/registry.service';
 import { ContainerComponent } from '../base/base.component';
 import { ClickService } from '../../service/click.service';
-import { toIsoString, fromIsoString, formatDate, getDiffInDays } from '../../utils/date-utils';
-import { setCaretPosition, isPlaceholder, hashCode, initGanttData } from '../../utils/utils';
+import {  fromIsoString, formatDate, getDiffInDays } from '../../utils/date-utils';
+import { setCaretPosition, isPlaceholder, hashCode } from '../../utils/utils';
 import {  millisForMagnitudeStep } from '../../types/constants';
-import { isRecurringGanttTask, isTask } from '../../utils/guards';
+import { isRecurringTaskChild, isTask } from '../../utils/guards';
 
 @Component({
   selector: 'task[task][lane][parent][board]',
@@ -209,45 +209,23 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     this.task.notes = ev;
     this.boardService.publishBoardUpdate();
   }
-  setDates(pickerOutput: PickerOutput | undefined) {
-    if(!pickerOutput){
-      if(this.task.gantt){
-        this.task.gantt.showData = false
+
+  setDates( pickerOutput: PickerOutput | undefined ){
+    if( !pickerOutput ){
+      if( this.task.gantt ){
+        this.task.gantt.showData = false;
       }
     }else{
       if( 'dates' in pickerOutput ){
-        const datesNormalized = pickerOutput.dates;
-
-        if(!this.task.gantt){
-          initGanttData(this.task, undefined);
-        }
-        this.task.gantt!.showData = true;
-        this.task.gantt!.startDate = toIsoString(datesNormalized[0]);
-        this.task.gantt!.endDate = toIsoString(datesNormalized[1]);
-        
-        this.task.gantt!.progress = 0;
-        if( pickerOutput.recurrence ){
-          if(!this.task.gantt){
-            initGanttData(this.task, undefined);
-          }
-          const ganttData = this.task.gantt!;
-          ganttData.recurrence = pickerOutput.recurrence === 'no' ? undefined : pickerOutput.recurrence;
-          this.boardService.publishBoardUpdate();
-        }else{
-          delete this.task.gantt?.recurrence;
-          delete this.task.gantt?.nextRecurrenceEndDate;
-          delete this.task.gantt?.nextRecurrenceStartDate;
-
-        }
+        this.boardService.setTaskDates( this.task, pickerOutput.dates[0], pickerOutput.dates[1], pickerOutput.recurrence );
       }else if( 'timeframe' in pickerOutput ){
-        throw new Error("Trying to set a timeframe on a task")
+        throw new Error( 'Trying to set a timeframe on a task' );
       }
     }
 
     this.boardService.publishBoardUpdate();
-    
+
     this.showDatePicker = false;
-    
   }
 
   toggleShowNotes() {
@@ -323,6 +301,10 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
       return
     }
     return fromIsoString(d)
+  }
+
+  isRecurringTaskChild( r: Task ): boolean{
+    return isRecurringTaskChild( r );
   }
     
 }

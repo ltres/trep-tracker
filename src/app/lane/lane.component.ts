@@ -10,7 +10,7 @@ import { ContainerComponentRegistryService } from '../../service/registry.servic
 import { ContainerComponent } from '../base/base.component';
 import { ModalService } from '../../service/modal.service';
 import { layoutValues, tagIdentifiers } from '../../types/constants';
-import {  isPriorityArray,  isStatusArray,  isTagArray, isTask } from '../../utils/guards';
+import {  isPriorityArray,  isRecurringTask,  isStatusArray,  isTagArray, isTask } from '../../utils/guards';
 
 @Component({
   selector: 'lane[lane][board]',
@@ -251,6 +251,9 @@ export class LaneComponent extends ContainerComponent implements OnInit {
   }
   toggleLaneMenu() {
     this.menuOpen = !this.menuOpen
+  }
+  isRecurringTask(t: Task):boolean {
+    return isRecurringTask(t)
   }
 
 }

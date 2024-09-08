@@ -1,5 +1,5 @@
 import { priorityValues, statusValues } from "../types/constants";
-import { Container, Lane, Board, GanttTask, RecurringGanttTask, Task, Status, Priority, Tag } from "../types/types";
+import { Container, Lane, Board, GanttTask, RecurringTask, Task, Status, Priority, Tag, RecurringTaskChild } from "../types/types";
 
 export function isLane(parent: Container | undefined): parent is Lane {
   if (!parent) {
@@ -26,12 +26,37 @@ export function isGanttTask(parent: Container | undefined): parent is GanttTask 
   }
   return isTask(parent) && !!parent.gantt;
 }
+
+export function assertIsGanttTask(parent: Container | undefined): asserts parent is GanttTask {
+  if (!isGanttTask(parent)) {
+    throw new Error('Not a ganttTask');
+  }
+}
   
-export function isRecurringGanttTask(parent: Container | undefined): parent is RecurringGanttTask {
+export function isRecurringTask(parent: Container | undefined): parent is RecurringTask {
   if (!parent) {
     return false;
   }
-  return isGanttTask(parent) && !!parent.gantt.recurrence && !!parent.gantt.nextRecurrenceStartDate && !!parent.gantt.nextRecurrenceEndDate;
+  return isGanttTask(parent) && !!parent.gantt.recurrence;
+}
+
+export function assertIsRecurringTask(parent: Container | undefined): asserts parent is RecurringTask {
+  if (!isRecurringTask(parent)) {
+    throw new Error('Not a RecurringTask');
+  }
+}
+
+export function isRecurringTaskChild(parent: Container | undefined): parent is RecurringTaskChild {
+  if (!parent) {
+    return false;
+  }
+  return isGanttTask(parent) && typeof parent.gantt.recurringChildIndex === 'number' && !!parent.gantt.fatherRecurringTaskId;
+}
+
+export function assertIsRecurringTaskChild(parent: Container | undefined): asserts parent is RecurringTaskChild {
+  if (!isRecurringTaskChild(parent)) {
+    throw new Error('Not a RecurringTaskChild');
+  }
 }
   
 export function isLanes(parent: Container[]): parent is Lane[] {
