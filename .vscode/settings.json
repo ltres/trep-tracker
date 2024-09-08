@@ -3,23 +3,28 @@
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit"
   },
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact"
-  ],
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
   "editor.defaultFormatter": "dbaeumer.vscode-eslint",
   "editor.formatOnSave": true,
   "eslint.format.enable": true,
-  "prettier.enable": false,
+  "prettier.enable": true,
   "eslint.debug": true,
-  "javascript.format.enable": false,
-  "typescript.format.enable": false,
+
+  "html.format.enable": true,
+  "json.format.enable": true,
+  "javascript.format.enable": true,
+  "typescript.format.enable": true,
   "[typescript]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
   "[javascript]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
-  }
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode" // Prettier
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode" // Prettier
+  },
+  "prettier.configPath": ".prettierrc"
 }
