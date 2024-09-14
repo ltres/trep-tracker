@@ -1,8 +1,8 @@
-import { NgZone } from '@angular/core';
-import { Observable } from 'rxjs';
+import{ NgZone }from'@angular/core';
+import{ Observable }from'rxjs';
 
-export abstract class StorageServiceAbstract {
-  constructor(protected zone?: NgZone,){ };
+export abstract class StorageServiceAbstract{
+  constructor( protected zone?: NgZone, ){ };
     
   /**
    * True if a status is present
@@ -18,7 +18,7 @@ export abstract class StorageServiceAbstract {
    * Reads the status file and returns the content.
    * Can accept a file chooser event or a stringified status.
    */
-  abstract openStatus(event?: Event | string): Promise<string | undefined>;
+  abstract openStatus( event?: Event | string ): Promise<string | undefined>;
 
   /**
    * Creates a new status. Returns true when finished.
@@ -29,7 +29,7 @@ export abstract class StorageServiceAbstract {
    * Writes the status object to the current status location
    * @param status
    */
-  abstract writeToStatus(status: object): void;
+  abstract writeToStatus( status: object ): void;
 
   /**
    * Returns an observable that emits the status content when it changes outside the Angular app

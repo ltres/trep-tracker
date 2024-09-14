@@ -1,14 +1,14 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
-import { BoardService } from '../../service/board.service';
+import{ Component, ElementRef, ViewChild }from'@angular/core';
+import{ BoardService }from'../../service/board.service';
 
-@Component({
+@Component( {
   selector: 'search',
 
   templateUrl: './search.component.html',
   styleUrl: './search.component.scss',
-})
-export class SearchComponent {
-  @ViewChild('input') searchInput!: ElementRef;
+} )
+export class SearchComponent{
+  @ViewChild( 'input' ) searchInput!: ElementRef;
   searchPhrase: string = "";
   matchNumber: number = 0;
   highlightColor= 'yellow';
@@ -17,65 +17,65 @@ export class SearchComponent {
   constructor(
     private boardService: BoardService,
     private el: ElementRef,
-  ) {
-    this.boardService.focusSearch$.subscribe(fs => {
-      if (fs) {
-        this.focusInput(true);
+  ){
+    this.boardService.focusSearch$.subscribe( fs => {
+      if( fs ){
+        this.focusInput( true );
         this.highlightText();       
       }
-    });
+    } );
   }
 
   change(){
     if( this.debounce ){
-      clearTimeout(this.debounce);
+      clearTimeout( this.debounce );
     }
     this.debounce = setTimeout( () => {
       this.highlightText();
-    },250);
+    },250 );
 
   }
 
-  private highlightText() {
+  private highlightText(){
     this.matchNumber = 0
     this.removeHighlights();
-    if(this.searchPhrase.length === 0){
+    if( this.searchPhrase.length === 0 ){
       return;
     }
     this.boardService.parents?.forEach( p => {
       // remove all HTML
-      p.searchTextContent = p.textContent.replace(/<[^>]*>/g, '');
-      p.searchTextContent = p.searchTextContent.replace(/\u00A0/g, ' '); //nbsp
+      p.searchTextContent = p.textContent.replace( /<[^>]*>/g, '' );
+      p.searchTextContent = p.searchTextContent.replace( /\u00A0/g, ' ' ); //nbsp
       const curSearchContent = p.searchTextContent;
-      p.searchTextContent = p.searchTextContent.replaceAll(new RegExp(this.searchPhrase!,'ig'), `<span class="search-highlight">${this.searchPhrase}</span>`);
+      p.searchTextContent = p.searchTextContent.replaceAll( new RegExp( this.searchPhrase!,'ig' ), `<span class="search-highlight">${this.searchPhrase}</span>` );
       if( curSearchContent.length !== p.searchTextContent.length ){
         this.matchNumber ++;
       }
-    })
+    } )
     this.boardService.publishBoardUpdate()
   }
 
-  private removeHighlights() {
+  private removeHighlights(){
     this.boardService.parents?.forEach( p => {
       delete p.searchTextContent
-    })
+    } )
   }
 
-  onFocus() {
+  onFocus(){
     this.highlightText();
   }
 
-  onBlur() {
+  onBlur(){
     this.removeHighlights();
     this.boardService.blurSearch();
     this.boardService.publishBoardUpdate();
   }
 
-  private focusInput( selectAll: boolean){
+  private focusInput( selectAll: boolean ){
     const input = this.searchInput.nativeElement;
     // input.click();
     input.focus();
-    input.setSelectionRange(selectAll ? 0 : input.value.length, input.value.length);
+    input.setSelectionRange( selectAll ? 0 : input.value.length, input.value.length );
   }
 
 }

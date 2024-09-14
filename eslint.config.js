@@ -18,10 +18,13 @@ export default [
       "linebreak-style": ["error", "unix"],
       "no-prototype-builtins":'off',
       "no-multiple-empty-lines": ["error", { "max": 1, "maxEOF": 0 }],
-      "@stylistic/js/space-before-blocks": ["error", "never"],
-      "@stylistic/js/space-in-parens": ["error", "always"],
-      '@stylistic/js/keyword-spacing': ["error", { "before": false, "after":false }],
-      "@stylistic/js/space-before-function-paren": ["error", "never"]
+
+      "@stylistic/js/space-before-blocks": ["error", "never"], // if() {} => if(){}
+      "@stylistic/js/space-in-parens": ["error", "always"], // if( func() ) => if(func())
+      '@stylistic/js/keyword-spacing': ["error", { "before": false, "after":false }], // if () => if()
+      "@stylistic/js/space-before-function-paren": ["error", "never"], // function () => function()
+      "@stylistic/js/block-spacing": ["error", "always"], // if(){...} => if(){ ... }
+      
     },
   },
   {

@@ -1,8 +1,8 @@
-import { Type } from '@angular/core';
-import { generateUUID } from '../utils/utils';
+import{ Type }from'@angular/core';
+import{ generateUUID }from'../utils/utils';
  
-import { StorageServiceAbstract } from './storage';
-import { layoutValues, recurrenceValues, timeframeValues, statusValues, priorityValues, timezoneValues, dateFormats } from './constants';
+import{ StorageServiceAbstract }from'./storage';
+import{ layoutValues, recurrenceValues, timeframeValues, statusValues, priorityValues, timezoneValues, dateFormats }from'./constants';
 
 export type Environment = {
   storageService: Type<StorageServiceAbstract>,
@@ -128,7 +128,7 @@ export type StateChangeDate = {
 export type ISODateString = `${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`
 export type TagType = 'tag-orange' | 'tag-yellow' | 'tag-green';
 
-export const getNewTask: (lane: Lane | string, id: string | undefined, textContent: string | undefined ) => Task = (lane: Lane | string, id: string | undefined, textContent?: string | undefined) => {
+export const getNewTask: ( lane: Lane | string, id: string | undefined, textContent: string | undefined ) => Task = ( lane: Lane | string, id: string | undefined, textContent?: string | undefined ) => {
   const taskId = id ?? generateUUID()
   const t: Task = {
     id: taskId,
@@ -149,9 +149,9 @@ export const getNewTask: (lane: Lane | string, id: string | undefined, textConte
   return t
 };
 
-export const getNewLane: (archive: boolean) => Lane = (archive: boolean) => {
+export const getNewLane: ( archive: boolean ) => Lane = ( archive: boolean ) => {
   const id = generateUUID();
-  return {
+  return{
     id: id,
     tags: [],
     index: 0,
@@ -175,8 +175,8 @@ export const getNewLane: (archive: boolean) => Lane = (archive: boolean) => {
   };
 };
 
-export function getLayouts(width?: number | undefined): LayoutProperties {
-  return {
+export function getLayouts( width?: number | undefined ): LayoutProperties{
+  return{
     absolute: {
       column: 1,
       order: 1,
@@ -205,7 +205,7 @@ export function getLayouts(width?: number | undefined): LayoutProperties {
   };
 }
 
-export const getNewBoard: (firstLane: Lane) => Board = (firstLane: Lane) => (
+export const getNewBoard: ( firstLane: Lane ) => Board = ( firstLane: Lane ) => (
   {
     id: generateUUID(),
     layout: 'absolute',
@@ -229,8 +229,8 @@ export const getNewBoard: (firstLane: Lane) => Board = (firstLane: Lane) => (
   }
 );
 
-export function getDefaultLocale() {
-  if (navigator.languages != undefined) 
+export function getDefaultLocale(){
+  if( navigator.languages != undefined ) 
     return navigator.languages[0]; 
   return navigator.language;
 }

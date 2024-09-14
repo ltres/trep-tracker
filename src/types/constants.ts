@@ -1,6 +1,6 @@
-import { OwlDateTimeFormats } from "@ltres/angular-datetime-picker";
-import { DateDisplayConfig, TagType } from "./types";
-import { formatDate } from "../utils/date-utils";
+import{ OwlDateTimeFormats }from"@ltres/angular-datetime-picker";
+import{ DateDisplayConfig, TagType }from"./types";
+import{ formatDate }from"../utils/date-utils";
 
 export const ganttConfig = {
   baseTaskDuration : 2,
@@ -82,8 +82,8 @@ export const dateFormats: {[key:string]: Intl.DateTimeFormatOptions} = {
  * @param dateDisplayConfig 
  * @returns 
  */
-export const datePickerFormatFuncz: ( dateDisplayConfig: DateDisplayConfig ) => OwlDateTimeFormats = (dateDisplayConfig: DateDisplayConfig) => {
-  return {
+export const datePickerFormatFuncz: ( dateDisplayConfig: DateDisplayConfig ) => OwlDateTimeFormats = ( dateDisplayConfig: DateDisplayConfig ) => {
+  return{
     parseInput: ( d:Date ) => formatDate( d, {...dateDisplayConfig, dateFormat: dateFormats["boardDateFormat"] } ),
     fullPickerInput: ( d:Date ) => formatDate( d, dateDisplayConfig ),
     datePickerInput: ( d:Date ) => formatDate( d, {...dateDisplayConfig, dateFormat: dateFormats["datePickerInput"] } ),
@@ -189,13 +189,13 @@ export const tagIdentifiers: { type: TagType, symbol: string, class: string }[] 
 export const archivedLaneId = 'Archive' as const;
 export const addTagsForDoneAndArchived = false;
 
-export const tagHtmlWrapper = (kl: string) => (['<span tag="true" class="' + kl + '">', '</span>']);
-export const tagCapturingGroup = (symbol: string) => (`${symbol}([A-Za-z0-9-_]+)`);
+export const tagHtmlWrapper = ( kl: string ) => ( ['<span tag="true" class="' + kl + '">', '</span>'] );
+export const tagCapturingGroup = ( symbol: string ) => ( `${symbol}([A-Za-z0-9-_]+)` );
 
 export const expiredTasksStillVisibleHours = 6;
 export const millisForMagnitudeStep = 1000 * 3600 * 24; // one day
 
-export const timezoneValues = Intl.supportedValuesOf('timeZone');
+export const timezoneValues = Intl.supportedValuesOf( 'timeZone' );
 
 export const dragStartTreshold = 30;
 export const dragProximityTreshold = 10;

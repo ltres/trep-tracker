@@ -1,15 +1,15 @@
-import { AfterContentInit, Component } from '@angular/core';
-import { BoardService } from '../../service/board.service';
-import { Board, Priority } from '../../types/types';
-import { Observable } from 'rxjs';
-import { priorityValues } from '../../types/constants';
+import{ AfterContentInit, Component }from'@angular/core';
+import{ BoardService }from'../../service/board.service';
+import{ Board, Priority }from'../../types/types';
+import{ Observable }from'rxjs';
+import{ priorityValues }from'../../types/constants';
 
-@Component({
+@Component( {
   selector: 'board-selection-menu',
 
   templateUrl: './board-selection-menu.component.html',
   styleUrl: './board-selection-menu.component.scss',
-})
+} )
 export class BoardSelectionMenuComponent implements AfterContentInit{
 
   boards: Board[] | undefined;
@@ -17,22 +17,22 @@ export class BoardSelectionMenuComponent implements AfterContentInit{
 
   open: boolean = true;
 
-  constructor(protected boardService: BoardService){}
+  constructor( protected boardService: BoardService ){}
 
-  ngAfterContentInit(): void {
-    this.boardService.boards$.subscribe(boards => {
-      setTimeout(() => { this.boards = boards; });
-    });
+  ngAfterContentInit(): void{
+    this.boardService.boards$.subscribe( boards => {
+      setTimeout( () => { this.boards = boards; } );
+    } );
   }
-  addBoard() {
+  addBoard(){
     this.boardService.addNewBoard();
   }
-  selectBoard(board: Board) {
-    this.boardService.setSelectedBoard(board);
+  selectBoard( board: Board ){
+    this.boardService.setSelectedBoard( board );
   }
 
-  getTaskCount(board: Board, priority: Priority): Observable<number> {
-    return this.boardService.getTasksHavingPriorityCount$(board,priority);
+  getTaskCount( board: Board, priority: Priority ): Observable<number>{
+    return this.boardService.getTasksHavingPriorityCount$( board,priority );
   }
 
 }

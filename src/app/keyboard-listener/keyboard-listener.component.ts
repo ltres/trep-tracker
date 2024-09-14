@@ -1,7 +1,7 @@
-import { Component, HostListener } from '@angular/core';
-import { KeyboardService } from '../../service/keyboard.service';
+import{ Component, HostListener }from'@angular/core';
+import{ KeyboardService }from'../../service/keyboard.service';
 
-@Component({
+@Component( {
   selector: 'keyboard-listener',
   standalone: true,
   imports: [],
@@ -10,16 +10,16 @@ import { KeyboardService } from '../../service/keyboard.service';
   host: {
     '(document:keydown)': 'handleKeyboardEvent($event)',
   },
-})
-export class KeyboardListenerComponent {
-  constructor(private keyboardService: KeyboardService) { }
+} )
+export class KeyboardListenerComponent{
+  constructor( private keyboardService: KeyboardService ){ }
   event: KeyboardEvent | undefined;
 
-  @HostListener('document:keydown', ['$event'])
-  @HostListener('document:keyup', ['$event'])
-  handleKeyboardEvent(event: KeyboardEvent) {
+  @HostListener( 'document:keydown', ['$event'] )
+  @HostListener( 'document:keyup', ['$event'] )
+  handleKeyboardEvent( event: KeyboardEvent ){
     this.event = event;
-    this.keyboardService.publishKeyboardEvent(event);
+    this.keyboardService.publishKeyboardEvent( event );
   }
 
 }

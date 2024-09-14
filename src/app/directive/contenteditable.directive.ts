@@ -1,22 +1,22 @@
-import {
+import{
   Directive, ElementRef, Input, Output, EventEmitter, SimpleChanges, 
   HostListener, 
   forwardRef,
-} from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { getCaretCharacterOffsetWithin, setCaretPosition } from '../../utils/utils';
-import { TagService } from '../../service/tag.service';
-import { Board, Tag } from '../../types/types';
+}from'@angular/core';
+import{ ControlValueAccessor, NG_VALUE_ACCESSOR }from'@angular/forms';
+import{ getCaretCharacterOffsetWithin, setCaretPosition }from'../../utils/utils';
+import{ TagService }from'../../service/tag.service';
+import{ Board, Tag }from'../../types/types';
 
-@Directive({
+@Directive( {
   selector: '[contenteditable][ngModel][board]',
   providers: [{
     provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => ContenteditableDirective),
+    useExisting: forwardRef( () => ContenteditableDirective ),
     multi: true,
   }],
-})
-export class ContenteditableDirective implements ControlValueAccessor {
+} )
+export class ContenteditableDirective implements ControlValueAccessor{
     @Input() ngModel!: string;
     @Input() preventEvents: boolean = false;
     @Input() board!: Board;
@@ -29,12 +29,12 @@ export class ContenteditableDirective implements ControlValueAccessor {
     constructor(
         private tagService: TagService,
         private elementRef: ElementRef,
-    ) { }
+    ){ }
 
-    @HostListener('keyup', ['$event'])
+    @HostListener( 'keyup', ['$event'] )
     // @HostListener('blur', ['$event'])
-    onInteract($event:KeyboardEvent): void {
-      if(($event.shiftKey || $event.ctrlKey) && ($event.key === 'ArrowDown' || $event.key === 'ArrowUp')){
+    onInteract( $event:KeyboardEvent ): void{
+      if( ( $event.shiftKey || $event.ctrlKey ) && ( $event.key === 'ArrowDown' || $event.key === 'ArrowUp' ) ){
         // Task is being selected or moved
         return;
       }
@@ -49,18 +49,18 @@ export class ContenteditableDirective implements ControlValueAccessor {
       //this.onChange(value); // makes the ngModel effectively update by calling the writeValue
       //this.onTouched();
       //this.skipWriteValue = true;
-      if(!this.preventEvents){
-        this.onTagsChange.emit(result.tags);
+      if( !this.preventEvents ){
+        this.onTagsChange.emit( result.tags );
       }
-      if(!this.preventEvents){
-        this.ngModelChange.emit(result.taggedString); // makes the ngModel effectively update. Triggers ngOnChange
+      if( !this.preventEvents ){
+        this.ngModelChange.emit( result.taggedString ); // makes the ngModel effectively update. Triggers ngOnChange
       }
     }
 
-    private onChange: (value: string) => void = () => {};
+    private onChange: ( value: string ) => void = () => {};
     private onTouched: () => void = () => {};
 
-    ngOnChanges(changes: SimpleChanges): void {
+    ngOnChanges( changes: SimpleChanges ): void{
     //this.startingCaretPosition = getCaretPosition( this.elementRef.nativeElement );
 
       if( !changes['ngModel'] || this.elementRef.nativeElement.innerHTML === changes['ngModel'].currentValue || changes['ngModel'].isFirstChange() ){
@@ -77,16 +77,16 @@ export class ContenteditableDirective implements ControlValueAccessor {
 
     // This method is called by the forms API to write to the view when programmatic changes from model to view are requested.
     // gets called when new tag html should be inserted in the DOM
-    writeValue(value: string | null): void {
-      if(!value) return;
-      const curVal = this.elementRef.nativeElement.innerHTML.replaceAll('&nbsp;',' ').replace(/\s/,' ');
-      value = value.replaceAll('&nbsp;',' ').replace(/\s/,' ');
+    writeValue( value: string | null ): void{
+      if( !value )return;
+      const curVal = this.elementRef.nativeElement.innerHTML.replaceAll( '&nbsp;',' ' ).replace( /\s/,' ' );
+      value = value.replaceAll( '&nbsp;',' ' ).replace( /\s/,' ' );
 
       if( curVal !== value ){
-        const pos = getCaretCharacterOffsetWithin(this.elementRef.nativeElement);
+        const pos = getCaretCharacterOffsetWithin( this.elementRef.nativeElement );
         this.elementRef.nativeElement.innerHTML = value || '';
-        if(!this.preventEvents){
-          setCaretPosition(this.elementRef.nativeElement, pos + this.caretShift);
+        if( !this.preventEvents ){
+          setCaretPosition( this.elementRef.nativeElement, pos + this.caretShift );
           this.caretShift = 0;
         }
       }
@@ -95,15 +95,15 @@ export class ContenteditableDirective implements ControlValueAccessor {
     //this.ngModel = value;
     }
 
-    registerOnChange(fn: (value: string) => void): void {
+    registerOnChange( fn: ( value: string ) => void ): void{
       this.onChange = fn;
     }
 
-    registerOnTouched(fn: () => void): void {
+    registerOnTouched( fn: () => void ): void{
       this.onTouched = fn;
     }
 
-    setDisabledState(isDisabled: boolean): void {
+    setDisabledState( isDisabled: boolean ): void{
       this.elementRef.nativeElement.contentEditable = !isDisabled;
     }
 

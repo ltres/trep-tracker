@@ -1,19 +1,19 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import{ Injectable }from'@angular/core';
+import{ BehaviorSubject, Observable }from'rxjs';
 
-@Injectable({
+@Injectable( {
   providedIn: 'root',
-})
-export class ClickService {
+} )
+export class ClickService{
 
-  private _click$: BehaviorSubject<HTMLElement | undefined> = new BehaviorSubject<HTMLElement | undefined>(undefined);
+  private _click$: BehaviorSubject<HTMLElement | undefined> = new BehaviorSubject<HTMLElement | undefined>( undefined );
 
-  constructor() { }
+  constructor(){ }
 
-  publishClick(target: HTMLElement) {
-    this._click$.next(target);
+  publishClick( target: HTMLElement ){
+    this._click$.next( target );
   }
-  get click$(): Observable<HTMLElement | undefined> {
+  get click$(): Observable<HTMLElement | undefined>{
     return this._click$;
   }
 }

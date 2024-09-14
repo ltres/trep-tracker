@@ -1,4 +1,4 @@
-import {
+import{
   AfterViewChecked,
   AfterViewInit,
   Directive,
@@ -8,19 +8,19 @@ import {
   Input,
   NgZone,
   Output,
-} from '@angular/core';
-import { BoardService } from '../../service/board.service';
-import { DragService } from '../../service/drag.service';
-import { Container, Lane, Layout } from '../../types/types';
-import { ContainerComponent } from '../base/base.component';
-import { isLane } from '../../utils/guards';
-import { dragStartTreshold } from '../../types/constants';
-import { Subscription, take } from 'rxjs';
+}from'@angular/core';
+import{ BoardService }from'../../service/board.service';
+import{ DragService }from'../../service/drag.service';
+import{ Container, Lane, Layout }from'../../types/types';
+import{ ContainerComponent }from'../base/base.component';
+import{ isLane }from'../../utils/guards';
+import{ dragStartTreshold }from'../../types/constants';
+import{ Subscription, take }from'rxjs';
 
-@Directive({
+@Directive( {
   selector: '[draggableDir][containerEl][layout]',
-})
-export class DraggableDirective implements AfterViewChecked, AfterViewInit {
+} )
+export class DraggableDirective implements AfterViewChecked, AfterViewInit{
   @Input() static: boolean = false;
   @Input() displayedInFixedLayout: boolean = false;
 
@@ -54,29 +54,29 @@ export class DraggableDirective implements AfterViewChecked, AfterViewInit {
   /**
    * Initialize persisted width for non-absolute layouts
    */
-  ngAfterViewInit(): void {
+  ngAfterViewInit(): void{
 
-    if(this.layout !== 'absolute'){
-      (this.el.nativeElement as HTMLElement).style.width = '100%';
-    }else if(isLane(this.draggableDir) && this.draggableDir.layouts[this.layout].width){
-      (this.el.nativeElement as HTMLElement).style.width = this.draggableDir.layouts[this.layout].width + 'px';
-      (this.el.nativeElement as HTMLElement).style.top = this.draggableDir.coordinates?.y + 'px';
-      (this.el.nativeElement as HTMLElement).style.left = this.draggableDir.coordinates?.x + 'px'
+    if( this.layout !== 'absolute' ){
+      ( this.el.nativeElement as HTMLElement ).style.width = '100%';
+    }else if( isLane( this.draggableDir ) && this.draggableDir.layouts[this.layout].width ){
+      ( this.el.nativeElement as HTMLElement ).style.width = this.draggableDir.layouts[this.layout].width + 'px';
+      ( this.el.nativeElement as HTMLElement ).style.top = this.draggableDir.coordinates?.y + 'px';
+      ( this.el.nativeElement as HTMLElement ).style.left = this.draggableDir.coordinates?.x + 'px'
     }
   }
 
   /**
    * Initialize resize observers
    */
-  ngAfterViewChecked(): void {
-    if (!this.displayedInFixedLayout && window.getComputedStyle(this.el.nativeElement).resize === 'horizontal' && !this.resizeObserver) {
-      this.resizeObserver = new ResizeObserver(this.resize.bind(this));
-      this.resizeObserver.observe(this.el.nativeElement);
+  ngAfterViewChecked(): void{
+    if( !this.displayedInFixedLayout && window.getComputedStyle( this.el.nativeElement ).resize === 'horizontal' && !this.resizeObserver ){
+      this.resizeObserver = new ResizeObserver( this.resize.bind( this ) );
+      this.resizeObserver.observe( this.el.nativeElement );
     }
   }
 
-  ngOnDestroy(): void {
-    if (!this.resizeObserver) return;
+  ngOnDestroy(): void{
+    if( !this.resizeObserver )return;
     this.resizeObserver?.disconnect();
     delete this.resizeObserver;
   }
@@ -85,35 +85,35 @@ export class DraggableDirective implements AfterViewChecked, AfterViewInit {
    * Announce the end of the drag event
    * @param $event
    */
-  @HostListener('dragend', ['$event'])
-  dragEnd($event: DragEvent) {
+  @HostListener( 'dragend', ['$event'] )
+  dragEnd( $event: DragEvent ){
 
-    this.ngZone.runOutsideAngular(() => {
+    this.ngZone.runOutsideAngular( () => {
       const node = this.el.nativeElement as HTMLElement;
-      if (this.static) return;
+      if( this.static )return;
 
-      this.dragService.dragChecksEnded$.pipe(take(1)).subscribe( () => {
+      this.dragService.dragChecksEnded$.pipe( take( 1 ) ).subscribe( () => {
         // Element will pass from a fixed layout (positioned relative to the viewport) to an absolute layout (positioned to the container). We need to account for the window scroll in order to position correctly if the viewport is scrolled
         node.style.position = '';
         node.style.zIndex = "";
         
-        node.style.top = ($event.clientY - this.deltaY + window.scrollY) + 'px';
-        node.style.left = ($event.clientX - this.deltaX + window.scrollX) + 'px';
+        node.style.top = ( $event.clientY - this.deltaY + window.scrollY ) + 'px';
+        node.style.left = ( $event.clientX - this.deltaX + window.scrollX ) + 'px';
         
-        document.body.classList.remove('dragging');
+        document.body.classList.remove( 'dragging' );
   
         // persist the new element position for this layout:
-        if(isLane(this.draggableDir) && this.layout === 'absolute'){
+        if( isLane( this.draggableDir ) && this.layout === 'absolute' ){
           this.draggableDir.coordinates = {
-            x: ($event.clientX - this.deltaX + window.scrollX),
-            y: ($event.clientY - this.deltaY + window.scrollY),
+            x: ( $event.clientX - this.deltaX + window.scrollX ),
+            y: ( $event.clientY - this.deltaY + window.scrollY ),
           }
           this.boardService.publishBoardUpdate()
         }
-      })
+      } )
 
       const board = this.boardService.selectedBoard;
-      if( !board ) return;
+      if( !board )return;
       this.dragService.publishDragEndEvent(
         this.draggableDir,
         this.host,
@@ -123,11 +123,11 @@ export class DraggableDirective implements AfterViewChecked, AfterViewInit {
         board,
       );
 
-      this.onDragEnd.emit($event);
+      this.onDragEnd.emit( $event );
 
       $event.stopPropagation();
       $event.stopImmediatePropagation();
-    });
+    } );
     
   }
 
@@ -135,20 +135,20 @@ export class DraggableDirective implements AfterViewChecked, AfterViewInit {
    * Whenever dragStartTreshold has been reached, announce the start of the drag event
    * @param $event 
    */
-  @HostListener('drag', ['$event'])
-  drag($event: DragEvent) {
-    this.moveToCursor($event);
+  @HostListener( 'drag', ['$event'] )
+  drag( $event: DragEvent ){
+    this.moveToCursor( $event );
 
     const movedY = this.initialCursorY - $event.clientY
     const movedX = this.initialCursorX - $event.clientX
 
-    if( Math.sqrt( Math.pow(movedY,2) + Math.pow(movedX,2) ) > dragStartTreshold ){
+    if( Math.sqrt( Math.pow( movedY,2 ) + Math.pow( movedX,2 ) ) > dragStartTreshold ){
       // cursor has moved for a certain treshold, publish the drag event
-      this.onDragStart.emit($event);
-      this.dragService.publishDragStartEvent(this.draggableDir)
+      this.onDragStart.emit( $event );
+      this.dragService.publishDragStartEvent( this.draggableDir )
     }
 
-    this.dragService.publishDraggingCoordinates($event.clientX, $event.clientY, this.draggableDir );
+    this.dragService.publishDraggingCoordinates( $event.clientX, $event.clientY, this.draggableDir );
 
     $event.stopPropagation();
     $event.stopImmediatePropagation();
@@ -158,11 +158,11 @@ export class DraggableDirective implements AfterViewChecked, AfterViewInit {
    * Drag has started. Store cursor position and initial container delta so to have a precise positioning of the dragged element
    * @param $event 
    */
-  @HostListener('dragstart', ['$event'])
-  dragStart($event: DragEvent) {
-    this.ngZone.runOutsideAngular(() => {
-      if (this.static) return;
-      document.body.classList.add('dragging');
+  @HostListener( 'dragstart', ['$event'] )
+  dragStart( $event: DragEvent ){
+    this.ngZone.runOutsideAngular( () => {
+      if( this.static )return;
+      document.body.classList.add( 'dragging' );
 
       const node = this.el.nativeElement as HTMLElement;
       this.deltaX = $event.clientX  - node.getBoundingClientRect().left;
@@ -174,39 +174,39 @@ export class DraggableDirective implements AfterViewChecked, AfterViewInit {
       node.style.position = 'fixed';
       node.style.zIndex = "9999";
 
-      this.moveToCursor($event)
+      this.moveToCursor( $event )
 
       $event.stopPropagation();
       $event.stopImmediatePropagation();
-    });
+    } );
   }
 
   /**
    * Traslate the element under the cursor, keeping the initial click point in consideration
    * @param $event 
    */
-  private moveToCursor($event: DragEvent){
+  private moveToCursor( $event: DragEvent ){
     const node = this.el.nativeElement as HTMLElement;
-    node.style.top = ($event.clientY - this.deltaY) + 'px';
-    node.style.left = ($event.clientX - this.deltaX) + 'px';
+    node.style.top = ( $event.clientY - this.deltaY ) + 'px';
+    node.style.left = ( $event.clientX - this.deltaX ) + 'px';
   }
 
-  resize($event: ResizeObserverEntry[]) {
-    if(!isLane(this.draggableDir)){
-      throw new Error("Cannot resize non-lanes");
+  resize( $event: ResizeObserverEntry[] ){
+    if( !isLane( this.draggableDir ) ){
+      throw new Error( "Cannot resize non-lanes" );
     }
 
-    const currentStoredWidth = (this.draggableDir as Lane).layouts[this.layout].width;
+    const currentStoredWidth = ( this.draggableDir as Lane ).layouts[this.layout].width;
 
-    if (currentStoredWidth === $event[0].contentRect.width || $event[0].contentRect.width === 0) {
+    if( currentStoredWidth === $event[0].contentRect.width || $event[0].contentRect.width === 0 ){
       return;
     };
 
-    if (this.resizeTimeout) clearTimeout(this.resizeTimeout);
-    this.resizeTimeout = setTimeout(() => {
-      (this.draggableDir as Lane).layouts[this.layout].width = this.el.nativeElement.getBoundingClientRect().width
-      this.onResize.emit(this.el.nativeElement.getBoundingClientRect().width);
+    if( this.resizeTimeout ) clearTimeout( this.resizeTimeout );
+    this.resizeTimeout = setTimeout( () => {
+      ( this.draggableDir as Lane ).layouts[this.layout].width = this.el.nativeElement.getBoundingClientRect().width
+      this.onResize.emit( this.el.nativeElement.getBoundingClientRect().width );
       this.boardService.publishBoardUpdate();
-    }, 500);
+    }, 500 );
   }
 }

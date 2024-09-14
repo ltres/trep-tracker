@@ -1,18 +1,18 @@
-import { Component, ElementRef, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
-import { Container } from '../../types/types';
-import { ContainerComponentRegistryService } from '../../service/registry.service';
+import{ Component, ElementRef, OnDestroy, OnInit }from'@angular/core';
+import{ Subscription }from'rxjs';
+import{ Container }from'../../types/types';
+import{ ContainerComponentRegistryService }from'../../service/registry.service';
 
 // A base compoent whose data model is a Container
 // This component is responsible for managing subscriptions and unsubscribing them
 // Also subscribes and unsubscribes from component registry.
-@Component({
+@Component( {
   selector: 'app-base',
   //standalone: true,
   //imports: [],
   templateUrl: './base.component.html',
   styleUrl: './base.component.scss',
-})
+} )
 export abstract class ContainerComponent implements OnInit, OnDestroy{
   protected _container!: Container;
   protected _subscriptions: Subscription[] = [];
@@ -20,16 +20,16 @@ export abstract class ContainerComponent implements OnInit, OnDestroy{
   constructor(
     protected registry: ContainerComponentRegistryService,
     public el: ElementRef,
-  ) { }
+  ){ }
   abstract get container(): Container;
 
-  set subscriptions(subscriptions: Subscription) {
-    this._subscriptions.push(subscriptions);
+  set subscriptions( subscriptions: Subscription ){
+    this._subscriptions.push( subscriptions );
   }
 
-  ngOnInit(): void {
+  ngOnInit(): void{
   }
-  ngOnDestroy(): void {
-    this._subscriptions.forEach(subscription => subscription.unsubscribe());
+  ngOnDestroy(): void{
+    this._subscriptions.forEach( subscription => subscription.unsubscribe() );
   }
 }

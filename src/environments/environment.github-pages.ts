@@ -1,5 +1,5 @@
-import { LocalFileStorageService } from '../service/local-file-storage.service';
-import { Environment } from '../types/types';
+import{ LocalFileStorageService }from'../service/local-file-storage.service';
+import{ Environment }from'../types/types';
 
 export const environment: Environment = {
   storageService: LocalFileStorageService,

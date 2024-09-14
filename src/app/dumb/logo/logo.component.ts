@@ -1,10 +1,10 @@
-import { Component, Input } from '@angular/core';
+import{ Component, Input }from'@angular/core';
 
-@Component({
+@Component( {
   selector: 'logo',
   templateUrl: './logo.component.html',
   styleUrl: './logo.component.scss',
-})
-export class LogoComponent {
+} )
+export class LogoComponent{
   @Input() size: number = 4;
 }

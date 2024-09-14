@@ -1,19 +1,19 @@
-import { AfterViewInit, Component, Inject, QueryList, TemplateRef, ViewChildren } from '@angular/core';
-import { ModalService } from '../../service/modal.service';
+import{ AfterViewInit, Component, Inject, QueryList, TemplateRef, ViewChildren }from'@angular/core';
+import{ ModalService }from'../../service/modal.service';
 
-import { StorageServiceAbstract } from '../../types/storage';
-import { BoardService } from '../../service/board.service';
-import { HttpClient } from '@angular/common/http';
+import{ StorageServiceAbstract }from'../../types/storage';
+import{ BoardService }from'../../service/board.service';
+import{ HttpClient }from'@angular/common/http';
 
-@Component({
+@Component( {
   selector: 'welcome-wizard-manager',
   templateUrl: './welcome-wizard-manager.component.html',
   styleUrls: ['./welcome-wizard-manager.component.scss'],
-})
-export class WelcomeWizardManagerComponent implements AfterViewInit {
-  @ViewChildren(TemplateRef) steps: QueryList<TemplateRef<unknown>> | null = null;
+} )
+export class WelcomeWizardManagerComponent implements AfterViewInit{
+  @ViewChildren( TemplateRef ) steps: QueryList<TemplateRef<unknown>> | null = null;
   selectedStepIndex = 0;
-  version = document.querySelector('body')?.getAttribute('data-version') || 'vUnknown';
+  version = document.querySelector( 'body' )?.getAttribute( 'data-version' ) || 'vUnknown';
   document: Document | undefined;
   isElectron = window.electron !== undefined;
 
@@ -21,50 +21,50 @@ export class WelcomeWizardManagerComponent implements AfterViewInit {
     private modalService: ModalService,
     private boardService: BoardService,
     private http: HttpClient,
-    @Inject('StorageServiceAbstract') private storageService: StorageServiceAbstract,
-  ) {
+    @Inject( 'StorageServiceAbstract' ) private storageService: StorageServiceAbstract,
+  ){
     this.document = document;
   }
 
-  ngAfterViewInit(): void {
+  ngAfterViewInit(): void{
   // wizard management: start the modal passing the first step as content
-    if (this.steps?.first) {
-      this.modalService.setModalContent(this.steps?.first);
-      this.modalService.setDisplayModal(true);
+    if( this.steps?.first ){
+      this.modalService.setModalContent( this.steps?.first );
+      this.modalService.setDisplayModal( true );
     }
   }
 
-  createNewStatusFile() {
+  createNewStatusFile(){
     this.storageService.createNewStatus()
-      .then(filePath => {
-        console.log('Status file created');
-        if(!filePath) throw('No file selected');
+      .then( filePath => {
+        console.log( 'Status file created' );
+        if( !filePath )throw( 'No file selected' );
         this.closeModal();
-      })
-      .catch(error => console.error('Error creating status file:', error));
+      } )
+      .catch( error => console.error( 'Error creating status file:', error ) );
   }
 
-  async openStatusFile(event: Event) {
-    const fileContent = await this.storageService.openStatus(event);
-    if(!fileContent) throw('No file selected');
+  async openStatusFile( event: Event ){
+    const fileContent = await this.storageService.openStatus( event );
+    if( !fileContent )throw( 'No file selected' );
     this.closeModal();
   }
 
-  nextStep() {
+  nextStep(){
     this.selectedStepIndex++;
-    if (!this.steps) return;
-    this.modalService.setModalContent(this.steps?.toArray()[this.selectedStepIndex]);
+    if( !this.steps )return;
+    this.modalService.setModalContent( this.steps?.toArray()[this.selectedStepIndex] );
   }
 
-  closeModal() {
-    this.modalService.setDisplayModal(false);
+  closeModal(){
+    this.modalService.setDisplayModal( false );
   }
 
-  setupDemoBoard() {
-    this.http.get('assets/readme/github-pages-example-status.trptrk', { responseType: 'text' })
+  setupDemoBoard(){
+    this.http.get( 'assets/readme/github-pages-example-status.trptrk', { responseType: 'text' } )
       .subscribe(
         data => {
-          this.storageService.openStatus(data);
+          this.storageService.openStatus( data );
           this.closeModal();
         },
       );

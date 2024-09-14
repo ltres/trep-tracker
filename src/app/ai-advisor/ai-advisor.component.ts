@@ -1,12 +1,12 @@
-import { AfterContentInit, Component, HostBinding, Inject, Input } from '@angular/core';
-import { AiServiceI } from '../../types/ai';
-import { Board, ISODateString } from '../../types/types';
+import{ AfterContentInit, Component, HostBinding, Inject, Input }from'@angular/core';
+import{ AiServiceI }from'../../types/ai';
+import{ Board, ISODateString }from'../../types/types';
 
-@Component({
+@Component( {
   selector: 'ai-advisor[board]',
   templateUrl: './ai-advisor.component.html',
   styleUrl: './ai-advisor.component.scss',
-})
+} )
 export class AiAdvisorComponent implements AfterContentInit{
 
   @Input() board!: Board;
@@ -16,40 +16,40 @@ export class AiAdvisorComponent implements AfterContentInit{
   apiKey: string | null = this.aiService.getApiKey();
   loading: boolean = false;
 
-  @HostBinding('style.width')
-  get width() {
+  @HostBinding( 'style.width' )
+  get width(){
     return this.open ? '40rem' : 'auto';
   }
 
   constructor(
-    @Inject('AiServiceI') private aiService: AiServiceI,
-  ) {}
+    @Inject( 'AiServiceI' ) private aiService: AiServiceI,
+  ){}
 
-  ngAfterContentInit(): void {
+  ngAfterContentInit(): void{
   // get latest advice from local storage:
-    this.advice = localStorage.getItem('AIadvice') || 'No advice yet';
-    this.refreshDateISOString = localStorage.getItem('AIadviceRefreshDateISOString') as ISODateString || undefined;
+    this.advice = localStorage.getItem( 'AIadvice' ) || 'No advice yet';
+    this.refreshDateISOString = localStorage.getItem( 'AIadviceRefreshDateISOString' ) as ISODateString || undefined;
   }
 
-  hasApiKey(): boolean {
+  hasApiKey(): boolean{
     return this.aiService.getApiKey() != null;
   }
 
-  async getInsight() {
+  async getInsight(){
     this.loading = true;
-    this.advice = await this.aiService.getInsight(this.board);
+    this.advice = await this.aiService.getInsight( this.board );
     this.loading = false;
-    localStorage.setItem('AIadvice', this.advice);
+    localStorage.setItem( 'AIadvice', this.advice );
     const refreshDateISOString = new Date().toISOString();
-    localStorage.setItem('AIadviceRefreshDateISOString', refreshDateISOString);
+    localStorage.setItem( 'AIadviceRefreshDateISOString', refreshDateISOString );
   }
 
-  parseDate(arg0: ISODateString | undefined): Date | undefined {
-    if(!arg0) return undefined;
-    return new Date(arg0);
+  parseDate( arg0: ISODateString | undefined ): Date | undefined{
+    if( !arg0 )return undefined;
+    return new Date( arg0 );
   }
-  setApiKey(apiKey: string | null) {
-    this.aiService.setApiKey(apiKey);
+  setApiKey( apiKey: string | null ){
+    this.aiService.setApiKey( apiKey );
   }
 
 }
