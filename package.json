@@ -21,7 +21,7 @@
     "package": "electron-forge package",
     "make": "npm run build && electron-forge make",
     "publish": "electron-forge publish",
-    "lint": "npx eslint ./src --fix",
+    "lint-pretty": "npx eslint ./src --fix && npx prettier -w ./src/**/*.html",
     "test": "start-server-and-test 'ng serve' http://localhost:4200 'npx playwright test'",
     "test-gui": "start-server-and-test 'ng serve' http://localhost:4200 'npx playwright test --ui'",
     "prepare": "husky",

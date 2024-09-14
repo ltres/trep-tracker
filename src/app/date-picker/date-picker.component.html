@@ -1,53 +1,47 @@
-<input [selectMode]="'range'" [ngModel]="selectedMoments" [owlDateTime]="date_range_component" style="width: 0px!important;">
+<input [selectMode]="'range'" [ngModel]="selectedMoments" [owlDateTime]="date_range_component" style="width: 0px !important" />
 <span #trigger [owlDateTimeTrigger]="date_range_component"></span>
 <owl-date-time [startAt]="getStartAt()" [endAt]="getEndAt()" [hideCalendar]="hideCalendar" #date_range_component (confirmSelectedChange)="setButtonClicked($event)" (cancelClicked)="cancelClicked()" (dateSelected)="deleteTimeframes()" (afterPickerClosed)="emitClose()">
-    <ng-template *ngIf="showTimeframes" #header>
-        <ng-container *ngTemplateOutlet="timeframe"></ng-container>
-    </ng-template>
-    <ng-template *ngIf="showRecurrences" #footer>
-        <ng-container *ngTemplateOutlet="recurrence"></ng-container>
-    </ng-template>
+  <ng-template *ngIf="showTimeframes" #header>
+    <ng-container *ngTemplateOutlet="timeframe"></ng-container>
+  </ng-template>
+  <ng-template *ngIf="showRecurrences" #footer>
+    <ng-container *ngTemplateOutlet="recurrence"></ng-container>
+  </ng-template>
 </owl-date-time>
 
 <ng-template #recurrence>
-    <div class="owl-dt-container-info  owl-dt-container-row">
-        <span class="owl-dt-container-recurrence">
-            <span class="owl-dt-container-info-label">
-                Recurrence
-            </span>
-            <span class="owl-dt-container-recurrence-values" role="radiogroup">
-                <label *ngFor="let recurrenceValue of recurrenceValues" class="recurrence-option">
-                    <input type="radio" name="selectedRecurrence" [value]="recurrenceValue" [(ngModel)]="selectedRecurrence">
-                    {{recurrenceValue}}
-                </label>
-            </span>
-        </span>
-    </div>
+  <div class="owl-dt-container-info owl-dt-container-row">
+    <span class="owl-dt-container-recurrence">
+      <span class="owl-dt-container-info-label"> Recurrence </span>
+      <span class="owl-dt-container-recurrence-values" role="radiogroup">
+        <label *ngFor="let recurrenceValue of recurrenceValues" class="recurrence-option">
+          <input type="radio" name="selectedRecurrence" [value]="recurrenceValue" [(ngModel)]="selectedRecurrence" />
+          {{ recurrenceValue }}
+        </label>
+      </span>
+    </span>
+  </div>
 </ng-template>
 
 <ng-template #timeframe>
-    <div class="owl-dt-container-info  owl-dt-container-row">
-        <span class="owl-dt-container-recurrence">
-            <span class="owl-dt-container-info-label">
-                Starts in..
-            </span>
-            <span class="owl-dt-container-recurrence-values" role="radiogroup">
-                <label *ngFor="let timeframeValue of timeframeValues" class="recurrence-option">
-                    <input type="radio" name="selectedRecurrence" [value]="timeframeValue" [(ngModel)]="selectedTimeframe[0]" #unselector unselector>
-                    {{timeframeValue}}
-                </label>
-            </span>
-        </span>
-        <span class="owl-dt-container-recurrence">
-            <span class="owl-dt-container-info-label">
-                Ends in..
-            </span>
-            <span class="owl-dt-container-recurrence-values" role="radiogroup">
-                <label *ngFor="let timeframeValue of timeframeValues" class="recurrence-option">
-                    <input type="radio" name="selectedRecurrence2" [value]="timeframeValue" [(ngModel)]="selectedTimeframe[1]" #unselector unselector>
-                    {{timeframeValue}}
-                </label>
-            </span>
-        </span>
-    </div>
+  <div class="owl-dt-container-info owl-dt-container-row">
+    <span class="owl-dt-container-recurrence">
+      <span class="owl-dt-container-info-label"> Starts in.. </span>
+      <span class="owl-dt-container-recurrence-values" role="radiogroup">
+        <label *ngFor="let timeframeValue of timeframeValues" class="recurrence-option">
+          <input type="radio" name="selectedRecurrence" [value]="timeframeValue" [(ngModel)]="selectedTimeframe[0]" #unselector unselector />
+          {{ timeframeValue }}
+        </label>
+      </span>
+    </span>
+    <span class="owl-dt-container-recurrence">
+      <span class="owl-dt-container-info-label"> Ends in.. </span>
+      <span class="owl-dt-container-recurrence-values" role="radiogroup">
+        <label *ngFor="let timeframeValue of timeframeValues" class="recurrence-option">
+          <input type="radio" name="selectedRecurrence2" [value]="timeframeValue" [(ngModel)]="selectedTimeframe[1]" #unselector unselector />
+          {{ timeframeValue }}
+        </label>
+      </span>
+    </span>
+  </div>
 </ng-template>

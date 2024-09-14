@@ -8,13 +8,12 @@
     </div>
 </div>-->
 <div class="lines grow flex column">
-    <div class="flex g-05 align-items-center">
-        <label class="translucent">View</label>
-        <button (click)="selectView('months')" [class.active]="selectedView === 'months'">Months</button>
-        <button (click)="selectView('days')" [class.active]="selectedView === 'days'">Days</button>
-        <button (click)="selectView('hours')" [class.active]="selectedView === 'hours'">Hours</button>
-    </div>
+  <div class="flex g-05 align-items-center">
+    <label class="translucent">View</label>
+    <button (click)="selectView('months')" [class.active]="selectedView === 'months'">Months</button>
+    <button (click)="selectView('days')" [class.active]="selectedView === 'days'">Days</button>
+    <button (click)="selectView('hours')" [class.active]="selectedView === 'hours'">Hours</button>
+  </div>
 
-    <div id="gantt" class="gantt-target dark"></div>
-
+  <div id="gantt" class="gantt-target dark"></div>
 </div>

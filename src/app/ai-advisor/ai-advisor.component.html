@@ -1,26 +1,22 @@
-
-<h3 class="flex align-items-center m-b-2 pointer g-1" (click)="open=!open">
-    <logo [size]="2"></logo>
-    <span>AI advisor</span>
-    <span class="grow"></span>
-    <span  [class]="open ? 'chevron-down' : 'chevron-up'"></span>
+<h3 class="flex align-items-center m-b-2 pointer g-1" (click)="open = !open">
+  <logo [size]="2"></logo>
+  <span>AI advisor</span>
+  <span class="grow"></span>
+  <span [class]="open ? 'chevron-down' : 'chevron-up'"></span>
 </h3>
 <div *ngIf="open" [class.loading]="loading">
-    <div *ngIf="!hasApiKey()">
-        <p>Insert here your OpenAI API key:</p>
-        <input type="text" [(ngModel)]="apiKey" placeholder="API key" />
-        <button class="m-y-1" (click)="setApiKey(apiKey)" >Save</button>
-        <a target="_blank" href="https://platform.openai.com/docs/quickstart">How to get an API key?</a>
+  <div *ngIf="!hasApiKey()">
+    <p>Insert here your OpenAI API key:</p>
+    <input type="text" [(ngModel)]="apiKey" placeholder="API key" />
+    <button class="m-y-1" (click)="setApiKey(apiKey)">Save</button>
+    <a target="_blank" href="https://platform.openai.com/docs/quickstart">How to get an API key?</a>
+  </div>
+  <div *ngIf="hasApiKey()">
+    <markdown [data]="advice"> </markdown>
+    <i class="m-y-1" *ngIf="refreshDateISOString">Latest advice:{{ parseDate(refreshDateISOString) | date: 'dd-MM-yy hh:mm a' }}</i>
+    <div class="flex justify-content-between align-items-center">
+      <button class="m-y-1" (click)="getInsight()">Refresh advice</button>
+      <a href="#" (click)="setApiKey(null)">Change API key</a>
     </div>
-    <div *ngIf="hasApiKey()">
-        <markdown [data]="advice">
-        </markdown>
-        <i class="m-y-1" *ngIf="refreshDateISOString">Latest advice:{{ parseDate(refreshDateISOString) | date: 'dd-MM-yy hh:mm a'}}</i>
-        <div class="flex justify-content-between align-items-center">
-            <button class="m-y-1" (click)="getInsight()" >Refresh advice</button>
-            <a href="#" (click)="setApiKey(null)" >Change API key</a>
-        </div>
-
-    </div>
+  </div>
 </div>
-

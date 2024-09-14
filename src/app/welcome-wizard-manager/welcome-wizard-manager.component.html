@@ -1,74 +1,51 @@
 <ng-template #step1>
-    <div class="m-b-1">
-        <div class="title flex align-items-center justify-content-center g-1">
-            <logo></logo>
-            <h1>
-                Welcome to trep-tracker
-            </h1>
-        </div>
-        <h3 class="text-center">{{version}}</h3>
+  <div class="m-b-1">
+    <div class="title flex align-items-center justify-content-center g-1">
+      <logo></logo>
+      <h1>Welcome to trep-tracker</h1>
     </div>
+    <h3 class="text-center">{{ version }}</h3>
+  </div>
 
-    <div class="body">
-        <div *ngIf="isElectron" class="buttons flex column justify-content-center g-1">
-            <h2 class="text-align-center">
-                Choose an existing status file, or create a new one:
-            </h2>
-            <div class="buttons flex justify-content-center g-1">
-                <button (click)="openStatusFile($event)">
-                    Choose existing status file
-                </button>
-                <button (click)="createNewStatusFile()">
-                    Create a new status file
-                </button>
-            </div>
-        </div>
-        <div *ngIf="!isElectron" class="buttons flex column">
-            <h2 class="text-align-center">
-                This web version stores your data in your browser's local storage.<br />
-            </h2>
-            <h3 class="text-align-center">
-                You can use this to familiarize yourself with the tool.<br />
-                If you like what you see, and would like to try it for your day-by-day tasks, consider downloading the desktop version from the Github page.
-            </h3>
-            <!--
+  <div class="body">
+    <div *ngIf="isElectron" class="buttons flex column justify-content-center g-1">
+      <h2 class="text-align-center">Choose an existing status file, or create a new one:</h2>
+      <div class="buttons flex justify-content-center g-1">
+        <button (click)="openStatusFile($event)">Choose existing status file</button>
+        <button (click)="createNewStatusFile()">Create a new status file</button>
+      </div>
+    </div>
+    <div *ngIf="!isElectron" class="buttons flex column">
+      <h2 class="text-align-center">This web version stores your data in your browser's local storage.<br /></h2>
+      <h3 class="text-align-center">
+        You can use this to familiarize yourself with the tool.<br />
+        If you like what you see, and would like to try it for your day-by-day tasks, consider downloading the desktop version from the Github page.
+      </h3>
+      <!--
             <button (click)="document.querySelector('#status-chooser').click()">
                 Choose existing status file
             </button>-->
-            <h2 class="flex justify-content-center m-y-1">
-                <button (click)="setupDemoBoard()">
-                    Try with a demo board
-                </button>
-            </h2>
-            <h4 class="flex justify-content-center">
-                <button (click)="createNewStatusFile()">
-                    Create a new status file
-                </button>
-            </h4>
+      <h2 class="flex justify-content-center m-y-1">
+        <button (click)="setupDemoBoard()">Try with a demo board</button>
+      </h2>
+      <h4 class="flex justify-content-center">
+        <button (click)="createNewStatusFile()">Create a new status file</button>
+      </h4>
 
-
-            <input id="status-chooser" type="file" #fileInput (change)="openStatusFile($event)" accept=".trptrk" hidden>
-        </div>
+      <input id="status-chooser" type="file" #fileInput (change)="openStatusFile($event)" accept=".trptrk" hidden />
     </div>
+  </div>
 </ng-template>
 <ng-template #step2>
-    <div class="title flex align-items-center justify-content-center g-1">
-        <logo></logo>
-        <h1>
-            Status file selected! You're good to go.
-        </h1>
+  <div class="title flex align-items-center justify-content-center g-1">
+    <logo></logo>
+    <h1>Status file selected! You're good to go.</h1>
+  </div>
+  <div class="body">
+    <p class="text-align-center">All set!</p>
+    <div class="buttons flex justify-content-center">
+      <button (click)="closeModal()">Let's start tracking</button>
     </div>
-    <div class="body">
-        <p class="text-align-center">
-            All set!
-        </p>
-        <div class="buttons flex justify-content-center">
-            <button (click)="closeModal()">
-                Let's start tracking
-            </button>
-        </div>
-    </div>
+  </div>
 </ng-template>
-<ng-template #step3>
-    test2
-</ng-template>
+<ng-template #step3> test2 </ng-template>

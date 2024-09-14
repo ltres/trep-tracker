@@ -1,5 +1,4 @@
-
 <div class="modal-content flex column" [class]="size">
-    <span class="close pointer absolute top right big p-05" (click)="closeModal()">×</span>
-    <ng-container  *ngTemplateOutlet="modalService.modalContent$ | async"></ng-container>
+  <span class="close pointer absolute top right big p-05" (click)="closeModal()">×</span>
+  <ng-container *ngTemplateOutlet="modalService.modalContent$ | async"></ng-container>
 </div>

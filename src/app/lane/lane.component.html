@@ -2,9 +2,9 @@
   <div class="lane-toolbar flex align-items-center g-05">
     <div class="grow no-wrap flex align-items-center g-05">
       @if (lane.searchTextContent) {
-      <div class="colored-title no-wrap" innerHTML="{{ lane.searchTextContent }}"></div>
+        <div class="colored-title no-wrap" innerHTML="{{ lane.searchTextContent }}"></div>
       } @else {
-      <div class="colored-title no-wrap" contenteditable="true" [(ngModel)]="this.lane.textContent" [board]="board" (ngModelChange)="debounceBoardUpdate()" (onTagsChange)="updateLaneTags($event)"></div>
+        <div class="colored-title no-wrap" contenteditable="true" [(ngModel)]="this.lane.textContent" [board]="board" (ngModelChange)="debounceBoardUpdate()" (onTagsChange)="updateLaneTags($event)"></div>
       }
 
       <prioritizer [container]="lane" [allowEmpty]="true" [multipleSelectable]="true" (onPrioritySelected)="togglePriority($event)" [tooltip]="'Set priority filter'"> </prioritizer>
@@ -15,7 +15,7 @@
       </span>
       <div class="task-count translucent">
         @if (!isStatic()) {
-        {{ tasksCount | async }} tasks
+          {{ tasksCount | async }} tasks
         }
       </div>
     </div>
@@ -23,7 +23,7 @@
     <div class="grow"></div>
     <div class="task-count translucent m-r-05">
       @if (isStatic()) {
-      <span [tooltip]="'This lane is a view'" class="pill pointer">static</span>
+        <span [tooltip]="'This lane is a view'" class="pill pointer">static</span>
       }
     </div>
 
@@ -73,11 +73,12 @@
     Showing
     <span *ngIf="lane.status" [innerHTML]="beautifyOrList(lane.status)"></span>
     tasks
-    <span *ngIf="lane.priority">with
+    <span *ngIf="lane.priority"
+      >with
       @if (lane.priority.length === 1) {
-      <span class="priority-{{ lane.priority[0] }}">priority </span>
+        <span class="priority-{{ lane.priority[0] }}">priority </span>
       } @else {
-      priority
+        priority
       }
     </span>
     <span *ngIf="lane.priority" [innerHTML]="beautifyOrList(lane.priority)"></span>
@@ -85,58 +86,58 @@
     <span *ngIf="lane.tags && lane.tags.length > 0" [innerHTML]="beautifyOrList(lane.tags)" class="tag"></span>
 
     @if ((lane.priority || lane.tags.length !== 0) && (lane.startTimeframe || lane.endTimeframe)) {
-    ,
+      ,
     }
     <span class="timeframes">
       @if (lane.startTimeframe) {
-      starting
-      @if (lane.startTimeframe.indexOf('hours') >= 0) {
-      in the
-      }
-      next {{ lane.startTimeframe }}
+        starting
+        @if (lane.startTimeframe.indexOf('hours') >= 0) {
+          in the
+        }
+        next {{ lane.startTimeframe }}
       }
       @if (lane.startTimeframe && lane.endTimeframe) {
-      and
+        and
       }
       @if (lane.endTimeframe) {
-      ending
-      @if (lane.endTimeframe.indexOf('hours') >= 0) {
-      in the
-      }
-      next {{ lane.endTimeframe }}
+        ending
+        @if (lane.endTimeframe.indexOf('hours') >= 0) {
+          in the
+        }
+        next {{ lane.endTimeframe }}
       }
       ({{ staticTasksCount | async }} {{ (staticTasksCount | async) === 1 ? 'task' : 'tasks' }})
     </span>
   </div>
 
   @if (!lane.collapsed) {
-  <div [class.non-static-island]="isStatic()" class="lane-task-container flex column">
-    <div [droppable]="5" [container]="lane" [executeOnDropReceived]="receiveDropToDumb.bind(this, undefined)" *ngIf="((tasks | async) ?? []).length > 0" class="dumb-dropzone"></div>
+    <div [class.non-static-island]="isStatic()" class="lane-task-container flex column">
+      <div [droppable]="5" [container]="lane" [executeOnDropReceived]="receiveDropToDumb.bind(this, undefined)" *ngIf="((tasks | async) ?? []).length > 0" class="dumb-dropzone"></div>
 
-    <ng-container *ngFor="let task of tasks | async; trackBy: trackBy">
-      <task [task]="task" [parent]="lane" [board]="board" [lane]="lane" [draggableDir]="task" [containerEl]="el.nativeElement" [layout]="board.layout" (onDragStart)="interactingWithChildTasks = true" (onDragEnd)="interactingWithChildTasks = false" (onToggleShowNotes)="interactingWithChildTasks = $event" (createNewTask)="createNewTask()" [class]="isRecurringTask(task) ? 'recurrent-task-container p-x-05 m-x--1' : ''"></task>
+      <ng-container *ngFor="let task of tasks | async; trackBy: trackBy">
+        <task [task]="task" [parent]="lane" [board]="board" [lane]="lane" [draggableDir]="task" [containerEl]="el.nativeElement" [layout]="board.layout" (onDragStart)="interactingWithChildTasks = true" (onDragEnd)="interactingWithChildTasks = false" (onToggleShowNotes)="interactingWithChildTasks = $event" (createNewTask)="createNewTask()" [class]="isRecurringTask(task) ? 'recurrent-task-container p-x-05 m-x--1' : ''"></task>
 
-      <div *ngIf="!isPlaceholder(task)" [droppable]="5" [container]="lane" [executeOnDropReceived]="receiveDropToDumb.bind(this, task)" class="dumb-dropzone"></div>
-    </ng-container>
-  </div>
-
-  <div *ngIf="isStatic()">
-    <div class="static-view flex column">
-      <task *ngFor="let task of staticTasks | async; trackBy: trackBy" [staticView]="true" [showChildren]="lane.showChildren" [task]="task" (onToggleShowNotes)="interactingWithChildTasks = $event" [parent]="lane" [board]="board" [lane]="lane" [class]="isRecurringTask(task) ? 'recurrent-task-container p-x-05 m-x--1' : ''"></task>
+        <div *ngIf="!isPlaceholder(task)" [droppable]="5" [container]="lane" [executeOnDropReceived]="receiveDropToDumb.bind(this, task)" class="dumb-dropzone"></div>
+      </ng-container>
     </div>
-  </div>
 
-  <!-- <p class="floating-label">Lane: {{lane.id}}</p> -->
+    <div *ngIf="isStatic()">
+      <div class="static-view flex column">
+        <task *ngFor="let task of staticTasks | async; trackBy: trackBy" [staticView]="true" [showChildren]="lane.showChildren" [task]="task" (onToggleShowNotes)="interactingWithChildTasks = $event" [parent]="lane" [board]="board" [lane]="lane" [class]="isRecurringTask(task) ? 'recurrent-task-container p-x-05 m-x--1' : ''"></task>
+      </div>
+    </div>
 
-  <div *ngIf="!isStatic()" class="lane-toolbar flex g-05">
-    <div class="grow"></div>
-    <button class="small no-grow new-task" (click)="createNewTask()">
-      <span *ngIf="lane.priority" class="warning">⚠</span>
-      ➕ New task
-    </button>
-  </div>
+    <!-- <p class="floating-label">Lane: {{lane.id}}</p> -->
+
+    <div *ngIf="!isStatic()" class="lane-toolbar flex g-05">
+      <div class="grow"></div>
+      <button class="small no-grow new-task" (click)="createNewTask()">
+        <span *ngIf="lane.priority" class="warning">⚠</span>
+        ➕ New task
+      </button>
+    </div>
   } @else {
-  <span (click)="toggleCollapse()" class="inline-block pointer" [tooltip]="'Expand'">...</span>
+    <span (click)="toggleCollapse()" class="inline-block pointer" [tooltip]="'Expand'">...</span>
   }
 </div>
 

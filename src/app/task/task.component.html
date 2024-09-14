@@ -4,9 +4,9 @@
 
     <label *ngIf="task.gantt && task.gantt.recurrence" (click)="task.gantt.displayRecurrence = !task.gantt.displayRecurrence" class="pointer">
       @if (task.gantt.displayRecurrence) {
-      <span tooltip="Hide recurrences">↻</span>
+        <span tooltip="Hide recurrences">↻</span>
       } @else {
-      <span class="translucent" tooltip="Show recurrences">↻</span>
+        <span class="translucent" tooltip="Show recurrences">↻</span>
       }
     </label>
 
@@ -15,11 +15,11 @@
   </div>
   <div class="flex w-100 g-025 align-items-center">
     @if (enableGanttView) {
-    <div innerHTML="{{ task.textContent }}"></div>
+      <div innerHTML="{{ task.textContent }}"></div>
     } @else if (task.searchTextContent) {
-    <div innerHTML="{{ task.searchTextContent }}"></div>
+      <div innerHTML="{{ task.searchTextContent }}"></div>
     } @else {
-    <div class="task-text-content grow" [class.placeholder]="isPlaceholder()" #editor contenteditable="true" [preventEvents]="!editorActive" [board]="board" [(ngModel)]="task.textContent" (ngModelChange)="debounceBoardUpdate()" (onTagsChange)="updateTaskTags($event)"></div>
+      <div class="task-text-content grow" [class.placeholder]="isPlaceholder()" #editor contenteditable="true" [preventEvents]="!editorActive" [board]="board" [(ngModel)]="task.textContent" (ngModelChange)="debounceBoardUpdate()" (onTagsChange)="updateTaskTags($event)"></div>
     }
 
     <div class="grow"></div>
@@ -43,19 +43,27 @@
 </div>
 
 <div *ngIf="showChildren" class="task-children-wrapper g-025">
-  <ng-container *ngFor="let child of this.task.children; let last = last; trackBy: trackBy" [ngTemplateOutlet]="taskWithLine" [ngTemplateOutletContext]="{
+  <ng-container
+    *ngFor="let child of this.task.children; let last = last; trackBy: trackBy"
+    [ngTemplateOutlet]="taskWithLine"
+    [ngTemplateOutletContext]="{
       child: child,
       last: last,
       static: isStaticView(),
-    }"></ng-container>
+    }"
+  ></ng-container>
 </div>
 
 <div *ngIf="isRecurringTask(task) && task.gantt?.recurrence && task.gantt?.displayRecurrence && showChildren" class="task-recurrence-wrapper g-025">
-  <ng-container *ngFor="let recurrence of this.task.recurrences; let last = last; trackBy: trackBy" [ngTemplateOutlet]="taskWithLine" [ngTemplateOutletContext]="{
+  <ng-container
+    *ngFor="let recurrence of this.task.recurrences; let last = last; trackBy: trackBy"
+    [ngTemplateOutlet]="taskWithLine"
+    [ngTemplateOutletContext]="{
       child: recurrence,
       last: last,
       static: true,
-    }"></ng-container>
+    }"
+  ></ng-container>
 </div>
 
 <ng-template #taskWithLine let-child="child" let-last="last" let-static="static">
@@ -70,49 +78,59 @@
 
 <ng-template #datesText let-task="task">
   @if (task.gantt && task.children.length === 0) {
-  @if (isRecurringTask(task)) {
-  <span class="translucent">{{ task.gantt.recurrence }}</span>
-  } @else if (isRecurringTaskChild(task)) {
-  <span class="translucent">recurrence </span><span class="half-translucent">{{ task.gantt.recurringChildIndex }}</span><span class="translucent">: </span>
-  } @else {
-  <span class="translucent">planned </span>
-  }
+    @if (isRecurringTask(task)) {
+      <span class="translucent">{{ task.gantt.recurrence }}</span>
+    } @else if (isRecurringTaskChild(task)) {
+      <span class="translucent">recurrence </span><span class="half-translucent">{{ task.gantt.recurringChildIndex }}</span
+      ><span class="translucent">: </span>
+    } @else {
+      <span class="translucent">planned </span>
+    }
 
-  @if (!isRecurringTask(task)) {
-  <span [innerHTML]="getProximityIcons(task.gantt.startDate, 'start')"></span>
-  <ng-container [ngTemplateOutlet]="date" [ngTemplateOutletContext]="{ date: task.gantt.startDate }"></ng-container>
-  @if (task.gantt.startDate !== task.gantt.endDate) {
-  <span class="translucent"> ⤳ </span>
-  <span [innerHTML]="getProximityIcons(task.gantt.nextRecurrenceEndDate ?? task.gantt.endDate, 'end')"></span>
-  <ng-container [ngTemplateOutlet]="date" [ngTemplateOutletContext]="{
+    @if (!isRecurringTask(task)) {
+      <span [innerHTML]="getProximityIcons(task.gantt.startDate, 'start')"></span>
+      <ng-container [ngTemplateOutlet]="date" [ngTemplateOutletContext]="{ date: task.gantt.startDate }"></ng-container>
+      @if (task.gantt.startDate !== task.gantt.endDate) {
+        <span class="translucent"> ⤳ </span>
+        <span [innerHTML]="getProximityIcons(task.gantt.nextRecurrenceEndDate ?? task.gantt.endDate, 'end')"></span>
+        <ng-container
+          [ngTemplateOutlet]="date"
+          [ngTemplateOutletContext]="{
             date: task.gantt.nextRecurrenceEndDate ?? task.gantt.endDate,
-          }"></ng-container>
-  <span class="translucent"> ({{ getDiffInDays(this.task.gantt.startDate, this.task.gantt.endDate) }} day{{ getDiffInDays(this.task.gantt.startDate, this.task.gantt.endDate) != 1 ? 's' : '' }})</span>
-  }
-  }
+          }"
+        ></ng-container>
+        <span class="translucent"> ({{ getDiffInDays(this.task.gantt.startDate, this.task.gantt.endDate) }} day{{ getDiffInDays(this.task.gantt.startDate, this.task.gantt.endDate) != 1 ? 's' : '' }})</span>
+      }
+    }
   }
   @if (task.status === 'archived') {
-  <span class="translucent">, archived </span>
-  <ng-container [ngTemplateOutlet]="date" [ngTemplateOutletContext]="{
+    <span class="translucent">, archived </span>
+    <ng-container
+      [ngTemplateOutlet]="date"
+      [ngTemplateOutletContext]="{
         date: this.task.dates.archived?.enter,
-      }"></ng-container>
-  <time-bar [container]="task" [boardDatesConfig]="this.board.datesConfig"></time-bar>
+      }"
+    ></ng-container>
+    <time-bar [container]="task" [boardDatesConfig]="this.board.datesConfig"></time-bar>
   }
 
   @if (task.status === 'completed') {
-  <span class="translucent">, completed </span>
-  <ng-container [ngTemplateOutlet]="date" [ngTemplateOutletContext]="{
+    <span class="translucent">, completed </span>
+    <ng-container
+      [ngTemplateOutlet]="date"
+      [ngTemplateOutletContext]="{
         date: this.task.dates.completed?.enter,
-      }"></ng-container>
+      }"
+    ></ng-container>
   }
 </ng-template>
 
 <ng-template #date let-date="date">
   @if (getDiffInDays(getToday(), date) > 0) {
-  <span class="half-translucent pointer" [tooltip]="formatDate(date, 'fullDateFormat') + ' - in ' + getDiffInDays(getToday(), date) + ' day' + (getDiffInDays(getToday(), date) != 1 ? 's' : '')">{{ formatDate(date) }}</span>
+    <span class="half-translucent pointer" [tooltip]="formatDate(date, 'fullDateFormat') + ' - in ' + getDiffInDays(getToday(), date) + ' day' + (getDiffInDays(getToday(), date) != 1 ? 's' : '')">{{ formatDate(date) }}</span>
   } @else if (getDiffInDays(getToday(), date) == 0) {
-  <span class="half-translucent pointer" [tooltip]="formatDate(date, 'fullDateFormat') + ' - today'">{{ formatDate(date) }}</span>
+    <span class="half-translucent pointer" [tooltip]="formatDate(date, 'fullDateFormat') + ' - today'">{{ formatDate(date) }}</span>
   } @else {
-  <span class="half-translucent pointer" [tooltip]="formatDate(date, 'fullDateFormat') + ' - ' + -getDiffInDays(getToday(), date) + ' day' + (-getDiffInDays(getToday(), date) != 1 ? 's' : '') + ' ago'">{{ formatDate(date) }}</span>
+    <span class="half-translucent pointer" [tooltip]="formatDate(date, 'fullDateFormat') + ' - ' + -getDiffInDays(getToday(), date) + ' day' + (-getDiffInDays(getToday(), date) != 1 ? 's' : '') + ' ago'">{{ formatDate(date) }}</span>
   }
 </ng-template>
