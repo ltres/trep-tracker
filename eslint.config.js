@@ -2,6 +2,7 @@ import globals from "globals";
 import pluginJs from "@eslint/js";
 import tseslint from "typescript-eslint";
 import stylisticJs from '@stylistic/eslint-plugin-js'
+import unusedImports from "eslint-plugin-unused-imports";
 
 
 export default [
@@ -9,7 +10,8 @@ export default [
     files: ["src/**/*.{js,mjs,cjs,ts}","tests/**/*.{js,mjs,cjs,ts}"],
     ignores: ["dist/**", "build/**", "node_modules/**"],
     plugins: {
-      '@stylistic/js': stylisticJs
+      '@stylistic/js': stylisticJs,
+      "unused-imports": unusedImports,
     },
     rules: {
       "indent": ["error", 2,  { "SwitchCase": 1 }],
@@ -25,6 +27,17 @@ export default [
       "@stylistic/js/space-before-function-paren": ["error", "never"], // function () => function()
       "@stylistic/js/block-spacing": ["error", "always"], // if(){...} => if(){ ... }
       
+      "no-unused-vars": "off", // or "@typescript-eslint/no-unused-vars": "off",
+      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-vars": [
+          "warn",
+          {
+              "vars": "all",
+              "varsIgnorePattern": "^_",
+              "args": "after-used",
+              "argsIgnorePattern": "^_",
+          },
+      ]
     },
   },
   {
