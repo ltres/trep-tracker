@@ -19,7 +19,21 @@ export function isBoard( parent: Container | undefined ): parent is Board{
   }
   return( parent as Board )._type === 'board';
 }
-  
+
+export function isContainers( target: Container[] | unknown ): target is Container[]{
+  if( !target ){
+    return false;
+  }
+  const c = target as Container[];
+  return c.length === 0 || !c.find( e => !e.textContent );
+}
+
+export function assertIsContainers( target: Container[] | unknown ): asserts target is Container[]{
+  if( !isContainers( target ) ){
+    throw new Error( 'Not a Container[]' );
+  }
+}
+
 export function isGanttTask( parent: Container | undefined ): parent is GanttTask{
   if( !parent ){
     return false;

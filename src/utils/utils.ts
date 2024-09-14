@@ -337,6 +337,11 @@ export function eventuallyPatch( board: Board ): Board{
         }
       }
 
+      // createdLaneId removal
+      if( mayBeOldTask.createdLaneId ){
+        delete mayBeOldTask.createdLaneId
+      }
+
       // cleanup orders
       if( mayBeOldTask.gantt?.order ){
         for( const ord of  Object.keys( mayBeOldTask.gantt.order ) ){

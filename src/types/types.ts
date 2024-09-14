@@ -11,6 +11,7 @@ export type Environment = {
 }
 export interface Board extends Container {
     layout: Layout
+    parentId: "app",
     children: Lane[],
     _type: 'board',
     datesConfig: DateDisplayConfig
@@ -33,7 +34,7 @@ export interface Task extends Container {
     _type: 'task',
     children: Task[],
     recurrences?: RecurringTaskChild[],
-    createdLaneId: string,
+    
     priority: Priority,
     status: Status,
     notes?: string,
@@ -82,6 +83,7 @@ export interface RecurringTaskChild extends GanttTask{
 export interface Container {
     id: string;
     _type: string,
+    parentId: string,
     textContent: string;
     searchTextContent?: string,
     children: Container[];
@@ -132,7 +134,7 @@ export const getNewTask: ( lane: Lane | string, id: string | undefined, textCont
   const taskId = id ?? generateUUID()
   const t: Task = {
     id: taskId,
-    createdLaneId: typeof lane === 'string' ? lane : lane.id,
+    parentId: typeof lane === 'string' ? lane : lane.id,
     textContent: typeof textContent != 'undefined' ? textContent : `Task ${taskId}`,
     children: [],
     tags: [],
@@ -149,10 +151,40 @@ export const getNewTask: ( lane: Lane | string, id: string | undefined, textCont
   return t
 };
 
-export const getNewLane: ( archive: boolean ) => Lane = ( archive: boolean ) => {
+/*
+function proxyContainer<T extends Container>( obj: T ): T{
+  return new Proxy( obj, {
+    set( target: T, prop: string | symbol, value: unknown, receiver: unknown ){
+      if( prop === 'children' ){
+        assertIsContainers( value );
+        value.forEach( c => c.parentId = target.id ) // Each time a children array is set, updates references to the parent
+        return Reflect.set( target, prop, value ? proxyContainers( value, target.id ) : value, receiver );
+      }
+      return Reflect.set( target, prop, value, receiver );
+    }
+  } );
+}
+
+function proxyContainers( arr: Container[], parentId: string ): Container[]{
+  return new Proxy( arr, {
+    set( target: Container[], prop: string | symbol, value: Container, receiver: unknown ){
+      if( typeof prop === 'string' ){
+        const numProp = Number( prop );
+        if( !isNaN( numProp ) ){
+          value.parentId = parentId // Each time a new element is added to a children array, update references to the new parent
+          return Reflect.set( target, prop, value, receiver );
+        }
+      }
+      return Reflect.set( target, prop, value, receiver );
+    }
+  } );
+}
+*/
+export const getNewLane: ( board: Board, archive: boolean ) => Lane = ( board: Board, archive: boolean ) => {
   const id = generateUUID();
   return{
     id: id,
+    parentId: board.id,
     tags: [],
     index: 0,
     showChildren: true,
@@ -205,9 +237,10 @@ export function getLayouts( width?: number | undefined ): LayoutProperties{
   };
 }
 
-export const getNewBoard: ( firstLane: Lane ) => Board = ( firstLane: Lane ) => (
+export const getNewBoard: ( firstLane?: Lane ) => Board = ( firstLane?: Lane ) => (
   {
     id: generateUUID(),
+    parentId: "app",
     layout: 'absolute',
     flexColumns: undefined,
     _type: 'board',
@@ -216,7 +249,7 @@ export const getNewBoard: ( firstLane: Lane ) => Board = ( firstLane: Lane ) => 
     status: undefined,
     priority: undefined,
     dates: {},
-    children: [firstLane],
+    children: firstLane ? [firstLane] : [],
     creationDate: new Date().toISOString() as ISODateString,
     stateChangeDate: undefined,
     archived: false,

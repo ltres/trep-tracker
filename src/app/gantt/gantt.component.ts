@@ -1,10 +1,10 @@
 import{ AfterViewInit, ApplicationRef, Component, createComponent, Input, OnDestroy }from'@angular/core';
-import{ Board, GanttTask, getNewTask, Lane, RecurringTask, Task }from'../../types/types';
+import{ Board, GanttTask, Lane, Task }from'../../types/types';
 import{ BoardService }from'../../service/board.service';
 import{ gantt, Task as DhtmlxTask, GanttStatic, Link as DhtmlxLink }from'dhtmlx-gantt';
 import{ TaskComponent }from'../task/task.component';
-import{ toIsoString, addUnitsToDate, ganttDateToDate, formatDate }from'../../utils/date-utils';
-import{ getFirstMentionTag, mapToGanttRecurrence, initGanttData, getTaskBackgroundColor, getRecurrenceId }from'../../utils/utils';
+import{ toIsoString, ganttDateToDate, formatDate }from'../../utils/date-utils';
+import{ getFirstMentionTag, initGanttData, getTaskBackgroundColor }from'../../utils/utils';
 import{  ganttConfig, tagTypes }from'../../types/constants';
 import{ assertIsGanttTask, isRecurringTask }from'../../utils/guards';
 
@@ -436,49 +436,6 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     const html = component.location.nativeElement.outerHTML;
     component.destroy();
     return html;
-  }
-
-  /**
-   * Starting from the task, generates an array of recurrences centered about the provided date.
-   * Task could originally have been planned in the past, so this is accounted for.
-   * If the date is inside a recurrence date, the task will be shown in full, otherwise it will be rendered as a recurrence step.
-   * If the date is not inside a recurrence date, the next recurrence will be shown in full.
-   * @param task the recurrent task
-   */
-  private generateCenteredRecurrences( task: RecurringTask, order: number, parentId: string | undefined ): DhtmlxTask[]{
-    if( !task.gantt?.recurrence ){
-      return[];
-    }
-    const firstResourceTag = task.tags?.find( t => t.type === tagTypes.tagOrange )?.tag;
-    const ret : DhtmlxTask[] = []
-    /*
-    // get previous:
-    for( let i = -GanttConfig.recurrenceIterationsShown / 2 + 1; i < 0 ; i++  ){
-      const recurrenceStartDate = addUnitsToDate(task.gantt.startDate, i, mapToGanttRecurrence(task.gantt.recurrence));
-      const recurrenceEndDate = addUnitsToDate(task.gantt.endDate, i, mapToGanttRecurrence(task.gantt.recurrence));
-      const child = initGanttData( getNewTask(task.createdLaneId, `${task.id}-recurrence-${i}` ) , new Date());
-      child.gantt.startDate = toIsoString(recurrenceStartDate);
-      child.gantt.endDate = toIsoString(recurrenceEndDate);
-      ret.push( this.toDhtmlxTask(child, order++, parentId, GanttConfig.recurrentTaskCssClass, true));
-    }
-      
-    // central recurrence:
-    const centeredChild = initGanttData( getNewTask(task.createdLaneId, `` ) , new Date());
-    centeredChild.gantt.startDate = task.gantt.startDate;
-    centeredChild.gantt.endDate = task.gantt.endDate;
-    ret.push(this.toDhtmlxTask(centeredChild, order++, parentId, GanttConfig.recurrentTaskCssClass + " highlighted" , "highlighted" ));
-*/
-    // get next:
-    for( let i = -1; i < ganttConfig.recurrenceIterationsShown / 2 + 1; i++  ){
-      const recurrenceStartDate = addUnitsToDate( task.gantt.startDate, i, mapToGanttRecurrence( task.gantt.recurrence ) );
-      const recurrenceEndDate = addUnitsToDate( task.gantt.endDate, i, mapToGanttRecurrence( task.gantt.recurrence ) );
-      const child = initGanttData( getNewTask( task.createdLaneId, getRecurrenceId( task.id, i ), undefined ) , new Date() );
-      child.gantt.startDate = toIsoString( recurrenceStartDate );
-      child.gantt.endDate = toIsoString( recurrenceEndDate );
-      ret.push( this.toDhtmlxTask( child, firstResourceTag ? getTaskBackgroundColor( firstResourceTag ) : undefined, order++, parentId, ganttConfig.recurrentTaskCssClass, true, i ) );
-    }
-
-    return ret
   }
 
   protected selectView( view: "months" | "days" | "hours" ){

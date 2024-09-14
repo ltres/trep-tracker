@@ -88,15 +88,22 @@ export class BoardService{
 
       this._allTasks$.next( allTasks );
       this._allLanes$.next( allLanes );
-      this._allParents$.next( [...allTasks, ...allLanes, ...this.boards] );
+      const allParents = [...allTasks, ...allLanes, ...this.boards];
+
+      // Update parent references (except for children of archive lane)
+      allParents.filter( p => !isLane( p ) || !p.isArchive ).forEach( p => p.children.forEach( c => c.parentId = p.id ) )
+
+      this._allParents$.next( allParents );
     } );
   }
 
   addNewBoard(){
-    const board = getNewBoard( getNewLane( false ) );
-
+    const board = getNewBoard();
+    const firstLane = getNewLane( board, false )
+    board.children = [firstLane];
     this._boards$.next( [...this._boards$.getValue(), board] );
   }
+
   addLane( board: Board ){
     this._boards$.next( [...this._boards$.getValue(), board] );
   }
@@ -421,7 +428,7 @@ export class BoardService{
     }
     // activeBoard.children = activeBoard.children.filter(l => l.children.length > 0 || l.tags.length > 0);
 
-    const newLane: Lane = getNewLane( archive );
+    const newLane: Lane = getNewLane( params.board, archive );
     newLane.coordinates = {x, y};
     if( width ){
       newLane.layouts.absolute.width = width;
@@ -486,7 +493,7 @@ export class BoardService{
     if( task.status === 'archived' ){
       const parent = this.findDirectParent( [task] )
       if( parent ){
-        // Removal from the original lane
+        // Removal from the original parent
         parent.children = parent.children.filter( t => t.id !== task.id );
       }
 
@@ -534,19 +541,19 @@ export class BoardService{
           p.recurrences.sort( ( r1,r2 ) => r1.gantt.recurringChildIndex - r2.gantt.recurringChildIndex )
         }
       }else{
-      // send the task back to the original lane
-      // Identify the original lane
-        const lane = this._allParents$.getValue()?.find( p => p.id === task.createdLaneId );
-        if( lane ){
-        // add the task to the original lane
-          lane.children.push( task );
+        // send the task back to the original lane
+        // Identify the original lane
+        const parent = this._allParents$.getValue()?.find( p => p.id === task.parentId );
+        if( parent ){
+          // add the task to the original lane
+          parent.children.push( task );
         }else{
-          console.warn( `Cannot find lane with id ${task.createdLaneId}` );
+          console.warn( `Cannot find lane with id ${task.parentId}` );
           const params: AddFloatingLaneParams = {
             board, x:0, y:0, children: [task], archive:false, width:300
           }
           const lane = this.addFloatingLane( params );
-          task.createdLaneId = lane.id;
+          task.parentId = lane.id;
         }
       }
 
@@ -900,6 +907,7 @@ export class BoardService{
   moveToBoard( currentBoard: Board, lane:Lane, targetBoard: Board ){
     currentBoard.children = currentBoard.children.filter( c => c.id !== lane.id );
     targetBoard.children.unshift( lane );
+    lane.parentId = targetBoard.id;
     this.publishBoardUpdate();
   }
   
@@ -1000,7 +1008,7 @@ export class BoardService{
       // Calculate the next child dates accordingly:
 
       // Manage following children:
-      const nextChild = getNewTask( task.createdLaneId, undefined, task.textContent );
+      const nextChild = getNewTask( task.id, undefined, task.textContent );
       nextChild.gantt = {
         showData: true,
         startDate: toIsoString( childStartDate ),
@@ -1029,7 +1037,10 @@ export class BoardService{
     const o = JSON.parse( data );
     if( !o.boards ){
       console.warn( 'No boards found in the data' );
-      this._boards$.next( [getNewBoard( getNewLane( false ) )] );
+      const board = getNewBoard(  );
+      const lane = getNewLane( board,false )
+      board.children = [lane]
+      this._boards$.next( [board] );
       this._selectedTasks$.next( [] );
       this._lastSelectedTask$.next( undefined );
       this._editorActiveTask$.next( undefined );
