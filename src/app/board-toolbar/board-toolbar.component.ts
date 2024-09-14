@@ -89,7 +89,7 @@ export class BoardToolbarComponent {
 
   getGanttTasks$(): Observable<Task[] | undefined> {
     return this.boardService.getTasksForBoard$(this.board).pipe(
-      map( tasks => tasks.filter(task => task.includeInGantt  && !isPlaceholder(task) && task.status !== 'archived')),
+      map( tasks => tasks.filter(task => task.gantt?.startDate  && !isPlaceholder(task) && task.status !== 'archived')),
     );
   }
 

@@ -188,10 +188,12 @@ export class GanttComponent implements AfterViewInit, OnDestroy {
       const dhtmlxTask = this.toDhtmlxTask(initializedTask, firstResourceTag ? getTaskBackgroundColor(firstResourceTag) : undefined, order++, parentId, tasksCssClass, false, undefined);
       convertedTasks.push(dhtmlxTask);
       
-      if( isRecurringTask(initializedTask) ){
+      if( isRecurringTask(initializedTask) && task.recurrences ){
         // Task has recurrence. Retrieve its recurrences.
+        //this.toDhtmlxGanttDataModel(task.recurrences, convertedTasks, convertedLinks, initializedTask.id, tasksCssClass );
+        
         const recs = task.recurrences?.map( (r,i) => this.toDhtmlxTask(r, firstResourceTag ? getTaskBackgroundColor(firstResourceTag) : undefined, order++, task.id, tasksCssClass, true, i) ) ?? [];
-        convertedTasks = convertedTasks.concat(recs);
+        convertedTasks = convertedTasks.concat(recs); 
       }
       
       if (task.children.length > 0) {

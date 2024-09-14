@@ -214,8 +214,8 @@ export class LaneComponent extends ContainerComponent implements OnInit {
 
   getGanttTasks$(): Observable<Task[] | undefined> {
     return isStatic(this.lane) ?
-      this.staticTasks.pipe( map(tasks => tasks?.filter(t => t.includeInGantt) ?? [])) :
-      of(this.lane.children.filter(t =>  t.includeInGantt ));
+      this.staticTasks.pipe( map(tasks => tasks?.filter(t => t.gantt?.startDate) ?? [])) :
+      of(this.lane.children.filter(t =>  t.gantt?.startDate ));
   }
   toggleCollapse() {
     this.lane.collapsed = !this.lane.collapsed

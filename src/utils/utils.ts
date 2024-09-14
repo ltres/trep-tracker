@@ -350,8 +350,8 @@ export function eventuallyPatch( board: Board ): Board{
         }
       }
 
-      if(typeof mayBeOldTask.includeInGantt === 'undefined'){
-        mayBeOldTask.includeInGantt = false;
+      if(mayBeOldTask.includeInGantt){
+        delete mayBeOldTask.includeInGantt;
       }
       if( typeof mayBeOldTask.order === 'number' ){
         delete mayBeOldTask.order

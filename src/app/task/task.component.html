@@ -30,7 +30,7 @@
         <date-picker *ngIf="showDatePicker" [dateDisplayConfig]="board.datesConfig" [showRecurrences]="true" [startDate]="fromIsoString(task.gantt?.startDate)" [endDate]="fromIsoString(task.gantt?.endDate)" [selectedRecurrence]="task.gantt?.recurrence" (onSetClicked)="setDates($event)" (onCancel)="setDates(undefined)" (onClose)="showDatePicker = false"></date-picker>
       </span>
 
-      <span *ngIf="!isPlaceholder() && !isRecurringTaskChild(task)" [tooltip]="'Toggle show in Gantt chart'" [position]="'top'" [class.selected]="task.includeInGantt" (click)="toggleShowInGantt()" class="show-in-gantter pointer"> 📊 </span>
+      <!-- <span *ngIf="!isPlaceholder() && !isRecurringTaskChild(task)" [tooltip]="'Toggle show in Gantt chart'" [position]="'top'" [class.selected]="task.includeInGantt" (click)="toggleShowInGantt()" class="show-in-gantter pointer"> 📊 </span> -->
       <span class="task-notes pointer" *ngIf="!isPlaceholder()" [tooltip]="(task.notes && task.notes.length > 0 ? 'Edit' : 'Create') + ' task notes'" [position]="'top'" (click)="toggleShowNotes()" [class.selected]="task.notes && task.notes.length > 0" [class.open]="showNotes"> 🗒️ </span>
       <notes [notes]="task.notes" (onNoteChanged)="storeNotes($event)" *ngIf="showNotes"></notes>
     </div>
@@ -50,7 +50,7 @@
     }"></ng-container>
 </div>
 
-<div *ngIf="isRecurringGanttTask(task) && task.gantt?.recurrence && task.gantt?.displayRecurrence && showChildren" class="task-recurrence-wrapper g-025">
+<div *ngIf="isRecurringTask(task) && task.gantt?.recurrence && task.gantt?.displayRecurrence && showChildren" class="task-recurrence-wrapper g-025">
   <ng-container *ngFor="let recurrence of this.task.recurrences; let last = last; trackBy: trackBy" [ngTemplateOutlet]="taskWithLine" [ngTemplateOutletContext]="{
       child: recurrence,
       last: last,
@@ -70,7 +70,7 @@
 
 <ng-template #datesText let-task="task">
   @if (task.gantt && task.children.length === 0) {
-  @if (isRecurringGanttTask(task)) {
+  @if (isRecurringTask(task)) {
   <span class="translucent">{{ task.gantt.recurrence }}</span>
   } @else if (isRecurringTaskChild(task)) {
   <span class="translucent">recurrence </span><span class="half-translucent">{{ task.gantt.recurringChildIndex }}</span><span class="translucent">: </span>
@@ -78,7 +78,7 @@
   <span class="translucent">planned </span>
   }
 
-  @if (!isRecurringGanttTask(task)) {
+  @if (!isRecurringTask(task)) {
   <span [innerHTML]="getProximityIcons(task.gantt.startDate, 'start')"></span>
   <ng-container [ngTemplateOutlet]="date" [ngTemplateOutletContext]="{ date: task.gantt.startDate }"></ng-container>
   @if (task.gantt.startDate !== task.gantt.endDate) {

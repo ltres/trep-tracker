@@ -233,11 +233,11 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     this.onToggleShowNotes.emit(this.showNotes);
   }
   toggleShowInGantt() {
-    this.task.includeInGantt = !this.task.includeInGantt;
+    //this.task.includeInGantt = !this.task.includeInGantt;
     this.boardService.publishBoardUpdate();
   }
 
-  isRecurringGanttTask(task: Task){
+  isRecurringTask(task: Task){
     return isRecurringTask(task);
   }
 

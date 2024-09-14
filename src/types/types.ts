@@ -38,7 +38,6 @@ export interface Task extends Container {
     status: Status,
     notes?: string,
     startDate?: ISODateString,
-    includeInGantt: boolean,
     gantt?: GanttData
 }
 
@@ -137,7 +136,6 @@ export const getNewTask: (lane: Lane | string, id: string | undefined, textConte
     textContent: typeof textContent != 'undefined' ? textContent : `Task ${taskId}`,
     children: [],
     tags: [],
-    includeInGantt: false,
     dates: {
 
     },

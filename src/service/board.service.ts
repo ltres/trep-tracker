@@ -989,7 +989,11 @@ export class BoardService {
         childStartDate = shiftByRecurrence(childStartDate, task.gantt.recurrence);
         childEndDate = shiftByRecurrence(childEndDate, task.gantt.recurrence)
       }
+    }else{
+      childStartDate = shiftByRecurrence(childStartDate, task.gantt.recurrence);
+      childEndDate =  shiftByRecurrence(childEndDate, task.gantt.recurrence);
     }
+
     // now we have the date for the first child that is running today or is in the future.
     // Calculate the next child dates accordingly:
     for( let k = 0; k < recurringChildrenLimit - recurrencesToConsider.length; k++ ){
