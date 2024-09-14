@@ -2,7 +2,6 @@ import { Type } from '@angular/core';
 import { generateUUID } from '../utils/utils';
  
 import { StorageServiceAbstract } from './storage';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { layoutValues, recurrenceValues, timeframeValues, statusValues, priorityValues, timezoneValues, dateFormats } from './constants';
 
 export type Environment = {
@@ -33,12 +32,12 @@ export interface Lane extends Container {
 export interface Task extends Container {
     _type: 'task',
     children: Task[],
+    recurrences?: RecurringTaskChild[],
     createdLaneId: string,
     priority: Priority,
     status: Status,
     notes?: string,
     startDate?: ISODateString,
-    includeInGantt: boolean,
     gantt?: GanttData
 }
 
@@ -46,14 +45,15 @@ export type GanttData = {
   showData?: boolean, // activates when 'cancel' button is clicked and prevents dates data to be displayed
   startDate: ISODateString,
   endDate: ISODateString,
-  nextRecurrenceStartDate?: ISODateString, // for recurrent tasks
-  nextRecurrenceEndDate?: ISODateString, // for recurrent tasks
   progress: number,
   order?: {
     board?: number,
     [laneId: string]: number | undefined
   },
   recurrence?: Recurrence,
+  displayRecurrence?: boolean,
+  recurringChildIndex?: number,
+  fatherRecurringTaskId?: string,
   successors: {
       taskId: string
       linkId: string
@@ -64,11 +64,18 @@ export interface GanttTask extends Task{
     gantt: GanttData
 }
 
-export interface RecurringGanttTask extends Task{
+export interface RecurringTask extends GanttTask{
+  recurrences: RecurringTaskChild[],
   gantt: GanttData & { 
     recurrence: Recurrence,
-    nextRecurrenceStartDate: ISODateString, // for recurrent tasks
-    nextRecurrenceEndDate: ISODateString, // for recurrent tasks
+    displayRecurrence: boolean
+  }
+}
+
+export interface RecurringTaskChild extends GanttTask{
+  gantt: GanttData & { 
+    recurringChildIndex: number,
+    fatherRecurringTaskId: string
   }
 }
 
@@ -129,7 +136,6 @@ export const getNewTask: (lane: Lane | string, id: string | undefined, textConte
     textContent: typeof textContent != 'undefined' ? textContent : `Task ${taskId}`,
     children: [],
     tags: [],
-    includeInGantt: false,
     dates: {
 
     },

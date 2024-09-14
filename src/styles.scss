@@ -262,7 +262,7 @@ button {
   @return $string;
 }
 
-@include generate-utility-classes(0.25 0.5 1);
+@include generate-utility-classes(-0.25 -0.5 -1 0.25 0.5 1);
 
 .danger {
   color: $danger-color
@@ -380,7 +380,9 @@ button {
   background-color: $priority-4-color;
 }
 
-
+.recurrence-child {
+  font-style: italic;
+}
 
 
 .drag-handle {

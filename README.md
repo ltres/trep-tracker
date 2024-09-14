@@ -15,7 +15,7 @@ The above is a browser-based version, intended to showcase the functionalities t
 If you like what you see, consider downloading the <a href="https://github.com/ltres/trep-tracker/releases">distributed package</a> to run it natively on your system, for an overall better experience.
 
 ### 👁️ See it in action
-<img src="https://github.com/ltres/trep-tracker/blob/5b2da12eaede7f92c450430c569b2dc39f6553ec/src/assets/readme/trep-tracker-31-07-2024.gif" width="850" />
+<img src="https://github.com/ltres/trep-tracker/blob/d69916a38fe6c8375832f10dfb39ae4fe3cf5dca/src/assets/readme/trep-tracker-07-09-2024.gif" width="1000" />
 
 ## ▶️ How to Run `trep-tracker`
 Either download and run the latest executable from the <a href="https://github.com/ltres/trep-tracker/releases">release page</a> or check out this git repository and start your dev server with `npm run electron`.

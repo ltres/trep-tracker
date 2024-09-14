@@ -10,7 +10,7 @@ import { ContainerComponentRegistryService } from '../../service/registry.servic
 import { ContainerComponent } from '../base/base.component';
 import { ModalService } from '../../service/modal.service';
 import { layoutValues, tagIdentifiers } from '../../types/constants';
-import {  isPriorityArray,  isStatusArray,  isTagArray, isTask } from '../../utils/guards';
+import {  isPriorityArray,  isRecurringTask,  isStatusArray,  isTagArray, isTask } from '../../utils/guards';
 
 @Component({
   selector: 'lane[lane][board]',
@@ -174,7 +174,7 @@ export class LaneComponent extends ContainerComponent implements OnInit {
   }
 
   trackBy(index: number, task: Task): number {
-    return hashCode(index + task.id);
+    return hashCode(task.id);
   }
   togglePriority(prio: Priority[] | Priority | undefined) {
     this.lane.priority = Array.isArray(prio) ? prio : (prio ? [prio] : undefined);
@@ -214,8 +214,8 @@ export class LaneComponent extends ContainerComponent implements OnInit {
 
   getGanttTasks$(): Observable<Task[] | undefined> {
     return isStatic(this.lane) ?
-      this.staticTasks.pipe( map(tasks => tasks?.filter(t => t.includeInGantt) ?? [])) :
-      of(this.lane.children.filter(t =>  t.includeInGantt ));
+      this.staticTasks.pipe( map(tasks => tasks?.filter(t => t.gantt?.startDate) ?? [])) :
+      of(this.lane.children.filter(t =>  t.gantt?.startDate ));
   }
   toggleCollapse() {
     this.lane.collapsed = !this.lane.collapsed
@@ -251,6 +251,9 @@ export class LaneComponent extends ContainerComponent implements OnInit {
   }
   toggleLaneMenu() {
     this.menuOpen = !this.menuOpen
+  }
+  isRecurringTask(t: Task):boolean {
+    return isRecurringTask(t)
   }
 
 }

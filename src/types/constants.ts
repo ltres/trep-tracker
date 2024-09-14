@@ -8,7 +8,7 @@ export const ganttConfig = {
   skipWeekendsInPlanning: true,
   recurrentTaskCssClass:"recurrent-task",
   externalTaskCssClass: "gantt-external-task",
-  recurrentTaskHeight: 10,
+  recurrentTaskHeight: 25,
   recurrenceIterationsShown: 10,
   startOfDay:9,
   endOfDay:18,
@@ -199,3 +199,5 @@ export const timezoneValues = Intl.supportedValuesOf('timeZone');
 
 export const dragStartTreshold = 30;
 export const dragProximityTreshold = 10;
+
+export const recurringChildrenLimit = 2;

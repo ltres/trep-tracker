@@ -1,4 +1,4 @@
-import { Container, Status, ISODateString, DateDisplayConfig, Timezone } from "../types/types";
+import { Container, Status, ISODateString, DateDisplayConfig, Timezone, Recurrence } from "../types/types";
 
 export function setDateSafe(container: Container, status: Status, enterOrLeave: 'enter' | 'leave', date: Date) {
   if (!container.dates[status]) {
@@ -36,17 +36,16 @@ export function getWorkingDays(startDate: ISODateString, endDate: ISODateString)
   return Math.abs(workingDays);
 }
 
-export function toUTCDate( date: string ): ISODateString{
+export function ganttDateToDate( ganttDate: string ): Date{
   // Parse the local date string
-  const [datePart, timePart] = date.split(' ');
+  const [datePart, timePart] = ganttDate.split(' ');
   const [year, month, day] = datePart.split('-').map(Number);
   const [hours, minutes] = timePart.split(':').map(Number);
   
   // Create a Date object (in local time)
   const localDate = new Date(year, month - 1, day, hours, minutes);
   
-  // Format the UTC date as a string (ISO format)
-  return localDate.toISOString() as ISODateString;
+  return localDate
 }
 
 export function formatDate(date: ISODateString | Date | undefined, config: DateDisplayConfig ) {
@@ -85,5 +84,29 @@ export function getTimezoneShortName(timeZone: Timezone): string{
   
     return ""
   }
-  
 };
+
+/**
+ * Moves the input date forward by a recurrence
+ * @param date 
+ * @param recurrence 
+ */
+export function shiftByRecurrence(date: Date, recurrence: Recurrence): Date{
+  switch (recurrence) {
+    case 'daily'.toString():
+      date.setUTCDate(date.getUTCDate() + 1);
+      break;
+    case 'weekly'.toString():
+      date.setUTCDate(date.getUTCDate() + 7);
+      break;
+    case 'monthly'.toString():
+      date.setUTCMonth(date.getUTCMonth() + 1);
+      break;
+    case 'yearly'.toString():
+      date.setUTCFullYear(date.getUTCFullYear() + 1);
+      break;
+    default:
+      throw new Error('Invalid recurrence type');
+  }
+  return date
+}

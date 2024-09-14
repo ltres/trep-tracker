@@ -33,8 +33,12 @@
     &.archive-lane {
         background-color: $lane-archive-background-color;
     }
-
 }
+
+.recurrent-task-container {
+    background-color: $lane-recurrences-background-color;
+}
+
 
 .lane-toolbar {
     justify-content: flex-end;

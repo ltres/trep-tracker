@@ -33,9 +33,13 @@ export class ContenteditableDirective implements ControlValueAccessor {
 
     @HostListener('keyup', ['$event'])
     // @HostListener('blur', ['$event'])
-    onInteract(): void {
-    // get the current cursor position:
-    //const value = this.elementRef.nativeElement.innerHTML;
+    onInteract($event:KeyboardEvent): void {
+      if(($event.shiftKey || $event.ctrlKey) && ($event.key === 'ArrowDown' || $event.key === 'ArrowUp')){
+        // Task is being selected or moved
+        return;
+      }
+      // get the current cursor position:
+      //const value = this.elementRef.nativeElement.innerHTML;
       const value =  this.elementRef.nativeElement.textContent;
       const result = this.tagService.extractTags( value, this.board );
       //console.log(result);
