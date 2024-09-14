@@ -1,6 +1,6 @@
 import {  Inject, Injectable, Injector, NgZone } from '@angular/core';
 import { Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, Timeframe, AddFloatingLaneParams, RecurringTask, Recurrence, GanttTask, RecurringTaskChild } from '../types/types';
-import { BehaviorSubject, Observable, map } from 'rxjs';
+import { BehaviorSubject, Observable, debounceTime, map } from 'rxjs';
 import { eventuallyPatch, getDescendants, initGanttData, isPlaceholder,  isStatic, } from '../utils/utils';
 import { TagService } from './tag.service';
 import { StorageServiceAbstract } from '../types/storage';
@@ -29,6 +29,7 @@ export class BoardService {
   private tagService!: TagService;
 
   private boardUpdateCounter: number = 0;
+  private statusStoredCounter: number = 0;
 
   constructor(
     injector: Injector,
@@ -51,7 +52,18 @@ export class BoardService {
       }
     });
 
-    this._boards$.subscribe(b => {
+    this._boards$.pipe(
+      debounceTime(5000)
+    ).subscribe( boards => {
+      if(storageService.isStatusPresent()){
+        console.warn('Status stored', this.statusStoredCounter++);
+        this.storageService.writeToStatus({ boards });
+      }
+    } ) 
+
+    this._boards$.pipe(
+      debounceTime(500)
+    ).subscribe(b => {
       // const date = new Date();
       console.warn('Boards updated', this.boardUpdateCounter++);
       let allTasks: Task[] = [];
@@ -77,11 +89,6 @@ export class BoardService {
       this._allTasks$.next(allTasks);
       this._allLanes$.next(allLanes);
       this._allParents$.next([...allTasks, ...allLanes, ...this.boards]);
-      
-      // Store status:
-      if(storageService.isStatusPresent()){
-        this.storageService.writeToStatus({ boards: b });
-      }
     });
   }
 

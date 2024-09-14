@@ -174,7 +174,7 @@ export class LaneComponent extends ContainerComponent implements OnInit {
   }
 
   trackBy(index: number, task: Task): number {
-    return hashCode(index + task.id);
+    return hashCode(task.id);
   }
   togglePriority(prio: Priority[] | Priority | undefined) {
     this.lane.priority = Array.isArray(prio) ? prio : (prio ? [prio] : undefined);

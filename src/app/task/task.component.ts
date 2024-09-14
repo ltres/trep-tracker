@@ -11,7 +11,7 @@ import { ClickService } from '../../service/click.service';
 import {  fromIsoString, formatDate, getDiffInDays } from '../../utils/date-utils';
 import { setCaretPosition, isPlaceholder, hashCode } from '../../utils/utils';
 import {  millisForMagnitudeStep } from '../../types/constants';
-import { isRecurringTaskChild, isTask } from '../../utils/guards';
+import { isRecurringTask, isRecurringTaskChild, isTask } from '../../utils/guards';
 
 @Component({
   selector: 'task[task][lane][parent][board]',
@@ -238,7 +238,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   }
 
   isRecurringGanttTask(task: Task){
-    return isRecurringGanttTask(task);
+    return isRecurringTask(task);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
