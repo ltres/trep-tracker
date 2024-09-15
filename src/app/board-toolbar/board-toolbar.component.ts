@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import{ Component, HostBinding, Input, TemplateRef, ViewChild }from'@angular/core';
 import{ BoardService }from'../../service/board.service';
-import{ AddFloatingLaneParams, Board, Layout, Locale, Tag, Task, Timezone }from'../../types/types';
+import{ AddFloatingLaneParams, Board, getStatesToArchive, Layout, Locale, Tag, Task, Timezone }from'../../types/types';
 import{ ModalService }from'../../service/modal.service';
 import{ Observable, map }from'rxjs';
 import{ isPlaceholder }from'../../utils/utils';
@@ -89,7 +89,7 @@ export class BoardToolbarComponent{
 
   getGanttTasks$(): Observable<Task[] | undefined>{
     return this.boardService.getTasksForBoard$( this.board ).pipe(
-      map( tasks => tasks.filter( task => task.gantt?.startDate  && !isPlaceholder( task ) && task.status !== 'archived' ) ),
+      map( tasks => tasks.filter( task => task.gantt?.startDate  && !isPlaceholder( task ) && !getStatesToArchive().includes( task.status ) ) ),
     );
   }
 

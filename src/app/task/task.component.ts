@@ -1,6 +1,6 @@
 /* eslint-disable no-fallthrough */
 import{ ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, forwardRef, Input, OnDestroy, OnInit, Output, ViewChild }from'@angular/core';
-import{ Board, Lane, Container, Task, Tag, Status, Priority, ISODateString, PickerOutput, DateFormat }from'../../types/types';
+import{ Board, Lane, Container, Task, Tag, Status, Priority, ISODateString, PickerOutput, DateFormat, getStatesToArchive }from'../../types/types';
 import{ BoardService }from'../../service/board.service';
 import{ DragService }from'../../service/drag.service';
 import{ KeyboardService }from'../../service/keyboard.service';
@@ -261,31 +261,31 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     const prox = this.getProximityMagnitude( new Date().toISOString() as ISODateString, dateToCheck );
     switch( prox ){
       case 2:
-        return this.task.status === 'completed' || this.task.status === 'discarded' || this.task.status === 'archived' ? "" : "<span class='small translucent'>⏰</span>"
+        return this.task.status === 'completed' || getStatesToArchive().includes( this.task.status ) ? "" : "<span class='small translucent'>⏰</span>"
       case 1:
-        return this.task.status === 'completed' || this.task.status === 'discarded' || this.task.status === 'archived' ? "" : "<span class='half-translucent'>⏰</span>"
+        return this.task.status === 'completed' || getStatesToArchive().includes( this.task.status ) ? "" : "<span class='half-translucent'>⏰</span>"
       case 0:
-        return this.task.status === 'completed' || this.task.status === 'discarded' || this.task.status === 'archived' ? "" : "<span>⏰</span>"
+        return this.task.status === 'completed' || getStatesToArchive().includes( this.task.status ) ? "" : "<span>⏰</span>"
       case-1:
         switch( caseToCheck ){
           case"start":
             return this.task.status === 'todo' || this.task.status === 'to-be-delegated' ? "<span class='small translucent'>😱</span>" : "";
           case"end":
-            return this.task.status === 'completed' || this.task.status === 'discarded' || this.task.status === 'archived' ? "" : "<span class='small translucent'>😱</span>";
+            return this.task.status === 'completed' || getStatesToArchive().includes( this.task.status ) ? "" : "<span class='small translucent'>😱</span>";
         }
       case-2:
         switch( caseToCheck ){
           case"start":
             return this.task.status === 'todo' || this.task.status === 'to-be-delegated' ? "<span class='small half-translucent'>😱</span>" : "";
           case"end":
-            return this.task.status === 'completed' || this.task.status === 'discarded' || this.task.status === 'archived' ? "" : "<span class='small half-translucent'>😱</span>";
+            return this.task.status === 'completed' || getStatesToArchive().includes( this.task.status ) ? "" : "<span class='small half-translucent'>😱</span>";
         }
       case-3:
         switch( caseToCheck ){
           case"start":
             return this.task.status === 'todo' || this.task.status === 'to-be-delegated' ? "<span>😱</span>" : "";
           case"end":
-            return this.task.status === 'completed' || this.task.status === 'discarded' || this.task.status === 'archived' ? "" : "<span>😱</span>";
+            return this.task.status === 'completed' || getStatesToArchive().includes( this.task.status ) ? "" : "<span>😱</span>";
         }
       default: 
         return"";

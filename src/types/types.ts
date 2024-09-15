@@ -127,6 +127,10 @@ export type StateChangeDate = {
     };
 };
 
+export function getStatesToArchive(): Status[]{
+  return['archived', 'discarded']
+}
+
 export type ISODateString = `${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`
 export type TagType = 'tag-orange' | 'tag-yellow' | 'tag-green';
 

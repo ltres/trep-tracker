@@ -1,4 +1,4 @@
-<div class="task-wrapper g-05" [droppable]="3" [container]="task" [executeOnDropReceived]="receiveDrop.bind(this)" [class.editor-active]="this.editorActive" [class.selected]="this.selected" [class.archived]="this.task.status === 'archived'" [class]="this.task.status" [class.recurrence-child]="isRecurringTaskChild(task)" [style]="this.task.priority === 4 ? 'font-weight: bolder' : ''" (click)="clickTask()">
+<div class="task-wrapper g-05" [droppable]="3" [container]="task" [executeOnDropReceived]="receiveDrop.bind(this)" [class.editor-active]="this.editorActive" [class.selected]="this.selected" [class]="this.task.status" [class.recurrence-child]="isRecurringTaskChild(task)" [style]="this.task.priority === 4 ? 'font-weight: bolder' : ''" (click)="clickTask()">
   <div class="task-main-controls flex g-05 align-items-center">
     <div [tooltip]="'Drag'" *ngIf="!isStaticView() && !isPlaceholder() && !isRecurringTaskChild(task)" class="drag-handle translucent" drag-on-this="true" draggable="true">⋮</div>
 
@@ -109,6 +109,16 @@
       [ngTemplateOutlet]="date"
       [ngTemplateOutletContext]="{
         date: this.task.dates.archived?.enter,
+      }"
+    ></ng-container>
+    <time-bar [container]="task" [boardDatesConfig]="this.board.datesConfig"></time-bar>
+  }
+  @if (task.status === 'discarded') {
+    <span class="translucent">, discarded </span>
+    <ng-container
+      [ngTemplateOutlet]="date"
+      [ngTemplateOutletContext]="{
+        date: this.task.dates.discarded?.enter,
       }"
     ></ng-container>
     <time-bar [container]="task" [boardDatesConfig]="this.board.datesConfig"></time-bar>

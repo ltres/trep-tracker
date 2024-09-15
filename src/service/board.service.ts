@@ -1,5 +1,5 @@
 import{Inject, Injectable, Injector, NgZone}from'@angular/core';
-import{Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, Timeframe, AddFloatingLaneParams, RecurringTask, Recurrence, GanttTask, RecurringTaskChild}from'../types/types';
+import{Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, Timeframe, AddFloatingLaneParams, RecurringTask, Recurrence, GanttTask, RecurringTaskChild, getStatesToArchive}from'../types/types';
 import{BehaviorSubject, Observable, debounceTime, map}from'rxjs';
 import{eventuallyPatch, getDescendants, initGanttData, isPlaceholder,  isStatic,}from'../utils/utils';
 import{TagService}from'./tag.service';
@@ -79,7 +79,7 @@ export class BoardService{
         allLanes = allLanes.concat( board.children );
       } );
       // recurring child management:
-      allTasks.filter( t => isRecurringTask( t ) ).filter( t => t.status !== 'archived' ).forEach( t => {
+      allTasks.filter( t => isRecurringTask( t ) ).filter( t => !getStatesToArchive().includes( t.status ) && !isPlaceholder( t ) ).forEach( t => {
         const recurrences = this.manageRecurringChildren( t );
         allTasks = allTasks.concat( recurrences );
       } )
@@ -121,7 +121,7 @@ export class BoardService{
     );
   }
 
-  getTasks$( lane: Lane, priority: Priority | Priority[] | undefined, status: Status | Status[] | undefined, excldeArchived: boolean, sort: keyof StateChangeDate | undefined, sortOrder?: 'asc' | 'desc' ): Observable<Task[] | undefined>{
+  getTasks$( lane: Lane, priority: Priority | Priority[] | undefined, status: Status | Status[] | undefined, sort: keyof StateChangeDate | undefined, sortOrder?: 'asc' | 'desc' ): Observable<Task[] | undefined>{
     return this._allLanes$.pipe(
       map( () => {
         let res = lane.children;
@@ -139,9 +139,6 @@ export class BoardService{
           }else{
             res = res?.filter( t => t.status === status );
           }
-        }
-        if( excldeArchived ){
-          // res = res?.filter(t => t.status !== 'archived');
         }
 
         const regex = /[-.:TZ]/g;
@@ -250,7 +247,7 @@ export class BoardService{
           } );
         }
         if( excldeArchived ){
-          res = res?.filter( t => t.status !== 'archived' && !isPlaceholder( t ) );
+          res = res?.filter( t => !getStatesToArchive().includes( t.status ) && !isPlaceholder( t ) );
         }
         const regex = /[-.:TZ]/g;
         if( sort ){
@@ -292,7 +289,7 @@ export class BoardService{
             tasks = tasks.concat( child ).concat( getDescendants( child ) as Task[] );
           }
         }
-        return tasks.filter( c => !isPlaceholder( c ) && c.status !== 'archived' );
+        return tasks.filter( c => !isPlaceholder( c ) && !getStatesToArchive().includes( c.status ) );
       } ),
 
     );
@@ -490,7 +487,7 @@ export class BoardService{
      */
   private evaluateArchiveMove( board: Board, task: Task ){
     let archive = board.children.find( l => l.isArchive );
-    if( task.status === 'archived' ){
+    if( getStatesToArchive().includes( task.status ) ){
       const parent = this.findDirectParent( [task] )
       if( parent ){
         task.parentId = parent.id;
@@ -520,7 +517,7 @@ export class BoardService{
         return;
       }
       // Check if the task has any descendants that are already in the archive lane, and remove them
-      const descendantsToRemove = getDescendants( task ).filter( t => t.status === 'archived' );
+      const descendantsToRemove = getDescendants( task ).filter( t => getStatesToArchive().includes( ( t as Task ).status ) );
       descendantsToRemove.forEach( d => { archive!.children = archive!.children.filter( t => t.id !== d.id );
       } );
 

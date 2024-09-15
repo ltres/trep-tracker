@@ -2,7 +2,7 @@ import{ v4 as uuidv4 }from'uuid';
 
 import{ dateFormats, ganttConfig, layoutValues, tagHtmlWrapper, tagIdentifiers, tagTypes }from'../types/constants';
 import{ addUnitsToDate, toIsoString }from'./date-utils';
-import{ Lane, Status, Container, GanttTask, Recurrence, Board, ISODateString, LayoutProperties, getLayouts, Layout, Task, getDefaultLocale }from'../types/types';
+import{ Lane, Container, GanttTask, Recurrence, Board, ISODateString, LayoutProperties, getLayouts, Layout, Task, getDefaultLocale, getStatesToArchive }from'../types/types';
 import{ isTask, isLane }from'./guards';
 
 export function generateUUID( length?: number ): string{
@@ -153,13 +153,6 @@ export function setStatusPath( value: string ){
 
 export function getStatusPath(): string | null{
   return localStorage.getItem( 'storagePath' );
-}
-
-export function getNextStatus( t: Task ): Status{
-  if( t.status === 'todo' )return'in-progress';
-  if( t.status === 'in-progress' )return'completed';
-  if( t.status === 'completed' )return'archived';
-  return'todo';
 }
 
 export function isStatic( lane: Lane ): boolean{
@@ -407,7 +400,7 @@ export function eventuallyPatch( board: Board ): Board{
       if( mayBeOldLane.isArchive ){
         // Case for archived tasks that are children of archived tasks. They should be moved to the archive lane.
         const descendants = getDescendants( mayBeOldLane );
-        const archivedFirstLevel = mayBeOldLane.children.filter( c => c.status === 'archived' );
+        const archivedFirstLevel = mayBeOldLane.children.filter( c => getStatesToArchive().includes( c.status ) );
         archivedFirstLevel.forEach( a => {
           const findInDescendants = descendants.filter( d => d.id === a.id );
           if( findInDescendants.length > 1 ){
