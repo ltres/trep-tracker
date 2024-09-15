@@ -1,5 +1,5 @@
 import{ priorityValues, statusValues }from"../types/constants";
-import{ Container, Lane, Board, GanttTask, RecurringTask, Task, Status, Priority, Tag, RecurringTaskChild }from"../types/types";
+import{ Container, Lane, Board, GanttTask, RecurringTask, Task, Status, Priority, Tag, RecurringTaskChild, Project }from"../types/types";
 
 export function isLane( parent: Container | undefined ): parent is Lane{
   if( !parent ){
@@ -65,6 +65,13 @@ export function isRecurringTaskChild( parent: Container | undefined ): parent is
     return false;
   }
   return isGanttTask( parent ) && typeof parent.gantt.recurringChildIndex === 'number' && !!parent.gantt.fatherRecurringTaskId;
+}
+
+export function isProject( parent: Container | undefined ): parent is Project{
+  if( !parent ){
+    return false;
+  }
+  return isTask( parent ) && parent.children.length > 0;
 }
 
 export function assertIsRecurringTaskChild( parent: Container | undefined ): asserts parent is RecurringTaskChild{

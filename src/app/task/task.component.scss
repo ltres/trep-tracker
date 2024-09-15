@@ -15,6 +15,11 @@
     opacity: 0.85;
 }
 
+.project .task-text-content {
+    text-decoration: underline;
+    font-weight: bold;
+}
+
 .archive {
     color: $archive-color;
 }

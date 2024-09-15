@@ -403,6 +403,10 @@ button {
   opacity: $half-translucent-opacity;
 }
 
+.disabled {
+  opacity: 0.5;
+}
+
 [contenteditable="true"] {
   border: none !important;
   outline: none !important;

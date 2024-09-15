@@ -11,7 +11,7 @@ import{ ClickService }from'../../service/click.service';
 import{  fromIsoString, formatDate, getDiffInDays }from'../../utils/date-utils';
 import{ setCaretPosition, isPlaceholder, hashCode }from'../../utils/utils';
 import{  millisForMagnitudeStep }from'../../types/constants';
-import{ isRecurringTask, isRecurringTaskChild, isTask }from'../../utils/guards';
+import{ isProject, isRecurringTask, isRecurringTaskChild, isTask }from'../../utils/guards';
 
 @Component( {
   selector: 'task[task][lane][parent][board]',
@@ -305,6 +305,10 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
 
   isRecurringTaskChild( r: Task ): boolean{
     return isRecurringTaskChild( r );
+  }
+
+  isProject( r:Task ): boolean{
+    return isProject( r );
   }
     
 }

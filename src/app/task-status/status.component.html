@@ -1,12 +1,12 @@
-<div *ngIf="!isPlaceholder()" class="flex align-items-center">
+<div *ngIf="!isPlaceholder()" class="flex align-items-center" [class.disabled]="disabled">
   <div class="flex align-items-center" *ngIf="!open">
     @if (states) {
-      <span *ngFor="let status of states" [tooltip]="getTooltip(status)" class="pointer status big status-{{ container.status }} active" (click)="open = !open">
+      <span *ngFor="let status of states" [tooltip]="getTooltip(status)" class="pointer status big status-{{ container.status }} active" (click)="this.disabled ? undefined : (open = !open)">
         {{ getSymbol(status) }}
       </span>
     }
 
-    <span *ngIf="!states || states?.length === 0" class="pointer status big status-undefined selectable" (click)="open = !open" [tooltip]="tooltip">{{ getSymbol(undefined) }}</span>
+    <span *ngIf="!states || states?.length === 0" class="pointer status big status-undefined selectable" (click)="this.disabled ? undefined : (open = !open)" [tooltip]="tooltip">{{ getSymbol(undefined) }}</span>
   </div>
   <div class="flex align-items-center g-025" *ngIf="open">
     <span [tooltip]="'close'" class="selectable cancel" (click)="cancelAndClose()">🗙</span>

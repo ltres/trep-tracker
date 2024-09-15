@@ -11,10 +11,12 @@ import{ isTask }from'../../utils/guards';
   styleUrl: './status.component.scss',
 } )
 export class StatusComponent{
+
   @Input() container!: Container;
   @Input() board!: Board;
   @Input() staticLane!: boolean;
   @Input() tooltip = "Set status";
+  @Input() disabled = false;
 
   @Input() multipleSelectable: boolean = false;
   @Input() allowEmpty: boolean = false;

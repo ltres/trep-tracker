@@ -1,4 +1,4 @@
-<div class="task-wrapper g-05" [droppable]="3" [container]="task" [executeOnDropReceived]="receiveDrop.bind(this)" [class.editor-active]="this.editorActive" [class.selected]="this.selected" [class]="this.task.status" [class.recurrence-child]="isRecurringTaskChild(task)" [style]="this.task.priority === 4 ? 'font-weight: bolder' : ''" (click)="clickTask()">
+<div class="task-wrapper g-05" [droppable]="3" [container]="task" [executeOnDropReceived]="receiveDrop.bind(this)" [class.editor-active]="this.editorActive" [class.selected]="this.selected" [class]="this.task.status" [class.recurrence-child]="isRecurringTaskChild(task)" [class.project]="isProject(task)" [style]="this.task.priority === 4 ? 'font-weight: bolder' : ''" (click)="clickTask()">
   <div class="task-main-controls flex g-05 align-items-center">
     <div [tooltip]="'Drag'" *ngIf="!isStaticView() && !isPlaceholder() && !isRecurringTaskChild(task)" class="drag-handle translucent" drag-on-this="true" draggable="true">⋮</div>
 
@@ -11,13 +11,14 @@
     </label>
 
     <prioritizer *ngIf="!isPlaceholder()" (onPrioritySelected)="updatePriority($event)" [container]="task"> </prioritizer>
+
     <status [container]="task" [board]="board" [staticLane]="isStaticView()" (onStatusSelected)="updateStatus($event)"></status>
   </div>
   <div class="flex w-100 g-025 align-items-center">
     @if (enableGanttView) {
-      <div innerHTML="{{ task.textContent }}"></div>
+      <div class="task-text-content" innerHTML="{{ task.textContent }}"></div>
     } @else if (task.searchTextContent) {
-      <div innerHTML="{{ task.searchTextContent }}"></div>
+      <div class="task-text-content" innerHTML="{{ task.searchTextContent }}"></div>
     } @else {
       <div class="task-text-content grow" [class.placeholder]="isPlaceholder()" #editor contenteditable="true" [preventEvents]="!editorActive" [board]="board" [(ngModel)]="task.textContent" (ngModelChange)="debounceBoardUpdate()" (onTagsChange)="updateTaskTags($event)"></div>
     }

@@ -1,12 +1,12 @@
 import{Inject, Injectable, Injector, NgZone}from'@angular/core';
 import{Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, Timeframe, AddFloatingLaneParams, RecurringTask, Recurrence, GanttTask, RecurringTaskChild, getStatesToArchive}from'../types/types';
 import{BehaviorSubject, Observable, debounceTime, map}from'rxjs';
-import{eventuallyPatch, getDescendants, initGanttData, isPlaceholder,  isStatic,}from'../utils/utils';
+import{eventuallyPatch, getDescendants, getProjectComputedStatus, initGanttData, isPlaceholder,  isStatic,}from'../utils/utils';
 import{TagService}from'./tag.service';
 import{StorageServiceAbstract}from'../types/storage';
 import{addUnitsToDate, fromIsoString, setDateSafe, shiftByRecurrence, toIsoString}from'../utils/date-utils';
 import{recurringChildrenLimit, statusValues}from'../types/constants';
-import{isTask, isLane, isTasks, assertIsRecurringTaskChild, isRecurringTask, isRecurringTaskChild, assertIsGanttTask, assertIsRecurringTask}from'../utils/guards';
+import{isTask, isLane, isTasks, assertIsRecurringTaskChild, isRecurringTask, isRecurringTaskChild, assertIsGanttTask, assertIsRecurringTask, isProject}from'../utils/guards';
 
 @Injectable( {
   providedIn: 'root',
@@ -82,6 +82,14 @@ export class BoardService{
       allTasks.filter( t => isRecurringTask( t ) ).filter( t => !getStatesToArchive().includes( t.status ) && !isPlaceholder( t ) ).forEach( t => {
         const recurrences = this.manageRecurringChildren( t );
         allTasks = allTasks.concat( recurrences );
+      } )
+
+      // Update project states
+      allTasks.filter( t => isProject( t ) ).forEach( p => {
+        const computedStatus = getProjectComputedStatus( p );
+        if( computedStatus !== p.status ){
+          this.updateStatus( undefined, p, computedStatus, true );
+        }
       } )
 
       this._allTasks$.next( allTasks );
@@ -449,7 +457,7 @@ export class BoardService{
     return newLane;
   }
 
-  updateStatus( board: Board | undefined, container: Container, status: Status | Status[] | undefined ){
+  updateStatus( board: Board | undefined, container: Container, status: Status | Status[] | undefined, preventUpdate = false ){
     const boards = this._boards$.getValue();
     status = status && Array.isArray( status ) ? status : ( status ? [status] : undefined );
     if( isLane( container ) ){
@@ -470,16 +478,24 @@ export class BoardService{
       }
 
       for( const s of status ){
-
         container.status = s;
         setDateSafe( container, s, 'enter', new Date() );
         if( isTask( container ) && board ){
           this.evaluateArchiveMove( board, container );
         }
       }
+
+      // if the parent is a project, update its status accordingly:
+      const p  = this.findDirectParent( [container] );
+      if( isProject( p ) ){
+        this.updateStatus( board, p, getProjectComputedStatus( p ), true )
+      }
     }
 
-    this._boards$.next( boards );
+    if( !preventUpdate ){
+      this._boards$.next( boards );
+
+    }
   }
 
   /**
@@ -527,7 +543,7 @@ export class BoardService{
       // Check if it is a first level task in the archive
       if( !archive?.children.find( t => t.id === task.id ) ){
         // do not do anything
-        console.warn( `Task with id ${task.id} is not a first level task in the archive.` );
+        // console.warn( `Task with id ${task.id} is not a first level task in the archive.` );
         return;
       }
 
@@ -782,7 +798,12 @@ export class BoardService{
     this._boards$.next( boards );
   }
 
-  // retrieves only the tasks higher in the hierarchy
+  /**
+   * Retrieves only the tasks higher in the hierarchy.
+   * Eg. if a task is a child of another, only the latter will be returned
+   * @param tasks 
+   * @returns 
+   */
   getTopLevelTasks( tasks: Task[] ): Task[]{
     let ret: Task[] = [...tasks];
     // incoming tasks could be related one another. Keep only the top level tasks
@@ -791,6 +812,17 @@ export class BoardService{
       ret = ret.filter( c => descendants.map( d => d.id ).indexOf( c.id ) === -1 );
     }
     return ret;
+  }
+
+  /**
+ * Takes some task in input, gets all the descendants for them and returns only the descendants having dates set.
+ * If any of those tasks belong to a project, return it as well.
+ * @param tasks 
+ */
+  getTasksForGantt( tasks: Task[] ): Task[]{
+    const allDescendantsHavingDates = tasks.flatMap( t => getDescendants( t ).concat( t ) ).filter( t => isTask( t ) ).filter( t => !isProject( t ) && t.gantt?.startDate );
+    const projectsToAdd: Task[] = allDescendantsHavingDates.map( d => this.findDirectParent( [d] ) ).filter( p => isProject( p ) );
+    return projectsToAdd.concat( allDescendantsHavingDates );
   }
 
   hasNextSibling( board: Board, task: Task ): boolean{

@@ -2,8 +2,8 @@ import{ v4 as uuidv4 }from'uuid';
 
 import{ dateFormats, ganttConfig, layoutValues, tagHtmlWrapper, tagIdentifiers, tagTypes }from'../types/constants';
 import{ addUnitsToDate, toIsoString }from'./date-utils';
-import{ Lane, Container, GanttTask, Recurrence, Board, ISODateString, LayoutProperties, getLayouts, Layout, Task, getDefaultLocale, getStatesToArchive }from'../types/types';
-import{ isTask, isLane }from'./guards';
+import{ Lane, Container, GanttTask, Recurrence, Board, ISODateString, LayoutProperties, getLayouts, Layout, Task, getDefaultLocale, getStatesToArchive, Status }from'../types/types';
+import{ isTask, isLane, isProject }from'./guards';
 
 export function generateUUID( length?: number ): string{
   return  uuidv4().substring( 0, length ?? 8 );
@@ -283,6 +283,20 @@ export function mapToGanttRecurrence( r : Recurrence ): 'day' | 'week' | 'month'
 
 export function getRecurrenceId( taskId: string, index: number ){
   return`${taskId}-recurrence-${index}`
+}
+
+export function getProjectComputedStatus( task: Task ): Status{
+  if( !isProject( task ) ){
+    throw  new Error( "Task is not a project" )
+  }
+  // If all children share a state, project is in that state:
+  const states = task.children.map( c => isProject( c ) ? getProjectComputedStatus( c ) : c.status );
+  if( states.every( e => e === states[0] ) ){
+    return states[0];
+  }
+
+  // otherwise, project is 'in progress'
+  return"in-progress";
 }
 
 /**

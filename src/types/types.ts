@@ -42,6 +42,12 @@ export interface Task extends Container {
     gantt?: GanttData
 }
 
+type NonEmptyArray<T> = [T, ...T[]]; // at least one value
+
+export interface Project extends Task {
+  children: NonEmptyArray<Task>;
+}
+
 export type GanttData = {
   showData?: boolean, // activates when 'cancel' button is clicked and prevents dates data to be displayed
   startDate: ISODateString,
