@@ -135,7 +135,7 @@ export const getNewTask: ( lane: Lane | string, id: string | undefined, textCont
   const t: Task = {
     id: taskId,
     parentId: typeof lane === 'string' ? lane : lane.id,
-    textContent: typeof textContent != 'undefined' ? textContent : `Task ${taskId}`,
+    textContent: typeof textContent != 'undefined' ? textContent : `Task ${taskId.substring( 0,4 )}`,
     children: [],
     tags: [],
     dates: {
@@ -189,7 +189,7 @@ export const getNewLane: ( board: Board, archive: boolean ) => Lane = ( board: B
     index: 0,
     showChildren: true,
     collapsed: archive ? true : false,
-    textContent: archive ? 'Archive' : 'Lane ' + id,
+    textContent: archive ? 'Archive' : 'Lane ' + id.substring( 0,4 ),
     children: [],
     status: undefined,
     startTimeframe: undefined,
@@ -315,5 +315,6 @@ export type AddFloatingLaneParams ={
     layout: Layout,
     column: number,
     order: number;
-  }
+  },
+  skipBoardsUpdate?: boolean
 }

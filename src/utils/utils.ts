@@ -6,7 +6,7 @@ import{ Lane, Status, Container, GanttTask, Recurrence, Board, ISODateString, La
 import{ isTask, isLane }from'./guards';
 
 export function generateUUID( length?: number ): string{
-  return uuidv4().substring( 0, length ?? 6 );
+  return  uuidv4().substring( 0, length ?? 8 );
 }
 
 export function overlaps( DOMRect: DOMRect | undefined, DOMRect2: DOMRect | undefined ): boolean{

@@ -61,9 +61,7 @@ export class BoardService{
       }
     } ) 
 
-    this._boards$.pipe(
-      debounceTime( 500 )
-    ).subscribe( b => {
+    this._boards$.subscribe( b => {
       // const date = new Date();
       console.warn( 'Boards updated', this.boardUpdateCounter++ );
       let allTasks: Task[] = [];
@@ -125,8 +123,8 @@ export class BoardService{
 
   getTasks$( lane: Lane, priority: Priority | Priority[] | undefined, status: Status | Status[] | undefined, excldeArchived: boolean, sort: keyof StateChangeDate | undefined, sortOrder?: 'asc' | 'desc' ): Observable<Task[] | undefined>{
     return this._allLanes$.pipe(
-      map( lanes => {
-        let res = lanes?.find( l => l.id === lane.id )?.children;
+      map( () => {
+        let res = lane.children;
 
         if( priority ){
           if( Array.isArray( priority ) ){
@@ -447,7 +445,9 @@ export class BoardService{
       this.addAsChild( newLane, children );
     }
 
-    this._boards$.next( boards );
+    if( !params.skipBoardsUpdate ){
+      this._boards$.next( boards );
+    }
 
     return newLane;
   }
@@ -493,6 +493,7 @@ export class BoardService{
     if( task.status === 'archived' ){
       const parent = this.findDirectParent( [task] )
       if( parent ){
+        task.parentId = parent.id;
         // Removal from the original parent
         parent.children = parent.children.filter( t => t.id !== task.id );
       }
@@ -500,13 +501,14 @@ export class BoardService{
       // task could be a recurrence child:
       const recurrenceParent = this.allTasks?.filter( t => isRecurringTask( t ) ).find( t => t.recurrences.map( r => r.id ).find( t => t === task.id ) );
       if( recurrenceParent ){
+        task.parentId = recurrenceParent.id;
         recurrenceParent.recurrences = recurrenceParent.recurrences.filter( t => t.id !== task.id );
       }
 
       if( !archive ){
         // create the archive
         const params: AddFloatingLaneParams = {
-          board, x:0, y:0, children: [], archive:true, width:300
+          board, x:0, y:0, children: [], archive:true, width:300, skipBoardsUpdate: true
         }
         archive = this.addFloatingLane( params );
       }
@@ -519,8 +521,7 @@ export class BoardService{
       }
       // Check if the task has any descendants that are already in the archive lane, and remove them
       const descendantsToRemove = getDescendants( task ).filter( t => t.status === 'archived' );
-      descendantsToRemove.forEach( d => {
-                archive!.children = archive!.children.filter( t => t.id !== d.id );
+      descendantsToRemove.forEach( d => { archive!.children = archive!.children.filter( t => t.id !== d.id );
       } );
 
       // add the task to the archived lane

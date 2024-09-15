@@ -4,9 +4,9 @@
 
     <label *ngIf="task.gantt && task.gantt.recurrence" (click)="task.gantt.displayRecurrence = !task.gantt.displayRecurrence" class="pointer">
       @if (task.gantt.displayRecurrence) {
-        <span tooltip="Hide recurrences">↻</span>
+        <span class="recurrences-toggle" tooltip="Hide recurrences">↻</span>
       } @else {
-        <span class="translucent" tooltip="Show recurrences">↻</span>
+        <span class="translucent recurrences-toggle" tooltip="Show recurrences">↻</span>
       }
     </label>
 
