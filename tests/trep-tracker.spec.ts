@@ -62,6 +62,7 @@ test.describe.serial( 'Trep Tracker Tasks & lanes - ', () => {
 
     await page.keyboard.press( 'Control+Shift+ArrowUp' );
   } );
+
   test( 'Task drag & Lane resize', async( { page } ) => {
     const handle = getTaskByContent( page,0 ).locator( '[draggable="true"]' ).first();
     await drag( page, handle, 100, 100, true );
@@ -367,8 +368,33 @@ test.describe.serial( 'Trep Tracker Tasks & lanes - ', () => {
     await firstTask!.hover();
     await setTaskStatus( firstRec, page, 'status-completed' );
     await expect( lastTask.locator( '.task-recurrence-wrapper task' ) ).toHaveCount( 3 );
-
   } )
+
+  test( 'Task - projects', async( { page } ) => {
+    await addTask( page, 1 );
+
+    await page.locator( 'task' ).nth( 1 ).click();
+    await page.keyboard.press( 'Control+ArrowRight',{delay:200} );
+    await page.locator( 'task' ).nth( 2 ).click();
+    await page.keyboard.press( 'Control+ArrowRight',{delay:200} );
+    await page.keyboard.press( 'Control+ArrowLeft',{delay:200} );
+
+    // Initially the project is in progress
+    await expect( page.locator( '.project' ) ).toHaveCount( 1 );
+    await expect( page.locator( 'task' ).first().locator( '.status' ).nth( 0 ) ).toHaveClass( /status-todo/ );
+
+    // change status for a child should put the project 'in progress
+    await setTaskStatus( page.locator( 'task' ).nth( 1 ), page, 'status-delegated' );
+    await expect( page.locator( 'task' ).first().locator( '.status' ).nth( 0 ) ).toHaveClass( /status-in-progress/ );
+
+    // change status for all the children(2) should put the project in the same status:
+    await setTaskStatus( page.locator( 'task' ).nth( 2 ), page, 'status-delegated' );
+    await expect( page.locator( 'task' ).first().locator( '.status' ).nth( 0 ) ).toHaveClass( /status-delegated/ );
+
+    // change the status of the first child should return the project 'in progress'
+    await setTaskStatus( page.locator( 'task' ).nth( 1 ), page, 'status-to-be-delegated' );
+    await expect( page.locator( 'task' ).first().locator( '.status' ).nth( 0 ) ).toHaveClass( /status-in-progress/ );
+  } );
 
 } );
 
@@ -409,14 +435,14 @@ async function setPickerToCurrentYearNextMonth( task:Locator, page: Page, recurr
 async function setTaskStatus( task:Locator, page: Page, statusCode: string ){
   const status =  task.locator( 'status' ).first()
   // status
-  expect( await task!.locator( '.status-todo' ).count() ).toBe( 1 )
+  //expect( await task!.locator( '.status-todo' ).count() ).toBe( 1 )
   await page.locator( '.board-menu' ).hover()
   await status!.hover()
   await status!.click(); // expand
   expect( await status!.locator( '.status' ).count() ).toBe( 8 )
   await status!.locator( '.cancel' ).click();
   
-  expect( await task!.locator( '.status-todo' ).count() ).toBe( 1 )
+  //expect( await task!.locator( '.status-todo' ).count() ).toBe( 1 )
   await page.locator( '.board-menu' ).hover()
   await status!.hover()
   await status!.click(); // expand
