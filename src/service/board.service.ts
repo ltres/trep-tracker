@@ -88,10 +88,17 @@ export class BoardService{
       allTasks.filter( t => isProject( t ) && !getStatesToArchive().includes( t.status ) ).forEach( p => {
         const computedStatus = getProjectComputedStatus( p );
         if( computedStatus !== p.status ){
+          p.beforeProjectStatus = p.status
           this.updateStatus( undefined, p, computedStatus, true );
         }
       } )
 
+      // Update ex-project status
+      allTasks.filter( t => !isProject( t ) && t.beforeProjectStatus && t.beforeProjectStatus !== t.status ).forEach( t => {
+        this.updateStatus( undefined, t, t.beforeProjectStatus, true );
+        delete t.beforeProjectStatus
+      } )
+      
       this._allTasks$.next( allTasks );
       this._allLanes$.next( allLanes );
       const allParents = [...allTasks, ...allLanes, ...this.boards];

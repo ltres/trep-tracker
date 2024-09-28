@@ -37,6 +37,7 @@ export interface Task extends Container {
     
     priority: Priority,
     status: Status,
+    beforeProjectStatus?: Status, // status the task had before becoming a project
     notes?: string,
     startDate?: ISODateString,
     gantt?: GanttData
