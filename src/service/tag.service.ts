@@ -51,6 +51,7 @@ export class TagService{
       })
     );*/
   }
+
   /**
   * Updates the tags of a container data model.
   */
@@ -87,8 +88,8 @@ export class TagService{
         if( allTags.filter( t => t.type === tagIdentifier.type )
           .map( t => t.tag.toLowerCase() )
           .indexOf( word.toLowerCase() ) >= 0
-  && tags.map( t => t.tag.toLowerCase() )
-    .indexOf( word.toLowerCase() ) < 0 ){
+          && tags.map( t => t.tag.toLowerCase() )
+            .indexOf( word.toLowerCase() ) < 0 ){
           tags.push( { tag: word, type: tagIdentifier.type } );
           words.splice( words.indexOf( word ), 1, tagIdentifier.symbol + word );
           // move caret forward one position:

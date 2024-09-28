@@ -42,6 +42,7 @@ import{ DatePickerComponent }from'./date-picker/date-picker.component';
 import{ OWL_DATE_TIME_FORMATS, OwlDateTimeModule, OwlNativeDateTimeModule }from'@ltres/angular-datetime-picker';
 import{ dateFormats }from'../types/constants';
 import{ DroppableDirective }from'./directive/droppable.directive';
+import{ SimilarArrowsComponent }from"./similar-arrows/similar-arrows.component";
 
 @NgModule( { declarations: [
   AppComponent,
@@ -78,9 +79,8 @@ imports: [CommonModule,
   ReactiveFormsModule,
   KeyboardListenerComponent,
   OwlDateTimeModule,
-  OwlNativeDateTimeModule ,
-  NoopAnimationsModule  
-], 
+  OwlNativeDateTimeModule,
+  NoopAnimationsModule, SimilarArrowsComponent], 
 providers: [
   BoardService,
   KeyboardService,

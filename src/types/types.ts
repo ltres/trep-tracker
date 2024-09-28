@@ -34,7 +34,7 @@ export interface Task extends Container {
     _type: 'task',
     children: Task[],
     recurrences?: RecurringTaskChild[],
-    
+    similarTasks: string[],
     priority: Priority,
     status: Status,
     beforeProjectStatus?: Status, // status the task had before becoming a project
@@ -148,6 +148,7 @@ export const getNewTask: ( lane: Lane | string, id: string | undefined, textCont
     parentId: typeof lane === 'string' ? lane : lane.id,
     textContent: typeof textContent != 'undefined' ? textContent : `Task ${taskId.substring( 0,4 )}`,
     children: [],
+    similarTasks: [],
     tags: [],
     dates: {
 

@@ -201,3 +201,5 @@ export const dragStartTreshold = 30;
 export const dragProximityTreshold = 10;
 
 export const recurringChildrenLimit = 2;
+
+export const similarityTreshold = 0.5;

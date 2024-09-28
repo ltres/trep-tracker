@@ -1,11 +1,11 @@
 import{Inject, Injectable, Injector, NgZone}from'@angular/core';
 import{Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, Timeframe, AddFloatingLaneParams, RecurringTask, Recurrence, GanttTask, RecurringTaskChild, getStatesToArchive}from'../types/types';
 import{BehaviorSubject, Observable, debounceTime, map}from'rxjs';
-import{eventuallyPatch, getDescendants, getProjectComputedStatus, initGanttData, isPlaceholder,  isStatic,}from'../utils/utils';
+import{checkTaskSimilarity, eventuallyPatch, getDescendants, getProjectComputedStatus, initGanttData, isPlaceholder,  isStatic, stripHTML,}from'../utils/utils';
 import{TagService}from'./tag.service';
 import{StorageServiceAbstract}from'../types/storage';
 import{addUnitsToDate, fromIsoString, setDateSafe, shiftByRecurrence, toIsoString}from'../utils/date-utils';
-import{recurringChildrenLimit, statusValues}from'../types/constants';
+import{recurringChildrenLimit, similarityTreshold, statusValues}from'../types/constants';
 import{isTask, isLane, isTasks, assertIsRecurringTaskChild, isRecurringTask, isRecurringTaskChild, assertIsGanttTask, assertIsRecurringTask, isProject}from'../utils/guards';
 
 @Injectable( {
@@ -19,6 +19,8 @@ export class BoardService{
 
   private _allLanes$: BehaviorSubject<Lane[] | undefined> = new BehaviorSubject<Lane[] | undefined>( undefined );
   private _allTasks$: BehaviorSubject<Task[] | undefined> = new BehaviorSubject<Task[] | undefined>( undefined );
+  private _allArchivedTasksIds$: BehaviorSubject<string[] | undefined> = new BehaviorSubject<string[] | undefined>( undefined );
+
   private _allParents$: BehaviorSubject<Container[] | undefined> = new BehaviorSubject<Container[] | undefined>( undefined );
   //private _allNuked$: BehaviorSubject<Task[]> = new BehaviorSubject<Task[]>([]);
 
@@ -55,10 +57,24 @@ export class BoardService{
     this._boards$.pipe(
       debounceTime( 5000 )
     ).subscribe( boards => {
+      // run expensive operations:
+
       if( storageService.isStatusPresent() ){
         console.warn( 'Status stored', this.statusStoredCounter++ );
         this.storageService.writeToStatus( {boards} );
       }
+    } )
+
+    this._boards$.pipe(
+      debounceTime( 1000 )
+    ).subscribe( () => {
+      // run expensive operations:
+      const b = this._selectedBoard$.getValue()
+      if( b ){
+        // detect similarities in tasks:
+        this.manageSimilaritiesInTasks( b )
+      }
+
     } ) 
 
     this._boards$.subscribe( b => {
@@ -66,12 +82,16 @@ export class BoardService{
       console.warn( 'Boards updated', this.boardUpdateCounter++ );
       let allTasks: Task[] = [];
       let allLanes: Lane[] = [];
+      const allArchivedTasks: Task[] = [];
       b.forEach( board => {
         board.children.forEach( lane => {
           allTasks = allTasks.concat( lane.children );
           lane.children.forEach( task => {
             allTasks = allTasks.concat( getDescendants( task ).filter( t => isTask( t ) ) as Task[] );
           } );
+          if( lane.isArchive ){
+            allArchivedTasks.concat( getDescendants( lane ).filter( d => isTask( d ) ) )
+          }
         } );
         // remove lanes without children
         // board.children = board.children.filter(l => l.children.length > 0);
@@ -98,8 +118,9 @@ export class BoardService{
         this.updateStatus( undefined, t, t.beforeProjectStatus, true );
         delete t.beforeProjectStatus
       } )
-      
+
       this._allTasks$.next( allTasks );
+      this._allArchivedTasksIds$.next( allArchivedTasks.map( t => t.id ) )
       this._allLanes$.next( allLanes );
       const allParents = [...allTasks, ...allLanes, ...this.boards];
 
@@ -178,7 +199,9 @@ export class BoardService{
         if( !b ){
           throw new Error( `Cannot find board with id ${board.id}` );
         }
-        let res = getDescendants( b ).filter( c => isTask( c ) && !this.findParentLane( [c] )?.isArchive ) as Task[];
+        const archivedTasks = this._allArchivedTasksIds$.getValue();
+
+        let res = getDescendants( b ).filter( c => isTask( c ) && !archivedTasks?.includes( c.id ) ) as Task[];
 
         if( tags ){
           res = res?.filter( task =>
@@ -992,6 +1015,28 @@ export class BoardService{
   }
 
   /**
+   * Compares all the tasks in the board for text similarities. If any similarity is found, tasks get linked.
+   * @param board 
+   */
+  manageSimilaritiesInTasks( board: Board ){
+    const start = new Date().getTime();
+    const descendants: Task[] = getDescendants( board ).filter( d => isTask( d ) ).filter( d => !getStatesToArchive().includes( d.status ) );
+    const processed: Task[] = [];
+    descendants.forEach( d => d.similarTasks = [] );
+    for( const d of descendants ){
+      for( const d2 of descendants.filter( v => v.id !== d.id && !processed.includes( v ) ) ){
+        if( checkTaskSimilarity( d, d2 ) >= similarityTreshold ){
+          console.log( `${stripHTML( d.textContent )} => ${stripHTML( d2.textContent )} = ${checkTaskSimilarity( d, d2 )}` );
+          d.similarTasks.push( d2.id );
+          d2.similarTasks.push( d.id );
+        }
+      }
+      processed.push( d )
+    }
+    console.warn( `Similarities check took ${ new Date().getTime() - start }ms` )
+  }
+
+  /**
    * Takes a recurrent task and manages its recurring children.
    * Keep the children in a 'todo' state to a certain threshold.
    * Discards 'todo' children in the past.
@@ -1064,6 +1109,10 @@ export class BoardService{
 
     return task.recurrences
 
+  }
+
+  findTask( id:string ):Task | undefined{
+    return this._allTasks$.getValue()?.find( t => t.id === id )
   }
 
   /**

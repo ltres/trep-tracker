@@ -4,6 +4,7 @@ import{ dateFormats, ganttConfig, layoutValues, tagHtmlWrapper, tagIdentifiers, 
 import{ addUnitsToDate, toIsoString }from'./date-utils';
 import{ Lane, Container, GanttTask, Recurrence, Board, ISODateString, LayoutProperties, getLayouts, Layout, Task, getDefaultLocale, getStatesToArchive, Status }from'../types/types';
 import{ isTask, isLane, isProject }from'./guards';
+import stringSimilarity from'string-similarity-js';
 
 export function generateUUID( length?: number ): string{
   return  uuidv4().substring( 0, length ?? 8 );
@@ -182,6 +183,25 @@ export function getFirstMentionTag( task: Task ): string | undefined{
 }
 
 /**
+ * Computes similarity between two tags, as in rate of tags shared multiplied by string similarity:
+ * @param task1 
+ * @param task2 
+ * @returns 
+ */
+export function checkTaskSimilarity( task1: Task, task2: Task ): number{
+  const t1 = task1.tags.sort().map( t => t.tag );
+  const t2 = task2.tags.sort().map( t => t.tag );
+
+  const text1 = stripHTML( task1.textContent )
+  const text2 = stripHTML( task2.textContent )
+
+  // rate is tags shared / total number of tags
+  const tagsSharedCount = t1.filter( t => t2.includes( t ) ).length;
+  const totalTagsCount = t1.length + t2.length - tagsSharedCount;
+  return tagsSharedCount / totalTagsCount * stringSimilarity( text1,text2 )
+}
+
+/**
  * Retrieves all descendants of a given container.
  * @param container - The container whose descendants are to be retrieved.
  * @returns An array of Container objects representing the descendants.
@@ -299,6 +319,10 @@ export function getProjectComputedStatus( task: Task ): Status{
   return"in-progress";
 }
 
+export function stripHTML( text: string ){
+  return text.replace( /<[^>]*>/g, '' ).replace( /\u00A0/g, ' ' );
+}
+
 /**
  * Data model has undergone some changes in time. This method ensures that all the statuses get brought to the latest version.
  * @param board 
@@ -333,7 +357,12 @@ export function eventuallyPatch( board: Board ): Board{
         stateChangeDate?: ISODateString,
         createdLaneId?: string | undefined;
         order?: number;
+        
       } = p
+
+      if( !mayBeOldTask.similarTasks ){
+        mayBeOldTask.similarTasks = []
+      }
 
       // cleanup successors
       if( mayBeOldTask.gantt?.successors ){

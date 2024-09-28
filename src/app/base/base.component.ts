@@ -1,4 +1,4 @@
-import{ Component, ElementRef, OnDestroy, OnInit }from'@angular/core';
+import{ AfterViewInit, Component, ElementRef, OnDestroy, OnInit }from'@angular/core';
 import{ Subscription }from'rxjs';
 import{ Container }from'../../types/types';
 import{ ContainerComponentRegistryService }from'../../service/registry.service';
@@ -13,14 +13,15 @@ import{ ContainerComponentRegistryService }from'../../service/registry.service';
   templateUrl: './base.component.html',
   styleUrl: './base.component.scss',
 } )
-export abstract class ContainerComponent implements OnInit, OnDestroy{
+export abstract class ContainerComponent implements OnInit, OnDestroy, AfterViewInit{
   protected _container!: Container;
   protected _subscriptions: Subscription[] = [];
 
   constructor(
     protected registry: ContainerComponentRegistryService,
-    public el: ElementRef,
+    public el: ElementRef<HTMLElement>,
   ){ }
+
   abstract get container(): Container;
 
   set subscriptions( subscriptions: Subscription ){
@@ -28,8 +29,13 @@ export abstract class ContainerComponent implements OnInit, OnDestroy{
   }
 
   ngOnInit(): void{
+    this.registry.addToContainerComponentRegistry( this.container, this )
+  }
+
+  ngAfterViewInit(): void{
   }
   ngOnDestroy(): void{
+    this.registry.removeFromContainerComponentRegistry( this.container, this );
     this._subscriptions.forEach( subscription => subscription.unsubscribe() );
   }
 }

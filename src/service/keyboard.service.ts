@@ -154,7 +154,7 @@ export class KeyboardService{
       return undefined
     }
     let el: Node | undefined;
-    this.registry.componentRegistry.forEach( c => {
+    this.registry.droppableDirectiveRegistry.forEach( c => {
       if( c.container && c.container.id === task.id && c.container._type === task._type ){
         el = c.el.nativeElement;
       }

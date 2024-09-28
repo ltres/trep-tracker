@@ -521,11 +521,15 @@ select option {
 }
 
 .pill {
-  border: 1px solid $pill-border-color;
-  color: $pill-border-color;
-  padding: 0.2rem 0.5rem;
+  border: 1px solid $pill-color-1;
+  color: $pill-color-1;
+  padding: 0.1rem 0.4rem;
   border-radius: 12px;
 
+  &.color-2 {
+    border: 1px solid $pill-color-2;
+    color: $pill-color-2;
+  }
 }
 
 

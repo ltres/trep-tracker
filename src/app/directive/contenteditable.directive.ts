@@ -20,6 +20,7 @@ export class ContenteditableDirective implements ControlValueAccessor{
     @Input() ngModel!: string;
     @Input() preventEvents: boolean = false;
     @Input() board!: Board;
+
     @Output() ngModelChange = new EventEmitter<string>();
     @Output() onTagsChange = new EventEmitter<Tag[]>();
 
@@ -39,16 +40,16 @@ export class ContenteditableDirective implements ControlValueAccessor{
         return;
       }
       // get the current cursor position:
-      //const value = this.elementRef.nativeElement.innerHTML;
       const value =  this.elementRef.nativeElement.textContent;
       const result = this.tagService.extractTags( value, this.board );
-      //console.log(result);
-
+      
       this.caretShift = result.caretShift;
-      //this.ngModel = value;
-      //this.onChange(value); // makes the ngModel effectively update by calling the writeValue
-      //this.onTouched();
-      //this.skipWriteValue = true;
+
+      // Find similarities between other editables:
+      //if( isTask( this.container ) ){
+      //this.tagService.evaluateSimilarTasks( this.container, value, this.board )
+      //}
+
       if( !this.preventEvents ){
         this.onTagsChange.emit( result.tags );
       }

@@ -42,6 +42,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   selected: boolean = false;
   showNotes: boolean = false;
   showDatePicker: boolean = false;
+  showArrows: boolean = false;
   debounce: ReturnType<typeof setTimeout> | undefined;
 
   constructor(
@@ -309,6 +310,17 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
 
   isProject( r:Task ): boolean{
     return isProject( r );
+  }
+
+  getSimilarTasks( t: Task ): Task[]{
+    return t.similarTasks.map( id => this.boardService.findTask( id ) ).filter( t => !!t );
+  }
+  getSimilarTasksTooltip( t: Task ): string{
+    return this.getSimilarTasks( t ).map( t => t?.textContent ).join( '<br>' )
+  }
+
+  getSimilarTasksComponents( t: Task ): ContainerComponent[]{
+    return t.similarTasks.map( id => this.boardService.findTask( id ) ).filter( t => !!t ).flatMap( ta => this.registry.getComponents( ta ) );
   }
     
 }
