@@ -85,7 +85,7 @@ export class BoardService{
       } )
 
       // Update project states
-      allTasks.filter( t => isProject( t ) ).forEach( p => {
+      allTasks.filter( t => isProject( t ) && !getStatesToArchive().includes( t.status ) ).forEach( p => {
         const computedStatus = getProjectComputedStatus( p );
         if( computedStatus !== p.status ){
           this.updateStatus( undefined, p, computedStatus, true );
@@ -171,7 +171,7 @@ export class BoardService{
         if( !b ){
           throw new Error( `Cannot find board with id ${board.id}` );
         }
-        let res = getDescendants( b ).filter( c => isTask( c ) ) as Task[];
+        let res = getDescendants( b ).filter( c => isTask( c ) && !this.findParentLane( [c] )?.isArchive ) as Task[];
 
         if( tags ){
           res = res?.filter( task =>
@@ -612,7 +612,7 @@ export class BoardService{
   /**
      * Finds the direct parent container for the given objects
      */
-  findDirectParent( objs: Container[] | undefined ): Container | undefined{
+  findDirectParent( objs: Container[] | undefined, includeArchive = false ): Container | undefined{
     if( !objs || objs.length === 0 ){
       return;
     }
@@ -626,7 +626,7 @@ export class BoardService{
       // remove duplicates
       parents = parents?.filter( ( p, index ) => parents!.findIndex( p2 => p2.id === p.id ) === index );
       // remove archive
-      parents = parents?.filter( p => !isLane( p ) || !p.isArchive );
+      parents = parents?.filter( p => !isLane( p ) || ( isLane( p ) && ( includeArchive || !p.isArchive ) ) );
     }
 
     if( !parents || parents?.length !== 1 ){
@@ -640,10 +640,10 @@ export class BoardService{
     if( !objs || objs.length === 0 ){
       return;
     }
-    let parent = this.findDirectParent( objs );
+    let parent = this.findDirectParent( objs, true );
 
     while( parent != null ){
-      const grandParent = this.findDirectParent( [parent] );
+      const grandParent = this.findDirectParent( [parent], true );
       if( isLane( parent ) ){
         return parent;
       }
