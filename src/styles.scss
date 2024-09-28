@@ -551,3 +551,7 @@ select option {
 .dumb-dropzone.something-is-dragging {
   min-height: 1rem;
 }
+
+.leader-line {
+  z-index: 9999;
+}

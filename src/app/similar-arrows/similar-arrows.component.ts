@@ -11,12 +11,15 @@ import{ ContainerComponent }from'../base/base.component';
 } )
 export class SimilarArrowsComponent implements AfterViewInit, OnDestroy{
 
-  @Input() source!:ContainerComponent;
-  @Input() destinations!:ContainerComponent[];
+  @Input() source:ContainerComponent | null | undefined;
+  @Input() destinations!:ContainerComponent[] | null | undefined;
 
   lines : LeaderLine[] = []
 
   ngAfterViewInit(): void{
+    if( !this.source || !this.destinations ){
+      return
+    }
     for( const d of this.destinations ){
       const el1 =  this.source.el.nativeElement as HTMLElement;
       const el2 =  d.el.nativeElement as HTMLElement;
@@ -24,7 +27,7 @@ export class SimilarArrowsComponent implements AfterViewInit, OnDestroy{
       const l = new LeaderLine(
         el1,
         el2,
-        {path: 'grid', startSocket: 'right', endSocket: 'right', startPlug:"behind", endPlug:"square"}
+        {path: 'grid', startSocket: 'right', endSocket: 'right', startPlug:"behind", endPlug:"square", size:2}
       )
       this.lines.push( l )
     }
