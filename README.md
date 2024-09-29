@@ -1,56 +1,59 @@
-# trep-tracker 📝
-![trep-tracker icon](https://github.com/ltres/trep-tracker/blob/2b75c545cfd54d2a2c7a49a9df2060537a59db21/src/assets/icon/ios/AppIcon-40%402x~ipad.png)
+# <img src="https://github.com/ltres/trep-tracker/blob/2b75c545cfd54d2a2c7a49a9df2060537a59db21/src/assets/icon/web/icon-192.png" width="40" /> trep-tracker 
+<p align="center">
+  <img src="https://github.com/ltres/trep-tracker/blob/0753d812dac9c675f98098c9d86fccd4faa83621/src/assets/readme/social-preview-06-08-2024.png" width="700" />
+</p>
 
-`trep-tracker` is a **to-the-point and minimalistic project manager-oriented task tracker/todo list**, designed to allow tracking TODOs efficiently and focusing on task prioritization and speed of use.
+`trep-tracker` is a **to-the-point and minimalistic task tracker/todo list**, designed to allow tracking TODOs efficiently and focused on simplicity and speed of use.
 
-`trep-tracker` is especially useful for project managers who need to keep track of various tags related to different projects and team members. 
-It allows you to have a clear view of tasks associated with specific projects or colleagues, allowing for quick and efficient progress monitoring.
+`trep-tracker` is designed to be **fast**, stay **out of the way**, and allow management of **hundreds of tasks** at the same time, helping you streamlining and prioritizing your work.
 
-But it works really well also for simpler scenarios, like personal todo lists.
+`trep-tracker` is a tool created for people that need to keep track of **work streams, different topics, projects, team members, deadlines, plans**.
 
-If you have ever used notepad for task tracking, have tried many todo-list apps and got back to notepad because you needed a more efficient tool (like myself), `trep-tracker` may be the app for you.
+But it works really well also for **simpler scenarios**, like **personal TODO lists** 📝.
 
-## 💻 Try it live: <a href="https://ltres.github.io/trep-tracker/browser/" target="_blank">https://ltres.github.io/trep-tracker/browser/</a> 💻
-The above is a browser-based version, intended to showcase the functionalities that `trep-tracker` offers. 
-If you like what you see, consider downloading the <a href="https://github.com/ltres/trep-tracker/releases">distributed package</a> to run it natively on your system, for an overall better experience.
+_➡️ If you have ever used notepad for task tracking, have tried many todo-list apps and got back to notepad because you needed a more efficient tool, `trep-tracker` may be the app for you. I was there._
 
-### 👁️ See it in action
+### 💻 Try it live: <a href="https://ltres.github.io/trep-tracker/browser/" target="_blank">https://ltres.github.io/trep-tracker/browser/</a> 💻
+> _The above is a browser-based version, intended to showcase the functionalities that `trep-tracker` offers. 
+> If you like what you see, consider downloading the <a href="https://github.com/ltres/trep-tracker/releases">distributed package</a> to run it natively on your system, for an overall better experience._
+
+## 👁️ See it in action
 <img src="https://github.com/ltres/trep-tracker/blob/d69916a38fe6c8375832f10dfb39ae4fe3cf5dca/src/assets/readme/trep-tracker-07-09-2024.gif" width="1000" />
 
 ## ▶️ How to Run `trep-tracker`
 Either download and run the latest executable from the <a href="https://github.com/ltres/trep-tracker/releases">release page</a> or check out this git repository and start your dev server with `npm run electron`.
 
 ## ✅ Who should use `trep-tracker`
-- People that have a medium to high number of tasks to do on a daily basis, and need to note them down quickly and efficiently. 
-- People who manage small teams and needs to track activities for colleagues.
-- People who want their TODO app to help them organize and prioritize quickly-noted tasks with views.
-- People who like a straight to the point, minimal approach to TODOs. 
+- People that have a **medium to high number of tasks** to track on a daily basis, and need to **note them down quickly** and sort them fast. 
+- People who manage **small teams** and needs to track multiple activities and streams.
+- People who look for an **effective** tool with **quick-sorting, tagging, prioritization** and easy **views generation**
+- People who like a **straight to the point**, minimal approach to TODOs. 
 
 ## ✨ Features & concepts
 ### **Boards**
-A workspace area. You can have multiple, independent boards.
+A **workspace area**. You can have multiple, independent boards.
 ### **Lanes**
-Each board contains lanes, draggable 'post-its' which can hold tasks.
+Each board contains lanes, **draggable areas** which can hold tasks.
 ### **Tasks**
-Each task is a line of text with a status and priority. 
-They can have a father-child relation. 
-They can be selected and ordered quickly using just the keyboard; can be moved, dragged, edited, their status can be changed:
-  - ⬜ todo
-  - 🛠️ in progress
-  - 🙇 to delegate
-  - 👦🏼 delegated
-  - ⏳ waiting
-  - ✅ done
-  - 📂 archived (gets moved into a dedicated lane)
-  - 🗑️ discarded
+Each task is a **line of text** with a **status** and **priority**. Quicly enter a new one as you would do in a text file, by clicking **Enter**.
+
+They can be **selected** and **ordered** quickly using just the keyboard; can be **moved, edited, programmed, prioritized**.
+
+Each task has a status:
+> **⬜ todo, 🛠️ in progress, 🙇 to delegate, 👦🏼 delegated, ⏳ waiting, ✅ done, 📂 archived, 🗑️ discarded**
+
+Tasks can have a **father-child** relation. When a task has children, it becomes a **Project** (a container for other tasks)
+
+Tasks can also be **planned** and viewed in a **gantt diagram**.
+
 ### **Tags**
-Tags can be tagged using specific symbols @, #, !. Each `@tag` is colored differently in order to be distinguishable at a glance.
+Tags can be **tagged** as you write, using specific symbols `@`, `#`, `!`. Each `@tag` is colored differently in order to be easily distinguishable.
 ### **Static Lanes (views)**
-You can also `@tag` lanes. When you do, the lane becomes *static* and automatically displays tasks with the included tag(s). Static lanes can also display tasks filtering on priority, status, or a combination of both.
-### **Search**
-Quickly find tasks by pressing Ctrl + F.
+You can also `@tag` lanes. When you do, the lane becomes *static* and automatically displays tasks with the included tag(s). 
+
+Static lanes can also display tasks filtering on **priority, status, task start/end dates** or a combination of these filters.
 ### **Gantt**
-Show selected tasks in dynamic gantts!
+Show selected tasks in **dynamic gantt diagrams**, for a whole board or for single lanes.
 
 ## 🧾 Where is my data stored?
 `trep-tracker` stores your tasks data in a local '.trptrk' (json) file.
