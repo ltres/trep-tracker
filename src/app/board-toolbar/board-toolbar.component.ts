@@ -7,6 +7,7 @@ import{ Observable, map }from'rxjs';
 import{ layoutValues }from'../../types/constants';
 import ISO6391 from'iso-639-1';
 import{ getTimezoneShortName }from'../../utils/date-utils';
+import{ TagService }from'../../service/tag.service';
 
 @Component( {
   selector: 'board-toolbar[board][clazz]',
@@ -30,6 +31,7 @@ export class BoardToolbarComponent{
   constructor(
     protected boardService: BoardService,
     protected modalService: ModalService,
+    private tagService: TagService
   ){ }
 
   getLayouts(): Layout[]{
@@ -51,8 +53,10 @@ export class BoardToolbarComponent{
   }
 
   updateBoardTags( $event: Tag[] ){
-    const allOldPresent = this.board.tags.filter( oldTag => $event.map( t => t.tag.toLowerCase() ).find( r => r === oldTag.tag.toLowerCase() ) ).length === this.board.tags.length;
-    const allNewPresent = $event.filter( oldTag => this.board.tags.map( t => t.tag.toLowerCase() ).find( r => r === oldTag.tag.toLowerCase() ) ).length === $event.length;
+    const allOldPresent = this.board.tags.filter( oldTag => $event.find( r => r.tag.toLowerCase() === oldTag.tag.toLowerCase() && r.type === oldTag.type ) ).length === this.board.tags.length;
+    const allNewPresent = $event.filter( oldTag => this.board.tags.find( r => r.tag.toLowerCase() === oldTag.tag.toLowerCase() && r.type === oldTag.type ) ).length === $event.length;
+
+    this.tagService.setLatestEditedTagsContainer( this.board )
 
     if( !allOldPresent || !allNewPresent ){
       this.board.tags = $event;

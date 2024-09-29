@@ -1,11 +1,12 @@
-import{Inject, Injectable, NgZone}from'@angular/core';
+import{Inject, Injectable, Injector, NgZone}from'@angular/core';
 import{Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, Timeframe, AddFloatingLaneParams, RecurringTask, Recurrence, GanttTask, RecurringTaskChild, getStatesToArchive}from'../types/types';
 import{BehaviorSubject, Observable, Subject, debounceTime, map}from'rxjs';
-import{checkTaskSimilarity, eventuallyPatch, getDescendants, getProjectComputedStatus, initGanttData, isPlaceholder,  isStatic, stripHTML,}from'../utils/utils';
+import{checkTaskSimilarity, eventuallyPatch, getDescendants, getProjectComputedStatus, initGanttData, isPlaceholder,  isStatic,}from'../utils/utils';
 import{StorageServiceAbstract}from'../types/storage';
 import{addUnitsToDate, fromIsoString, setDateSafe, shiftByRecurrence, toIsoString}from'../utils/date-utils';
 import{recurringChildrenLimit, similarityTreshold, statusValues}from'../types/constants';
 import{isTask, isLane, isTasks, assertIsRecurringTaskChild, isRecurringTask, isRecurringTaskChild, assertIsGanttTask, assertIsRecurringTask, isProject}from'../utils/guards';
+import{ TagService }from'./tag.service';
 
 @Injectable( {
   providedIn: 'root',
@@ -31,11 +32,14 @@ export class BoardService{
 
   private boardUpdateCounter: number = 0;
   private statusStoredCounter: number = 0;
+  private tagService!: TagService;
 
   constructor(
+    injector: Injector,
     zone: NgZone,
         @Inject( 'StorageServiceAbstract' ) private storageService: StorageServiceAbstract,
   ){
+    setTimeout( () => this.tagService = injector.get( TagService ) );
 
     const latestStatus = this.storageService.getStatus();
     if( latestStatus !== null ){
@@ -54,7 +58,7 @@ export class BoardService{
     this._boards$.pipe(
       debounceTime( 5000 )
     ).subscribe( boards => {
-      // run expensive operations:
+      // store the status after some inactivity:
       if( storageService.isStatusPresent() ){
         console.warn( 'Status stored', this.statusStoredCounter++ );
         this.storageService.writeToStatus( {boards} );
@@ -69,9 +73,13 @@ export class BoardService{
       if( b ){
         // detect similarities in tasks:
         this.manageSimilaritiesInTasks( b )
+        if( this.tagService && this.tagService.latestEditedTagsContainer ){
+          // this.tagService.restructureTags( this.tagService.latestEditedTagsContainer, b )
+        }
+
+        // Finally publish an update
         this._detectChanges$.next()
       }
-
     } ) 
 
     this._boards$.subscribe( b => {
@@ -1030,7 +1038,7 @@ export class BoardService{
       for( const d2 of descendants.filter( v => v.id !== d.id && !processed.includes( v ) ) ){
         const sIndex = checkTaskSimilarity( d, d2 );
         if( sIndex >= similarityTreshold ){
-          console.log( `${stripHTML( d.textContent )} => ${stripHTML( d2.textContent )} = ${checkTaskSimilarity( d, d2 )}` );
+          // console.log( `${stripHTML( d.textContent )} => ${stripHTML( d2.textContent )} = ${checkTaskSimilarity( d, d2 )}` );
           d.similarTasks.push( {id:d2.id, similarity: sIndex} );
           d2.similarTasks.push( {id:d.id, similarity: sIndex} );
         }

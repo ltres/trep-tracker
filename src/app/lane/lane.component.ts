@@ -12,6 +12,7 @@ import{ ModalService }from'../../service/modal.service';
 import{ layoutValues, tagIdentifiers }from'../../types/constants';
 import{  isPriorityArray,  isRecurringTask,  isStatusArray,  isTagArray, isTask }from'../../utils/guards';
 import{ slowFadeInOut }from'../../types/animations';
+import{ TagService }from'../../service/tag.service';
 
 @Component( {
   selector: 'lane[lane][board]',
@@ -49,7 +50,9 @@ export class LaneComponent extends ContainerComponent implements OnInit{
     protected override registry: ContainerComponentRegistryService,
     protected modalService: ModalService,
     public override el: ElementRef,
-    private cdr: ChangeDetectorRef ){
+    private cdr: ChangeDetectorRef,
+    private tagService: TagService
+  ){
     super( registry, el );
 
   }
@@ -154,8 +157,9 @@ export class LaneComponent extends ContainerComponent implements OnInit{
     return isArchive( arg0 );
   }
   updateLaneTags( $event: Tag[] ){
-    const allOldPresent = this.lane.tags.filter( oldTag => $event.map( t => t.tag.toLowerCase() ).find( r => r === oldTag.tag.toLowerCase() ) ).length === this.lane.tags.length;
-    const allNewPresent = $event.filter( oldTag => this.lane.tags.map( t => t.tag.toLowerCase() ).find( r => r === oldTag.tag.toLowerCase() ) ).length === $event.length;
+    const allOldPresent = this.lane.tags.filter( oldTag => $event.find( r => r.tag.toLowerCase() === oldTag.tag.toLowerCase() && r.type === oldTag.type ) ).length === this.lane.tags.length;
+    const allNewPresent = $event.filter( oldTag => this.lane.tags.find( r => r.tag.toLowerCase() === oldTag.tag.toLowerCase() && r.type === oldTag.type ) ).length === $event.length;
+    this.tagService.setLatestEditedTagsContainer( this.lane );
 
     if( !allOldPresent || !allNewPresent ){
       this.lane.tags = $event;

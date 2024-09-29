@@ -13,6 +13,7 @@ import{ setCaretPosition, isPlaceholder, hashCode }from'../../utils/utils';
 import{  millisForMagnitudeStep, minOpacityAtTreshold, similarityTreshold }from'../../types/constants';
 import{ isProject, isRecurringTask, isRecurringTaskChild, isTask }from'../../utils/guards';
 import{ fadeInOut }from'../../types/animations';
+import{ TagService }from'../../service/tag.service';
 
 @Component( {
   selector: 'task[task][lane][parent][board]',
@@ -56,6 +57,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     private clickService: ClickService,
     public override el: ElementRef,
     protected cdr: ChangeDetectorRef,
+    private tagService: TagService
   ){
     super( registry, el );
   }
@@ -163,8 +165,9 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   }
 
   updateTaskTags( $event: Tag[] ){
-    const allOldPresent = this.task.tags.filter( oldTag => $event.map( t => t.tag.toLowerCase() ).find( r => r === oldTag.tag.toLowerCase() ) ).length === this.task.tags.length;
-    const allNewPresent = $event.filter( oldTag => this.task.tags.map( t => t.tag.toLowerCase() ).find( r => r === oldTag.tag .toLowerCase() ) ).length === $event.length;
+    const allOldPresent = this.task.tags.filter( oldTag => $event.find( r => r.tag.toLowerCase() === oldTag.tag.toLowerCase() && r.type === oldTag.type ) ).length === this.task.tags.length;
+    const allNewPresent = $event.filter( oldTag => this.task.tags.find( r => r.tag.toLowerCase() === oldTag.tag.toLowerCase() && r.type === oldTag.type ) ).length === $event.length;
+    this.tagService.setLatestEditedTagsContainer( this.task );
 
     if( !allOldPresent || !allNewPresent ){
       this.task.tags = $event;

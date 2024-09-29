@@ -1,18 +1,21 @@
 import{ Injectable }from'@angular/core';
 import{ BehaviorSubject, Observable, of }from'rxjs';
-import{ getDescendants, isStatic }from'../utils/utils';
+import{ getDescendants, isPlaceholder, isStatic }from'../utils/utils';
 import{ BoardService }from'./board.service';
-import{ Board, Tag, TagType }from'../types/types';
+import{ Board, Container, getStatesToArchive, Tag, TagType }from'../types/types';
 import{ tagIdentifiers, tagHtmlWrapper, tagCapturingGroup }from'../types/constants';
-import{ isLane }from'../utils/guards';
+import{ isLane, isTask }from'../utils/guards';
 
 @Injectable( {
   providedIn: 'root',
 } )
 export class TagService{
+
   private _tags$: BehaviorSubject<{ board: Board, tags: Tag[] }[]> = new BehaviorSubject<{ board: Board, tags: Tag[] }[]>( [] );
+  private _latestEditedTagsContainer: Container | undefined;
 
   constructor( private boardService: BoardService ){
+    // builds the tag repository
     this.boardService.boards$.subscribe( boards => {
       this._tags$.next( [] );
       for( const board of boards ){
@@ -117,4 +120,38 @@ export class TagService{
     };
   }
 
+  /**
+   * Tags of the container have a specific tagSymbol. Run through the tags of the board and adjust that symbol, basing on the last user edit.
+   * Eg. !tag -> #tag
+   * @param container 
+   * @param b 
+   */
+  restructureTags( container: Container, b: Board ){
+    const tags = container.tags;
+    const boardContainers = getDescendants( b ).filter( d => ( isTask( d ) && !isPlaceholder( d ) && !getStatesToArchive().includes( d.status ) ) || !isTask( d )
+    );
+    for( const tag of tags ){
+      for( const toEval of boardContainers ){
+        const matchingTag = toEval.tags.find( t => t.tag.toLowerCase() === tag.tag.toLowerCase() );
+        if( matchingTag && matchingTag.type !== tag.type ){
+          // match, let's verify the symbol
+          console.log( `Difference: ${JSON.stringify( matchingTag )}, ${JSON.stringify( tag )}` )
+          // Symbol is different. fix the matching tag:
+          toEval.textContent = toEval.textContent.replace( tagIdentifiers.find( i => i.type === matchingTag.type )?.symbol ?? "", tagIdentifiers.find( i => i.type === tag.type )?.symbol ?? "" )
+          toEval.textContent = toEval.textContent.replace( tagIdentifiers.find( i => i.type === matchingTag.type )?.type ?? "", tagIdentifiers.find( i => i.type === tag.type )?.type ?? "" )
+
+          matchingTag.type = tag.type;
+
+        }
+      }
+    }
+  }
+
+  setLatestEditedTagsContainer( c : Container ){
+    this._latestEditedTagsContainer = c;
+  }
+
+  get latestEditedTagsContainer(): Container | undefined{
+    return this._latestEditedTagsContainer
+  }
 }
