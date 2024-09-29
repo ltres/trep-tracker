@@ -14,9 +14,12 @@ let boardMenu: Locator | undefined;
 const nOfTasks = 2;
 const writeDelay = 5;
 
+test.describe.configure( { mode: 'parallel' } );
+
 test.beforeEach( async( { page } ) => {
   // setup the board, create some tasks
   await page.goto( 'http://localhost:4200' ); 
+
   board = page.locator( 'board' );
   lanes = page.locator( 'lane' );
 
@@ -44,19 +47,19 @@ test.beforeEach( async( { page } ) => {
   expect( await page.locator( 'task' ).count() ).toBe( nOfTasks )
 } );
 
-test.describe.serial( 'Trep Tracker Tasks & lanes - ', () => {
+test.describe.parallel( 'Trep Tracker Tasks & lanes - ', () => {
   test( 'Task move, indent, outdent', async( { page } ) => {
 
     // switch position
     await page.keyboard.press( 'Control+Shift+ArrowDown' );
-    expect( page.locator( 'task' ).nth( 1 ) ).toHaveText( new RegExp( text ) );
+    await expect( page.locator( 'task' ).nth( 1 ) ).toHaveText( new RegExp( text ) );
     await page.keyboard.press( 'Control+Shift+ArrowUp' );
-    expect( page.locator( 'task' ).nth( 0 ) ).toHaveText( new RegExp( text ) );
+    await expect( page.locator( 'task' ).nth( 0 ) ).toHaveText( new RegExp( text ) );
     await page.keyboard.press( 'Control+Shift+ArrowDown' );
 
     // Child + remove
     await page.keyboard.press( 'Control+ArrowRight',{delay:200} );
-    expect( page.locator( '.child' ) ).toHaveText( new RegExp( text ) );
+    await expect( page.locator( '.child' ) ).toHaveText( new RegExp( text ) );
     await page.keyboard.press( 'Control+ArrowLeft' );
     expect( await page.locator( '.child' ).count() ).toBe( 0 )
 
@@ -145,7 +148,7 @@ test.describe.serial( 'Trep Tracker Tasks & lanes - ', () => {
     await expect( archive ).toBeVisible();
     expect( await archive.locator( 'task' ).count() ).toBe( 0 )
 
-    expect( archive.locator( '.task-count' ).first() ).toHaveText( "1 tasks" )
+    await expect( archive.locator( '.task-count' ).first() ).toHaveText( "1 tasks" )
 
     await page.locator( 'lane',{hasText: /Archive/} ).locator( '.expand' ).click();
 
@@ -222,6 +225,24 @@ test.describe.serial( 'Trep Tracker Tasks & lanes - ', () => {
     await staticLaneLoc.locator( 'task' ).first().waitFor( {state:'visible'} );
 
     expect( await staticLaneLoc.locator( 'task' ).count() ).toBe( 1 )
+    await page.waitForTimeout( 350 );
+
+    // tag restructuring: change @mention to !mention
+    expect( await page.locator( '.task-text-content',{hasText: new RegExp( '@' + mention )} ).count() ).toBe( 4 )
+    const fTask = page.locator( 'task' ).first()
+    await fTask.click()
+    await page.keyboard.press( `Control+A` )
+
+    await fTask.pressSequentially( `Tag refactoring !${mention}` )
+    await page.waitForTimeout( 1000 );
+
+    expect( await page.locator( '.task-text-content',{hasText: new RegExp( '!' + mention )} ).count() ).toBe( 4 )
+    await fTask.click()
+    await page.keyboard.press( `Control+A` )
+
+    await fTask.pressSequentially( `Tag refactoring #${mention}` )
+    await page.waitForTimeout( 1000 );
+    expect( await page.locator( '.task-text-content',{hasText: new RegExp( '#' + mention )} ).count() ).toBe( 4 )
 
   } )
 
@@ -278,14 +299,14 @@ test.describe.serial( 'Trep Tracker Tasks & lanes - ', () => {
     await page.locator( '.show-board-gantt' ).first().click();
     expect( await page.locator( '.gantt_row_task' ).count() ).toBe( 2 );
 
-    expect( page.locator( '.gantt_row_task' ).first() ).toHaveText( new RegExp( `${text} ${0}` ) )
+    await expect( page.locator( '.gantt_row_task' ).first() ).toHaveText( new RegExp( `${text} ${0}` ) )
 
     // switch tasks
     await page.locator( '.gantt_row_task' ).first().hover();
     await page.mouse.down();
     await page.locator( '.gantt_row_task' ).nth( 1 ).hover();
     await page.mouse.up();
-    expect( page.locator( '.gantt_row_task' ).first() ).toHaveText( new RegExp( `${text} ${1}` ) )
+    await expect( page.locator( '.gantt_row_task' ).first() ).toHaveText( new RegExp( `${text} ${1}` ) )
 
     // move
     const ganttBar = page.locator( '.gantt_bar_task' ).first();
@@ -301,7 +322,7 @@ test.describe.serial( 'Trep Tracker Tasks & lanes - ', () => {
     expect( bb2?.x ).toBeGreaterThan( bb.x + 50 )
 
     // increase duration
-    expect( page.locator( '.gantt_last_cell' ).nth( 1 ) ).toHaveText( /[012]/ )
+    await expect( page.locator( '.gantt_last_cell' ).nth( 1 ) ).toHaveText( /[012]/ )
     const dragEl = ganttBar.locator( '.task_end_date' ).first();
     const bb3 = await ganttBar.boundingBox();
     if( !bb3 ){
@@ -314,7 +335,7 @@ test.describe.serial( 'Trep Tracker Tasks & lanes - ', () => {
     await page.mouse.up();
     await page.waitForTimeout( 400 );
 
-    expect( ( await page.locator( '.gantt_task_line' ).first().boundingBox() )?.x ).toBeGreaterThan( 200 );
+    await  expect( ( await page.locator( '.gantt_task_line' ).first().boundingBox() )?.x ).toBeGreaterThan( 200 );
 
   } )
 
@@ -343,8 +364,9 @@ test.describe.serial( 'Trep Tracker Tasks & lanes - ', () => {
     //await page.locator('.search-input').pressSequentially(text);
     await page.keyboard.type( text, {delay:writeDelay} );
     await page.waitForSelector( '.search-matches' );
+    await page.waitForTimeout( 200 ); 
 
-    expect( page.locator( '.search-matches' ) ).toHaveText( "2 matches" )
+    await expect( page.locator( '.search-matches' ) ).toHaveText( "2 matches" )
   } )
 
   test( 'Task - picker and dates, recurrences', async( { page } ) => {
@@ -395,6 +417,40 @@ test.describe.serial( 'Trep Tracker Tasks & lanes - ', () => {
     // change the status of the first child should return the project 'in progress'
     await setTaskStatus( page.locator( 'task' ).nth( 1 ), page, 'status-to-be-delegated' );
     await expect( page.locator( 'task' ).first().locator( '.status' ).nth( 0 ) ).toHaveClass( /status-in-progress/ );
+  } );
+
+  test( 'Task - similarity', async( { page } ) => {
+    await page.waitForTimeout( 1100 ); // time for similarity to be evaluated
+    const l = page.locator( 'lane' ).first();
+    const bb = await l.boundingBox()
+    if( !bb )return;
+
+    await page.mouse.move( bb?.x + bb?.width - 3,bb?.y + bb?.height - 3 )
+    await page.mouse.down();
+    await page.mouse.move( bb?.x + bb?.width + 300, bb?.y + bb?.height - 3 );
+    await page.mouse.up();
+
+    await expect( page.locator( '.similar-pill' ) ).toHaveCount( 2 );
+    await expect( page.locator( '.similar-pill' ).first().locator( 'span' ) ).toHaveText( "1 similar (92%)" )
+
+    // hover and check arrows
+    await page.locator( '.similar-pill' ).first().hover();
+
+    await page.waitForSelector( '.leader-line' );
+    await expect( page.locator( '.leader-line' ) ).toHaveCount( 1 );
+
+    // add another task, recheck similarities
+    await addTask( page, 2 );
+    await page.waitForTimeout( 1300 ); // time for similarity to be evaluated
+
+    await expect( page.locator( '.similar-pill' ) ).toHaveCount( 3 );
+    await expect( page.locator( '.similar-pill' ).first().locator( 'span' ) ).toHaveText( "2 similar (92%)" )
+    // hover and check arrows
+    await page.locator( '.similar-pill' ).first().hover();
+
+    await page.waitForSelector( '.leader-line' );
+    await expect( page.locator( '.leader-line' ) ).toHaveCount( 2 );
+
   } );
 
 } );
@@ -466,7 +522,7 @@ async function addTask( page: Page, k: number ){
   await page.keyboard.press( 'Control+A' );
   await page.keyboard.press( 'Backspace' );
   await page.keyboard.type( `${text} ${k}`,{delay:writeDelay} );
-  expect( curTask ).toHaveText( new RegExp( `${text} ${k}` ) );
+  await expect( curTask ).toHaveText( new RegExp( `${text} ${k}` ) );
 }
 
 async function drag( page: Page, locator: Locator, deltax: number, deltay: number, task: boolean, targetLocator?: Locator ){
