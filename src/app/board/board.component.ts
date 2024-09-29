@@ -107,7 +107,7 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
 
   override ngOnInit(): void{
     super.ngOnInit();
-    this.boardService.boards$.subscribe( () => {
+    this.boardService.detectChanges$.subscribe( () => {
       this.cdr.detectChanges();
     } );
   }
@@ -115,7 +115,7 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
   override ngAfterViewInit(): void{
     super.ngAfterViewInit();
     if( this.board.layout === 'absolute' )return;
-    this.subscriptions = this.boardService.boards$.subscribe( () => {
+    this.subscriptions = this.boardService.detectChanges$.subscribe( () => {
       // set the board height basing on the childrens size.
       const boardEl = this.el.nativeElement as HTMLElement;
       const laneEls = boardEl.querySelectorAll( 'lane' );

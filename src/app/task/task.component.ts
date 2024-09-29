@@ -10,7 +10,7 @@ import{ ContainerComponent }from'../base/base.component';
 import{ ClickService }from'../../service/click.service';
 import{  fromIsoString, formatDate, getDiffInDays }from'../../utils/date-utils';
 import{ setCaretPosition, isPlaceholder, hashCode }from'../../utils/utils';
-import{  millisForMagnitudeStep }from'../../types/constants';
+import{  millisForMagnitudeStep, minOpacityAtTreshold, similarityTreshold }from'../../types/constants';
 import{ isProject, isRecurringTask, isRecurringTaskChild, isTask }from'../../utils/guards';
 
 @Component( {
@@ -25,6 +25,7 @@ import{ isProject, isRecurringTask, isRecurringTaskChild, isTask }from'../../uti
   ],
 } )
 export class TaskComponent extends ContainerComponent implements OnInit, OnDestroy{
+
   @ViewChild( 'editor' ) editor: ElementRef | undefined;
   @Input() task!: Task;
   @Input() lane!: Lane;
@@ -78,7 +79,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
 
   override ngOnInit(): void{
     super.ngOnInit();
-    this.boardService.boards$.subscribe( () => {
+    this.subscriptions = this.boardService.detectChanges$.subscribe( () => {
       this.cdr.detectChanges(); // core for the change detection
     } );
     this.subscriptions = this.boardService.editorActiveTask$.subscribe( ( data: { lane: Lane, task: Task, startingCaretPosition: number | undefined } | undefined ) => {
@@ -313,14 +314,19 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   }
 
   getSimilarTasks( t: Task ): Task[]{
-    return t.similarTasks.map( id => this.boardService.findTask( id ) ).filter( t => !!t );
+    return t.similarTasks.map( sim => this.boardService.findTask( sim.id ) ).filter( t => !!t );
   }
-  getSimilarTasksTooltip( t: Task ): string{
-    return this.getSimilarTasks( t ).map( t => t?.textContent ).join( '<br>' )
+  getSimilarTasksTooltip( r: Task ): string{
+    return r.similarTasks.sort( ( t1, t2 ) => { return t2.similarity - t1.similarity } ).map( sim => ( {task: this.boardService.findTask( sim.id ), similarity: sim.similarity} ) ).filter( t => !!t ).map( t => `${t.task?.textContent} (${ Math.round( t.similarity * 100 )}%)`  ).join( '<br>' )
   }
 
   getSimilarTasksComponents( t: Task ): ContainerComponent[]{
-    return t.similarTasks.map( id => this.boardService.findTask( id ) ).filter( t => !!t ).flatMap( ta => this.registry.getComponents( ta ) );
+    return t.similarTasks.map( sim => this.boardService.findTask( sim.id ) ).filter( t => !!t ).flatMap( ta => this.registry.getComponents( ta ) );
+  }
+
+  getMaxSimilarityIndex( t: Task, scale: boolean ):number{
+    const res = Math.round( t.similarTasks.reduce( ( acc,t ) => { return Math.max( acc,t.similarity )   },0 ) * 100 );
+    return scale ? ( ( ( ( res / 100 ) - similarityTreshold ) * ( ( 1-minOpacityAtTreshold )/( 1-similarityTreshold ) ) ) + minOpacityAtTreshold )*100 : res
   }
     
 }

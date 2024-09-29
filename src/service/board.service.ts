@@ -1,8 +1,7 @@
-import{Inject, Injectable, Injector, NgZone}from'@angular/core';
+import{Inject, Injectable, NgZone}from'@angular/core';
 import{Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, Timeframe, AddFloatingLaneParams, RecurringTask, Recurrence, GanttTask, RecurringTaskChild, getStatesToArchive}from'../types/types';
-import{BehaviorSubject, Observable, debounceTime, map}from'rxjs';
+import{BehaviorSubject, Observable, Subject, debounceTime, map}from'rxjs';
 import{checkTaskSimilarity, eventuallyPatch, getDescendants, getProjectComputedStatus, initGanttData, isPlaceholder,  isStatic, stripHTML,}from'../utils/utils';
-import{TagService}from'./tag.service';
 import{StorageServiceAbstract}from'../types/storage';
 import{addUnitsToDate, fromIsoString, setDateSafe, shiftByRecurrence, toIsoString}from'../utils/date-utils';
 import{recurringChildrenLimit, similarityTreshold, statusValues}from'../types/constants';
@@ -13,6 +12,8 @@ import{isTask, isLane, isTasks, assertIsRecurringTaskChild, isRecurringTask, isR
 } )
 export class BoardService{
   private _selectedBoard$: BehaviorSubject<Board | undefined> = new BehaviorSubject<Board | undefined>( undefined );
+
+  private _detectChanges$: Subject<void> = new Subject<void>();
 
   private _boards$: BehaviorSubject<Board[]> = new BehaviorSubject<Board[]>( [] );
   private _editorActiveTask$: BehaviorSubject<{ lane: Lane, task: Task, startingCaretPosition: number | undefined } | undefined> = new BehaviorSubject<{ lane: Lane, task: Task, startingCaretPosition: number | undefined } | undefined>( undefined );
@@ -28,17 +29,13 @@ export class BoardService{
   private _lastSelectedTask$: BehaviorSubject<{lane: Lane,task:Task} | undefined> = new BehaviorSubject<{lane: Lane,task:Task} | undefined>( undefined );
   private _focusSearch$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>( false );
 
-  private tagService!: TagService;
-
   private boardUpdateCounter: number = 0;
   private statusStoredCounter: number = 0;
 
   constructor(
-    injector: Injector,
     zone: NgZone,
         @Inject( 'StorageServiceAbstract' ) private storageService: StorageServiceAbstract,
   ){
-    setTimeout( () => this.tagService = injector.get( TagService ) );
 
     const latestStatus = this.storageService.getStatus();
     if( latestStatus !== null ){
@@ -58,7 +55,6 @@ export class BoardService{
       debounceTime( 5000 )
     ).subscribe( boards => {
       // run expensive operations:
-
       if( storageService.isStatusPresent() ){
         console.warn( 'Status stored', this.statusStoredCounter++ );
         this.storageService.writeToStatus( {boards} );
@@ -73,6 +69,7 @@ export class BoardService{
       if( b ){
         // detect similarities in tasks:
         this.manageSimilaritiesInTasks( b )
+        this._detectChanges$.next()
       }
 
     } ) 
@@ -128,6 +125,7 @@ export class BoardService{
       allParents.filter( p => !isLane( p ) || !p.isArchive ).forEach( p => p.children.forEach( c => c.parentId = p.id ) )
 
       this._allParents$.next( allParents );
+      this._detectChanges$.next()
     } );
   }
 
@@ -414,12 +412,17 @@ export class BoardService{
   get editorActiveTask$(): Observable<{ lane: Lane, task: Task, startingCaretPosition: number | undefined } | undefined>{
     return this._editorActiveTask$;
   }
+  get detectChanges$(): Observable<void>{
+    return this._detectChanges$;
+  }
+
   get selectedBoard(): Board | undefined{
     return this._selectedBoard$.getValue();
   }
   get allTasks(): Task[] | undefined{
     return this._allTasks$.getValue();
   }
+
   getTask( id: string ): Task | undefined{
     return this._allTasks$.getValue()?.find( t => t.id === id );
   }
@@ -1025,10 +1028,11 @@ export class BoardService{
     descendants.forEach( d => d.similarTasks = [] );
     for( const d of descendants ){
       for( const d2 of descendants.filter( v => v.id !== d.id && !processed.includes( v ) ) ){
-        if( checkTaskSimilarity( d, d2 ) >= similarityTreshold ){
+        const sIndex = checkTaskSimilarity( d, d2 );
+        if( sIndex >= similarityTreshold ){
           console.log( `${stripHTML( d.textContent )} => ${stripHTML( d2.textContent )} = ${checkTaskSimilarity( d, d2 )}` );
-          d.similarTasks.push( d2.id );
-          d2.similarTasks.push( d.id );
+          d.similarTasks.push( {id:d2.id, similarity: sIndex} );
+          d2.similarTasks.push( {id:d.id, similarity: sIndex} );
         }
       }
       processed.push( d )

@@ -24,8 +24,8 @@
     }
 
     <div class="grow"></div>
-    <span *ngIf="task.similarTasks.length > 0" class="translucent pill pointer color-2" [tooltip]="getSimilarTasksTooltip(task)" (mouseenter)="showArrows = true" (mouseleave)="showArrows = false">
-      <span>similar</span>
+    <span *ngIf="task.similarTasks.length > 0" [style]="'opacity:' + getMaxSimilarityIndex(task, true) + '%'" class="pill pointer color-2" [tooltip]="getSimilarTasksTooltip(task)" (mouseenter)="showArrows = true" (mouseleave)="showArrows = false">
+      <span>{{ task.similarTasks.length }} similar ({{ getMaxSimilarityIndex(task, false) }}%)</span>
       <similar-arrows *ngIf="showArrows" [source]="this" [destinations]="getSimilarTasksComponents(task)"></similar-arrows>
     </span>
 

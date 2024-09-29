@@ -71,10 +71,10 @@ export class LaneComponent extends ContainerComponent implements OnInit{
 
   override ngOnInit(): void{
     super.ngOnInit();
-    this.boardService.boards$.subscribe( () => {
+    this.subscriptions = this.boardService.detectChanges$.subscribe( () => {
       this.cdr.detectChanges();
     } );
-    this.boardService.lastSelectedTask$.subscribe( lastSelectedTask => {
+    this.subscriptions = this.boardService.lastSelectedTask$.subscribe( lastSelectedTask => {
       if( lastSelectedTask?.lane.id === this.lane.id ){
         this.active = true;
       }else{

@@ -47,7 +47,8 @@ export class AppComponent implements AfterViewInit{
     this.boardService.selectedBoard$.subscribe( board => {
       setTimeout( () => { 
         if( !board )return; 
-        this.board = board; } );
+        this.board = board; 
+      } );
       //this.board = board
     } );
     this.modalService.displayModal$.subscribe( display => {

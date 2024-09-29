@@ -189,8 +189,8 @@ export function getFirstMentionTag( task: Task ): string | undefined{
  * @returns 
  */
 export function checkTaskSimilarity( task1: Task, task2: Task ): number{
-  const t1 = task1.tags.sort().map( t => t.tag );
-  const t2 = task2.tags.sort().map( t => t.tag );
+  const t1 = task1.tags.sort().map( t => t.tag.toLowerCase() );
+  const t2 = task2.tags.sort().map( t => t.tag.toLowerCase() );
 
   const text1 = stripHTML( task1.textContent )
   const text2 = stripHTML( task2.textContent )
@@ -198,7 +198,7 @@ export function checkTaskSimilarity( task1: Task, task2: Task ): number{
   // rate is tags shared / total number of tags
   const tagsSharedCount = t1.filter( t => t2.includes( t ) ).length;
   const totalTagsCount = t1.length + t2.length - tagsSharedCount;
-  return tagsSharedCount / totalTagsCount * stringSimilarity( text1,text2 )
+  return totalTagsCount > 0 ? tagsSharedCount / totalTagsCount * stringSimilarity( text1,text2 ) : stringSimilarity( text1,text2 )
 }
 
 /**

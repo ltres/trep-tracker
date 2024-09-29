@@ -34,7 +34,7 @@ export interface Task extends Container {
     _type: 'task',
     children: Task[],
     recurrences?: RecurringTaskChild[],
-    similarTasks: string[],
+    similarTasks: {id: string, similarity:number}[],
     priority: Priority,
     status: Status,
     beforeProjectStatus?: Status, // status the task had before becoming a project
