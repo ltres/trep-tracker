@@ -77,7 +77,7 @@ export class ContainerComponentRegistryService{
     const curVal = this._componentRegistry$.getValue();
     const entry = curVal.find( c => c.container.id === container.id ) 
     if( entry ){
-      entry.components.filter( c => c != containerComponent )
+      entry.components = entry.components.filter( c => c != containerComponent )
     }
     this._componentRegistry$.next( curVal );
   }

@@ -64,6 +64,7 @@
 
 .task-text-content:not(.placeholder) {
     padding: $task-y-padding 0;
+    min-width: 25rem;
 }
 
 .editor-wrapper {

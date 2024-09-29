@@ -14,7 +14,7 @@
 
     <status [container]="task" [board]="board" [staticLane]="isStaticView()" (onStatusSelected)="updateStatus($event)"></status>
   </div>
-  <div class="flex w-100 g-025 align-items-center">
+  <div class="flex grow g-025 align-items-center overflow-hidden">
     @if (enableGanttView) {
       <div class="task-text-content" innerHTML="{{ task.textContent }}"></div>
     } @else if (task.searchTextContent) {
@@ -26,9 +26,8 @@
     <div class="grow"></div>
     <span *ngIf="task.similarTasks.length > 0" [style]="'opacity:' + getMaxSimilarityIndex(task, true) + '%'" class="pill pointer color-2" [tooltip]="getSimilarTasksTooltip(task)" (mouseenter)="showArrows = true" (mouseleave)="showArrows = false">
       <span>{{ task.similarTasks.length }} similar ({{ getMaxSimilarityIndex(task, false) }}%)</span>
-      <similar-arrows *ngIf="showArrows" [source]="this" [destinations]="getSimilarTasksComponents(task)"></similar-arrows>
     </span>
-
+    <similar-arrows *ngIf="showArrows" [source]="this" [destinations]="getSimilarTasksComponents(task)"></similar-arrows>
     <div *ngIf="!enableGanttView" class="task-toolbar relative flex align-items-center g-025">
       <span *ngIf="!isPlaceholder() && task.children.length === 0" [class.selected]="(task.gantt?.startDate || task.gantt?.endDate) && task.gantt?.showData !== false" class="select-dates pointer" (click)="openDatePicker()">
         <span [tooltip]="'Set start/end dated'" [position]="'top'">📅</span>

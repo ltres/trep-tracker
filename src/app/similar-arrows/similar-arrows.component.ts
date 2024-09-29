@@ -27,7 +27,15 @@ export class SimilarArrowsComponent implements AfterViewInit, OnDestroy{
       const l = new LeaderLine(
         el1,
         el2,
-        {path: 'grid', startSocket: 'right', endSocket: 'right', startPlug:"behind", endPlug:"square", size:2}
+        {
+          color: "rgb(241, 134, 255)",
+          path: 'grid', 
+          startSocket: 'right', 
+          endSocket: 'right', 
+          startPlug:"behind", 
+          endPlug:"square", 
+          size:2
+        }
       )
       this.lines.push( l )
     }
