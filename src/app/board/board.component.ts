@@ -10,6 +10,7 @@ import{ ContainerComponent }from'../base/base.component';
 import{ ContainerComponentRegistryService }from'../../service/registry.service';
 import{ layoutValues }from'../../types/constants';
 import{ isLane, isTask }from'../../utils/guards';
+import{ slowFadeInOut }from'../../types/animations';
 
 @Component( {
   selector: 'board',
@@ -21,6 +22,7 @@ import{ isLane, isTask }from'../../utils/guards';
   providers: [
     { provide: ContainerComponent, useExisting: forwardRef( () => BoardComponent ) },
   ],
+  animations: slowFadeInOut
 } )
 export class BoardComponent extends ContainerComponent implements OnInit, AfterViewInit{
   @Input() board!: Board;

@@ -12,6 +12,7 @@ import{  fromIsoString, formatDate, getDiffInDays }from'../../utils/date-utils';
 import{ setCaretPosition, isPlaceholder, hashCode }from'../../utils/utils';
 import{  millisForMagnitudeStep, minOpacityAtTreshold, similarityTreshold }from'../../types/constants';
 import{ isProject, isRecurringTask, isRecurringTaskChild, isTask }from'../../utils/guards';
+import{ fadeInOut }from'../../types/animations';
 
 @Component( {
   selector: 'task[task][lane][parent][board]',
@@ -23,6 +24,7 @@ import{ isProject, isRecurringTask, isRecurringTaskChild, isTask }from'../../uti
   providers: [
     { provide: ContainerComponent, useExisting: forwardRef( () => TaskComponent ) },
   ],
+  animations: fadeInOut
 } )
 export class TaskComponent extends ContainerComponent implements OnInit, OnDestroy{
 

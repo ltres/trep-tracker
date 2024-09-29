@@ -123,7 +123,7 @@
 
     <div *ngIf="isStatic()">
       <div class="static-view flex column">
-        <task *ngFor="let task of staticTasks | async; trackBy: trackBy" [staticView]="true" [showChildren]="lane.showChildren" [task]="task" (onToggleShowNotes)="interactingWithChildTasks = $event" [parent]="lane" [board]="board" [lane]="lane" [class]="isRecurringTask(task) ? 'recurrent-task-container p-x-05 m-x--1' : ''"></task>
+        <task *ngFor="let task of staticTasks | async; trackBy: trackBy" [staticView]="true" [showChildren]="lane.showChildren" [task]="task" (onToggleShowNotes)="interactingWithChildTasks = $event" [parent]="lane" [board]="board" [lane]="lane" [class]="isRecurringTask(task) ? 'recurrent-task-container p-x-05 m-x--1' : ''" [@fadeInOut]></task>
       </div>
     </div>
 

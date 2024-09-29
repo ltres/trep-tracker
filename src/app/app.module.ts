@@ -36,7 +36,7 @@ import{ ClickComponent }from'./click/click.component';
 import{ ClickService }from'../service/click.service';
 import{ UpdateCheckerComponent }from'./update-checker/update-checker.component';
 import{ GanttComponent }from'./gantt/gantt.component';
-import{NoopAnimationsModule}from'@angular/platform-browser/animations';
+import{BrowserAnimationsModule, NoopAnimationsModule}from'@angular/platform-browser/animations';
 
 import{ DatePickerComponent }from'./date-picker/date-picker.component';
 import{ OWL_DATE_TIME_FORMATS, OwlDateTimeModule, OwlNativeDateTimeModule }from'@ltres/angular-datetime-picker';
@@ -73,14 +73,18 @@ import{ SimilarArrowsComponent }from"./similar-arrows/similar-arrows.component";
   DroppableDirective
 ],
 bootstrap: [AppComponent], 
-imports: [CommonModule,
+imports: [
+  CommonModule,
   BrowserModule,
   FormsModule,
   ReactiveFormsModule,
   KeyboardListenerComponent,
   OwlDateTimeModule,
   OwlNativeDateTimeModule,
-  NoopAnimationsModule, SimilarArrowsComponent], 
+  NoopAnimationsModule, 
+  SimilarArrowsComponent,
+  BrowserAnimationsModule
+], 
 providers: [
   BoardService,
   KeyboardService,

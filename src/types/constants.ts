@@ -203,4 +203,4 @@ export const dragProximityTreshold = 10;
 export const recurringChildrenLimit = 2;
 
 export const similarityTreshold = 0.6;
-export const minOpacityAtTreshold = 0.1;
+export const minOpacityAtTreshold = 0.25;

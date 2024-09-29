@@ -11,6 +11,7 @@ import{ ContainerComponent }from'../base/base.component';
 import{ ModalService }from'../../service/modal.service';
 import{ layoutValues, tagIdentifiers }from'../../types/constants';
 import{  isPriorityArray,  isRecurringTask,  isStatusArray,  isTagArray, isTask }from'../../utils/guards';
+import{ slowFadeInOut }from'../../types/animations';
 
 @Component( {
   selector: 'lane[lane][board]',
@@ -22,6 +23,7 @@ import{  isPriorityArray,  isRecurringTask,  isStatusArray,  isTagArray, isTask 
   providers: [
     { provide: ContainerComponent, useExisting: forwardRef( () => LaneComponent ) },
   ],
+  animations: slowFadeInOut
 } )
 export class LaneComponent extends ContainerComponent implements OnInit{
 
