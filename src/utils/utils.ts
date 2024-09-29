@@ -4,7 +4,7 @@ import{ dateFormats, ganttConfig, layoutValues, tagHtmlWrapper, tagIdentifiers, 
 import{ addUnitsToDate, toIsoString }from'./date-utils';
 import{ Lane, Container, GanttTask, Recurrence, Board, ISODateString, LayoutProperties, getLayouts, Layout, Task, getDefaultLocale, getStatesToArchive, Status }from'../types/types';
 import{ isTask, isLane, isProject }from'./guards';
-import stringSimilarity from'string-similarity-js';
+import{stringSimilarity}from'string-similarity-js';
 
 export function generateUUID( length?: number ): string{
   return  uuidv4().substring( 0, length ?? 8 );

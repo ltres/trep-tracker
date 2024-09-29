@@ -56,6 +56,35 @@ export class TagService{
   }
 
   /**
+   * Unwraps tags from a string, eg 'unwrap <span class="tag-green">!me</span>' -> 'unwrap !me'
+   * @param extractFrom 
+   * @returns 
+   */
+  private unwrap( extractFrom: string ): string{
+    for( const tagIdentifier of tagIdentifiers ){
+      const wrappers = tagHtmlWrapper( tagIdentifier.class );
+      const regex = new RegExp( `(${wrappers[0]})?${tagCapturingGroup( tagIdentifier.symbol )}?(${wrappers[1]})?`, 'g' );
+      extractFrom = extractFrom.replace( regex, `${tagIdentifier.symbol}$2` );
+    }
+    return extractFrom
+  }
+
+  /**
+   * Wraps tags from a string, eg 'unwrap !me' -> 'unwrap <span class="tag-green">!me</span>'
+   * @param extractFrom 
+   * @returns 
+   */
+  private wrap( extractFrom: string ): string{
+    for( const tagIdentifier of tagIdentifiers ){
+      const wrappers = tagHtmlWrapper( tagIdentifier.class );
+      const regex = new RegExp( tagCapturingGroup( tagIdentifier.symbol ), 'g' );
+      extractFrom = extractFrom.replace( regex, `${wrappers[0]}${tagIdentifier.symbol}$1${wrappers[1]}` );
+    }
+    return extractFrom;
+
+  }
+
+  /**
   * Updates the tags of a container data model.
   */
   extractTags( extractFrom: string, board: Board ): { taggedString: string, tags: Tag[], caretShift: number }{
@@ -69,13 +98,9 @@ export class TagService{
     const allTags = this._tags$.getValue().find( t => t.board.id === board.id )?.tags ?? [];
 
     const tags: { tag: string, type: TagType }[] = [];
-    for( const tagIdentifier of tagIdentifiers ){
-      const wrappers = tagHtmlWrapper( tagIdentifier.class );
-      const regex = new RegExp( `(${wrappers[0]})?${tagCapturingGroup( tagIdentifier.symbol )}?(${wrappers[1]})?`, 'g' );
+    // step #0 tag unwrapping
+    value = this.unwrap( value );
 
-      // step #0 tag unwrapping
-      value = value.replace( regex, `${tagIdentifier.symbol}$2` );
-    }
     for( const tagIdentifier of tagIdentifiers ){
       const wrappers = tagHtmlWrapper( tagIdentifier.class );
       // Step #1 Tags extraction
@@ -137,8 +162,10 @@ export class TagService{
           // match, let's verify the symbol
           console.log( `Difference: ${JSON.stringify( matchingTag )}, ${JSON.stringify( tag )}` )
           // Symbol is different. fix the matching tag:
-          toEval.textContent = toEval.textContent.replace( tagIdentifiers.find( i => i.type === matchingTag.type )?.symbol ?? "", tagIdentifiers.find( i => i.type === tag.type )?.symbol ?? "" )
-          toEval.textContent = toEval.textContent.replace( tagIdentifiers.find( i => i.type === matchingTag.type )?.type ?? "", tagIdentifiers.find( i => i.type === tag.type )?.type ?? "" )
+          toEval.textContent = this.unwrap( toEval.textContent );
+          const replaceRegex = new RegExp( '.(' + matchingTag.tag + ')' )
+          toEval.textContent = toEval.textContent.replace( replaceRegex , ( tagIdentifiers.find( i => i.type === tag.type )?.symbol ?? "" ) + '$1' )
+          toEval.textContent = this.wrap( toEval.textContent )
 
           matchingTag.type = tag.type;
 

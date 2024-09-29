@@ -74,7 +74,7 @@ export class BoardService{
         // detect similarities in tasks:
         this.manageSimilaritiesInTasks( b )
         if( this.tagService && this.tagService.latestEditedTagsContainer ){
-          // this.tagService.restructureTags( this.tagService.latestEditedTagsContainer, b )
+          this.tagService.restructureTags( this.tagService.latestEditedTagsContainer, b )
         }
 
         // Finally publish an update
