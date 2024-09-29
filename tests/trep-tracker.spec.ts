@@ -215,6 +215,7 @@ test.describe.serial( 'Trep Tracker Tasks & lanes - ', () => {
     // set static lane priority to 2
     await staticLaneLoc.locator( '.selectable.priority' ).click();
     await staticLaneLoc.locator( '.priority.priority-2' ).click();
+    await page.waitForTimeout( 350 );
     expect( await staticLaneLoc.locator( 'task' ).count() ).toBe( 0 )
     await firstTask.locator( 'prioritizer' ).click();
     await firstTask.locator( '.priority.priority-2' ).click();
