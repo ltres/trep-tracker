@@ -42,7 +42,7 @@
 
         <button class="small no-grow" *ngIf="getGanttTasks$() | async" (click)="openGantt()">📊 Show lane Gantt..</button>
 
-        <button class="small no-grow" *ngIf="!isStatic() && !isArchive(lane)" (click)="archiveDones()">☢️ Archive dones</button>
+        <button class="small no-grow" *ngIf="!isStatic() && !isArchive(lane)" (click)="archiveDones()">📁 Archive dones</button>
         <button class="small no-grow" *ngIf="!isStatic()" (click)="showMoveToBoards = !showMoveToBoards">🚛 Move to board..</button>
         <div *ngIf="showMoveToBoards" class="p-x-05 flex column g-025">
           <ng-container *ngFor="let otherBoard of this.boardService.boards$ | async">

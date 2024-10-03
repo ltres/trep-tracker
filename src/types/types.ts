@@ -39,6 +39,9 @@ export interface Task extends Container {
     status: Status,
     beforeProjectStatus?: Status, // status the task had before becoming a project
     notes?: string,
+    archivedDate?: ISODateString | undefined,
+    discardedDate?: ISODateString | undefined,
+
     startDate?: ISODateString,
     gantt?: GanttData
 }
@@ -133,10 +136,6 @@ export type StateChangeDate = {
         leave?: ISODateString
     };
 };
-
-export function getStatesToArchive(): Status[]{
-  return['archived', 'discarded']
-}
 
 export type ISODateString = `${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`
 export type TagType = 'tag-orange' | 'tag-yellow' | 'tag-green';

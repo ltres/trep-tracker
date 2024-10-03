@@ -13,6 +13,12 @@ export function isTask( parent: Container | undefined ): parent is Task{
   }
   return( parent as Task )._type === 'task';
 }
+export function assertIsTask( parent: Container | undefined ): asserts parent is Task{
+  if( ! isTask( parent ) ){
+    throw new Error( 'Not a Task' );
+  }
+}
+
 export function isBoard( parent: Container | undefined ): parent is Board{
   if( !parent ){
     return false;

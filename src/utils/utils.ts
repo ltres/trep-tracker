@@ -2,7 +2,7 @@ import{ v4 as uuidv4 }from'uuid';
 
 import{ dateFormats, ganttConfig, layoutValues, tagHtmlWrapper, tagIdentifiers, tagTypes }from'../types/constants';
 import{ addUnitsToDate, toIsoString }from'./date-utils';
-import{ Lane, Container, GanttTask, Recurrence, Board, ISODateString, LayoutProperties, getLayouts, Layout, Task, getDefaultLocale, getStatesToArchive, Status }from'../types/types';
+import{ Lane, Container, GanttTask, Recurrence, Board, ISODateString, LayoutProperties, getLayouts, Layout, Task, getDefaultLocale, Status }from'../types/types';
 import{ isTask, isLane, isProject }from'./guards';
 import{stringSimilarity}from'string-similarity-js';
 
@@ -323,6 +323,18 @@ export function stripHTML( text: string ){
   return text.replace( /<[^>]*>/g, '' ).replace( /\u00A0/g, ' ' );
 }
 
+export function isArchivedOrDiscarded( task:Task ): boolean{
+  return!!task.archivedDate || !!task.discardedDate
+}
+
+export function isArchived( task:Task ): boolean{
+  return!!task.archivedDate
+}
+
+export function isDiscarded( task:Task ): boolean{
+  return!!task.discardedDate
+}
+
 /**
  * Data model has undergone some changes in time. This method ensures that all the statuses get brought to the latest version.
  * @param board 
@@ -357,11 +369,29 @@ export function eventuallyPatch( board: Board ): Board{
         stateChangeDate?: ISODateString,
         createdLaneId?: string | undefined;
         order?: number;
-        
+        status: Status | 'archived'| 'discarded',
+        dates: {[key:string]: {
+          enter?: ISODateString,
+          leave?: ISODateString
+        }} 
       } = p
 
       if( !mayBeOldTask.similarTasks ){
         mayBeOldTask.similarTasks = []
+      }
+
+      // Old statuses adjustment:
+      if( ( mayBeOldTask.status as string ) === 'archived' || mayBeOldTask.archived ){
+        mayBeOldTask.status = 'completed';
+        mayBeOldTask.archivedDate = mayBeOldTask.dates['archived']?.enter ?? toIsoString( new Date() );
+        delete mayBeOldTask.dates.completed?.leave;
+        delete mayBeOldTask.dates['archived']
+      }
+      if( ( mayBeOldTask.status as string ) === 'discarded' ){
+        mayBeOldTask.status = 'todo';
+        mayBeOldTask.discardedDate = mayBeOldTask.dates['discarded']?.enter ?? toIsoString( new Date() );
+        delete mayBeOldTask.dates.todo?.leave;
+        delete mayBeOldTask.dates['discarded']
       }
 
       // cleanup successors
@@ -400,11 +430,8 @@ export function eventuallyPatch( board: Board ): Board{
       if( !mayBeOldTask.dates ){
         mayBeOldTask.dates = {}
       }
-      if( mayBeOldTask.archived ){
-        mayBeOldTask.status = 'archived';
-        mayBeOldTask.dates.archived = { enter: mayBeOldTask.archivedDate ?? new Date().toISOString() as ISODateString };
-      }
-      if( mayBeOldTask.stateChangeDate && mayBeOldTask.status && mayBeOldTask.status !== 'archived' ){
+
+      if( mayBeOldTask.stateChangeDate && mayBeOldTask.status ){
         mayBeOldTask.dates[mayBeOldTask.status] = { enter: mayBeOldTask.stateChangeDate ?? new Date().toISOString() as ISODateString };
       }
       if( mayBeOldTask.creationDate && ( !mayBeOldTask.dates['todo'] || !mayBeOldTask.dates['todo'].enter ) ){
@@ -443,7 +470,7 @@ export function eventuallyPatch( board: Board ): Board{
       if( mayBeOldLane.isArchive ){
         // Case for archived tasks that are children of archived tasks. They should be moved to the archive lane.
         const descendants = getDescendants( mayBeOldLane );
-        const archivedFirstLevel = mayBeOldLane.children.filter( c => getStatesToArchive().includes( c.status ) );
+        const archivedFirstLevel = mayBeOldLane.children.filter( c => isArchived( c ) );
         archivedFirstLevel.forEach( a => {
           const findInDescendants = descendants.filter( d => d.id === a.id );
           if( findInDescendants.length > 1 ){

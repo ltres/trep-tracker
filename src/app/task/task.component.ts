@@ -1,6 +1,6 @@
 /* eslint-disable no-fallthrough */
 import{ ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, forwardRef, Input, OnDestroy, OnInit, Output, ViewChild }from'@angular/core';
-import{ Board, Lane, Container, Task, Tag, Status, Priority, ISODateString, PickerOutput, DateFormat, getStatesToArchive }from'../../types/types';
+import{ Board, Lane, Container, Task, Tag, Status, Priority, ISODateString, PickerOutput, DateFormat }from'../../types/types';
 import{ BoardService }from'../../service/board.service';
 import{ DragService }from'../../service/drag.service';
 import{ KeyboardService }from'../../service/keyboard.service';
@@ -9,7 +9,7 @@ import{ ContainerComponentRegistryService }from'../../service/registry.service';
 import{ ContainerComponent }from'../base/base.component';
 import{ ClickService }from'../../service/click.service';
 import{  fromIsoString, formatDate, getDiffInDays }from'../../utils/date-utils';
-import{ setCaretPosition, isPlaceholder, hashCode }from'../../utils/utils';
+import{ setCaretPosition, isPlaceholder, hashCode, isArchivedOrDiscarded }from'../../utils/utils';
 import{  millisForMagnitudeStep, minOpacityAtTreshold, similarityTreshold }from'../../types/constants';
 import{ isProject, isRecurringTask, isRecurringTaskChild, isTask }from'../../utils/guards';
 import{ fadeInOut }from'../../types/animations';
@@ -28,7 +28,6 @@ import{ TagService }from'../../service/tag.service';
   animations: fadeInOut
 } )
 export class TaskComponent extends ContainerComponent implements OnInit, OnDestroy{
-
   @ViewChild( 'editor' ) editor: ElementRef | undefined;
   @Input() task!: Task;
   @Input() lane!: Lane;
@@ -268,31 +267,31 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     const prox = this.getProximityMagnitude( new Date().toISOString() as ISODateString, dateToCheck );
     switch( prox ){
       case 2:
-        return this.task.status === 'completed' || getStatesToArchive().includes( this.task.status ) ? "" : "<span class='small translucent'>⏰</span>"
+        return this.task.status === 'completed' || isArchivedOrDiscarded( this.task ) ? "" : "<span class='small translucent'>⏰</span>"
       case 1:
-        return this.task.status === 'completed' || getStatesToArchive().includes( this.task.status ) ? "" : "<span class='half-translucent'>⏰</span>"
+        return this.task.status === 'completed' || isArchivedOrDiscarded( this.task ) ? "" : "<span class='half-translucent'>⏰</span>"
       case 0:
-        return this.task.status === 'completed' || getStatesToArchive().includes( this.task.status ) ? "" : "<span>⏰</span>"
+        return this.task.status === 'completed' || isArchivedOrDiscarded( this.task ) ? "" : "<span>⏰</span>"
       case-1:
         switch( caseToCheck ){
           case"start":
             return this.task.status === 'todo' || this.task.status === 'to-be-delegated' ? "<span class='small translucent'>😱</span>" : "";
           case"end":
-            return this.task.status === 'completed' || getStatesToArchive().includes( this.task.status ) ? "" : "<span class='small translucent'>😱</span>";
+            return this.task.status === 'completed' || isArchivedOrDiscarded( this.task ) ? "" : "<span class='small translucent'>😱</span>";
         }
       case-2:
         switch( caseToCheck ){
           case"start":
             return this.task.status === 'todo' || this.task.status === 'to-be-delegated' ? "<span class='small half-translucent'>😱</span>" : "";
           case"end":
-            return this.task.status === 'completed' || getStatesToArchive().includes( this.task.status ) ? "" : "<span class='small half-translucent'>😱</span>";
+            return this.task.status === 'completed' || isArchivedOrDiscarded( this.task ) ? "" : "<span class='small half-translucent'>😱</span>";
         }
       case-3:
         switch( caseToCheck ){
           case"start":
             return this.task.status === 'todo' || this.task.status === 'to-be-delegated' ? "<span>😱</span>" : "";
           case"end":
-            return this.task.status === 'completed' || getStatesToArchive().includes( this.task.status ) ? "" : "<span>😱</span>";
+            return this.task.status === 'completed' || isArchivedOrDiscarded( this.task ) ? "" : "<span>😱</span>";
         }
       default: 
         return"";
@@ -332,6 +331,10 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   getMaxSimilarityIndex( t: Task, scale: boolean ):number{
     const res = Math.round( t.similarTasks.reduce( ( acc,t ) => { return Math.max( acc,t.similarity )   },0 ) * 100 );
     return scale ? ( ( ( ( res / 100 ) - similarityTreshold ) * ( ( 1-minOpacityAtTreshold )/( 1-similarityTreshold ) ) ) + minOpacityAtTreshold )*100 : res
+  }
+
+  archive( task: Task ){
+    this.boardService.archive( this.board, task );
   }
     
 }

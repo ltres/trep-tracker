@@ -1,8 +1,8 @@
 import{ Injectable }from'@angular/core';
 import{ BehaviorSubject, Observable, of }from'rxjs';
-import{ getDescendants, isPlaceholder, isStatic }from'../utils/utils';
+import{ getDescendants, isArchivedOrDiscarded, isPlaceholder, isStatic }from'../utils/utils';
 import{ BoardService }from'./board.service';
-import{ Board, Container, getStatesToArchive, Tag, TagType }from'../types/types';
+import{ Board, Container, Tag, TagType }from'../types/types';
 import{ tagIdentifiers, tagHtmlWrapper, tagCapturingGroup }from'../types/constants';
 import{ isLane, isTask }from'../utils/guards';
 
@@ -153,7 +153,7 @@ export class TagService{
    */
   restructureTags( container: Container, b: Board ){
     const tags = container.tags;
-    const boardContainers = getDescendants( b ).filter( d => ( isTask( d ) && !isPlaceholder( d ) && !getStatesToArchive().includes( d.status ) ) || !isTask( d )
+    const boardContainers = getDescendants( b ).filter( d => ( isTask( d ) && !isPlaceholder( d ) && !isArchivedOrDiscarded( d ) ) || !isTask( d )
     );
     for( const tag of tags ){
       for( const toEval of boardContainers ){

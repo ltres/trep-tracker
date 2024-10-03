@@ -154,12 +154,6 @@ export const statusValues = {
   completed: {
     icon: '✅',
   },
-  discarded: {
-    icon: '🗑️',
-  },
-  archived: {
-    icon: '📂',
-  },
 } as const;
 
 export enum tagTypes  {

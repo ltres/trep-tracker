@@ -1,11 +1,11 @@
 import{Inject, Injectable, Injector, NgZone}from'@angular/core';
-import{Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, Timeframe, AddFloatingLaneParams, RecurringTask, Recurrence, GanttTask, RecurringTaskChild, getStatesToArchive}from'../types/types';
+import{Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, Timeframe, AddFloatingLaneParams, RecurringTask, Recurrence, GanttTask, RecurringTaskChild}from'../types/types';
 import{BehaviorSubject, Observable, Subject, debounceTime, map}from'rxjs';
-import{checkTaskSimilarity, eventuallyPatch, getDescendants, getProjectComputedStatus, initGanttData, isPlaceholder,  isStatic,}from'../utils/utils';
+import{checkTaskSimilarity, eventuallyPatch, getDescendants, getProjectComputedStatus, initGanttData, isArchived, isArchivedOrDiscarded, isPlaceholder,  isStatic,}from'../utils/utils';
 import{StorageServiceAbstract}from'../types/storage';
 import{addUnitsToDate, fromIsoString, setDateSafe, shiftByRecurrence, toIsoString}from'../utils/date-utils';
 import{recurringChildrenLimit, similarityTreshold, statusValues}from'../types/constants';
-import{isTask, isLane, isTasks, assertIsRecurringTaskChild, isRecurringTask, isRecurringTaskChild, assertIsGanttTask, assertIsRecurringTask, isProject}from'../utils/guards';
+import{isTask, isLane, isTasks, assertIsRecurringTaskChild, isRecurringTask, isRecurringTaskChild, assertIsGanttTask, assertIsRecurringTask, isProject, assertIsTask}from'../utils/guards';
 import{ TagService }from'./tag.service';
 
 @Injectable( {
@@ -92,6 +92,9 @@ export class BoardService{
         board.children.forEach( lane => {
           allTasks = allTasks.concat( lane.children );
           lane.children.forEach( task => {
+            if( !lane.isArchive ){
+              delete task.archivedDate; // tasks that were dragged out of the archive lane for some reason
+            }
             allTasks = allTasks.concat( getDescendants( task ).filter( t => isTask( t ) ) as Task[] );
           } );
           if( lane.isArchive ){
@@ -104,13 +107,13 @@ export class BoardService{
         allLanes = allLanes.concat( board.children );
       } );
       // recurring child management:
-      allTasks.filter( t => isRecurringTask( t ) ).filter( t => !getStatesToArchive().includes( t.status ) && !isPlaceholder( t ) ).forEach( t => {
+      allTasks.filter( t => isRecurringTask( t ) ).filter( t => !isArchivedOrDiscarded( t ) && !isPlaceholder( t ) ).forEach( t => {
         const recurrences = this.manageRecurringChildren( t );
         allTasks = allTasks.concat( recurrences );
       } )
 
       // Update project states
-      allTasks.filter( t => isProject( t ) && !getStatesToArchive().includes( t.status ) ).forEach( p => {
+      allTasks.filter( t => isProject( t ) && !isArchivedOrDiscarded( t ) ).forEach( p => {
         const computedStatus = getProjectComputedStatus( p );
         if( computedStatus !== p.status ){
           p.beforeProjectStatus = p.status
@@ -291,7 +294,7 @@ export class BoardService{
           } );
         }
         if( excldeArchived ){
-          res = res?.filter( t => !getStatesToArchive().includes( t.status ) && !isPlaceholder( t ) );
+          res = res?.filter( t => !isArchivedOrDiscarded( t ) && !isPlaceholder( t ) );
         }
         const regex = /[-.:TZ]/g;
         if( sort ){
@@ -333,7 +336,7 @@ export class BoardService{
             tasks = tasks.concat( child ).concat( getDescendants( child ) as Task[] );
           }
         }
-        return tasks.filter( c => !isPlaceholder( c ) && !getStatesToArchive().includes( c.status ) );
+        return tasks.filter( c => !isPlaceholder( c ) && !isArchivedOrDiscarded( c ) );
       } ),
 
     );
@@ -521,9 +524,10 @@ export class BoardService{
       for( const s of status ){
         container.status = s;
         setDateSafe( container, s, 'enter', new Date() );
+        /*
         if( isTask( container ) && board ){
           this.evaluateArchiveMove( board, container );
-        }
+        }*/
       }
 
       // if the parent is a project, update its status accordingly:
@@ -540,13 +544,14 @@ export class BoardService{
   }
 
   /**
-     * Evaluates the move of a task to/from the archive lane.
-     */
+  * Evaluates the move of a task to/from the archive lane.
+  * Tasks get physically moved to the Archive lane for performance reasons
+  */
   private evaluateArchiveMove( board: Board, task: Task ){
     let archive = board.children.find( l => l.isArchive );
-    if( getStatesToArchive().includes( task.status ) ){
+    if( isArchived( task ) ){
       const parent = this.findDirectParent( [task] )
-      if( parent ){
+      if( parent && ( !isTask( parent ) || !parent.archivedDate ) ){ // if the parent is already archived, we do not want to remove the task
         task.parentId = parent.id;
         // Removal from the original parent
         parent.children = parent.children.filter( t => t.id !== task.id );
@@ -574,12 +579,12 @@ export class BoardService{
         return;
       }
       // Check if the task has any descendants that are already in the archive lane, and remove them
-      const descendantsToRemove = getDescendants( task ).filter( t => getStatesToArchive().includes( ( t as Task ).status ) );
+      const descendantsToRemove = getDescendants( task ).filter( t => isArchivedOrDiscarded( t as Task ) );
       descendantsToRemove.forEach( d => { archive!.children = archive!.children.filter( t => t.id !== d.id );
       } );
 
       // add the task to the archived lane
-      archive.children.push( task );
+      archive.children.unshift( task );
     }else{
       // Check if it is a first level task in the archive
       if( !archive?.children.find( t => t.id === task.id ) ){
@@ -611,7 +616,7 @@ export class BoardService{
           task.parentId = lane.id;
         }
       }
-
+      delete task.archivedDate;
       // remove the task from the archive
       archive?.children.splice( archive.children.findIndex( t => t.id === task.id ), 1 );
     }
@@ -942,12 +947,22 @@ export class BoardService{
     // this._boards$.getValue();
     const descendants = getDescendants( lane );
     descendants.filter( t => isTask( t ) && !isPlaceholder( t ) && t.status === 'completed' )
-      .forEach( d => this.updateStatus( board, d, 'archived' ) );
+      .forEach( d => {
+        assertIsTask( d );
+        d.archivedDate = toIsoString( new Date() );
+        this.evaluateArchiveMove( board, d )
+      } );
     /*
         lane.children = lane.children.filter(t => !t.archived);
         let descendants = getDescendants(lane);
         descendants.forEach(d => d.children = d.children.filter(t => !t.archived));
         */
+    this.publishBoardUpdate();
+  }
+
+  archive( board: Board, task: Task ){
+    task.archivedDate = toIsoString( new Date() );
+    this.evaluateArchiveMove( board, task )
     this.publishBoardUpdate();
   }
 
@@ -1031,7 +1046,7 @@ export class BoardService{
    */
   manageSimilaritiesInTasks( board: Board ){
     const start = new Date().getTime();
-    const descendants: Task[] = getDescendants( board ).filter( d => isTask( d ) ).filter( d => !getStatesToArchive().includes( d.status ) );
+    const descendants: Task[] = getDescendants( board ).filter( d => isTask( d ) ).filter( d => !isArchivedOrDiscarded( d ) );
     const processed: Task[] = [];
     descendants.forEach( d => d.similarTasks = [] );
     for( const d of descendants ){
@@ -1065,7 +1080,7 @@ export class BoardService{
         return true;
       }
       return false;
-    } ).forEach( c => this.updateStatus( undefined, c, 'discarded' ) )
+    } ).forEach( c => c.discardedDate = toIsoString( new Date() ) )
 
     const recurrencesToConsider = task.recurrences.filter( t => t.status === 'todo' )
 
