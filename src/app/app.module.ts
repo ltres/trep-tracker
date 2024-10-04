@@ -85,7 +85,8 @@ imports: [
   OwlNativeDateTimeModule,
   NoopAnimationsModule, 
   SimilarArrowsComponent,
-  BrowserAnimationsModule
+  BrowserAnimationsModule,
+  
 ], 
 providers: [
   BoardService,

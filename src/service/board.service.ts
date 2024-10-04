@@ -420,6 +420,9 @@ export class BoardService{
   get parents$(): Observable<Container[] | undefined>{
     return this._allParents$;
   }
+  get allTasks$(): Observable<Task[] | undefined>{
+    return this._allTasks$;
+  }
   get editorActiveTask$(): Observable<{ lane: Lane, task: Task, startingCaretPosition: number | undefined } | undefined>{
     return this._editorActiveTask$;
   }

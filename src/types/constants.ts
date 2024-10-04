@@ -1,6 +1,7 @@
 import{ OwlDateTimeFormats }from"@ltres/angular-datetime-picker";
 import{ DateDisplayConfig, TagType }from"./types";
 import{ formatDate }from"../utils/date-utils";
+import{ ChartDataset, ChartOptions }from"chart.js/auto";
 
 export const ganttConfig = {
   baseTaskDuration : 2,
@@ -198,3 +199,39 @@ export const recurringChildrenLimit = 2;
 
 export const similarityTreshold = 0.6;
 export const minOpacityAtTreshold = 0.25;
+
+export const getChartOptions: ( borderColor: string, textColor: string, fontFamily: string, fontSize: string ) => ChartOptions = ( borderColor: string, textColor: string, fontFamily: string, fontSize: string ) => {
+  
+  return{
+    responsive:true,
+    maintainAspectRatio: false,
+    borderColor: borderColor,
+    
+    plugins:{
+      legend:{
+        position:'right',
+        
+        labels: {
+          color: textColor,
+          font: {
+            family: fontFamily,
+            size: Number( fontSize.replace( "px","" ) ),
+            
+          },
+          usePointStyle: true,       
+          boxHeight: 4,
+        }
+      },
+    }
+  }
+}
+
+export const getChartDataset : ( title: string, data: number[], ...color: string[] ) => ChartDataset = ( title: string, data: number[], ...color: string[] ) => {
+  return{
+    label: title,
+    data: data,
+    backgroundColor: [...color],
+    hoverOffset: 4,
+    borderWidth: 1,             
+  }
+}

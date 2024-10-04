@@ -1,5 +1,8 @@
 import{ AfterViewInit, Component, ElementRef }from'@angular/core';
 import{ Chart }from'chart.js/auto';
+import{ getChartDataset, getChartOptions }from'../../types/constants';
+import{ BoardService }from'../../service/board.service';
+import{ map }from'rxjs/operators';
 
 @Component( {
   selector: 'charts', 
@@ -7,45 +10,45 @@ import{ Chart }from'chart.js/auto';
   styleUrl: './charts.component.scss'
 } )
 export class ChartsComponent implements AfterViewInit{
-  constructor( private elementRef: ElementRef ){
+  constructor( 
+    private boardService: BoardService,
+    private elementRef: ElementRef ){
   }
   ngAfterViewInit(): void{
-    ( this.elementRef.nativeElement as HTMLElement ).querySelectorAll( `canvas` ).forEach( c => {
+    const style = getComputedStyle( document.body );
+    const col1 = style.getPropertyValue( '--tag-orange-color' );
+    const col2 = style.getPropertyValue( '--tag-green-color' );
+    const col3 = style.getPropertyValue( '--tag-yellow-color' );
+
+    const border = style.getPropertyValue( '--translucent-color' );
+    const fs = style.getPropertyValue( '--font-size' );
+    const ff = style.getPropertyValue( '--font-family' );
+    const tc = style.getPropertyValue( '--text-color' );
+
+    this.boardService.allTasks$.pipe(
+      map( t => { 
+        const ret: {[title:string]: number} = {}
+        t?.forEach( task => {
+          ret[task.status] = ( ret[task.status] ?? 1 ) + 1
+        } )
+        return ret } )
+    ).subscribe( r => {
       new Chart(
-        c,
+        'archive',
         {
           type: 'pie',
-          options:{
-            responsive:true,
-            maintainAspectRatio: false,
-            plugins:{
-              legend:{
-                position:'right'
-              }
-            }
-          },
+          options: getChartOptions( border,tc, ff,fs ),
           
           data: {
-            labels: [
-              'Red',
-              'Blue',
-              'Yellow'
-            ],
-            datasets: [{
-              label: 'My First Dataset',
-              data: [300, 50, 100],
-              backgroundColor: [
-                'rgb(255, 99, 132)',
-                'rgb(54, 162, 235)',
-                'rgb(255, 205, 86)'
-              ],
-              hoverOffset: 4
-            }]
+            labels: Object.keys( r ),
+            datasets: [ 
+              getChartDataset( 'My First Dataset', Object.values( r ), col1, col2, col3 )
+            ]
           }
         }
       );
     } )
-
+    
   }
 
 }
