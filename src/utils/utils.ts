@@ -394,6 +394,14 @@ export function eventuallyPatch( board: Board ): Board{
         delete mayBeOldTask.dates['discarded']
       }
 
+      if( mayBeOldTask.status === 'completed' && !mayBeOldTask.dates.completed?.enter ){
+        if( !mayBeOldTask.dates.completed ){
+          mayBeOldTask.dates.completed = {}
+        }
+        mayBeOldTask.dates.completed.enter =mayBeOldTask.archivedDate ?? toIsoString( new Date() )
+
+      }
+
       // cleanup successors
       if( mayBeOldTask.gantt?.successors ){
         for( const succ of  mayBeOldTask.gantt.successors ){

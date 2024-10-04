@@ -41,7 +41,7 @@
     </div>
   </div>
 </div>
-<div *ngIf="task.gantt && task.gantt.showData !== false" class="dates-n-stuff flex g-05 small">
+<div *ngIf="(task.gantt && task.gantt.showData !== false) || task.archivedDate" class="dates-n-stuff flex g-05 small">
   <div class="">
     <ng-container [ngTemplateOutlet]="datesText" [ngTemplateOutletContext]="{ task: task }"></ng-container>
   </div>
@@ -82,7 +82,20 @@
 </ng-template>
 
 <ng-template #datesText let-task="task">
+  @if (task.archivedDate) {
+    <span class="translucent">created </span>
+    <ng-container
+      [ngTemplateOutlet]="date"
+      [ngTemplateOutletContext]="{
+        date: this.task.creationDate,
+      }"
+    ></ng-container>
+  }
+
   @if (task.gantt && task.children.length === 0) {
+    @if (task.archivedDate) {
+      <span>, </span>
+    }
     @if (isRecurringTask(task)) {
       <span class="translucent">{{ task.gantt.recurrence }}</span>
     } @else if (isRecurringTaskChild(task)) {
@@ -108,16 +121,7 @@
       }
     }
   }
-  @if (task.status === 'archived') {
-    <span class="translucent">, archived </span>
-    <ng-container
-      [ngTemplateOutlet]="date"
-      [ngTemplateOutletContext]="{
-        date: this.task.dates.archived?.enter,
-      }"
-    ></ng-container>
-    <time-bar [container]="task" [boardDatesConfig]="this.board.datesConfig"></time-bar>
-  }
+
   @if (task.status === 'discarded') {
     <span class="translucent">, discarded </span>
     <ng-container
@@ -138,6 +142,21 @@
       }"
     ></ng-container>
   }
+
+  <!--
+  @if (task.archivedDate) {
+    <span class="translucent">, archived </span>
+    <ng-container
+      [ngTemplateOutlet]="date"
+      [ngTemplateOutletContext]="{
+        date: this.task.archivedDate,
+      }"
+    ></ng-container>
+  }-->
+  <!--
+  @if (task.archivedDate) {
+    <time-bar [container]="task" [boardDatesConfig]="this.board.datesConfig"></time-bar>
+  }-->
 </ng-template>
 
 <ng-template #date let-date="date">

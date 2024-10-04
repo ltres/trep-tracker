@@ -43,6 +43,7 @@ import{ OWL_DATE_TIME_FORMATS, OwlDateTimeModule, OwlNativeDateTimeModule }from'
 import{ dateFormats }from'../types/constants';
 import{ DroppableDirective }from'./directive/droppable.directive';
 import{ SimilarArrowsComponent }from"./similar-arrows/similar-arrows.component";
+import{ ChartsComponent }from'./charts/charts.component';
 
 @NgModule( { declarations: [
   AppComponent,
@@ -70,7 +71,8 @@ import{ SimilarArrowsComponent }from"./similar-arrows/similar-arrows.component";
   GanttComponent,
   UpdateCheckerComponent,
   DatePickerComponent,
-  DroppableDirective
+  DroppableDirective,
+  ChartsComponent
 ],
 bootstrap: [AppComponent], 
 imports: [
