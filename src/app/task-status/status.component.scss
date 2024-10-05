@@ -1,10 +1,11 @@
 @import "../../assets/variables";
 
-.cancel, .status-todo{
-    color: $text-color;
+.cancel,
+.status-todo {
+    color: map.get($fonts, text-color);
 }
 
-.status-grid{
+.status-grid {
     display: grid;
     grid-template-columns: repeat(5 1fr);
     grid-gap: .25rem;

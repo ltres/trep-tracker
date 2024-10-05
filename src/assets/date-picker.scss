@@ -1,3 +1,5 @@
+@use "sass:map";
+
 @import "./variables";
 
 .cdk-overlay-container,
@@ -137,10 +139,10 @@
     display: flex;
     -webkit-box-align: center;
     align-items: center;
-    font-size: $font-size;
+    font-size: map.get($fonts, font-size);
     width: 100%;
     padding: .5em;
-    color: $text-color
+    color: map.get($fonts, text-color)
 }
 
 .owl-dt-calendar-control .owl-dt-calendar-control-content {
@@ -202,11 +204,11 @@
 }
 
 .owl-dt-calendar-table .owl-dt-calendar-header {
-    color: $translucent-color
+    color: map.get($semantic-colors, translucent-color)
 }
 
 .owl-dt-calendar-table .owl-dt-calendar-header .owl-dt-weekdays th {
-    font-size: $font-size * 0.7;
+    font-size: map.get($fonts, font-size) * 0.7;
     font-weight: 400;
     text-align: center;
     padding-bottom: 1em
@@ -234,7 +236,7 @@
     line-height: 0;
     text-align: center;
     outline: 0;
-    color: $text-color ;
+    color: map.get($fonts, text-color);
     -webkit-appearance: none;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0)
@@ -253,7 +255,7 @@
     box-sizing: border-box;
     width: 90%;
     height: 90%;
-    font-size: $font-size * 0.8;
+    font-size: map.get($fonts, font-size) * 0.8;
     line-height: 1;
     border: 1px solid rgba(0, 0, 0, 0);
     border-radius: 999px;
@@ -266,12 +268,12 @@
 }
 
 .owl-dt-calendar-table .owl-dt-calendar-cell-today:not(.owl-dt-calendar-cell-selected) {
-    border-color: $translucent-color
+    border-color: map.get($semantic-colors, translucent-color)
 }
 
 .owl-dt-calendar-table .owl-dt-calendar-cell-selected {
     color: rgba(255, 255, 255, .85);
-    background-color: $picker-active-color
+    background-color: map.get($semantic-colors, picker-active-color)
 }
 
 .owl-dt-calendar-table .owl-dt-calendar-cell-selected.owl-dt-calendar-cell-today {
@@ -283,7 +285,7 @@
 }
 
 .owl-dt-calendar-table .owl-dt-calendar-cell-disabled>.owl-dt-calendar-cell-content:not(.owl-dt-calendar-cell-selected) {
-    color: $translucent-color
+    color: map.get($semantic-colors, translucent-color)
 }
 
 .owl-dt-calendar-table .owl-dt-calendar-cell-disabled>.owl-dt-calendar-cell-content.owl-dt-calendar-cell-selected {
@@ -300,7 +302,7 @@
 }
 
 .owl-dt-calendar-table .owl-dt-calendar-cell-in-range {
-    background: rgba($picker-active-color, .2)
+    background: rgba(map.get($semantic-colors, picker-active-color), .2)
 }
 
 .owl-dt-calendar-table .owl-dt-calendar-cell-in-range.owl-dt-calendar-cell-range-from {
@@ -357,7 +359,7 @@
     // border: 1px solid rgba(0, 0, 0, .5);
     border-radius: 3px;
     outline: medium none;
-    font-size: $font-size * 1.2;
+    font-size: map.get($fonts, font-size) * 1.2;
     padding: .2em
 }
 
@@ -408,7 +410,7 @@
     margin: 0;
     padding: 0;
     background-color: rgba(0, 0, 0, 0);
-    font-size: $font-size;
+    font-size: map.get($fonts, font-size);
     color: inherit
 }
 
@@ -459,7 +461,7 @@
 }
 
 .owl-dt-control-arrow-button[disabled] {
-    color: $translucent-color;
+    color: map.get($semantic-colors, translucent-color);
     cursor: default
 }
 
@@ -532,11 +534,11 @@
     display: flex;
     width: 100%;
     height: 2em;
-    color: $text-color //$picker-active-color
+    color: map.get($fonts, text-color) //$picker-active-color
 }
 
 .owl-dt-container-control-button {
-    font-size: $font-size;
+    font-size: map.get($fonts, font-size);
     width: 50%;
     height: 100%;
     border-radius: 0
@@ -569,12 +571,12 @@
     -webkit-box-pack: justify;
     justify-content: space-between;
     padding: .5em 0;
-    font-size: $font-size * 0.8
+    font-size: map.get($fonts, font-size) * 0.8
 }
 
 .owl-dt-container-recurrence {
     outline: none;
-    font-size: $font-size * 0.8;
+    font-size: map.get($fonts, font-size) * 0.8;
 
     display: -webkit-box;
     display: flex;
@@ -604,7 +606,7 @@
 }
 
 .owl-dt-container-info .owl-dt-container-info-active {
-    color: $picker-active-color
+    color: map.get($semantic-colors, picker-active-color)
 }
 
 .owl-dt-container-disabled,
@@ -622,7 +624,7 @@
     justify-content: center;
     -webkit-box-align: center;
     align-items: center;
-    color: $picker-active-color
+    color: map.get($semantic-colors, picker-active-color)
 }
 
 .owl-dt-timer-hour12 .owl-dt-timer-hour12-box {
@@ -640,7 +642,7 @@
 
 .owl-dt-timer-hour12 .owl-dt-timer-hour12-box:focus .owl-dt-control-button-content,
 .owl-dt-timer-hour12 .owl-dt-timer-hour12-box:hover .owl-dt-control-button-content {
-    background: $picker-active-color;
+    background: map.get($semantic-colors, picker-active-color);
     color: #fff
 }
 

@@ -1,4 +1,6 @@
 @use "sass:string";
+@use "sass:map";
+
 @import 'assets/jetbrains-mono/jetbrains-mono.scss';
 @import "assets/variables";
 @import "assets/mixins";
@@ -6,17 +8,23 @@
 @import "assets/gantt";
 @import "assets/date-picker";
 
+:root {
+  @include export-css-variables($colors);
+  @include export-css-variables($semantic-colors);
+  @include export-css-variables($fonts);
+}
 
+@include generate-semantic-color-classes($semantic-colors);
 
 html {
-  background-color: $background-color;
-  color: $text-color;
-  font-family: $font-family;
-  font-size: $font-size
+  background-color: map.get($colors, dark-gray-2-muted);
+  color: map.get($fonts, text-color);
+  font-family: map.get($fonts, font-family);
+  font-size: map.get($fonts, font-size)
 }
 
 a {
-  color: $text-color;
+  color: map.get($fonts, text-color);
 }
 
 
@@ -32,7 +40,7 @@ body {
 }
 
 *:not(ol):not(ul):not(li) {
-  scrollbar-color: $scrollbar-color $background-color;
+  scrollbar-color: map.get($colors, scrollbar-color) map.get($colors, background-color);
   scrollbar-width: thin;
   margin: 0;
   padding: 0;
@@ -44,7 +52,7 @@ body {
   margin: 0;
 
   font-size: 75%;
-  color: $translucent-color;
+  color: map.get($colors, translucent-color);
 }
 
 .floating-label.board-floating-label {
@@ -70,7 +78,7 @@ p {
 }
 
 .standard {
-  font-size: $font-size;
+  font-size: map.get($fonts, font-size);
 }
 
 .big {
@@ -269,119 +277,15 @@ button {
 @include generate-utility-classes(-0.25 -0.5 -1 0.25 0.5 1);
 
 .danger {
-  color: $danger-color
+  color: map.get($colors, danger-color)
 }
 
 .warning {
-  color: $warning-color
-}
-
-.todo {
-  color: $todo-color
-}
-
-.todo-background {
-  background-color: $todo-color
-}
-
-.completed {
-  color: $completed-color
-}
-
-.completed-background {
-  background-color: $completed-color
-}
-
-.in-progress {
-  color: $in-progress-color
-}
-
-.in-progress-background {
-  background-color: $in-progress-color
-}
-
-.waiting {
-  color: $waiting-color
-}
-
-.waiting-background {
-  background-color: $waiting-color
-}
-
-.delegated {
-  color: $delegated-color
-}
-
-.delegated-background {
-  background-color: $delegated-color
-}
-
-.archived {
-  color: $archived-color
-}
-
-.archived-background {
-  background-color: $archived-color
-}
-
-.to-be-delegated {
-  color: $to-be-delegated-color
-}
-
-.to-be-delegated-background {
-  background-color: $to-be-delegated-color
+  color: map.get($colors, warning-color)
 }
 
 .discarded {
-  color: $discarded-color;
   text-decoration: line-through;
-}
-
-.discarded-background {
-  background-color: $discarded-color
-}
-
-.priority-0 {
-  color: $priority-0-color;
-}
-
-.priority-0-background {
-  background-color: $priority-0-color;
-}
-
-.priority-1 {
-  color: $priority-1-color;
-}
-
-.priority-1-background {
-  background-color: $priority-1-color;
-}
-
-.priority-2 {
-  color: $priority-2-color;
-  //transform: scale(1.1);
-}
-
-.priority-2-background {
-  background-color: $priority-2-color;
-}
-
-.priority-3 {
-  color: $priority-3-color;
-  //transform: scale(1.3);
-}
-
-.priority-3-background {
-  background-color: $priority-3-color;
-}
-
-.priority-4 {
-  color: $priority-4-color;
-  //transform: scale(1.5);
-}
-
-.priority-4-background {
-  background-color: $priority-4-color;
 }
 
 .recurrence-child {
@@ -398,12 +302,12 @@ button {
 }
 
 .translucent {
-  //background-color: $translucent-color !important;
+  //background-color: map.get($semantic-colors, translucent-color) !important;
   opacity: $translucent-opacity;
 }
 
 .half-translucent {
-  //background-color: $translucent-color !important;
+  //background-color: map.get($semantic-colors, translucent-color) !important;
   opacity: $half-translucent-opacity;
 }
 
@@ -416,35 +320,19 @@ button {
   outline: none !important;
 }
 
-.tag-orange {
-  color: $tag-orange-color;
-}
-
-.tag-yellow {
-  color: $tag-yellow-color;
-}
-
-.tag-green {
-  color: $tag-green-color;
-}
-
-.tag-plus {
-  color: $tag-plus-color;
-}
-
 input,
 textarea,
 input:-internal-autofill-selected {
   color-scheme: dark;
   font-family: 'JetBrains Mono';
   overflow: visible;
-  background-color: $background-color !important;
-  color: $text-color !important;
+  background-color: map.get($semantic-colors, background-color) !important;
+  color: map.get($fonts, text-color) !important;
   outline: none;
   border-color: transparent;
-  border: 1px solid $translucent-color;
+  border: 1px solid map.get($semantic-colors, translucent-color);
   width: 100%;
-  font-size: $font-size
+  font-size: map.get($fonts, font-size)
 }
 
 .chevron-down:after {
@@ -487,14 +375,14 @@ input:-internal-autofill-selected {
 
 
 select {
-  background-color: $background-color;
-  color: $text-color;
-  border: 1px solid $translucent-color;
+  background-color: map.get($semantic-colors, background-color);
+  color: map.get($fonts, text-color);
+  border: 1px solid map.get($semantic-colors, translucent-color);
 }
 
 select option {
-  background-color: $background-color;
-  color: $text-color;
+  background-color: map.get($semantic-colors, background-color);
+  color: map.get($fonts, text-color);
 }
 
 .link {
@@ -506,27 +394,19 @@ select option {
   background-color: yellow !important;
 }
 
-.just-passed {
-  color: $just-passed-color
-}
-
-.almost-there {
-  color: $almost-there-color
-}
-
 .drag-handle {
   cursor: grabbing;
 }
 
 .colored-title {
-  color: $lane-title-color;
+  color: map.get($semantic-colors, lane-title-color);
   font-size: $title-size;
   font-weight: bold;
 }
 
 .pill {
-  border: 1px solid $pill-color-1;
-  color: $pill-color-1;
+  border: 1px solid map-get($semantic-colors , pill-1);
+  color: map-get($semantic-colors , pill-1);
   padding: 0.1rem 0.4rem;
   border-radius: 12px;
   text-overflow: ellipsis;
@@ -537,20 +417,19 @@ select option {
   min-width: 3rem;
 
   &.color-2 {
-    border: 1px solid $pill-color-2;
-    color: $pill-color-2;
-
+    border: 1px solid map-get($semantic-colors , pill-2);
+    color: map-get($semantic-colors , pill-2);
   }
 }
 
 
 .something-is-dragging {
-  outline: 1px dashed $translucent-color !important;
+  outline: 1px dashed map.get($semantic-colors, translucent-color) !important;
   outline-offset: -1px;
 }
 
 .something-is-dragging.something-is-dragging-and-i-am-hovered {
-  outline: 1px dashed $half-translucent-color !important;
+  outline: 1px dashed map.get($semantic-colors, half-translucent-color) !important;
   outline-offset: -1px;
 }
 

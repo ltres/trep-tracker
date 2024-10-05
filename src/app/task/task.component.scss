@@ -1,3 +1,5 @@
+@use "sass:map";
+
 @import "../../assets/variables";
 
 
@@ -5,7 +7,7 @@
     min-width: calc($min-width / 2);
     //width: 100%;
     display: inline-block;
-    --ngx-editor-background-color: $editor-active-background;
+    --ngx-editor-background-color: map.get($semantic-colors, editor-active-background);
     flex-basis: 0;
     flex-grow: 1;
     // z-index: 15;
@@ -20,23 +22,20 @@
     font-weight: bold;
 }
 
-.archive {
-    color: $archive-color;
-}
 
 .task-wrapper {
     display: flex;
     align-items: center;
 
-    --ngx-editor-text-color: $translucent-color;
+    --ngx-editor-text-color: map.get($semantic-colors, translucent-color);
 
-    //border-left: 1px solid $translucent-color;
+    //border-left: 1px solid map.get($semantic-colors, translucent-color);
     &.editor-active {
-        background-color: $editor-active-background;
+        background-color: map.get($semantic-colors, editor-active-background);
     }
 
     &.selected {
-        border-left: .15rem solid $text-color;
+        border-left: .15rem solid map.get($fonts, text-color);
         padding-left: 0.25rem;
     }
 
@@ -87,8 +86,8 @@
         right: 0;
         width: 50%;
         height: 1rem;
-        border-left: 1px solid $translucent-color;
-        border-bottom: 1px solid $translucent-color;
+        border-left: 1px solid map.get($semantic-colors, translucent-color);
+        border-bottom: 1px solid map.get($semantic-colors, translucent-color);
     }
 
     .border-line {
@@ -97,7 +96,7 @@
         right: 0;
         width: 50%;
         height: calc(100% - 1rem);
-        border-left: 1px solid $translucent-color;
+        border-left: 1px solid map.get($semantic-colors, translucent-color);
         ///border-bottom: 1px solid $todo-color;
     }
 }

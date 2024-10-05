@@ -1,19 +1,23 @@
+@use "sass:map";
+
 @import "../../assets/variables";
 
-:host{
-    display:flex;
+:host {
+    display: flex;
     flex-wrap: nowrap;
     align-items: center;
-    gap:0.25rem;
+    gap: 0.25rem;
     // margin: 0 0.5rem
 }
-span{
+
+span {
     font-size: $small-font-size;
-    &.cancel{
-        color: $text-color;
+
+    &.cancel {
+        color: map.get($fonts, text-color);
     }
 }
-.priority:not(.active):not(:hover){
-    color: $translucent-color!important;
-}
 
+.priority:not(.active):not(:hover) {
+    color: map.get($semantic-colors, translucent-color) !important;
+}

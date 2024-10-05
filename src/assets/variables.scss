@@ -1,108 +1,149 @@
-$font-family: 'JetBrains Mono';
+@use "sass:map";
+// OPACITIES
+$lane-opacity: 0.8;
+$translucent-opacity: 0.3;
+$half-translucent-opacity: 0.75;
+$gantt-external-task-opacity: 0.5;
+// END OPACITIES
+
+// COLORS
+$colors: (
+    dark-gray-1-muted: hsl(240, 6%, 7%),
+    dark-gray-2-muted: hsl(228, 10%, 10%),
+    dark-gray-3-muted: hsl(180, 11%, 15%),
+
+    bluish-dark-gray: hsl(222, 46%, 11%),
+    bluish-gray: hsl(224, 24%, 27%),
+
+    bluish-dark-gray-muted: hsl(222, 21%, 11%),
+    reddish-dark-gray-muted: hsl(300, 15%, 11%),
+    yellowish-dark-gray-muted: hsla(41, 20%, 11%),
+
+    white: #ffffff,
+    black: black,
+
+    green: hsl(115, 80%, 55%),
+    yellow: hsl(54, 80%, 55%),
+    red: hsl(0, 80%, 55%),
+    orange: hsl(24, 80%, 55%),
+    blue: hsl(207, 80%, 55%),
+    violet: hsl(315, 80%, 55%),
+
+    darker-green: hsl(115, 80%, 37%),
+
+    pink-pastel: hsl(293, 100%, 78%),
+    orange-pastel: hsl(24, 100%, 62%),
+    red-pastel: hsl(0, 100%, 70%),
+
+    yellow-pastel: hsl(54, 78%, 70%),
+    violet-pastel: hsl(229, 70%, 70%),
+    lighter-orange-pastel: hsl(22, 78%, 70%),
+    blue-pastel: hsl(226, 78%, 70%),
+    light-blue-pastel: hsl(197, 78%, 70%),
+    lighter-blue-pastel: hsl(167, 78%, 70%),
+    green-pastel: hsl(113, 78%, 70%),
+);
+// END COLORS
+$fonts: (
+    text-color: map.get($colors, white),
+    font-family: 'JetBrains Mono',
+    font-size: 10px
+);
+
+$semantic-colors: (
+    translucent-color: rgba(map.get($fonts, text-color), $translucent-opacity),
+    half-translucent-color: rgba(map.get($fonts, text-color), $half-translucent-opacity),
+
+    background-color: map.get($colors, dark-gray-2-muted),
+
+    todo: map.get($fonts, text-color),
+    in-progress: map.get($colors, yellow-pastel),
+    delegated: map.get($colors, lighter-blue-pastel),
+    waiting: map.get($colors, light-blue-pastel),
+    to-be-delegated: map.get($colors, violet-pastel),
+    completed: map.get($colors, green),
+
+    priority-0: map.get($colors, blue),
+    priority-1: map.get($colors, green),
+    priority-2: map.get($colors, yellow),
+    priority-3: map.get($colors, orange),
+    priority-4: map.get($colors, red),
+
+    almost-there: map.get($colors, blue),
+    just-passed: map.get($colors, green),
+
+    pill-1: map.get($colors, pink-pastel),
+    pill-2: map.get($colors, blue-pastel),
+
+    lane-title-color: map.get($colors, violet),
+    lane-non-static-background-color: rgba(map.get($colors, bluish-dark-gray), $lane-opacity),
+    lane-static-background-color: rgba(map.get($colors, bluish-dark-gray-muted), $lane-opacity),
+    lane-archive-background-color: rgba(map.get($colors, yellowish-dark-gray-muted), $lane-opacity),
+    lane-recurrences-background-color: rgba(map.get($colors, reddish-dark-gray-muted), $lane-opacity),
+    static-lane-outline-color: rgba(map.get($fonts, text-color), 0.1),
+
+    editor-active-background: rgba(map.get($colors, black), 0.4),
+
+    tag-orange: map.get($colors, pink-pastel),
+    tag-yellow: map.get($colors, orange-pastel),
+    tag-green: map.get($colors, red-pastel),
+
+    danger-color: map.get($colors, red),
+    warning-color: map.get($colors, yellow),
+
+    gantt-background-color: transparent,
+    gantt-modal-background-color: rgba(map.get($colors, bluish-dark-gray), $lane-opacity),
+    gantt-background-hover-color: rgba(map.get($colors, yellowish-dark-gray-muted), $lane-opacity),
+    gantt-border-color: rgba(map.get($fonts, text-color), 0.1),
+    gantt-text-color: map.get($fonts, text-color),
+    gantt-weekend-color: rgba(map.get($colors, yellowish-dark-gray-muted), $lane-opacity),
+    gantt-link-color: map.get($colors, orange-pastel),
+    gantt-task-color: rgba(map.get($colors, violet), 0.6),
+    gantt-external-task-color: rgba(map.get($colors, violet), 0.15),
+    gantt-project-color: rgba(map.get($colors, darker-green), 0.3),
+    gantt-progress-color: rgba(map.get($colors, violet), 1),
+
+    scrollbar-color: map.get($colors, bluish-gray),
+
+    board-selection-menu-background-color: map.get($colors, dark-gray-1-muted),
+
+    picker-active-color: map.get($colors, pink-pastel),
+);
 
 $spacer-multiplier: 1;
-
-$background-color: hsl(223, 10%, 10%);
-$background-color-2: hsl(223, 10%, 15%);
-$modal-backdrop-color: rgba(0, 0, 0, 0.3);
-$ai-background-color: rgb(34, 42, 42);
-
-$frost-blur: blur(4px);
-$lane-opacity: 0.8;
-$lane-static-background-color: hsla(223, 20%, 11%, $lane-opacity);
-$lane-non-static-background-color: hsla(223, 45%, 11%, $lane-opacity);
-$lane-archive-background-color: hsla(41, 20%, 11%, $lane-opacity);
-$lane-recurrences-background-color: hsla(300, 15%, 11%, $lane-opacity);
-
-$text-color: #ffffff;
-$font-size: 10px;
 $title-size: 1.2rem;
 $big-font-size: 1.4rem;
 $small-font-size: 0.9rem;
 
-$border-radius: calc($font-size/2);
-$archive-color: hsl(54, 80%, 50%);
+$border-radius: calc(map.get($fonts, font-size)/2);
 $lane-padding-y: 0.75rem;
 $lane-padding-x: 1rem;
-
-$lane-padding: $lane-padding-y $lane-padding-x;
-
-$tag-orange-color: rgb(241, 134, 255);
-$tag-yellow-color: rgb(255, 137, 58);
-$tag-green-color: rgb(255, 97, 97);
-$tag-plus-color: rgb(109, 194, 98);
-
-
-$translucent-opacity: 0.3;
-$translucent-color: rgba($text-color, $translucent-opacity);
-$half-translucent-opacity: 0.75;
-$half-translucent-color: rgba($text-color, $half-translucent-opacity);
-$static-lane-outline-color: rgba($text-color, 0.1);
-$lane-outline-color: rgba($tag-orange-color, 0.1);
-
-
-
-$editor-active-background: rgba(0, 0, 0, 0.4);
-$selected-background: $text-color;
-
-$todo-color: $text-color;
-$completed-color: hsl(115, 80%, 50%);
-$in-progress-color: hsl(51, 80%, 50%);
-$delegated-color: hsl(167, 90%, 50%);
-$waiting-color: hsl(197, 85%, 70%);
-$archived-color: hsl(115, 81%, 37%);
-$to-be-delegated-color: hsl(266, 80%, 80%);
-$discarded-color: $text-color;
-
-
-$danger-color: hsl(0, 80%, 50%);
-$warning-color: hsl(56, 80%, 50%);
-
-
-$priority-0-color: hsl(207, 80%, 50%);
-$priority-1-color: hsl(115, 80%, 50%);
-$priority-2-color: hsl(61, 80%, 50%);
-$priority-3-color: hsl(32, 80%, 50%);
-$priority-4-color: hsl(0, 80%, 50%);
-
-$lane-title-color: hsl(315, 80%, 50%);
-$scrollbar-color: #343d55;
-
 $min-width: 20rem;
 $max-lane-width: 35vw;
 $child-line-width: 1rem;
-
 $board-selection-menu-width: 5rem;
-$board-selection-menu-background-color: #111113;
 $board-padding: 1rem;
 $time-bar-width: 10rem;
 $time-bars-height: 0.5rem;
 $time-bars-border-radius: 0.2rem;
-
-$task-y-padding: calc($font-size/4);
-
-$gantt-background-color: transparent;
-$gantt-modal-background-color: $lane-non-static-background-color;
-
-$gantt-background-hover-color: $lane-archive-background-color;
-
-$gantt-border-color: $static-lane-outline-color;
-$gantt-text-color: $text-color;
-$gantt-weekend-color: $ai-background-color;
-$gantt-link-color: $tag-yellow-color;
-
-$gantt-task-color: hsl(293, 100%, 56%, 0.6);
-$gantt-external-task-color: hsla(293, 100%, 56%, 0.15);
-$gantt-external-task-opacity: 0.5;
-$gantt-project-color: hsla(120, 80%, 50%, 0.3);
-$gantt-progress-color: hsl(293, 100%, 56%, 1);
-
-$picker-active-color: $tag-orange-color;
-
-$almost-there-color: $priority-0-color;
-$just-passed-color: $priority-1-color;
-
-$pill-color-1: #f195ff;
-$pill-color-2: #198ae6;
-
 $button-padding: 0.2rem 1rem;
+
+$task-y-padding: calc(map.get($fonts, font-size)/4);
+
+$background-color: map.get($colors, dark-gray-2-muted);
+
+$modal-backdrop-color: rgba(black, $translucent-opacity );
+$ai-background-color: map.get($colors, dark-gray-3-muted);
+
+$lane-padding: $lane-padding-y $lane-padding-x;
+
+
+
+
+
+
+
+
+
+
+;
