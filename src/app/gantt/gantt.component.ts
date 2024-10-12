@@ -45,7 +45,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     }
 
     /** Exclude tasks having showData = false */
-    this.tasks = this.tasks.filter( t => !t.gantt || t.gantt.showData !== false ).sort( ( t1,t2 ) => {
+    this.tasks = this.tasks.filter( t => !t.gantt || t.gantt.showData !== false ).sort( ( t1, t2 ) => {
       if( !this.lane ){
         // Gantt for board
         return( t1.gantt?.order?.board ?? 0 ) - ( t2.gantt?.order?.board ?? 0 )
@@ -192,7 +192,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
         // Task has recurrence. Retrieve its recurrences.
         //this.toDhtmlxGanttDataModel(task.recurrences, convertedTasks, convertedLinks, initializedTask.id, tasksCssClass );
         
-        const recs = task.recurrences?.map( ( r,i ) => this.toDhtmlxTask( r, firstResourceTag ? getTaskBackgroundColor( firstResourceTag ) : undefined, order++, task.id, tasksCssClass, true, i ) ) ?? [];
+        const recs = task.recurrences?.map( ( r, i ) => this.toDhtmlxTask( r, firstResourceTag ? getTaskBackgroundColor( firstResourceTag ) : undefined, order++, task.id, tasksCssClass, true, i ) ) ?? [];
         convertedTasks = convertedTasks.concat( recs ); 
       }
       
@@ -224,7 +224,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
       }
     }
 
-    return{convertedTasks,convertedLinks};
+    return{convertedTasks, convertedLinks};
   }
 
   /**
@@ -451,7 +451,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
         gantt.config.scales = [{
           unit: 'month',
           format: '%F'
-        },{
+        }, {
           unit: 'day',
           date: '%j'
         }]
@@ -460,10 +460,10 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
         gantt.config.scales = [{
           unit: 'month',
           format: '%F'
-        },{
+        }, {
           unit: 'day',
           date: '%j'
-        },{
+        }, {
           unit: 'hour',
           date: '%H'
         }]

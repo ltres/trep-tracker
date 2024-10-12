@@ -198,7 +198,7 @@ export function checkTaskSimilarity( task1: Task, task2: Task ): number{
   // rate is tags shared / total number of tags
   const tagsSharedCount = t1.filter( t => t2.includes( t ) ).length;
   const totalTagsCount = t1.length + t2.length - tagsSharedCount;
-  return totalTagsCount > 0 ? tagsSharedCount / totalTagsCount * stringSimilarity( text1,text2 ) : stringSimilarity( text1,text2 )
+  return totalTagsCount > 0 ? tagsSharedCount / totalTagsCount * stringSimilarity( text1, text2 ) : stringSimilarity( text1, text2 )
 }
 
 /**
@@ -284,7 +284,7 @@ export function initGanttData( task: Task, startDateIso?: Date | undefined ): Ga
 }
 
 export function getTaskBackgroundColor( text:string ){
-  return`hsl(${textToNumber( text,357 )}, 50%, 40%, 0.6)`
+  return`hsl(${textToNumber( text, 357 )}, 50%, 40%, 0.6)`
 }
 
 export function mapToGanttRecurrence( r : Recurrence ): 'day' | 'week' | 'month' | 'year'{

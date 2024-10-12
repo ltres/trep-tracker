@@ -74,8 +74,8 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
 
         // redistribute the indexes for the column
         this.board.children = this.board.children.filter( c => c.id !== container.id );
-        this.board.children.splice( preceedingLane ? this.board.children.map( c => c.id ).indexOf( preceedingLane?.id ) + 1 : 0 , 0, container )
-        this.board.children.filter( c => c.layouts[this.board.layout].column === column ).forEach( ( child,index ) => {
+        this.board.children.splice( preceedingLane ? this.board.children.map( c => c.id ).indexOf( preceedingLane?.id ) + 1 : 0, 0, container )
+        this.board.children.filter( c => c.layouts[this.board.layout].column === column ).forEach( ( child, index ) => {
           child.layouts[layout].order = index;
         } )
 
@@ -97,8 +97,8 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
       }
       const lane = this.boardService.addFloatingLane( params );
       this.board.children = this.board.children.filter( c => c.id !== lane.id );
-      this.board.children.splice( preceedingLane ? this.board.children.map( c => c.id ).indexOf( preceedingLane?.id ) + 1 : 0 , 0, lane )
-      this.board.children.filter( c => c.layouts[this.board.layout].column === column ).forEach( ( child,index ) => {
+      this.board.children.splice( preceedingLane ? this.board.children.map( c => c.id ).indexOf( preceedingLane?.id ) + 1 : 0, 0, lane )
+      this.board.children.filter( c => c.layouts[this.board.layout].column === column ).forEach( ( child, index ) => {
         child.layouts[layout].order = index;
       } )
 
@@ -207,7 +207,7 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
   }
 
   getColumnIndexes( layout: Layout ): number[]{
-    return Array.from( { length: layoutValues[layout].columns }, ( _,index ) => index );
+    return Array.from( { length: layoutValues[layout].columns }, ( _, index ) => index );
   }
 
   getLayoutSymbol( layout: Layout ){

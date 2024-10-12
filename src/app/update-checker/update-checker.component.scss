@@ -1,3 +1,5 @@
+@use "sass:map";
+
 @import "../../assets/variables";
 
 :host {
@@ -8,7 +10,7 @@
     z-index: 1000;
     padding: 0.5rem;
     box-shadow: 5px 5px 13px 0px #00000073;
-    outline: 1px solid $static-lane-outline-color;
+    outline: 1px solid map.get($semantic-colors, static-lane-outline-color);
     outline-offset: -1px;
     border-radius: $border-radius;
 }

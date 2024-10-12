@@ -1,5 +1,5 @@
 <board-toolbar class="absolute" clazz="absolute" *ngIf="board.layout === 'absolute'" [board]="board"></board-toolbar>
-
+<charts *ngIf="board.layout === 'absolute'" [board]="board"></charts>
 @if (board.layout === 'absolute') {
   @for (lane of lanes$ | async; track hashCode($index, lane)) {
     <lane class="absolute" [lane]="lane" [board]="this.board" [draggableDir]="lane" [containerEl]="el.nativeElement" [layout]="board.layout"></lane>
@@ -7,6 +7,7 @@
 } @else {
   <div class="flex column board-column flex-child g-05" *ngFor="let colIndex of getColumnIndexes(board.layout); let last = last">
     <board-toolbar class="static flex justify-content-end" clazz="static" *ngIf="last" [board]="board"></board-toolbar>
+    <charts class="static flex justify-content-end" *ngIf="last" [board]="board"></charts>
 
     <div [droppable]="7" [container]="board" [executeOnDropReceived]="receiveDrop.bind(this, colIndex, board.layout, undefined)" [class.grow]="((getLanesByColumn$(colIndex) | async) ?? []).length == 0" class="dumb-dropzone m-x-1"></div>
 

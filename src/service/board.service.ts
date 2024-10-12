@@ -27,7 +27,7 @@ export class BoardService{
   //private _allNuked$: BehaviorSubject<Task[]> = new BehaviorSubject<Task[]>([]);
 
   private _selectedTasks$: BehaviorSubject<Task[] | undefined> = new BehaviorSubject<Task[] | undefined>( undefined );
-  private _lastSelectedTask$: BehaviorSubject<{lane: Lane,task:Task} | undefined> = new BehaviorSubject<{lane: Lane,task:Task} | undefined>( undefined );
+  private _lastSelectedTask$: BehaviorSubject<{lane: Lane, task:Task} | undefined> = new BehaviorSubject<{lane: Lane, task:Task} | undefined>( undefined );
   private _focusSearch$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>( false );
 
   private boardUpdateCounter: number = 0;
@@ -201,7 +201,7 @@ export class BoardService{
     );
   }
 
-  getStaticTasks$( board: Board,tags: Tag[] | undefined, priority: Priority | Priority[] | undefined, status: Status | Status[] | undefined, startTimeframe: Timeframe | undefined, endTimeframe: Timeframe | undefined, excldeArchived: boolean, sort: keyof StateChangeDate | undefined, sortOrder?: 'asc' | 'desc' ): Observable<Task[] | undefined>{
+  getStaticTasks$( board: Board, tags: Tag[] | undefined, priority: Priority | Priority[] | undefined, status: Status | Status[] | undefined, startTimeframe: Timeframe | undefined, endTimeframe: Timeframe | undefined, excldeArchived: boolean, sort: keyof StateChangeDate | undefined, sortOrder?: 'asc' | 'desc' ): Observable<Task[] | undefined>{
     return this._boards$.pipe(
       map( boards => {
         const b = boards.find( b => b.id === board.id );
@@ -319,7 +319,7 @@ export class BoardService{
      * @param board
      * @returns
      */
-  getTasksForBoard$( board: Board ): Observable<Task[]>{
+  getTasksForBoard$( board: Board, includeArchive: boolean = false ): Observable<Task[]>{
     return this._boards$.pipe(
       map( boards => {
         const b = boards.find( b => b.id === board.id );
@@ -327,7 +327,7 @@ export class BoardService{
           throw new Error( `Cannot find board with id ${board.id}` );
         }
         // get all lanes except the archive and static ones
-        const lanes = b.children.filter( l => !l.isArchive && !isStatic( l ) );
+        const lanes = b.children.filter( l => ( includeArchive || !l.isArchive ) && !isStatic( l ) );
         let tasks: Task[] = [];
         for( const lane of lanes ){
           const chilren = lane.children;
@@ -336,7 +336,7 @@ export class BoardService{
             tasks = tasks.concat( child ).concat( getDescendants( child ) as Task[] );
           }
         }
-        return tasks.filter( c => !isPlaceholder( c ) && !isArchivedOrDiscarded( c ) );
+        return tasks.filter( c => !isPlaceholder( c ) && ( includeArchive || !isArchivedOrDiscarded( c ) ) );
       } ),
 
     );
@@ -382,7 +382,7 @@ export class BoardService{
     }else{
       cur?.push( task );
     }
-    this._lastSelectedTask$.next( {lane,task} );
+    this._lastSelectedTask$.next( {lane, task} );
     this._selectedTasks$.next( cur );
   }
   addToSelection( lane: Lane, task: Task ){
@@ -391,7 +391,7 @@ export class BoardService{
       return;
     }
     cur?.push( task );
-    this._lastSelectedTask$.next( {lane,task} );
+    this._lastSelectedTask$.next( {lane, task} );
     this._selectedTasks$.next( cur );
   }
   clearSelectedTasks(){
@@ -408,7 +408,7 @@ export class BoardService{
   get selectedTasks$(): Observable<Task[] | undefined>{
     return this._selectedTasks$;
   }
-  get lastSelectedTask$(): Observable<{lane: Lane,task:Task} | undefined>{
+  get lastSelectedTask$(): Observable<{lane: Lane, task:Task} | undefined>{
     return this._lastSelectedTask$;
   }
   get selectedBoard$(): Observable<Board | undefined>{
@@ -452,7 +452,7 @@ export class BoardService{
   get parents(): Container[] | undefined{
     return this._allParents$.getValue();
   }
-  get lastSelectedTask(): {lane: Lane,task:Task} | undefined{
+  get lastSelectedTask(): {lane: Lane, task:Task} | undefined{
     return this._lastSelectedTask$.getValue();
   }
   get selectedTasks(): Task[] | undefined{
@@ -515,11 +515,11 @@ export class BoardService{
       }
       if( container.status ){
         if( !Array.isArray( container.status ) ){
-          setDateSafe( container, container.status , 'leave', new Date() );
+          setDateSafe( container, container.status, 'leave', new Date() );
 
         }else{
           for( const s of container.status ){
-            setDateSafe( container, s , 'leave', new Date() );
+            setDateSafe( container, s, 'leave', new Date() );
           }
         }
       }
@@ -601,7 +601,7 @@ export class BoardService{
         const p = this._allTasks$.getValue()?.find( p => p.id === task.gantt!.fatherRecurringTaskId );
         if( p && isRecurringTask( p ) ){
           p.recurrences.push( task );
-          p.recurrences.sort( ( r1,r2 ) => r1.gantt.recurringChildIndex - r2.gantt.recurringChildIndex )
+          p.recurrences.sort( ( r1, r2 ) => r1.gantt.recurringChildIndex - r2.gantt.recurringChildIndex )
         }
       }else{
         // send the task back to the original lane
@@ -809,7 +809,7 @@ export class BoardService{
     }
     const siblings = parent?.children as Task[] || [];
 
-    const index = selectedTasks.map( sel => siblings.findIndex( s => s.id === sel.id ) ).sort( ( a,b ) => a - b )[0];
+    const index = selectedTasks.map( sel => siblings.findIndex( s => s.id === sel.id ) ).sort( ( a, b ) => a - b )[0];
 
     // sort selected tasks basing on their order in the parent's children
     selectedTasks = selectedTasks.sort( ( a, b ) => siblings.findIndex( s => s.id === a.id ) - siblings.findIndex( s => s.id === b.id ) );
@@ -1154,7 +1154,7 @@ export class BoardService{
     if( !o.boards ){
       console.warn( 'No boards found in the data' );
       const board = getNewBoard(  );
-      const lane = getNewLane( board,false )
+      const lane = getNewLane( board, false )
       board.children = [lane]
       this._boards$.next( [board] );
       this._selectedTasks$.next( [] );

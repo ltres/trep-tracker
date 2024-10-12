@@ -200,38 +200,128 @@ export const recurringChildrenLimit = 2;
 export const similarityTreshold = 0.6;
 export const minOpacityAtTreshold = 0.25;
 
-export const getChartOptions: ( borderColor: string, textColor: string, fontFamily: string, fontSize: string ) => ChartOptions = ( borderColor: string, textColor: string, fontFamily: string, fontSize: string ) => {
+export const getChartOptions = ( 
+  title: string, 
+  borderColor: string, 
+  textColor: string, 
+  fontFamily: string, 
+  fontSize: string, 
+  type: "doughnut" | "line" | "pie" = "doughnut",
+  showTitle: boolean,
+  showLegend: boolean,
+  useAnimation: boolean,
+  padding: number | undefined
+) => {
   
-  return{
+  const font = {
+    family: fontFamily,
+    size: Number( fontSize.replace( "px", "" ) ),              
+  }
+
+  const o: ChartOptions = {
     responsive:true,
     maintainAspectRatio: false,
     borderColor: borderColor,
-    
-    plugins:{
-      legend:{
-        position:'right',
-        
-        labels: {
-          color: textColor,
-          font: {
-            family: fontFamily,
-            size: Number( fontSize.replace( "px","" ) ),
-            
-          },
-          usePointStyle: true,       
-          boxHeight: 4,
+    layout: {
+      padding: padding ?? 0
+    },
+    ...( useAnimation ? {} : {animation: false} ),
+    ...( type ==='line' ? {scales:{
+      x:{
+        ticks:{
+          font
         }
+      },
+      y:{
+        ticks:{
+          font
+        }
+      }
+    }} : {} ),
+
+    plugins:{
+      ...( showLegend ? {labels: {
+        render: ( args: {value: string, label:string} ) => {
+          return args.label;
+        },
+        fontSize: font.size,
+        fontFamily: font.family,
+        fontColor: textColor,
+        textShadow: true,
+        shadowBlur: 10,
+        shadowColor: "black",
+        position: 'outside',
+        //outsidePadding: 4,
+        //textMargin: 4
+      }} : {} ),
+      ...( showTitle ? {title: {
+        display: true,
+        text: title,
+        color: textColor,
+        font
+      }} : {} ),
+      legend:{
+        display: false
+      },
+      /*
+      ...( showLegend ? {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: textColor,
+            font,
+            usePointStyle: true,
+            boxHeight: 5,
+            ...( type === 'doughnut' ? {
+              generateLabels: ( chart ) => {
+                const datasets = chart.data.datasets;
+                return datasets[0].data.map( ( data, i ) => ( {
+                  text: `${chart.data.labels?.[i]} (${data})`,
+                  fontColor:textColor,
+                  // @ts-expect-error types
+                  fillStyle: datasets?.[0].backgroundColor?.[i] ?? "",
+                  borderRadius: 5,
+                  index: i
+                } ) )
+              }
+            } : {
+              
+            } )
+          }
+        }
+      } : {
+        legend:{
+          display: false
+        }
+      } ),*/
+      tooltip: {
+        titleFont: {
+          ...font,
+          weight: 'bold'
+        },
+        bodyFont: font,
+        footerFont: {
+          ...font,
+          style: 'italic'
+        },
+        padding: 10
       },
     }
   }
+  return o
 }
-
-export const getChartDataset : ( title: string, data: number[], ...color: string[] ) => ChartDataset = ( title: string, data: number[], ...color: string[] ) => {
-  return{
-    label: title,
+export const getChartDataset : ( title: string, data: number[], color: string[], borderColor: string | undefined, type: "doughnut" | "line" | "pie" | "bar" ) => ChartDataset = ( title: string, data: number[], color: string[], borderColor: string | undefined, type: "doughnut" | "line" | "pie" | "bar" = "doughnut" ) => {
+  const r: ChartDataset = {
+    ...( type === 'line' ? {label: title} : {} ),
+    type: type,
     data: data,
-    backgroundColor: [...color],
-    hoverOffset: 4,
-    borderWidth: 1,             
+    backgroundColor: color,
+    borderColor: borderColor ?? color,
+    hoverOffset: 20,
+    borderWidth: borderColor ? 3 : 1,
+    tension: 0.1,
+    fill: false           
   }
+
+  return r;
 }

@@ -1,5 +1,5 @@
 import{ Injectable }from'@angular/core';
-import{ BehaviorSubject, Observable, of }from'rxjs';
+import{ BehaviorSubject, map, Observable }from'rxjs';
 import{ getDescendants, isArchivedOrDiscarded, isPlaceholder, isStatic }from'../utils/utils';
 import{ BoardService }from'./board.service';
 import{ Board, Container, Tag, TagType }from'../types/types';
@@ -40,19 +40,18 @@ export class TagService{
     } );
   }
 
-  get uniqueTagsAndNumerosity$(): Observable<{ tag: string, numerosity: number }[]>{
-    return of( [{ tag: 'TODO', numerosity: 1 }] );
-    /*
+  getUniqueTagsAndNumerosity$( board: Board, limit: number | undefined ): Observable<{ tag: string, numerosity: number }[]>{
     return this._tags$.pipe(
-      map(tags => {
-        let tagMap = new Map<string, number>();
-        tags.forEach(t => {
-          let count = tagMap.get(t.tag) ?? 0;
-          tagMap.set(t.tag, count + 1);
-        });
-        return Array.from(tagMap.entries()).map(([tag, numerosity]) => ({tag, numerosity})).sort((a, b) => b.numerosity - a.numerosity);
-      })
-    );*/
+      map( tags => {
+        const tagMap = new Map<string, number>();
+        tags.find( t => t.board.id === board.id )?.tags.forEach( t => {
+          const count = tagMap.get( t.tag ) ?? 0;
+          tagMap.set( t.tag, count + 1 );
+        } );
+        const ret = Array.from( tagMap.entries() ).map( ( [tag, numerosity] ) => ( {tag, numerosity} ) ).sort( ( a, b ) => b.numerosity - a.numerosity );
+        return limit ? ret.splice( 0, limit ) : ret
+      } )
+    );
   }
 
   /**
@@ -164,7 +163,7 @@ export class TagService{
           // Symbol is different. fix the matching tag:
           toEval.textContent = this.unwrap( toEval.textContent );
           const replaceRegex = new RegExp( '.(' + matchingTag.tag + ')' )
-          toEval.textContent = toEval.textContent.replace( replaceRegex , ( tagIdentifiers.find( i => i.type === tag.type )?.symbol ?? "" ) + '$1' )
+          toEval.textContent = toEval.textContent.replace( replaceRegex, ( tagIdentifiers.find( i => i.type === tag.type )?.symbol ?? "" ) + '$1' )
           toEval.textContent = this.wrap( toEval.textContent )
 
           matchingTag.type = tag.type;

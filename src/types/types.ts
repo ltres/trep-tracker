@@ -3,6 +3,7 @@ import{ generateUUID }from'../utils/utils';
  
 import{ StorageServiceAbstract }from'./storage';
 import{ layoutValues, recurrenceValues, timeframeValues, statusValues, priorityValues, timezoneValues, dateFormats }from'./constants';
+import{ ChartDataset }from'chart.js';
 
 export type Environment = {
   storageService: Type<StorageServiceAbstract>,
@@ -145,7 +146,7 @@ export const getNewTask: ( lane: Lane | string, id: string | undefined, textCont
   const t: Task = {
     id: taskId,
     parentId: typeof lane === 'string' ? lane : lane.id,
-    textContent: typeof textContent != 'undefined' ? textContent : `Task ${taskId.substring( 0,4 )}`,
+    textContent: typeof textContent != 'undefined' ? textContent : `Task ${taskId.substring( 0, 4 )}`,
     children: [],
     similarTasks: [],
     tags: [],
@@ -200,7 +201,7 @@ export const getNewLane: ( board: Board, archive: boolean ) => Lane = ( board: B
     index: 0,
     showChildren: true,
     collapsed: archive ? true : false,
-    textContent: archive ? 'Archive' : 'Lane ' + id.substring( 0,4 ),
+    textContent: archive ? 'Archive' : 'Lane ' + id.substring( 0, 4 ),
     children: [],
     status: undefined,
     startTimeframe: undefined,
@@ -329,3 +330,17 @@ export type AddFloatingLaneParams ={
   },
   skipBoardsUpdate?: boolean
 }
+
+export type DatasetMappingFunction = ( t: Task[] | undefined ) => { 
+  labels: string[], 
+  datasets: ChartDataset[]
+}
+
+export type GraphInput = {
+  graphTitle: string,
+  type: "doughnut" | "pie" | "line",
+  datasetsMappingFunction: DatasetMappingFunction
+}
+
+export type ChartType = 'tasksByStatus' | 'tasksByPriority' | 'tasksByTag' | 'createdVsCompleted';
+export type ChartConstructor<Chart> = new () => Chart;

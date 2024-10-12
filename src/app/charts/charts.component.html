@@ -1,5 +1,18 @@
-<div class="charts flex">
-  <div class="chart-container flex-child" style="position: relative; height: 10vh">
-    <canvas id="archive"></canvas>
+<span class="charts-wrapper" [class.w-100]="chartsOpen">
+  <div (click)="chartsOpen = !chartsOpen" [tooltip]="!chartsOpen ? 'Open board charts' : ''" [position]="'bottom'" class="board-menu-tab pointer flex g-05 justify-content-end">
+    <label class="translucent">Charts</label>
+    <span *ngIf="!chartsOpen">📈</span>
+    <span *ngIf="chartsOpen">×</span>
   </div>
-</div>
+  <div *ngIf="chartsOpen" class="charts" [@fadeInOut]>
+    <div class="flex flex-child w-100">
+      <chart [chartType]="'tasksByStatus'" [board]="board" [tasks]="boardService.getTasksForBoard$(board)" [showTitle]="false" [showLegend]="true" [useAnimation]="true" [padding]="4" class="flex-child"></chart>
+      <chart [chartType]="'tasksByPriority'" [board]="board" [tasks]="boardService.getTasksForBoard$(board)" [showTitle]="false" [showLegend]="true" [useAnimation]="true" [padding]="4" class="flex-child"></chart>
+      <chart [chartType]="'tasksByTag'" [board]="board" [tasks]="boardService.getTasksForBoard$(board)" [showTitle]="false" [showLegend]="true" [useAnimation]="true" [padding]="4" class="flex-child"></chart>
+      <!-- <tags-viewer [board]="board" class="flex g-05 flex-child wrap justify-content-center align-items-center"></tags-viewer> -->
+    </div>
+    <div class="flex flex-child w-100">
+      <chart [chartType]="'createdVsCompleted'" [board]="board" [tasks]="boardService.getTasksForBoard$(board, true)" [useAnimation]="true" class="flex-child"></chart>
+    </div>
+  </div>
+</span>

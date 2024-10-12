@@ -1,4 +1,4 @@
-<span class="tag m-x-025" *ngFor="let entry of this.tagService.uniqueTagsAndNumerosity$ | async">
+<span class="tag g-025 flex" *ngFor="let entry of this.tagService.getUniqueTagsAndNumerosity$(board, 8) | async">
   <span class="tag-orange">&#64;{{ entry.tag }}</span
   ><span class="small translucent">x{{ entry.numerosity }}</span>
 </span>

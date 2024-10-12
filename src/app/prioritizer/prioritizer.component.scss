@@ -14,7 +14,7 @@ span {
     font-size: $small-font-size;
 
     &.cancel {
-        color: map.get($fonts, text-color);
+        color: map.get($semantic-colors, text-color);
     }
 }
 

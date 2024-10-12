@@ -1,6 +1,6 @@
 $background-color: #161a24;
 $static-background-color: #241624;
-map.get($fonts, text-color): #ffffff;
+map.get($semantic-colors, text-color): #ffffff;
 $font-size: 10px;
 $title-size: 1.2rem;
 $big-font-size: 1.2rem;
@@ -9,10 +9,10 @@ $small-font-size: 0.9rem;
 $main-padding: 2rem;
 
 $translucent-opacity: 0.3;
-map.get($semantic-colors, translucent-color): rgba(map.get($fonts, text-color), $translucent-opacity);
+map.get($semantic-colors, translucent-color): rgba(map.get($semantic-colors, text-color), $translucent-opacity);
 
 $editor-active-background: rgba(0, 0, 0, 0.4);
-$selected-background: map.get($fonts, text-color);
+$selected-background: map.get($semantic-colors, text-color);
 
 $completed-color: rgb(18, 187, 2);
 $archived-color: rgb(45, 85, 41);

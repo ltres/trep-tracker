@@ -45,18 +45,20 @@ $colors: (
 );
 // END COLORS
 $fonts: (
-    text-color: map.get($colors, white),
     font-family: 'JetBrains Mono',
-    font-size: 10px
+    font-size: 10px,
+    small-font-size: 0.9rem,
+    chart-labels-font-size: 9px
 );
 
 $semantic-colors: (
-    translucent-color: rgba(map.get($fonts, text-color), $translucent-opacity),
-    half-translucent-color: rgba(map.get($fonts, text-color), $half-translucent-opacity),
+    text-color: map.get($colors, white),
+    translucent-color: rgba(map.get($colors, white), $translucent-opacity),
+    half-translucent-color: rgba(map.get($colors, white), $half-translucent-opacity),
 
     background-color: map.get($colors, dark-gray-2-muted),
 
-    todo: map.get($fonts, text-color),
+    todo: map.get($colors, white),
     in-progress: map.get($colors, yellow-pastel),
     delegated: map.get($colors, lighter-blue-pastel),
     waiting: map.get($colors, light-blue-pastel),
@@ -80,7 +82,7 @@ $semantic-colors: (
     lane-static-background-color: rgba(map.get($colors, bluish-dark-gray-muted), $lane-opacity),
     lane-archive-background-color: rgba(map.get($colors, yellowish-dark-gray-muted), $lane-opacity),
     lane-recurrences-background-color: rgba(map.get($colors, reddish-dark-gray-muted), $lane-opacity),
-    static-lane-outline-color: rgba(map.get($fonts, text-color), 0.1),
+    static-lane-outline-color: rgba(map.get($colors, white), 0.1),
 
     editor-active-background: rgba(map.get($colors, black), 0.4),
 
@@ -94,8 +96,8 @@ $semantic-colors: (
     gantt-background-color: transparent,
     gantt-modal-background-color: rgba(map.get($colors, bluish-dark-gray), $lane-opacity),
     gantt-background-hover-color: rgba(map.get($colors, yellowish-dark-gray-muted), $lane-opacity),
-    gantt-border-color: rgba(map.get($fonts, text-color), 0.1),
-    gantt-text-color: map.get($fonts, text-color),
+    gantt-border-color: rgba(map.get($colors, white), 0.1),
+    gantt-text-color: map.get($colors, white),
     gantt-weekend-color: rgba(map.get($colors, yellowish-dark-gray-muted), $lane-opacity),
     gantt-link-color: map.get($colors, orange-pastel),
     gantt-task-color: rgba(map.get($colors, violet), 0.6),
@@ -113,7 +115,7 @@ $semantic-colors: (
 $spacer-multiplier: 1;
 $title-size: 1.2rem;
 $big-font-size: 1.4rem;
-$small-font-size: 0.9rem;
+$small-font-size: map.get($fonts, small-font-size), ;
 
 $border-radius: calc(map.get($fonts, font-size)/2);
 $lane-padding-y: 0.75rem;
@@ -136,14 +138,4 @@ $modal-backdrop-color: rgba(black, $translucent-opacity );
 $ai-background-color: map.get($colors, dark-gray-3-muted);
 
 $lane-padding: $lane-padding-y $lane-padding-x;
-
-
-
-
-
-
-
-
-
-
-;
+$board-charts-height: 20rem;

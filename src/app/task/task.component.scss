@@ -35,7 +35,7 @@
     }
 
     &.selected {
-        border-left: .15rem solid map.get($fonts, text-color);
+        border-left: .15rem solid map.get($semantic-colors, text-color);
         padding-left: 0.25rem;
     }
 

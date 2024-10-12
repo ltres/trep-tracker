@@ -44,6 +44,9 @@ import{ dateFormats }from'../types/constants';
 import{ DroppableDirective }from'./directive/droppable.directive';
 import{ SimilarArrowsComponent }from"./similar-arrows/similar-arrows.component";
 import{ ChartsComponent }from'./charts/charts.component';
+import{ ColorsService }from'../service/colors.service';
+import{ ChartComponent }from'./chart/chart.component';
+import{ ChartService }from'../service/chart.service';
 
 @NgModule( { declarations: [
   AppComponent,
@@ -72,6 +75,7 @@ import{ ChartsComponent }from'./charts/charts.component';
   UpdateCheckerComponent,
   DatePickerComponent,
   DroppableDirective,
+  ChartComponent,
   ChartsComponent
 ],
 bootstrap: [AppComponent], 
@@ -96,8 +100,10 @@ providers: [
   TagService,
   ModalService,
   ClickService,
+  ColorsService,
   OwlDateTimeModule,
   OwlNativeDateTimeModule,
+  ChartService,
   {provide: OWL_DATE_TIME_FORMATS, useValue: dateFormats},
   {
     provide: 'StorageServiceAbstract',

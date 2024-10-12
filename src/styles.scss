@@ -9,8 +9,8 @@
 @import "assets/date-picker";
 
 :root {
-  @include export-css-variables($colors);
-  @include export-css-variables($semantic-colors);
+  @include export-css-variables($colors, true);
+  @include export-css-variables($semantic-colors, true);
   @include export-css-variables($fonts);
 }
 
@@ -18,13 +18,13 @@
 
 html {
   background-color: map.get($colors, dark-gray-2-muted);
-  color: map.get($fonts, text-color);
+  color: map.get($semantic-colors, text-color);
   font-family: map.get($fonts, font-family);
   font-size: map.get($fonts, font-size)
 }
 
 a {
-  color: map.get($fonts, text-color);
+  color: map.get($semantic-colors, text-color);
 }
 
 
@@ -184,7 +184,7 @@ button {
 .flex-child {
   flex-basis: 0;
   flex-grow: 1;
-  flex-shrink: 0;
+  flex-shrink: 1;
   width: 0;
 }
 
@@ -327,7 +327,7 @@ input:-internal-autofill-selected {
   font-family: 'JetBrains Mono';
   overflow: visible;
   background-color: map.get($semantic-colors, background-color) !important;
-  color: map.get($fonts, text-color) !important;
+  color: map.get($semantic-colors, text-color) !important;
   outline: none;
   border-color: transparent;
   border: 1px solid map.get($semantic-colors, translucent-color);
@@ -376,13 +376,13 @@ input:-internal-autofill-selected {
 
 select {
   background-color: map.get($semantic-colors, background-color);
-  color: map.get($fonts, text-color);
+  color: map.get($semantic-colors, text-color);
   border: 1px solid map.get($semantic-colors, translucent-color);
 }
 
 select option {
   background-color: map.get($semantic-colors, background-color);
-  color: map.get($fonts, text-color);
+  color: map.get($semantic-colors, text-color);
 }
 
 .link {

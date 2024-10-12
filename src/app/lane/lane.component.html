@@ -1,4 +1,10 @@
 <div class="lane-wrapper p-x-05 p-y-025" [class.archive-lane]="isArchive(lane)" [class.static-view]="isStatic() && (tasks | async)?.length === 0" [droppable]="6" [container]="lane" [executeOnDropReceived]="receiveDrop.bind(this)">
+  <!-- <div *ngIf="this.active" [@fadeInOut] class="lane-graphs-label flex column">
+    <chart [chartType]="'tasksByStatus'" [board]="board" [tasks]="isStatic() ? staticTasks : tasks" class="flex-child"></chart>
+    <chart [chartType]="'tasksByPriority'" [board]="board" [tasks]="isStatic() ? staticTasks : tasks" class="flex-child"></chart>
+    <chart [chartType]="'tasksByTag'" [board]="board" [tasks]="isStatic() ? staticTasks : tasks" class="flex-child"></chart>
+    <tags-viewer [board]="board" [lane]="lane"></tags-viewer>
+  </div> -->
   <div class="lane-toolbar flex align-items-center g-05">
     <div class="grow no-wrap flex align-items-center g-05">
       @if (lane.searchTextContent) {
@@ -63,6 +69,11 @@
         </button>
 
         <button *ngIf="!isStatic() && !isArchive(lane)" class="small no-grow new-task" (click)="createNewTask()">➕ New task</button>
+
+        <div [@fadeInOut] class="charts flex">
+          <chart [chartType]="'tasksByStatus'" [board]="board" [tasks]="isStatic() ? staticTasks : tasks" class="flex-child"></chart>
+          <chart [chartType]="'tasksByPriority'" [board]="board" [tasks]="isStatic() ? staticTasks : tasks" class="flex-child"></chart>
+        </div>
       </lane-menu>
     </div>
 

@@ -1,0 +1,23 @@
+@use "sass:map";
+
+@import "../../assets/variables";
+@import "../../assets/mixins";
+
+.charts-wrapper {
+    @include lane-style($lane-padding);
+    //margin: $board-padding;
+    //margin-bottom: -0.5rem;
+}
+
+.charts {
+    height: $board-charts-height;
+    position: relative;
+
+    > :first-child {
+        max-height: 40%
+    }
+
+    display: flex;
+    flex-direction: column;
+
+}

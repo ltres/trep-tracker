@@ -110,3 +110,20 @@ export function shiftByRecurrence( date: Date, recurrence: Recurrence ): Date{
   }
   return date
 }
+
+export function getLastMonday(): Date{
+  const today = new Date();
+  const day = today.getDay(); // 0 is Sunday, 1 is Monday, etc.
+    
+  // Calculate how many days to subtract to get to last Monday
+  const daysToSubtract = day === 0 ? 6 : day - 1;
+    
+  // Create new date for last Monday
+  const lastMonday = new Date( today );
+  lastMonday.setDate( today.getDate() - daysToSubtract );
+    
+  // Set time to 00:01
+  lastMonday.setHours( 0, 1, 0, 0 );
+    
+  return lastMonday;
+}

@@ -7,7 +7,7 @@
     resize: horizontal;
     display: inline-block;
     min-width: 20rem;
-
+    position: relative;
     @include lane-style(0px);
     background-color: unset;
 
@@ -62,4 +62,17 @@
     background-color: map.get($semantic-colors, lane-non-static-background-color) !important;
     outline: 1px solid map.get($semantic-colors, static-lane-outline-color);
     outline-offset: -1px;
+}
+
+.lane-graphs-label {
+    @include lane-style($lane-padding);
+    position: absolute;
+    left: 99%;
+    z-index: 101;
+    min-width: 6rem;
+    height: 15rem;
+}
+
+.charts {
+    height: 5rem;
 }

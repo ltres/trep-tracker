@@ -1,8 +1,10 @@
+@use "sass:map";
+
 @import "../../assets/variables";
 
 .cancel,
 .status-todo {
-    color: map.get($fonts, text-color);
+    color: map.get($semantic-colors, text-color);
 }
 
 .status-grid {

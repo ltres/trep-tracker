@@ -11,7 +11,7 @@ import{ ContainerComponent }from'../base/base.component';
 import{ ModalService }from'../../service/modal.service';
 import{ layoutValues, tagIdentifiers }from'../../types/constants';
 import{  isPriorityArray,  isRecurringTask,  isStatusArray,  isTagArray, isTask }from'../../utils/guards';
-import{ slowFadeInOut }from'../../types/animations';
+import{ fadeInOut, slowFadeInOut }from'../../types/animations';
 import{ TagService }from'../../service/tag.service';
 
 @Component( {
@@ -24,7 +24,7 @@ import{ TagService }from'../../service/tag.service';
   providers: [
     { provide: ContainerComponent, useExisting: forwardRef( () => LaneComponent ) },
   ],
-  animations: slowFadeInOut
+  animations: [slowFadeInOut, fadeInOut]
 } )
 export class LaneComponent extends ContainerComponent implements OnInit{
 
@@ -85,6 +85,7 @@ export class LaneComponent extends ContainerComponent implements OnInit{
       }else{
         this.active = false;
       }
+      this.cdr.detectChanges();
     } );
   }
 
