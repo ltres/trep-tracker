@@ -71,8 +71,8 @@
         <button *ngIf="!isStatic() && !isArchive(lane)" class="small no-grow new-task" (click)="createNewTask()">➕ New task</button>
 
         <div [@fadeInOut] class="charts flex">
-          <chart [chartType]="'tasksByStatus'" [board]="board" [tasks]="isStatic() ? staticTasks : tasks" class="flex-child"></chart>
-          <chart [chartType]="'tasksByPriority'" [board]="board" [tasks]="isStatic() ? staticTasks : tasks" class="flex-child"></chart>
+          <chart [chartType]="'tasksByStatus'" [board]="board" [tasks]="isStatic() ? staticTasks : tasks" [showLegend]="true" class="flex-child"></chart>
+          <chart [chartType]="'tasksByPriority'" [board]="board" [tasks]="isStatic() ? staticTasks : tasks" [showLegend]="true" class="flex-child"></chart>
         </div>
       </lane-menu>
     </div>

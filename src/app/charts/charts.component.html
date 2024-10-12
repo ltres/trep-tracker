@@ -6,13 +6,13 @@
   </div>
   <div *ngIf="chartsOpen" class="charts" [@fadeInOut]>
     <div class="flex flex-child w-100">
-      <chart [chartType]="'tasksByStatus'" [board]="board" [tasks]="boardService.getTasksForBoard$(board)" [showTitle]="false" [showLegend]="true" [useAnimation]="true" [padding]="4" class="flex-child"></chart>
-      <chart [chartType]="'tasksByPriority'" [board]="board" [tasks]="boardService.getTasksForBoard$(board)" [showTitle]="false" [showLegend]="true" [useAnimation]="true" [padding]="4" class="flex-child"></chart>
-      <chart [chartType]="'tasksByTag'" [board]="board" [tasks]="boardService.getTasksForBoard$(board)" [showTitle]="false" [showLegend]="true" [useAnimation]="true" [padding]="4" class="flex-child"></chart>
+      <chart [chartType]="'tasksByStatus'" [board]="board" [tasks]="boardService.getTasksForBoard$(board)" [showTitle]="false" [showLegend]="true" [useAnimation]="true" [padding]="0" class="flex-child"></chart>
+      <chart [chartType]="'tasksByPriority'" [board]="board" [tasks]="boardService.getTasksForBoard$(board)" [showTitle]="false" [showLegend]="true" [useAnimation]="true" [padding]="0" class="flex-child"></chart>
+      <chart [chartType]="'tasksByTag'" [board]="board" [tasks]="boardService.getTasksForBoard$(board)" [showTitle]="false" [showLegend]="true" [useAnimation]="true" [padding]="0" class="flex-child"></chart>
       <!-- <tags-viewer [board]="board" class="flex g-05 flex-child wrap justify-content-center align-items-center"></tags-viewer> -->
     </div>
     <div class="flex flex-child w-100">
-      <chart [chartType]="'createdVsCompleted'" [board]="board" [tasks]="boardService.getTasksForBoard$(board, true)" [useAnimation]="true" class="flex-child"></chart>
+      <chart [chartType]="'createdVsCompleted'" [board]="board" [tasks]="boardService.getTasksForBoard$(board, true)" [showTitle]="false" [showLegend]="true" [useAnimation]="true" class="flex-child"></chart>
     </div>
   </div>
 </span>

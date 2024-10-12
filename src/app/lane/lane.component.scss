@@ -7,7 +7,8 @@
     resize: horizontal;
     display: inline-block;
     min-width: 20rem;
-    position: relative;
+    //position: relative;
+    overflow-x: auto;
     @include lane-style(0px);
     background-color: unset;
 
@@ -74,5 +75,5 @@
 }
 
 .charts {
-    height: 5rem;
+    height: 7rem;
 }

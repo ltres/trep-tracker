@@ -4,7 +4,7 @@ import{ BoardService }from'../../service/board.service';
 import{ ColorsService }from'../../service/colors.service';
 import{ Board, ChartType, Lane, Task }from'../../types/types';
 import{ ChartService }from'../../service/chart.service';
-import{ debounceTime, Observable, Subscription }from'rxjs';
+import{ Observable, Subscription }from'rxjs';
 
 @Component( {
   selector: 'chart[chartType][board][tasks]', 
@@ -37,12 +37,12 @@ export class ChartComponent implements AfterViewInit, OnDestroy{
   ngAfterViewInit(): void{
     
     this.subscription = this.tasks?.pipe(
-      debounceTime( this.first ? 0 : 2000 )
+      //debounceTime( 1000 )
     ).subscribe( r => {
       if( this.chart ){
         this.chart.destroy()
       }
-      this.chart = this.chartService.generateChart( this.canvas.nativeElement, this.chartType, this.board, this.lane, r, this.showTitle, this.showLegend, this.useAnimation, this.padding );
+      this.chart = this.chartService.generateChart( this.canvas.nativeElement, this.chartType, this.board, this.lane, r, this.showTitle, this.showLegend, this.first ? this.useAnimation : false, this.padding );
       this.first = false;
     } )
   }

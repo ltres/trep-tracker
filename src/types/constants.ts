@@ -1,5 +1,5 @@
 import{ OwlDateTimeFormats }from"@ltres/angular-datetime-picker";
-import{ DateDisplayConfig, TagType }from"./types";
+import{ DateDisplayConfig, Status, TagType }from"./types";
 import{ formatDate }from"../utils/date-utils";
 import{ ChartDataset, ChartOptions }from"chart.js/auto";
 
@@ -210,7 +210,8 @@ export const getChartOptions = (
   showTitle: boolean,
   showLegend: boolean,
   useAnimation: boolean,
-  padding: number | undefined
+  padding: number | undefined,
+  gridColor: string | undefined
 ) => {
   
   const font = {
@@ -228,11 +229,17 @@ export const getChartOptions = (
     ...( useAnimation ? {} : {animation: false} ),
     ...( type ==='line' ? {scales:{
       x:{
+        grid:{
+          color: gridColor
+        },
         ticks:{
           font
         }
       },
       y:{
+        grid:{
+          color: gridColor
+        },
         ticks:{
           font
         }
@@ -242,15 +249,15 @@ export const getChartOptions = (
     plugins:{
       ...( showLegend ? {labels: {
         render: ( args: {value: string, label:string} ) => {
-          return args.label;
+          return statusValues[args.label as unknown as Status ]?.icon ?? args.label;
         },
         fontSize: font.size,
         fontFamily: font.family,
         fontColor: textColor,
         textShadow: true,
-        shadowBlur: 10,
+        shadowBlur: 3,
         shadowColor: "black",
-        position: 'outside',
+        position: 'default',
         //outsidePadding: 4,
         //textMargin: 4
       }} : {} ),
@@ -263,37 +270,6 @@ export const getChartOptions = (
       legend:{
         display: false
       },
-      /*
-      ...( showLegend ? {
-        legend: {
-          position: 'bottom',
-          labels: {
-            color: textColor,
-            font,
-            usePointStyle: true,
-            boxHeight: 5,
-            ...( type === 'doughnut' ? {
-              generateLabels: ( chart ) => {
-                const datasets = chart.data.datasets;
-                return datasets[0].data.map( ( data, i ) => ( {
-                  text: `${chart.data.labels?.[i]} (${data})`,
-                  fontColor:textColor,
-                  // @ts-expect-error types
-                  fillStyle: datasets?.[0].backgroundColor?.[i] ?? "",
-                  borderRadius: 5,
-                  index: i
-                } ) )
-              }
-            } : {
-              
-            } )
-          }
-        }
-      } : {
-        legend:{
-          display: false
-        }
-      } ),*/
       tooltip: {
         titleFont: {
           ...font,
@@ -312,7 +288,7 @@ export const getChartOptions = (
 }
 export const getChartDataset : ( title: string, data: number[], color: string[], borderColor: string | undefined, type: "doughnut" | "line" | "pie" | "bar" ) => ChartDataset = ( title: string, data: number[], color: string[], borderColor: string | undefined, type: "doughnut" | "line" | "pie" | "bar" = "doughnut" ) => {
   const r: ChartDataset = {
-    ...( type === 'line' ? {label: title} : {} ),
+    ...( type === 'line' || type === 'bar'  ? {label: title} : {} ),
     type: type,
     data: data,
     backgroundColor: color,

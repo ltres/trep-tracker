@@ -122,6 +122,7 @@
         @if($add-translucent) {
             --half-translucent-#{"" + $key}: #{transparentize($value, 1 - $half-translucent-opacity)};
             --translucent-#{"" + $key}: #{transparentize($value, 1 - $translucent-opacity)};
+            --very-translucent-#{"" + $key}: #{transparentize($value, 1 - $very-translucent-opacity)};
         }
 
     }

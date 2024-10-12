@@ -40,7 +40,7 @@ body {
 }
 
 *:not(ol):not(ul):not(li) {
-  scrollbar-color: map.get($colors, scrollbar-color) map.get($colors, background-color);
+  scrollbar-color: map.get($semantic-colors, scrollbar-color) map.get($semantic-colors, background-color);
   scrollbar-width: thin;
   margin: 0;
   padding: 0;

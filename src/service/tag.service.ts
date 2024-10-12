@@ -45,8 +45,8 @@ export class TagService{
       map( tags => {
         const tagMap = new Map<string, number>();
         tags.find( t => t.board.id === board.id )?.tags.forEach( t => {
-          const count = tagMap.get( t.tag ) ?? 0;
-          tagMap.set( t.tag, count + 1 );
+          const count = tagMap.get( t.tag.toLowerCase() ) ?? 0;
+          tagMap.set( t.tag.toLowerCase(), count + 1 );
         } );
         const ret = Array.from( tagMap.entries() ).map( ( [tag, numerosity] ) => ( {tag, numerosity} ) ).sort( ( a, b ) => b.numerosity - a.numerosity );
         return limit ? ret.splice( 0, limit ) : ret

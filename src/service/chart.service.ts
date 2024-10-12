@@ -26,10 +26,11 @@ export class ChartService{
     Chart.register( getChartLabelPlugin() );
     const style = getComputedStyle( document.body );
     const border = style.getPropertyValue( '--dark-gray-2-muted' ); 
-    const fs = style.getPropertyValue( '--chart-labels-font-size' );
-    const ff = style.getPropertyValue( '--font-family' );
-    const tc = style.getPropertyValue( '--text-color' );
+    const fontSize = style.getPropertyValue( '--chart-labels-font-size' );
+    const fontFamily = style.getPropertyValue( '--font-family' );
+    const textColor = style.getPropertyValue( '--text-color' );
     const laneBackgroundColor = style.getPropertyValue( '--lane-non-static-background-color' );
+    const gridColor = style.getPropertyValue( '--very-translucent-white' );
 
     switch( chartType ){
       case'tasksByStatus':{
@@ -50,7 +51,7 @@ export class ChartService{
           element,
           {
             type: "doughnut",
-            options: getChartOptions( "Tasks by status", border, tc, ff, fs, "doughnut", showTitle, showLegend, useAnimation, padding ),
+            options: getChartOptions( "Tasks by status", border, textColor, fontFamily, fontSize, "doughnut", showTitle, showLegend, useAnimation, padding, gridColor ),
             
             data: {
               labels: ret.map( r => r.setLabel ),
@@ -69,7 +70,7 @@ export class ChartService{
           if( ex ){
             ex.setValue++
           }else{
-            ret.push( {key: `priority-${task.priority}`, setLabel: `priority ${task.priority}`, setValue: 1, setColor: this.colorService.findColor( `priority-${task.priority}` )} );
+            ret.push( {key: `priority-${task.priority}`, setLabel: `${task.priority}`, setValue: 1, setColor: this.colorService.findColor( `priority-${task.priority}` )} );
           }
         } )
         ret = ret.sort( ( k1, k2 ) => k2.setValue - k1.setValue );
@@ -78,7 +79,7 @@ export class ChartService{
           element,
           {
             type: "doughnut",
-            options: getChartOptions( "Tasks by priority", border, tc, ff, fs, "doughnut", showTitle, showLegend, useAnimation, padding ),
+            options: getChartOptions( "Tasks by priority", border, textColor, fontFamily, fontSize, "doughnut", showTitle, showLegend, useAnimation, padding, gridColor ),
               
             data: {
               labels: ret.map( r => r.setLabel ),
@@ -93,11 +94,11 @@ export class ChartService{
         let ret: {setLabel: string, setValue: number, setColor: string}[] = []
         tasks?.forEach( task => {
           task.tags.forEach( tag => {
-            const ex = ret.find( e => e.setLabel === tag.tag );
+            const ex = ret.find( e => e.setLabel === tag.tag.toLowerCase() );
             if( ex ){
               ex.setValue++
             }else{
-              ret.push( {setLabel: tag.tag, setValue: 1, setColor: this.colorService.findColor( tag.type )} );
+              ret.push( {setLabel: tag.tag.toLowerCase(), setValue: 1, setColor: this.colorService.findColor( tag.type )} );
             }
           } )
         } )
@@ -107,7 +108,7 @@ export class ChartService{
           element,
           {
             type: "doughnut",
-            options: getChartOptions( "Tasks by tag", border, tc, ff, fs, "doughnut", showTitle, showLegend, useAnimation, padding  ),
+            options: getChartOptions( "Tasks by tag", border, textColor, fontFamily, fontSize, "doughnut", showTitle, showLegend, useAnimation, padding, gridColor  ),
               
             data: {
               labels: ret.map( r => r.setLabel ),
@@ -155,18 +156,20 @@ export class ChartService{
           ret4.push( {setLabel: formatDate( toIsoString( ref ), board.datesConfig ), setValue: dayTasks, setColor: color2 } );
 
         }
-  
+        const ref = new Date();
+        ref.setDate( today.getDate() - days  )
+
         return new Chart(
           element,
           {
             type: "line",
-            options: getChartOptions( "Tasks by tag", border, tc, ff, fs, "line", showTitle, showLegend, useAnimation, padding ),
+            options: getChartOptions( "Tasks by tag", border, textColor, fontFamily, fontSize, "line", showTitle, showLegend, useAnimation, padding, gridColor ),
               
             data: {
               labels: ret.map( r => r.setLabel ),
               datasets: [
-                getChartDataset( "Created", ret.map( e => e.setValue ), [color1], undefined, "line" ),
-                getChartDataset( "Completed", ret2.map( e => e.setValue ), [color2],  undefined, "line" ),
+                getChartDataset( `Created since ${formatDate( ref, board.datesConfig )}`, ret.map( e => e.setValue ), [color1], undefined, "line" ),
+                getChartDataset( `Completed since ${formatDate( ref, board.datesConfig )}`, ret2.map( e => e.setValue ), [color2],  undefined, "line" ),
                 getChartDataset( "Created", ret3.map( e => e.setValue ), [color1],  undefined, "bar" ),
                 getChartDataset( "Completed", ret4.map( e => e.setValue ), [color2],  undefined, "bar" )
               ]
