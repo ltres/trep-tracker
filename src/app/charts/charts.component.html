@@ -1,4 +1,4 @@
-<span class="charts-wrapper" [class.w-100]="chartsOpen">
+<div class="charts-wrapper" [class.w-100]="chartsOpen">
   <div (click)="chartsOpen = !chartsOpen" [tooltip]="!chartsOpen ? 'Open board charts' : ''" [position]="'bottom'" class="board-menu-tab pointer flex g-05 justify-content-end">
     <label class="translucent">Charts</label>
     <span *ngIf="!chartsOpen">📈</span>
@@ -15,4 +15,4 @@
       <chart [chartType]="'createdVsCompleted'" [board]="board" [tasks]="boardService.getTasksForBoard$(board, true)" [showTitle]="false" [showLegend]="true" [useAnimation]="true" class="flex-child"></chart>
     </div>
   </div>
-</span>
+</div>

@@ -10,7 +10,7 @@ import{ getTimezoneShortName }from'../../utils/date-utils';
 import{ TagService }from'../../service/tag.service';
 
 @Component( {
-  selector: 'board-toolbar[board][clazz]',
+  selector: 'board-toolbar[board]',
   templateUrl: './board-toolbar.component.html',
   styleUrl: './board-toolbar.component.scss',
 } )
@@ -20,9 +20,8 @@ export class BoardToolbarComponent{
   @Input() board!: Board;
 
   @HostBinding( 'class' )
-  @Input() clazz!: string;
 
-  debounce: ReturnType<typeof setTimeout> | undefined;
+    debounce: ReturnType<typeof setTimeout> | undefined;
   open: boolean = true;
   menuOpen = false;
   showDatesPreferences: boolean = false;
@@ -99,15 +98,15 @@ export class BoardToolbarComponent{
   getAvailablePropValues( arg: string ): ( string|boolean|undefined )[]{
     switch( arg ){
       case"timeZoneName":
-        return["short", "long" , "shortOffset","longOffset" ,"shortGeneric","longGeneric"]
+        return["short", "long", "shortOffset", "longOffset", "shortGeneric", "longGeneric"]
       case"weekday":
         return["long", "short", "narrow"]
       case"hour12":
-        return[true,false]
+        return[true, false]
       case"year":
-        return["numeric","2-digit"]
+        return["numeric", "2-digit"]
       case"month":
-        return["numeric" ,"2-digit" , "long" , "short" , "narrow"]
+        return["numeric", "2-digit", "long", "short", "narrow"]
       case"day":
         return["numeric", "2-digit"]
       case"time":

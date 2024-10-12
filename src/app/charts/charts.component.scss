@@ -3,6 +3,10 @@
 @import "../../assets/variables";
 @import "../../assets/mixins";
 
+:host {
+    display: flex
+}
+
 .charts-wrapper {
     @include lane-style($lane-padding);
     //margin: $board-padding;
@@ -12,6 +16,7 @@
 .charts {
     height: $board-charts-height;
     position: relative;
+    min-width: 35rem;
 
     > :first-child {
         max-height: 40%

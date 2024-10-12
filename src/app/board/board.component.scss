@@ -18,7 +18,11 @@
 
     &:not(.absolute) {
         height: unset !important;
-
-
     }
+}
+
+.absolute-toolbars-container {
+    position: absolute;
+    right: $board-padding;
+    top: $board-padding;
 }
