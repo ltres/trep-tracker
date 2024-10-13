@@ -23,6 +23,8 @@ export class TooltipDirective{
     tooltip.innerHTML = this.tooltip;
     tooltip.style.position = 'absolute';
     tooltip.style.whiteSpace = 'nowrap';
+    tooltip.style.pointerEvents = 'none';
+
     this.body.appendChild( tooltip );
 
     const bbox = ( this.element.nativeElement as HTMLElement ).getBoundingClientRect()
