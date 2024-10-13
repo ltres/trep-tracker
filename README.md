@@ -18,7 +18,9 @@ _➡️ If you have ever used notepad for task tracking, have tried many todo-li
 > If you like what you see, consider downloading the <a href="https://github.com/ltres/trep-tracker/releases">distributed package</a> to run it natively on your system, for an overall better experience._
 
 ## 👁️ See it in action
-<img src="https://github.com/ltres/trep-tracker/blob/d69916a38fe6c8375832f10dfb39ae4fe3cf5dca/src/assets/readme/trep-tracker-07-09-2024.gif" width="1000" />
+<p align="center">
+  <img src="https://github.com/ltres/trep-tracker/blob/99c8a099dc92707c40ffe0dda32527408e3a1820/src/assets/readme/trep-tracker-13-10-2024.gif" width="800" />
+</p>
 
 ## ▶️ How to Run `trep-tracker`
 Either download and run the latest executable from the <a href="https://github.com/ltres/trep-tracker/releases">release page</a> or check out this git repository and start your dev server with `npm run electron`.
@@ -54,6 +56,9 @@ You can also `@tag` lanes. When you do, the lane becomes *static* and automatica
 Static lanes can also display tasks filtering on **priority, status, task start/end dates** or a combination of these filters.
 ### **Gantt**
 Show selected tasks in **dynamic gantt diagrams**, for a whole board or for single lanes.
+
+### **Charts**
+View charts about your **tasks distribution** and number of **completions over time**..
 
 ## 🧾 Where is my data stored?
 `trep-tracker` stores your tasks data in a local '.trptrk' (json) file.
