@@ -84,7 +84,7 @@ export class DatePickerComponent implements AfterViewInit{
   }
 
   deleteTimeframes(){
-    this.selectedTimeframe = [undefined,undefined];
+    this.selectedTimeframe = [undefined, undefined];
   }
   emitClose(){
     this.onClose.emit();

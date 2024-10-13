@@ -47,6 +47,7 @@ import{ ChartsComponent }from'./charts/charts.component';
 import{ ColorsService }from'../service/colors.service';
 import{ ChartComponent }from'./chart/chart.component';
 import{ ChartService }from'../service/chart.service';
+import{ GanttButtonComponent }from'./gantt-button/gantt-button.component';
 
 @NgModule( { declarations: [
   AppComponent,
@@ -76,7 +77,8 @@ import{ ChartService }from'../service/chart.service';
   DatePickerComponent,
   DroppableDirective,
   ChartComponent,
-  ChartsComponent
+  ChartsComponent,
+  GanttButtonComponent
 ],
 bootstrap: [AppComponent], 
 imports: [

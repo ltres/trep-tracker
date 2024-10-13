@@ -1,4 +1,7 @@
+@use "sass:map";
+
 @import "../../assets/variables";
+@import "../../assets/mixins";
 
 :host {
     position: relative;
@@ -25,4 +28,14 @@
     position: absolute;
     right: $board-padding;
     top: $board-padding;
+
+}
+
+.toolbars-container {
+    z-index: 110;
+}
+
+gantt-button,
+.search {
+    @include lane-style($lane-padding);
 }

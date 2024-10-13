@@ -1,6 +1,5 @@
-<div *ngIf="board.layout === 'absolute'" class="absolute-toolbars-container flex column g-1 align-items-end">
-  <board-toolbar [board]="board"></board-toolbar>
-  <charts [board]="board"></charts>
+<div *ngIf="board.layout === 'absolute'" class="absolute-toolbars-container toolbars-container flex column g-1">
+  <ng-container [ngTemplateOutlet]="toolbarz"></ng-container>
 </div>
 @if (board.layout === 'absolute') {
   @for (lane of lanes$ | async; track hashCode($index, lane)) {
@@ -8,8 +7,9 @@
   }
 } @else {
   <div class="flex column board-column flex-child g-05" *ngFor="let colIndex of getColumnIndexes(board.layout); let last = last">
-    <board-toolbar class="static flex justify-content-end" *ngIf="last" [board]="board"></board-toolbar>
-    <charts class="static flex justify-content-end" *ngIf="last" [board]="board"></charts>
+    <div *ngIf="last" class="toolbars-container flex g-1 column m-t-05">
+      <ng-container [ngTemplateOutlet]="toolbarz"></ng-container>
+    </div>
 
     <div [droppable]="7" [container]="board" [executeOnDropReceived]="receiveDrop.bind(this, colIndex, board.layout, undefined)" [class.grow]="((getLanesByColumn$(colIndex) | async) ?? []).length == 0" class="dumb-dropzone m-x-1"></div>
 
@@ -20,3 +20,15 @@
     </ng-container>
   </div>
 }
+
+<ng-template #toolbarz>
+  <div class="flex g-1 align-items-start justify-content-end wrap">
+    <gantt-button [board]="board"></gantt-button>
+
+    <charts class="static flex justify-content-end" [board]="board"></charts>
+    <div class="search flex g-1">
+      <search></search>
+    </div>
+    <board-toolbar class="static flex justify-content-end" [board]="board"></board-toolbar>
+  </div>
+</ng-template>

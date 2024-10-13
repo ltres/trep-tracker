@@ -1,5 +1,5 @@
 <div [class.open]="menuOpen" class="board-menu inline-flex column g-05 align-items-end justify-content-center">
-  <div class="flex g-05 justify-content-center">
+  <div class="flex g-05 justify-content-center align-items-center">
     <label class="translucent">Board</label>
     <div contenteditable="true" [(ngModel)]="board.textContent" [board]="board" (ngModelChange)="debounceBoardUpdate()" (onTagsChange)="updateBoardTags($event)" class="board-label colored-title"></div>
     <span (click)="menuOpen = !menuOpen" [tooltip]="!menuOpen ? 'Open board menu' : ''" [position]="'bottom'" class="board-menu-tab pointer">
@@ -22,12 +22,13 @@
       <div class="flex g-025 align-items-center">
         <button class="layout l-{{ layout }}" *ngFor="let layout of getLayouts()" (click)="setLayout(layout)" [class.active]="board.layout === layout" position="top" [tooltip]="layout + ' layout'">{{ getLayoutSymbol(layout) }}</button>
       </div>
+      <!--
       <label class="translucent m-t-05">Search:</label>
 
       <search></search>
-
-      <div class="flex g-025 align-items-center m-t-05">
-        <button class="show-board-gantt" [tooltip]="'Shows a Gantt chart for the whole board'" position="top" (click)="openGantt()">📊 Show board gantt..</button>
+-->
+      <div class="flex g-025 align-items-center m-t-1">
+        <!--<button class="show-board-gantt" [tooltip]="'Shows a Gantt chart for the whole board'" position="top" (click)="openGantt()">📊 Show board gantt..</button> -->
         <button (click)="addLane()" class="add-lane">➕ Add lane</button>
       </div>
     </div>

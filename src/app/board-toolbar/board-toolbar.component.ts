@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import{ Component, HostBinding, Input, TemplateRef, ViewChild }from'@angular/core';
+import{ AfterViewInit, Component, EventEmitter, HostBinding, Input, Output, TemplateRef, ViewChild }from'@angular/core';
 import{ BoardService }from'../../service/board.service';
 import{ AddFloatingLaneParams, Board, Layout, Locale, Tag, Task, Timezone }from'../../types/types';
 import{ ModalService }from'../../service/modal.service';
@@ -14,14 +14,13 @@ import{ TagService }from'../../service/tag.service';
   templateUrl: './board-toolbar.component.html',
   styleUrl: './board-toolbar.component.scss',
 } )
-export class BoardToolbarComponent{
-
+export class BoardToolbarComponent implements AfterViewInit{
   @ViewChild( 'gantt' ) ganttTemplate: TemplateRef<unknown> | null = null;
   @Input() board!: Board;
-
   @HostBinding( 'class' )
+  @Output() onInit:EventEmitter<void> = new EventEmitter()
 
-    debounce: ReturnType<typeof setTimeout> | undefined;
+  debounce: ReturnType<typeof setTimeout> | undefined;
   open: boolean = true;
   menuOpen = false;
   showDatesPreferences: boolean = false;
@@ -32,6 +31,9 @@ export class BoardToolbarComponent{
     protected modalService: ModalService,
     private tagService: TagService
   ){ }
+  ngAfterViewInit(): void{
+    this.onInit.emit()
+  }
 
   getLayouts(): Layout[]{
     return Object.keys( layoutValues ) as Layout[];

@@ -1,6 +1,6 @@
 <div class="charts-wrapper" [class.w-100]="chartsOpen">
   <div (click)="chartsOpen = !chartsOpen" [tooltip]="!chartsOpen ? 'Open board charts' : ''" [position]="'bottom'" class="board-menu-tab pointer flex g-05 justify-content-end">
-    <label class="translucent">Charts</label>
+    <label class="half-translucent pointer">Charts</label>
     <span *ngIf="!chartsOpen">📈</span>
     <span *ngIf="chartsOpen">×</span>
   </div>

@@ -89,7 +89,6 @@ export class LaneComponent extends ContainerComponent implements OnInit{
     } );
   }
 
-  /*
   @HostBinding( 'style.overflow-x' )
   get overflowX(): string{
     if( this.displayedInFixedLayout || this.menuOpen || this.hoveringTooltip || this.interactingWithChildTasks ){
@@ -97,7 +96,8 @@ export class LaneComponent extends ContainerComponent implements OnInit{
     }else{
       return'auto';
     }
-  }*/
+  }
+  
   @HostBinding( 'class.active' )
     active: boolean = false;
 

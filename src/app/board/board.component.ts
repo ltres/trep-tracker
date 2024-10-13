@@ -118,6 +118,7 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
 
   override ngAfterViewInit(): void{
     super.ngAfterViewInit();
+
     if( this.board.layout === 'absolute' )return;
     this.subscriptions = this.boardService.detectChanges$.subscribe( () => {
       // set the board height basing on the childrens size.

@@ -332,7 +332,11 @@ input:-internal-autofill-selected {
   border-color: transparent;
   border: 1px solid map.get($semantic-colors, translucent-color);
   width: 100%;
-  font-size: map.get($fonts, font-size)
+  font-size: map.get($fonts, font-size);
+  padding: 0 calc(map.get($fonts, font-size)/2) !important;
+  box-sizing: border-box;
+  border-radius: calc(map.get($fonts, font-size)/3) !important;
+  margin: -0.5px 0 !important;
 }
 
 .chevron-down:after {
@@ -400,6 +404,7 @@ select option {
 
 .colored-title {
   color: map.get($semantic-colors, lane-title-color);
+  line-height: map.get($fonts, font-size);
   font-size: $title-size;
   font-weight: bold;
 }
