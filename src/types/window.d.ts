@@ -11,4 +11,5 @@ interface Window {
   find: ( searchTerm: string ) => boolean;
   getSelection: () => Selection | null;
   execCommand: ( command: string, showUI?: boolean, value?: string ) => void;
+  chart: Chart
 }

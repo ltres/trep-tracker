@@ -1,5 +1,6 @@
 import{ test, expect, Locator, Page }from'@playwright/test';
 import{ statusValues }from'../src/types/constants';
+import Chart from'chart.js/auto';
 
 const text = 'Hello World!';
 const mention = 'mention';
@@ -7,7 +8,6 @@ let lanes;
 
 let firstLane: Locator | undefined ;
 let firstTask: Locator | undefined;
-let firstTaskStatus: Locator | undefined;
 let menu
 let board
 let boardMenu: Locator | undefined;
@@ -26,7 +26,6 @@ test.beforeEach( async( { page } ) => {
 
   firstLane = lanes.first();
   firstTask = page.locator( 'task', {hasText: new RegExp( `${text} 0` ) } ).first();
-  firstTaskStatus = firstTask.locator( 'status' ).first();
   menu = page.locator( 'board-selection-menu' );
 
   boardMenu = page.locator( '.board-menu-tab' )
@@ -470,6 +469,35 @@ test.describe.parallel( 'Trep Tracker Tasks & lanes - ', () => {
     await expect( page.locator( '.leader-line' ) ).toHaveCount( 2 );
 
   } );
+
+  test( 'Board charts', async( { page } ) => {
+    await page.locator( 'charts' ).click();
+    await page.waitForTimeout( 1300 ); // animation
+    await expect( page.locator( 'chart' ) ).toHaveCount( 4 );
+    // Verify chart data
+    let instances = await page.evaluate( async() => {
+      // @ts-expect-error extract chart instances
+      const instances = ( window.chart as Chart ).instances;
+      return instances;
+    } );
+    await expect( instances[Object.keys( instances )[0]]._sortedMetasets[0]._dataset.data[0] ).toBe( 2 ); // todos
+    await expect( instances[Object.keys( instances )[1]]._sortedMetasets[0]._dataset.data[0] ).toBe( 2 ); // prio 1
+    await expect( instances[Object.keys( instances )[2]]._sortedMetasets[0]._dataset.data[0] ).toBe( undefined ); // tags
+
+    await expect( instances[Object.keys( instances )[3]]._sortedMetasets[2]._dataset.data[instances[Object.keys( instances )[3]]._sortedMetasets[2]._dataset.data.length - 1] ).toBe( 2 ); // created bar
+
+    await setTaskStatus( firstTask!, page, 'status-completed' );
+    instances = await page.evaluate( async() => {
+      // @ts-expect-error extract chart instances
+      const instances = ( window.chart as Chart ).instances;
+      return instances;
+    } );
+    await expect( instances[Object.keys( instances )[0]]._sortedMetasets[0]._dataset.data[0] ).toBe( 1 ); // todos
+    await expect( instances[Object.keys( instances )[1]]._sortedMetasets[0]._dataset.data[0] ).toBe( 2 ); // prio 1
+    await expect( instances[Object.keys( instances )[2]]._sortedMetasets[0]._dataset.data[0] ).toBe( undefined ); // tags
+    await expect( instances[Object.keys( instances )[3]]._sortedMetasets[2]._dataset.data[instances[Object.keys( instances )[3]]._sortedMetasets[2]._dataset.data.length - 1] ).toBe( 2 ); // created bar
+    await expect( instances[Object.keys( instances )[3]]._sortedMetasets[3]._dataset.data[instances[Object.keys( instances )[3]]._sortedMetasets[3]._dataset.data.length - 1] ).toBe( 1 ); // completed bar
+  } )
 
 } );
 

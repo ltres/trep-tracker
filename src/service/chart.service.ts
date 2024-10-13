@@ -16,7 +16,9 @@ export class ChartService{
   constructor( 
     private boardService : BoardService,
     private colorService : ColorsService
-  ){ }
+  ){ 
+    window.chart = Chart;
+  }
 
   private hasRegisteredPlugin(): boolean{
     return!!Chart.registry?.plugins.get( PLUGIN_ID );
