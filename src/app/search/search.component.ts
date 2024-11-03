@@ -32,7 +32,7 @@ export class SearchComponent{
     }
     this.debounce = setTimeout( () => {
       this.highlightText();
-    },250 );
+    }, 250 );
 
   }
 
@@ -47,7 +47,7 @@ export class SearchComponent{
       p.searchTextContent = p.textContent.replace( /<[^>]*>/g, '' );
       p.searchTextContent = p.searchTextContent.replace( /\u00A0/g, ' ' ); //nbsp
       const curSearchContent = p.searchTextContent;
-      p.searchTextContent = p.searchTextContent.replaceAll( new RegExp( this.searchPhrase!,'ig' ), `<span class="search-highlight">${this.searchPhrase}</span>` );
+      p.searchTextContent = p.searchTextContent.replaceAll( new RegExp( this.searchPhrase!, 'ig' ), `<span class="search-highlight">${this.searchPhrase}</span>` );
       if( curSearchContent.length !== p.searchTextContent.length ){
         this.matchNumber ++;
       }
