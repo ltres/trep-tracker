@@ -10,7 +10,7 @@ import{ ContainerComponentRegistryService }from'../../service/registry.service';
 import{ ContainerComponent }from'../base/base.component';
 import{ ModalService }from'../../service/modal.service';
 import{ layoutValues, tagIdentifiers }from'../../types/constants';
-import{  isPriorityArray,  isRecurringTask,  isStatusArray,  isTagArray, isTask }from'../../utils/guards';
+import{  isLane, isPriorityArray,  isRecurringTask,  isStatusArray,  isTagArray, isTask }from'../../utils/guards';
 import{ fadeInOut, slowFadeInOut }from'../../types/animations';
 import{ TagService }from'../../service/tag.service';
 
@@ -76,8 +76,11 @@ export class LaneComponent extends ContainerComponent implements OnInit{
 
   override ngOnInit(): void{
     super.ngOnInit();
-    this.subscriptions = this.boardService.detectChanges$.subscribe( () => {
-      this.cdr.detectChanges();
+    this.subscriptions = this.boardService.detectChanges$.subscribe( ( topic ) => {
+      // Run a detect when a detectChanges fires without topic or for this task
+      if( !topic || ( isLane( topic ) && topic.id === this.lane.id ) ){
+        this.cdr.detectChanges(); // core for the change detection
+      }
     } );
     this.subscriptions = this.boardService.lastSelectedTask$.subscribe( lastSelectedTask => {
       if( lastSelectedTask?.lane.id === this.lane.id ){

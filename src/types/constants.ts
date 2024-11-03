@@ -3,6 +3,11 @@ import{ DateDisplayConfig, Status, TagType }from"./types";
 import{ formatDate }from"../utils/date-utils";
 import{ ChartDataset, ChartOptions }from"chart.js/auto";
 
+export const boardDebounceDelay = {
+  small: 1000,
+  huge: 5000
+}
+
 export const ganttConfig = {
   baseTaskDuration : 2,
   shownMonths: 4,

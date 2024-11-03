@@ -10,7 +10,7 @@ import{ ContainerComponent }from'../base/base.component';
 import{ ClickService }from'../../service/click.service';
 import{  fromIsoString, formatDate, getDiffInDays }from'../../utils/date-utils';
 import{ setCaretPosition, isPlaceholder, hashCode, isArchivedOrDiscarded }from'../../utils/utils';
-import{  millisForMagnitudeStep, minOpacityAtTreshold, similarityTreshold }from'../../types/constants';
+import{  boardDebounceDelay, millisForMagnitudeStep, minOpacityAtTreshold, similarityTreshold }from'../../types/constants';
 import{ isProject, isRecurringTask, isRecurringTaskChild, isTask }from'../../utils/guards';
 import{ fadeInOut }from'../../types/animations';
 import{ TagService }from'../../service/tag.service';
@@ -82,8 +82,11 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
 
   override ngOnInit(): void{
     super.ngOnInit();
-    this.subscriptions = this.boardService.detectChanges$.subscribe( () => {
-      this.cdr.detectChanges(); // core for the change detection
+    this.subscriptions = this.boardService.detectChanges$.subscribe( ( topic ) => {
+      // Run a detect when a detectChanges fires without topic or for this task
+      if( !topic || ( isTask( topic ) && topic.id === this.task.id ) ){
+        this.cdr.detectChanges(); // core for the change detection
+      }  
     } );
     this.subscriptions = this.boardService.editorActiveTask$.subscribe( ( data: { lane: Lane, task: Task, startingCaretPosition: number | undefined } | undefined ) => {
       if( !data )return;
@@ -94,7 +97,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
         setTimeout( () => {
           this.editor?.nativeElement.focus();
           if( startingCaretPosition ){
-            setCaretPosition( this.editor?.nativeElement, Math.min( startingCaretPosition,this.task.textContent.length ) );
+            setCaretPosition( this.editor?.nativeElement, Math.min( startingCaretPosition, this.task.textContent.length ) );
           }
           //const editorInstance = this.editorComponent?.instance;
           //editorInstance.focus();
@@ -147,7 +150,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   activateEditorOnTask(){
     this.boardService.activateEditorOnTask( this.lane, this.task, undefined );
     this.boardService.clearSelectedTasks();
-    this.boardService.toggleTaskSelection( this.lane,this.task );
+    this.boardService.toggleTaskSelection( this.lane, this.task );
   }
 
   selectTask(){
@@ -170,18 +173,20 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
 
     if( !allOldPresent || !allNewPresent ){
       this.task.tags = $event;
-      this.debounceBoardUpdate();
+      this.boardService.publishBoardUpdate();
     }
   }
 
   debounceBoardUpdate( ){
+    this.boardService.pushDetectChanges( this.task )
     if( this.debounce ){
       clearTimeout( this.debounce );
     }
     this.debounce = setTimeout( () => {
       this.boardService.publishBoardUpdate();
-    },10 );
+    }, boardDebounceDelay.small );
   }
+
   updateStatus( $event: Status[] | Status | undefined ){
     if( Array.isArray( $event ) || $event === undefined ){
       throw new Error( 'Only one status can be set at a time' );
@@ -253,7 +258,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   }
 
   getDiffInDays( date1: ISODateString, date2: ISODateString ){
-    return getDiffInDays( date1,date2 )
+    return getDiffInDays( date1, date2 )
   }
 
   // Returns a number representing how much the dateToCheck is after or before the referenceDate in millisForMagnitudeStep
@@ -329,7 +334,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   }
 
   getMaxSimilarityIndex( t: Task, scale: boolean ):number{
-    const res = Math.round( t.similarTasks.reduce( ( acc,t ) => { return Math.max( acc,t.similarity )   },0 ) * 100 );
+    const res = Math.round( t.similarTasks.reduce( ( acc, t ) => { return Math.max( acc, t.similarity )   }, 0 ) * 100 );
     return scale ? ( ( ( ( res / 100 ) - similarityTreshold ) * ( ( 1-minOpacityAtTreshold )/( 1-similarityTreshold ) ) ) + minOpacityAtTreshold )*100 : res
   }
 

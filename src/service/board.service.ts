@@ -4,7 +4,7 @@ import{BehaviorSubject, Observable, Subject, debounceTime, map}from'rxjs';
 import{checkTaskSimilarity, eventuallyPatch, getDescendants, getProjectComputedStatus, initGanttData, isArchived, isArchivedOrDiscarded, isPlaceholder,  isStatic,}from'../utils/utils';
 import{StorageServiceAbstract}from'../types/storage';
 import{addUnitsToDate, fromIsoString, setDateSafe, shiftByRecurrence, toIsoString}from'../utils/date-utils';
-import{recurringChildrenLimit, similarityTreshold, statusValues}from'../types/constants';
+import{boardDebounceDelay, recurringChildrenLimit, similarityTreshold, statusValues}from'../types/constants';
 import{isTask, isLane, isTasks, assertIsRecurringTaskChild, isRecurringTask, isRecurringTaskChild, assertIsGanttTask, assertIsRecurringTask, isProject, assertIsTask}from'../utils/guards';
 import{ TagService }from'./tag.service';
 
@@ -14,7 +14,7 @@ import{ TagService }from'./tag.service';
 export class BoardService{
   private _selectedBoard$: BehaviorSubject<Board | undefined> = new BehaviorSubject<Board | undefined>( undefined );
 
-  private _detectChanges$: Subject<void> = new Subject<void>();
+  private _detectChanges$: Subject<Container | void> = new Subject<Container | void>();
 
   private _boards$: BehaviorSubject<Board[]> = new BehaviorSubject<Board[]>( [] );
   private _editorActiveTask$: BehaviorSubject<{ lane: Lane, task: Task, startingCaretPosition: number | undefined } | undefined> = new BehaviorSubject<{ lane: Lane, task: Task, startingCaretPosition: number | undefined } | undefined>( undefined );
@@ -56,7 +56,7 @@ export class BoardService{
     } );
 
     this._boards$.pipe(
-      debounceTime( 5000 )
+      debounceTime( boardDebounceDelay.huge )
     ).subscribe( boards => {
       // store the status after some inactivity:
       if( storageService.isStatusPresent() ){
@@ -66,7 +66,7 @@ export class BoardService{
     } )
 
     this._boards$.pipe(
-      debounceTime( 1000 )
+      debounceTime( boardDebounceDelay.small )
     ).subscribe( () => {
       // run expensive operations:
       const b = this._selectedBoard$.getValue()
@@ -82,6 +82,9 @@ export class BoardService{
       }
     } ) 
 
+    /**
+     * This is the main update cycle. Expect the various component to subscribe to the _boards$ as well.
+     */
     this._boards$.subscribe( b => {
       // const date = new Date();
       console.warn( 'Boards updated', this.boardUpdateCounter++ );
@@ -426,7 +429,7 @@ export class BoardService{
   get editorActiveTask$(): Observable<{ lane: Lane, task: Task, startingCaretPosition: number | undefined } | undefined>{
     return this._editorActiveTask$;
   }
-  get detectChanges$(): Observable<void>{
+  get detectChanges$(): Observable<Container | void>{
     return this._detectChanges$;
   }
 
@@ -460,6 +463,9 @@ export class BoardService{
   }
   isSelected( board: Board ){
     return this._selectedBoard$.getValue()?.id === board.id;
+  }
+  pushDetectChanges( topic: Container | void ){
+    this._detectChanges$.next( topic )
   }
   /**
      * Adds a floating lane to the specified board.

@@ -9,7 +9,7 @@ import{ KeyboardService }from'../../service/keyboard.service';
 import{ ContainerComponent }from'../base/base.component';
 import{ ContainerComponentRegistryService }from'../../service/registry.service';
 import{ layoutValues }from'../../types/constants';
-import{ isLane, isTask }from'../../utils/guards';
+import{ isBoard, isLane, isTask }from'../../utils/guards';
 import{ slowFadeInOut }from'../../types/animations';
 import{ TagService }from'../../service/tag.service';
 
@@ -111,8 +111,11 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
 
   override ngOnInit(): void{
     super.ngOnInit();
-    this.boardService.detectChanges$.subscribe( () => {
-      this.cdr.detectChanges();
+    this.subscriptions = this.boardService.detectChanges$.subscribe( ( topic ) => {
+      // Run a detect when a detectChanges fires without topic or for this task
+      if( !topic || ( isBoard( topic ) && topic.id === this.board.id ) ){
+        this.cdr.detectChanges(); // core for the change detection
+      }
     } );
   }
 
@@ -120,7 +123,10 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
     super.ngAfterViewInit();
 
     if( this.board.layout === 'absolute' )return;
-    this.subscriptions = this.boardService.detectChanges$.subscribe( () => {
+    this.subscriptions = this.boardService.detectChanges$.subscribe( ( topic ) => {
+      if( topic && !isLane( topic ) ){
+        return;
+      }
       // set the board height basing on the childrens size.
       const boardEl = this.el.nativeElement as HTMLElement;
       const laneEls = boardEl.querySelectorAll( 'lane' );
