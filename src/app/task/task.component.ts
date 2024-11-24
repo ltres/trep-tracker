@@ -14,6 +14,7 @@ import{  boardDebounceDelay, millisForMagnitudeStep, minOpacityAtTreshold, simil
 import{ isProject, isRecurringTask, isRecurringTaskChild, isTask }from'../../utils/guards';
 import{ fadeInOut }from'../../types/animations';
 import{ TagService }from'../../service/tag.service';
+import{ ChangePublisherService }from'../../service/change-publisher.service';
 
 @Component( {
   selector: 'task[task][lane][parent][board]',
@@ -49,16 +50,17 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   debounce: ReturnType<typeof setTimeout> | undefined;
 
   constructor(
+    protected override changePublisherService: ChangePublisherService,
+    protected override cdr: ChangeDetectorRef,
     protected boardService: BoardService,
     protected dragService: DragService,
     protected keyboardService: KeyboardService,
     protected override registry: ContainerComponentRegistryService,
     private clickService: ClickService,
     public override el: ElementRef,
-    protected cdr: ChangeDetectorRef,
     private tagService: TagService
   ){
-    super( registry, el );
+    super( changePublisherService, cdr, registry, el );
   }
   
   receiveDrop( container: Container ){
@@ -82,12 +84,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
 
   override ngOnInit(): void{
     super.ngOnInit();
-    this.subscriptions = this.boardService.detectChanges$.subscribe( ( topic ) => {
-      // Run a detect when a detectChanges fires without topic or for this task
-      if( !topic || ( isTask( topic ) && topic.id === this.task.id ) ){
-        this.cdr.detectChanges(); // core for the change detection
-      }  
-    } );
+
     this.subscriptions = this.boardService.editorActiveTask$.subscribe( ( data: { lane: Lane, task: Task, startingCaretPosition: number | undefined } | undefined ) => {
       if( !data )return;
       const{ lane, task, startingCaretPosition } = data;
@@ -99,6 +96,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
           if( startingCaretPosition ){
             setCaretPosition( this.editor?.nativeElement, Math.min( startingCaretPosition, this.task.textContent.length ) );
           }
+          this.cdr.detectChanges();
           //const editorInstance = this.editorComponent?.instance;
           //editorInstance.focus();
         }, 10 );
@@ -173,17 +171,17 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
 
     if( !allOldPresent || !allNewPresent ){
       this.task.tags = $event;
-      this.boardService.publishBoardUpdate();
+      this.changePublisherService.processChangesAndPublishUpdate( [this.task] )
     }
   }
 
   debounceBoardUpdate( ){
-    this.boardService.pushDetectChanges( this.task )
+    this.changePublisherService.processChangesAndPublishUpdate( [this.task] )
     if( this.debounce ){
       clearTimeout( this.debounce );
     }
     this.debounce = setTimeout( () => {
-      this.boardService.publishBoardUpdate();
+      this.changePublisherService.processChangesAndPublishUpdate( [this.task] )
     }, boardDebounceDelay.small );
   }
 
@@ -198,7 +196,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
       throw new Error( 'Only one priority can be set at a time' );
     }
     this.task.priority = $event;
-    this.boardService.publishBoardUpdate();
+    this.changePublisherService.processChangesAndPublishUpdate( [this.task] )
   }
   getToday(): ISODateString{
     return new Date().toISOString() as ISODateString;
@@ -218,7 +216,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
 
   storeNotes( ev: string ){
     this.task.notes = ev;
-    this.boardService.publishBoardUpdate();
+    this.changePublisherService.processChangesAndPublishUpdate( [this.task] )
   }
 
   setDates( pickerOutput: PickerOutput | undefined ){
@@ -234,7 +232,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
       }
     }
 
-    this.boardService.publishBoardUpdate();
+    this.changePublisherService.processChangesAndPublishUpdate( [this.task] )
 
     this.showDatePicker = false;
   }
@@ -245,7 +243,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   }
   toggleShowInGantt(){
     //this.task.includeInGantt = !this.task.includeInGantt;
-    this.boardService.publishBoardUpdate();
+    this.changePublisherService.processChangesAndPublishUpdate( [this.task] )
   }
 
   isRecurringTask( task: Task ){

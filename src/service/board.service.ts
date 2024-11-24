@@ -1,20 +1,19 @@
 import{Inject, Injectable, Injector, NgZone}from'@angular/core';
 import{Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, Timeframe, AddFloatingLaneParams, RecurringTask, Recurrence, GanttTask, RecurringTaskChild}from'../types/types';
-import{BehaviorSubject, Observable, Subject, debounceTime, map}from'rxjs';
+import{BehaviorSubject, Observable, debounceTime, map}from'rxjs';
 import{checkTaskSimilarity, eventuallyPatch, getDescendants, getProjectComputedStatus, initGanttData, isArchived, isArchivedOrDiscarded, isPlaceholder,  isStatic,}from'../utils/utils';
 import{StorageServiceAbstract}from'../types/storage';
 import{addUnitsToDate, fromIsoString, setDateSafe, shiftByRecurrence, toIsoString}from'../utils/date-utils';
 import{boardDebounceDelay, recurringChildrenLimit, similarityTreshold, statusValues}from'../types/constants';
 import{isTask, isLane, isTasks, assertIsRecurringTaskChild, isRecurringTask, isRecurringTaskChild, assertIsGanttTask, assertIsRecurringTask, isProject, assertIsTask}from'../utils/guards';
 import{ TagService }from'./tag.service';
+import{ logPerformance }from'../utils/performance-logger';
 
 @Injectable( {
   providedIn: 'root',
 } )
 export class BoardService{
   private _selectedBoard$: BehaviorSubject<Board | undefined> = new BehaviorSubject<Board | undefined>( undefined );
-
-  private _detectChanges$: Subject<Container | void> = new Subject<Container | void>();
 
   private _boards$: BehaviorSubject<Board[]> = new BehaviorSubject<Board[]>( [] );
   private _editorActiveTask$: BehaviorSubject<{ lane: Lane, task: Task, startingCaretPosition: number | undefined } | undefined> = new BehaviorSubject<{ lane: Lane, task: Task, startingCaretPosition: number | undefined } | undefined>( undefined );
@@ -76,9 +75,6 @@ export class BoardService{
         if( this.tagService && this.tagService.latestEditedTagsContainer ){
           this.tagService.restructureTags( this.tagService.latestEditedTagsContainer, b )
         }
-
-        // Finally publish an update
-        this._detectChanges$.next()
       }
     } ) 
 
@@ -86,6 +82,8 @@ export class BoardService{
      * This is the main update cycle. Expect the various component to subscribe to the _boards$ as well.
      */
     this._boards$.subscribe( b => {
+      logPerformance( "boards observable", true );
+
       // const date = new Date();
       console.warn( 'Boards updated', this.boardUpdateCounter++ );
       let allTasks: Task[] = [];
@@ -93,42 +91,22 @@ export class BoardService{
       const allArchivedTasks: Task[] = [];
       b.forEach( board => {
         board.children.forEach( lane => {
+          // lane.children = lane.children.filter(  c => !c.archivedDate )
           allTasks = allTasks.concat( lane.children );
           lane.children.forEach( task => {
-            if( !lane.isArchive ){
-              delete task.archivedDate; // tasks that were dragged out of the archive lane for some reason
-            }
             allTasks = allTasks.concat( getDescendants( task ).filter( t => isTask( t ) ) as Task[] );
           } );
           if( lane.isArchive ){
             allArchivedTasks.concat( getDescendants( lane ).filter( d => isTask( d ) ) )
           }
         } );
+        logPerformance( "boards observable" );
+
         // remove lanes without children
         // board.children = board.children.filter(l => l.children.length > 0);
 
         allLanes = allLanes.concat( board.children );
       } );
-      // recurring child management:
-      allTasks.filter( t => isRecurringTask( t ) ).filter( t => !isArchivedOrDiscarded( t ) && !isPlaceholder( t ) ).forEach( t => {
-        const recurrences = this.manageRecurringChildren( t );
-        allTasks = allTasks.concat( recurrences );
-      } )
-
-      // Update project states
-      allTasks.filter( t => isProject( t ) && !isArchivedOrDiscarded( t ) ).forEach( p => {
-        const computedStatus = getProjectComputedStatus( p );
-        if( computedStatus !== p.status ){
-          p.beforeProjectStatus = p.status
-          this.updateStatus( undefined, p, computedStatus, true );
-        }
-      } )
-
-      // Update ex-project status
-      allTasks.filter( t => !isProject( t ) && t.beforeProjectStatus && t.beforeProjectStatus !== t.status ).forEach( t => {
-        this.updateStatus( undefined, t, t.beforeProjectStatus, true );
-        delete t.beforeProjectStatus
-      } )
 
       this._allTasks$.next( allTasks );
       this._allArchivedTasksIds$.next( allArchivedTasks.map( t => t.id ) )
@@ -139,7 +117,8 @@ export class BoardService{
       allParents.filter( p => !isLane( p ) || !p.isArchive ).forEach( p => p.children.forEach( c => c.parentId = p.id ) )
 
       this._allParents$.next( allParents );
-      this._detectChanges$.next()
+      logPerformance( "boards observable" );
+
     } );
   }
 
@@ -429,10 +408,6 @@ export class BoardService{
   get editorActiveTask$(): Observable<{ lane: Lane, task: Task, startingCaretPosition: number | undefined } | undefined>{
     return this._editorActiveTask$;
   }
-  get detectChanges$(): Observable<Container | void>{
-    return this._detectChanges$;
-  }
-
   get selectedBoard(): Board | undefined{
     return this._selectedBoard$.getValue();
   }
@@ -464,9 +439,7 @@ export class BoardService{
   isSelected( board: Board ){
     return this._selectedBoard$.getValue()?.id === board.id;
   }
-  pushDetectChanges( topic: Container | void ){
-    this._detectChanges$.next( topic )
-  }
+
   /**
      * Adds a floating lane to the specified board.
      * The floating lane contains a single task and is positioned at the specified coordinates.
@@ -631,19 +604,24 @@ export class BoardService{
     }
   }
 
-  getTaskInDirection( tasks: Task[] | undefined, direction: 'up' | 'down' | 'left' | 'right' ): Task | undefined{
+  //@TimingDecorator()
+  getTaskInDirection( tasks: Task[] | undefined, parent: Lane, direction: 'up' | 'down' | 'left' | 'right' ): Task | undefined{
+    logPerformance( "getTaskInDirection", true );
+
     if( !tasks || tasks.length === 0 ){
       return;
     }
 
     // get outer parent of the tasks
-    const parent = this.findParentLane( tasks );
+    //const parent = this.findParentLane( tasks );
     if( !parent ){
-      return;
+      throw new Error( "Cannot find parent for tasks "  + tasks.map( t => t.id ) )
     }
     // let taskToFind = this.getTopLevelTasks(tasks);
     // get all the tasks in the lane, including descendants, in an ordered array
     const orderedLinearizedTasks = getDescendants( parent ).filter( c => isTask( c ) ) as Task[];
+    logPerformance( "getTaskInDirection" );
+
     let index = 0;
     if( direction === 'up' || direction === 'left' ){
       // Get smalles index from the tasks
@@ -660,6 +638,7 @@ export class BoardService{
         index = internalIdx > index ? internalIdx : index;
       }
     }
+    logPerformance( "getTaskInDirection" );
 
     return orderedLinearizedTasks[direction === 'up' || direction === 'left' ? index - 1 : index + 1];
   }
@@ -695,6 +674,7 @@ export class BoardService{
     if( !objs || objs.length === 0 ){
       return;
     }
+    
     let parent = this.findDirectParent( objs, true );
 
     while( parent != null ){
@@ -719,7 +699,7 @@ export class BoardService{
     if( !tasks || tasks.length === 0 ){
       return;
     }
-    const boards = this._boards$.getValue();
+    //const boards = this._boards$.getValue();
 
     tasks = this.getTopLevelTasks( tasks );
 
@@ -745,7 +725,7 @@ export class BoardService{
     }
 
     // Publish the changes
-    this._boards$.next( boards );
+    //this._boards$.next( boards );
 
   }
 
@@ -763,7 +743,7 @@ export class BoardService{
       console.warn( `Parent is a placeholder` );
       return;
     }
-    const boards = this._boards$.getValue();
+    //const boards = this._boards$.getValue();
 
     // incoming tasks could be related one another. Keep only the top level tasks
     children = this.getTopLevelTasks( children );
@@ -795,10 +775,13 @@ export class BoardService{
     } );
 
     // Publish the changes
-    this._boards$.next( boards );
+    //this._boards$.next( boards );
   }
 
+  //@TimingDecorator()
   switchPosition( selectedTasks: Task[] | undefined, direction: 'ArrowUp' | 'ArrowDown' ){
+    logPerformance( "switchPosition", true );
+
     if( !selectedTasks || selectedTasks.length === 0 ){
       return;
     }
@@ -808,8 +791,11 @@ export class BoardService{
             throw new Error(`Cannot switch position of a task with its descendants`);
         }*/
     selectedTasks = this.getTopLevelTasks( selectedTasks );
+    logPerformance( "switchPosition" );
 
     const parent = this.findDirectParent( selectedTasks );
+    logPerformance( "switchPosition" );
+
     if( !parent ){
       throw new Error( 'Cannot find parent of the selected tasks' );
     }
@@ -825,15 +811,16 @@ export class BoardService{
     }else if( direction === 'ArrowDown' && index < siblings.length - 1 ){
       parent.children.splice( index, selectedTasks.length + 1, ...[siblings[index + selectedTasks.length]].concat( selectedTasks ) );
     }
+    logPerformance( "switchPosition" );
 
-    this.publishBoardUpdate();
+    //this.publishBoardUpdate();
   }
 
   removeChildrenAndAddAsSibling( parent: Container, children: Task[] | undefined ){
     if( !children || children.length === 0 ){
       return;
     }
-    const boards = this._boards$.getValue();
+    //const boards = this._boards$.getValue();
 
     children = this.getTopLevelTasks( children );
 
@@ -850,7 +837,7 @@ export class BoardService{
     }
 
     // Publish the changes
-    this._boards$.next( boards );
+    //this._boards$.next( boards );
   }
 
   /**
@@ -891,10 +878,6 @@ export class BoardService{
     return has;
   }
 
-  publishBoardUpdate(){
-    this._boards$.next( this._boards$.getValue() );
-  }
-
   deleteLane( lane: Lane ){
     if( lane.children.length > 0 ){
       throw new Error( 'Cannot delete lane with children' );
@@ -905,16 +888,16 @@ export class BoardService{
       throw new Error( `Cannot find board for lane with id ${lane.id}` );
     }
     board.children = board.children.filter( l => l.id !== lane.id );
-    this._boards$.next( boards );
+    //this._boards$.next( boards );
   }
   deleteTask( task: Task ){
-    const boards = this._boards$.getValue();
+    //const boards = this._boards$.getValue();
     const parent = this.findDirectParent( [task] );
     if( !parent ){
       throw new Error( `Cannot find parent for task with id ${task.id}` );
     }
     parent.children = parent.children.filter( c => c.id !== task.id );
-    this._boards$.next( boards );
+    //this._boards$.next( boards );
   }
 
   // Sorts first-level child by priority, and then by status
@@ -949,7 +932,7 @@ export class BoardService{
     }
 
     lane.children = children;
-    this.publishBoardUpdate();
+    //this.publishBoardUpdate();
   }
 
   archiveDones( board: Board, lane: Lane ){
@@ -966,13 +949,13 @@ export class BoardService{
         let descendants = getDescendants(lane);
         descendants.forEach(d => d.children = d.children.filter(t => !t.archived));
         */
-    this.publishBoardUpdate();
+    //this.publishBoardUpdate();
   }
 
   archive( board: Board, task: Task ){
     task.archivedDate = toIsoString( new Date() );
     this.evaluateArchiveMove( board, task )
-    this.publishBoardUpdate();
+    //this.publishBoardUpdate();
   }
 
   focusSearch(){
@@ -997,13 +980,13 @@ export class BoardService{
       colChildren.splice( newIndex, 0, lane );
     }
     colChildren.forEach( ( c, i ) => c.layouts[board.layout].order = i );
-    this.publishBoardUpdate();
+    //this.publishBoardUpdate();
   }
   moveToBoard( currentBoard: Board, lane:Lane, targetBoard: Board ){
     currentBoard.children = currentBoard.children.filter( c => c.id !== lane.id );
     targetBoard.children.unshift( lane );
     lane.parentId = targetBoard.id;
-    this.publishBoardUpdate();
+    //this.publishBoardUpdate();
   }
   
   /**
@@ -1045,7 +1028,7 @@ export class BoardService{
       delete task.gantt?.recurrence;
     }
 
-    this.publishBoardUpdate();
+    //this.publishBoardUpdate();
     return task;
   }
 

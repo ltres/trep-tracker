@@ -36,7 +36,7 @@ export class ContenteditableDirective implements ControlValueAccessor{
     
     @HostListener( 'keyup', ['$event'] )
     onInteract( $event:KeyboardEvent ): void{
-      if( ( $event.shiftKey || $event.ctrlKey ) && ( $event.key === 'ArrowDown' || $event.key === 'ArrowUp' ) ){
+      if(  $event.key === 'ArrowDown' || $event.key === 'ArrowUp' || $event.key === 'ArrowLeft' || $event.key === 'ArrowRight'  ){
         // Task is being selected or moved
         return;
       }

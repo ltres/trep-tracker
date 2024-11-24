@@ -16,6 +16,7 @@ import{ ContainerComponent }from'../base/base.component';
 import{ isLane }from'../../utils/guards';
 import{ dragStartTreshold }from'../../types/constants';
 import{ Subscription, take }from'rxjs';
+import{ ChangePublisherService }from'../../service/change-publisher.service';
 
 @Directive( {
   selector: '[draggableDir][containerEl][layout]',
@@ -44,6 +45,7 @@ export class DraggableDirective implements AfterViewChecked, AfterViewInit{
   dragCheckSub: Subscription | undefined;
 
   constructor(
+    protected changePublisherService: ChangePublisherService,
     public el: ElementRef,
     private ngZone: NgZone,
     private dragService: DragService,
@@ -108,7 +110,7 @@ export class DraggableDirective implements AfterViewChecked, AfterViewInit{
             x: ( $event.clientX - this.deltaX + window.scrollX ),
             y: ( $event.clientY - this.deltaY + window.scrollY ),
           }
-          this.boardService.publishBoardUpdate()
+          this.changePublisherService.processChangesAndPublishUpdate( [this.draggableDir] );
         }
       } )
 
@@ -142,7 +144,7 @@ export class DraggableDirective implements AfterViewChecked, AfterViewInit{
     const movedY = this.initialCursorY - $event.clientY
     const movedX = this.initialCursorX - $event.clientX
 
-    if( Math.sqrt( Math.pow( movedY,2 ) + Math.pow( movedX,2 ) ) > dragStartTreshold ){
+    if( Math.sqrt( Math.pow( movedY, 2 ) + Math.pow( movedX, 2 ) ) > dragStartTreshold ){
       // cursor has moved for a certain treshold, publish the drag event
       this.onDragStart.emit( $event );
       this.dragService.publishDragStartEvent( this.draggableDir )
@@ -206,7 +208,8 @@ export class DraggableDirective implements AfterViewChecked, AfterViewInit{
     this.resizeTimeout = setTimeout( () => {
       ( this.draggableDir as Lane ).layouts[this.layout].width = this.el.nativeElement.getBoundingClientRect().width
       this.onResize.emit( this.el.nativeElement.getBoundingClientRect().width );
-      this.boardService.publishBoardUpdate();
+      this.changePublisherService.processChangesAndPublishUpdate( [this.draggableDir] );
+
     }, 500 );
   }
 }

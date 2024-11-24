@@ -1,5 +1,6 @@
 import{ Component, ElementRef, ViewChild }from'@angular/core';
 import{ BoardService }from'../../service/board.service';
+import{ ChangePublisherService }from'../../service/change-publisher.service';
 
 @Component( {
   selector: 'search',
@@ -15,6 +16,7 @@ export class SearchComponent{
   private debounce: ReturnType<typeof setTimeout> | undefined;
 
   constructor(
+    protected changePublisherService: ChangePublisherService,
     private boardService: BoardService,
     private el: ElementRef,
   ){
@@ -50,9 +52,10 @@ export class SearchComponent{
       p.searchTextContent = p.searchTextContent.replaceAll( new RegExp( this.searchPhrase!, 'ig' ), `<span class="search-highlight">${this.searchPhrase}</span>` );
       if( curSearchContent.length !== p.searchTextContent.length ){
         this.matchNumber ++;
+        this.changePublisherService.processChangesAndPublishUpdate( [p] );
       }
     } )
-    this.boardService.publishBoardUpdate()
+
   }
 
   private removeHighlights(){
@@ -68,7 +71,7 @@ export class SearchComponent{
   onBlur(){
     this.removeHighlights();
     this.boardService.blurSearch();
-    this.boardService.publishBoardUpdate();
+    // this.boardService.publishBoardUpdate();
   }
 
   private focusInput( selectAll: boolean ){

@@ -206,11 +206,15 @@ export function checkTaskSimilarity( task1: Task, task2: Task ): number{
  * @param container - The container whose descendants are to be retrieved.
  * @returns An array of Container objects representing the descendants.
  */
+// @TimingDecorator()
 export function getDescendants( container: Container ): Container[]{
+  //logPerformance( "getDescendants", true );
+
   let descendants: Container[] = [];
   for( const child of container.children ){
     descendants = descendants.concat( child ).concat( getDescendants( child ) );
   }
+  //logPerformance( "getDescendants" );
 
   return descendants;
 }

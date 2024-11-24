@@ -48,6 +48,7 @@ import{ ColorsService }from'../service/colors.service';
 import{ ChartComponent }from'./chart/chart.component';
 import{ ChartService }from'../service/chart.service';
 import{ GanttButtonComponent }from'./gantt-button/gantt-button.component';
+import{ ChangePublisherService }from'../service/change-publisher.service';
 
 @NgModule( { declarations: [
   AppComponent,
@@ -95,6 +96,7 @@ imports: [
   
 ], 
 providers: [
+  ChangePublisherService,
   BoardService,
   KeyboardService,
   DragService,

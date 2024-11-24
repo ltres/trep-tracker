@@ -117,20 +117,9 @@
             date: task.gantt.nextRecurrenceEndDate ?? task.gantt.endDate,
           }"
         ></ng-container>
-        <span class="translucent"> ({{ getDiffInDays(this.task.gantt.startDate, this.task.gantt.endDate) }} day{{ getDiffInDays(this.task.gantt.startDate, this.task.gantt.endDate) != 1 ? 's' : '' }})</span>
+        <span *ngIf="this.task.gantt" class="translucent"> ({{ getDiffInDays(this.task.gantt.startDate, this.task.gantt.endDate) }} day{{ getDiffInDays(this.task.gantt.startDate, this.task.gantt.endDate) != 1 ? 's' : '' }})</span>
       }
     }
-  }
-
-  @if (task.status === 'discarded') {
-    <span class="translucent">, discarded </span>
-    <ng-container
-      [ngTemplateOutlet]="date"
-      [ngTemplateOutletContext]="{
-        date: this.task.dates.discarded?.enter,
-      }"
-    ></ng-container>
-    <time-bar [container]="task" [boardDatesConfig]="this.board.datesConfig"></time-bar>
   }
 
   @if (task.status === 'completed') {

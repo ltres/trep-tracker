@@ -8,6 +8,7 @@ import{ layoutValues }from'../../types/constants';
 import ISO6391 from'iso-639-1';
 import{ getTimezoneShortName }from'../../utils/date-utils';
 import{ TagService }from'../../service/tag.service';
+import{ ChangePublisherService }from'../../service/change-publisher.service';
 
 @Component( {
   selector: 'board-toolbar[board]',
@@ -27,6 +28,7 @@ export class BoardToolbarComponent implements AfterViewInit{
   showActions: boolean = true;
 
   constructor(
+    protected changePublisherService: ChangePublisherService,
     protected boardService: BoardService,
     protected modalService: ModalService,
     private tagService: TagService
@@ -41,7 +43,7 @@ export class BoardToolbarComponent implements AfterViewInit{
 
   setLayout( layout: Layout ){
     this.board.layout = layout;
-    this.boardService.publishBoardUpdate();
+    this.changePublisherService.processChangesAndPublishUpdate( [this.board] );
   }
 
   debounceBoardUpdate(){
@@ -49,7 +51,8 @@ export class BoardToolbarComponent implements AfterViewInit{
       clearTimeout( this.debounce );
     }
     this.debounce = setTimeout( () => {
-      this.boardService.publishBoardUpdate();
+      this.changePublisherService.processChangesAndPublishUpdate( [this.board] );
+
     }, 500 );
   }
 

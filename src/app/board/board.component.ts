@@ -9,9 +9,10 @@ import{ KeyboardService }from'../../service/keyboard.service';
 import{ ContainerComponent }from'../base/base.component';
 import{ ContainerComponentRegistryService }from'../../service/registry.service';
 import{ layoutValues }from'../../types/constants';
-import{ isBoard, isLane, isTask }from'../../utils/guards';
+import{ isLane, isTask }from'../../utils/guards';
 import{ slowFadeInOut }from'../../types/animations';
 import{ TagService }from'../../service/tag.service';
+import{ ChangePublisherService }from'../../service/change-publisher.service';
 
 @Component( {
   selector: 'board',
@@ -54,15 +55,16 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
   debounce: ReturnType<typeof setTimeout> | undefined;
 
   constructor(
+    protected override changePublisherService: ChangePublisherService,
+    protected override cdr: ChangeDetectorRef,
     protected boardService: BoardService,
     protected keyboardService: KeyboardService,
     protected override registry: ContainerComponentRegistryService,
     protected dragService: DragService,
     public override el: ElementRef,
-    private cdr: ChangeDetectorRef,
     private tagService: TagService
   ){
-    super( registry, el );
+    super( changePublisherService, cdr, registry, el );
   }
    
   receiveDrop( column: number, layout: Layout, preceedingLane: Lane | undefined, container: Container, event?: DragEvent ){
@@ -79,7 +81,8 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
           child.layouts[layout].order = index;
         } )
 
-        this.boardService.publishBoardUpdate()
+        this.changePublisherService.processChangesAndPublishUpdate( [this.board] )
+
       }
     }else if( isTask( container ) ){
       const params: AddFloatingLaneParams ={
@@ -102,7 +105,7 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
         child.layouts[layout].order = index;
       } )
 
-      this.boardService.publishBoardUpdate()
+      this.changePublisherService.processChangesAndPublishUpdate( [this.board] )
 
     }else{
       throw new Error( "Object not droppable on board" )
@@ -111,20 +114,15 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
 
   override ngOnInit(): void{
     super.ngOnInit();
-    this.subscriptions = this.boardService.detectChanges$.subscribe( ( topic ) => {
-      // Run a detect when a detectChanges fires without topic or for this task
-      if( !topic || ( isBoard( topic ) && topic.id === this.board.id ) ){
-        this.cdr.detectChanges(); // core for the change detection
-      }
-    } );
+
   }
 
   override ngAfterViewInit(): void{
     super.ngAfterViewInit();
 
     if( this.board.layout === 'absolute' )return;
-    this.subscriptions = this.boardService.detectChanges$.subscribe( ( topic ) => {
-      if( topic && !isLane( topic ) ){
+    this.subscriptions = this.changePublisherService.pushedChanges$.subscribe( ( containers ) => {
+      if( !containers.find( c => c.id === this.board.id ) ){
         return;
       }
       // set the board height basing on the childrens size.
@@ -196,7 +194,7 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
       clearTimeout( this.debounce );
     }
     this.debounce = setTimeout( () => {
-      this.boardService.publishBoardUpdate();
+      this.changePublisherService.processChangesAndPublishUpdate( [this.board] )
     }, 500 );
   }
 
@@ -206,7 +204,7 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
 
   setLayout( layout: Layout ){
     this.board.layout = layout;
-    this.boardService.publishBoardUpdate();
+    this.changePublisherService.processChangesAndPublishUpdate( [this.board] )
   }
 
   getLayouts(): Layout[]{

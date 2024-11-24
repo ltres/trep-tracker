@@ -7,6 +7,7 @@ import{ toIsoString, ganttDateToDate, formatDate }from'../../utils/date-utils';
 import{ getFirstMentionTag, initGanttData, getTaskBackgroundColor }from'../../utils/utils';
 import{  ganttConfig, tagTypes }from'../../types/constants';
 import{ assertIsGanttTask, isRecurringTask }from'../../utils/guards';
+import{ ChangePublisherService }from'../../service/change-publisher.service';
 
 @Component( {
   selector: 'gantt[tasks][board]',
@@ -25,6 +26,8 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
   dp: {destructor: () => unknown} | undefined; // data processor
   
   constructor(
+    protected changePublisherService: ChangePublisherService,
+
     protected boardService: BoardService,
     protected applicationRef: ApplicationRef
   ){ }
@@ -117,7 +120,8 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
       }
     } );
 
-    this.boardService.publishBoardUpdate();
+    this.changePublisherService.processChangesAndPublishUpdate( [t] );
+
     /*
     if( isRecurringTask(toUpdate) ){
       // A recurrence step has been modified. We should redraw the related recurrences:
@@ -161,15 +165,17 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
       taskId: target.id,
       linkId: data.id.toString(),
     } );
-    this.boardService.publishBoardUpdate();
+    this.changePublisherService.processChangesAndPublishUpdate( [source, target] );
+
   }
   deleteLink( id: string ){
     this.boardService.allTasks?.forEach( task => {
       if( task.gantt?.successors ){
         task.gantt.successors = task.gantt.successors.filter( p => p.linkId !== id );
+        this.changePublisherService.processChangesAndPublishUpdate( [task] );
       }
     } );
-    this.boardService.publishBoardUpdate();
+    
   }
 
   private toDhtmlxGanttDataModel( tasks: Task[], convertedTasks: DhtmlxTask[], convertedLinks: DhtmlxLink[], parentId: string | undefined, tasksCssClass: string | undefined ): { convertedTasks: DhtmlxTask[], convertedLinks: DhtmlxLink[] }{

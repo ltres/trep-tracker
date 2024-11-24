@@ -10,9 +10,10 @@ import{ ContainerComponentRegistryService }from'../../service/registry.service';
 import{ ContainerComponent }from'../base/base.component';
 import{ ModalService }from'../../service/modal.service';
 import{ layoutValues, tagIdentifiers }from'../../types/constants';
-import{  isLane, isPriorityArray,  isRecurringTask,  isStatusArray,  isTagArray, isTask }from'../../utils/guards';
+import{  isPriorityArray,  isRecurringTask,  isStatusArray,  isTagArray, isTask }from'../../utils/guards';
 import{ fadeInOut, slowFadeInOut }from'../../types/animations';
 import{ TagService }from'../../service/tag.service';
+import{ ChangePublisherService }from'../../service/change-publisher.service';
 
 @Component( {
   selector: 'lane[lane][board]',
@@ -44,16 +45,17 @@ export class LaneComponent extends ContainerComponent implements OnInit{
   showDatePicker: boolean = false;
 
   constructor(
+    protected override changePublisherService: ChangePublisherService,
+    protected override cdr: ChangeDetectorRef,
     protected boardService: BoardService,
     protected dragService: DragService,
     protected keyboardService: KeyboardService,
     protected override registry: ContainerComponentRegistryService,
     protected modalService: ModalService,
     public override el: ElementRef,
-    private cdr: ChangeDetectorRef,
     private tagService: TagService
   ){
-    super( registry, el );
+    super( changePublisherService, cdr, registry, el );
 
   }
   receiveDrop( container: Container ){
@@ -76,19 +78,14 @@ export class LaneComponent extends ContainerComponent implements OnInit{
 
   override ngOnInit(): void{
     super.ngOnInit();
-    this.subscriptions = this.boardService.detectChanges$.subscribe( ( topic ) => {
-      // Run a detect when a detectChanges fires without topic or for this task
-      if( !topic || ( isLane( topic ) && topic.id === this.lane.id ) ){
-        this.cdr.detectChanges(); // core for the change detection
-      }
-    } );
+
     this.subscriptions = this.boardService.lastSelectedTask$.subscribe( lastSelectedTask => {
       if( lastSelectedTask?.lane.id === this.lane.id ){
         this.active = true;
       }else{
         this.active = false;
       }
-      this.cdr.detectChanges();
+      //this.cdr.detectChanges();
     } );
   }
 
@@ -153,7 +150,7 @@ export class LaneComponent extends ContainerComponent implements OnInit{
 
   toggleShowChildren(){
     this.lane.showChildren = !this.lane.showChildren;
-    this.boardService.publishBoardUpdate();
+    this.changePublisherService.processChangesAndPublishUpdate( [this.lane] )
   }
   archiveDones(){
     this.boardService.archiveDones( this.board, this.lane );
@@ -176,7 +173,7 @@ export class LaneComponent extends ContainerComponent implements OnInit{
       clearTimeout( this.debounce );
     }
     this.debounce = setTimeout( () => {
-      this.boardService.publishBoardUpdate();
+      this.changePublisherService.processChangesAndPublishUpdate( [this.lane] )
     }, 500 );
   }
   updateStatus( $event: Status[] | Status | undefined ){
@@ -189,7 +186,7 @@ export class LaneComponent extends ContainerComponent implements OnInit{
   }
   togglePriority( prio: Priority[] | Priority | undefined ){
     this.lane.priority = Array.isArray( prio ) ? prio : ( prio ? [prio] : undefined );
-    this.boardService.publishBoardUpdate();
+    this.changePublisherService.processChangesAndPublishUpdate( [this.lane] )
   }
 
   moveLane( direction: 'right' | 'left' | 'up' | 'down' ){
@@ -200,7 +197,7 @@ export class LaneComponent extends ContainerComponent implements OnInit{
       this.boardService.moveLaneInColumn( this.board, this.lane );
     }
 
-    this.boardService.publishBoardUpdate();
+    this.changePublisherService.processChangesAndPublishUpdate( [this.lane] )
   }
   canMove( direction: 'right' | 'left' | 'up' | 'down' ): boolean{
     if( direction === 'up' ){
@@ -233,7 +230,7 @@ export class LaneComponent extends ContainerComponent implements OnInit{
   }
   toggleCollapse(){
     this.lane.collapsed = !this.lane.collapsed
-    this.boardService.publishBoardUpdate();
+    this.changePublisherService.processChangesAndPublishUpdate( [this.lane] )
   }
 
   openDatePicker(){
@@ -246,7 +243,7 @@ export class LaneComponent extends ContainerComponent implements OnInit{
     }
     this.lane.startTimeframe = event.timeframe[0] !== 'no' ? event.timeframe[0] : undefined;
     this.lane.endTimeframe = event.timeframe[1] !== 'no' ? event.timeframe[1] : undefined;
-    this.boardService.publishBoardUpdate();
+    this.changePublisherService.processChangesAndPublishUpdate( [this.lane] )
     this.showDatePicker = false;
   }
 
