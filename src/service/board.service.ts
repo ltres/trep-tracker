@@ -5,8 +5,7 @@ import{checkTaskSimilarity, eventuallyPatch, getDescendants, getProjectComputedS
 import{StorageServiceAbstract}from'../types/storage';
 import{addUnitsToDate, fromIsoString, setDateSafe, shiftByRecurrence, toIsoString}from'../utils/date-utils';
 import{boardDebounceDelay, recurringChildrenLimit, similarityTreshold, statusValues}from'../types/constants';
-import{isTask, isLane, isTasks, assertIsRecurringTaskChild, isRecurringTask, isRecurringTaskChild, assertIsGanttTask, assertIsRecurringTask, isProject, assertIsTask}from'../utils/guards';
-import{ TagService }from'./tag.service';
+import{isTask, isLane, isTasks, assertIsRecurringTaskChild, isRecurringTask, isRecurringTaskChild, assertIsGanttTask, assertIsRecurringTask, isProject, assertIsTask, isBoard}from'../utils/guards';
 import{ logPerformance }from'../utils/performance-logger';
 import{ ChangePublisherService }from'./change-publisher.service';
 
@@ -32,7 +31,6 @@ export class BoardService{
 
   private boardUpdateCounter: number = 0;
   private statusStoredCounter: number = 0;
-  private tagService!: TagService;
 
   constructor(
     private injector: Injector,
@@ -40,7 +38,6 @@ export class BoardService{
         @Inject( 'StorageServiceAbstract' ) private storageService: StorageServiceAbstract,
         private changePublisherService: ChangePublisherService
   ){
-    setTimeout( () => this.tagService = injector.get( TagService ) );
     setTimeout( () => this.changePublisherService = injector.get( ChangePublisherService ) );
 
     const latestStatus = this.storageService.getStatus();
@@ -57,9 +54,10 @@ export class BoardService{
       }
     } );
 
-    this._boards$.pipe(
+    this.changePublisherService.pushedChanges$.pipe(
       debounceTime( boardDebounceDelay.huge )
-    ).subscribe( boards => {
+    ).subscribe( ()=> {
+      const boards = this._boards$.getValue();
       // store the status after some inactivity:
       if( storageService.isStatusPresent() ){
         console.warn( 'Status stored', this.statusStoredCounter++ );
@@ -67,7 +65,7 @@ export class BoardService{
       }
     } )
 
-    this._boards$.pipe(
+    this.changePublisherService.pushedChanges$.pipe(
       debounceTime( boardDebounceDelay.small )
     ).subscribe( () => {
       // run expensive operations:
@@ -75,9 +73,6 @@ export class BoardService{
       if( b ){
         // detect similarities in tasks:
         this.manageSimilaritiesInTasks( b )
-        if( this.tagService && this.tagService.latestEditedTagsContainer ){
-          this.tagService.restructureTags( this.tagService.latestEditedTagsContainer, b )
-        }
       }
     } ) 
 
@@ -127,15 +122,13 @@ export class BoardService{
     } );
   }
 
-  addNewBoard(){
+  addNewBoard(): Board{
     const board = getNewBoard();
     const firstLane = getNewLane( board, false )
     board.children = [firstLane];
     this._boards$.next( [...this._boards$.getValue(), board] );
-  }
 
-  addLane( board: Board ){
-    this._boards$.next( [...this._boards$.getValue(), board] );
+    return board;
   }
 
   getLanes$( board: Board, columnNumber?: number ): Observable<Lane[]>{
@@ -686,6 +679,23 @@ export class BoardService{
     return undefined;
   }
 
+  findParentBoard( objs: Container[] | undefined ): Board | undefined{
+    if( !objs || objs.length === 0 ){
+      return;
+    }
+    
+    let parent = this.findDirectParent( objs, true );
+
+    while( parent != null ){
+      const grandParent = this.findDirectParent( [parent], true );
+      if( isBoard( parent ) ){
+        return parent;
+      }
+      parent = grandParent;
+    }
+    return undefined;
+  }
+
   /**
    * Adds the tasks as a sibling (before or after) the provided task. Removes the tasks from other parents.
    * @param parent 
@@ -770,7 +780,6 @@ export class BoardService{
     // remove custom coordinates from children
     children.forEach( c => {
       delete c.coordinates;
-      //this.tagService.extractAndUpdateTags(c);
     } );
 
     // Publish the changes

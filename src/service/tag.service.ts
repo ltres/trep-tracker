@@ -150,7 +150,8 @@ export class TagService{
    * @param container 
    * @param b 
    */
-  restructureTags( container: Container, b: Board ){
+  restructureTags( container: Container, b: Board ): Container[]{
+    const modified: Container[] = [];
     const tags = container.tags;
     const boardContainers = getDescendants( b ).filter( d => ( isTask( d ) && !isPlaceholder( d ) && !isArchivedOrDiscarded( d ) ) || !isTask( d )
     );
@@ -158,6 +159,7 @@ export class TagService{
       for( const toEval of boardContainers ){
         const matchingTag = toEval.tags.find( t => t.tag.toLowerCase() === tag.tag.toLowerCase() );
         if( matchingTag && matchingTag.type !== tag.type ){
+          modified.push( toEval );
           // match, let's verify the symbol
           console.log( `Difference: ${JSON.stringify( matchingTag )}, ${JSON.stringify( tag )}` )
           // Symbol is different. fix the matching tag:
@@ -171,6 +173,7 @@ export class TagService{
         }
       }
     }
+    return modified;
   }
 
   setLatestEditedTagsContainer( c : Container ){

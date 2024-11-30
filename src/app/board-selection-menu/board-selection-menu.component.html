@@ -1,5 +1,5 @@
 <div class="flex column g-1 p-x-05" *ngIf="open">
-  <div *ngFor="let board of boards" class="board-selection flex column">
+  <div *ngFor="let board of boardService.boards$ | async" class="board-selection flex column">
     <div [class.translucent]="!this.boardService.isSelected(board)" class="priorities flex justify-content-end">
       <ng-container *ngFor="let priority of availablePriorities">
         @if (boardService.getTasksHavingPriorityCount$(board, priority) | async; as taskCount) {

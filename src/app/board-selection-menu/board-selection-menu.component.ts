@@ -1,8 +1,9 @@
-import{ AfterContentInit, Component }from'@angular/core';
+import{ Component }from'@angular/core';
 import{ BoardService }from'../../service/board.service';
 import{ Board, Priority }from'../../types/types';
 import{ Observable }from'rxjs';
 import{ priorityValues }from'../../types/constants';
+import{ ChangePublisherService }from'../../service/change-publisher.service';
 
 @Component( {
   selector: 'board-selection-menu',
@@ -10,29 +11,26 @@ import{ priorityValues }from'../../types/constants';
   templateUrl: './board-selection-menu.component.html',
   styleUrl: './board-selection-menu.component.scss',
 } )
-export class BoardSelectionMenuComponent implements AfterContentInit{
+export class BoardSelectionMenuComponent{
 
-  boards: Board[] | undefined;
   availablePriorities: readonly Priority[] = priorityValues;
-
   open: boolean = true;
 
-  constructor( protected boardService: BoardService ){}
+  constructor( 
+    protected boardService: BoardService,
+    protected changePublisherService: ChangePublisherService
+  ){}
 
-  ngAfterContentInit(): void{
-    this.boardService.boards$.subscribe( boards => {
-      setTimeout( () => { this.boards = boards; } );
-    } );
-  }
   addBoard(){
     this.boardService.addNewBoard();
+    this.changePublisherService.processChangesAndPublishUpdate( [] );
   }
   selectBoard( board: Board ){
     this.boardService.setSelectedBoard( board );
   }
 
   getTaskCount( board: Board, priority: Priority ): Observable<number>{
-    return this.boardService.getTasksHavingPriorityCount$( board,priority );
+    return this.boardService.getTasksHavingPriorityCount$( board, priority );
   }
 
 }

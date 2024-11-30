@@ -48,9 +48,6 @@ export class AppComponent implements AfterViewInit{
   };
 
   ngAfterViewInit(): void{
-    this.boardService.selectedBoard$.subscribe( board => {
-      this.board = board; 
-    } );
     this.cdr.detectChanges()
   }
 

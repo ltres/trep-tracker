@@ -4,6 +4,7 @@ import{ BoardService }from"./board.service";
 import{ Observable, Subject }from"rxjs";
 import{ isBoard, isLane, isProject, isRecurringTask, isTask }from"../utils/guards";
 import{ getDescendants, getProjectComputedStatus, isArchivedOrDiscarded, isPlaceholder }from"../utils/utils";
+import{ TagService }from"./tag.service";
 
 @Injectable( {
   providedIn: 'root',
@@ -12,11 +13,14 @@ export class ChangePublisherService{
 
   private _pushedChanges$: Subject<Container[]> = new Subject<Container[]>();
   private boardService!: BoardService
+  private tagService!: TagService
+
   constructor( 
-    private injector: Injector 
+    private injector: Injector
   ){
     setTimeout( () => this.boardService = injector.get( BoardService ) );
-        
+    setTimeout( () => this.tagService = injector.get( TagService ) );
+
   }
 
   processChangesAndPublishUpdate( changesToPush: Container[] ){
@@ -76,6 +80,11 @@ export class ChangePublisherService{
     if( !isProject( task ) && task.beforeProjectStatus && task.beforeProjectStatus !== task.status ){
       this.boardService.updateStatus( undefined, task, task.beforeProjectStatus );
       delete task.beforeProjectStatus
+    }
+
+    if( this.tagService && this.tagService.latestEditedTagsContainer && this.boardService.selectedBoard ){
+      const toProcess = this.tagService.restructureTags( this.tagService.latestEditedTagsContainer, this.boardService.selectedBoard );
+      changesToPush.push( ...toProcess );
     }
 
   }
