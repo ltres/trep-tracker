@@ -8,6 +8,7 @@ import{boardDebounceDelay, recurringChildrenLimit, similarityTreshold, statusVal
 import{isTask, isLane, isTasks, assertIsRecurringTaskChild, isRecurringTask, isRecurringTaskChild, assertIsGanttTask, assertIsRecurringTask, isProject, assertIsTask}from'../utils/guards';
 import{ TagService }from'./tag.service';
 import{ logPerformance }from'../utils/performance-logger';
+import{ ChangePublisherService }from'./change-publisher.service';
 
 @Injectable( {
   providedIn: 'root',
@@ -34,11 +35,13 @@ export class BoardService{
   private tagService!: TagService;
 
   constructor(
-    injector: Injector,
+    private injector: Injector,
     zone: NgZone,
         @Inject( 'StorageServiceAbstract' ) private storageService: StorageServiceAbstract,
+        private changePublisherService: ChangePublisherService
   ){
     setTimeout( () => this.tagService = injector.get( TagService ) );
+    setTimeout( () => this.changePublisherService = injector.get( ChangePublisherService ) );
 
     const latestStatus = this.storageService.getStatus();
     if( latestStatus !== null ){
@@ -81,7 +84,9 @@ export class BoardService{
     /**
      * This is the main update cycle. Expect the various component to subscribe to the _boards$ as well.
      */
-    this._boards$.subscribe( b => {
+    this.changePublisherService.pushedChanges$.subscribe( () => {
+      const b = this._boards$.getValue();
+      this._boards$.next( b )
       logPerformance( "boards observable", true );
 
       // const date = new Date();
@@ -483,8 +488,7 @@ export class BoardService{
     return newLane;
   }
 
-  updateStatus( board: Board | undefined, container: Container, status: Status | Status[] | undefined, preventUpdate = false ){
-    const boards = this._boards$.getValue();
+  updateStatus( board: Board | undefined, container: Container, status: Status | Status[] | undefined ){
     status = status && Array.isArray( status ) ? status : ( status ? [status] : undefined );
     if( isLane( container ) ){
       container.status = status;
@@ -515,13 +519,8 @@ export class BoardService{
       // if the parent is a project, update its status accordingly:
       const p  = this.findDirectParent( [container] );
       if( isProject( p ) ){
-        this.updateStatus( board, p, getProjectComputedStatus( p ), true )
+        this.updateStatus( board, p, getProjectComputedStatus( p ) )
       }
-    }
-
-    if( !preventUpdate ){
-      this._boards$.next( boards );
-
     }
   }
 

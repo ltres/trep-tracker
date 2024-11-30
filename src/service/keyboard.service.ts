@@ -78,7 +78,7 @@ export class KeyboardService{
           throw new Error( 'Cannot find nearby task' );
         }
         this.boardService.addAsChild( wannaBeParent, this.boardService.selectedTasks );
-        this.changePublisherService.processChangesAndPublishUpdate( [wannaBeParent] )
+        this.changePublisherService.processChangesAndPublishUpdate( [res.lane, wannaBeParent] )
       }else if( e.key === 'ArrowLeft' && e.ctrlKey === true ){
         // Children task gets promoted to the same level as the parent
         const parent = this.boardService.findDirectParent( this.boardService.selectedTasks );
@@ -89,6 +89,7 @@ export class KeyboardService{
           return;
         }
         this.boardService.removeChildrenAndAddAsSibling( parent, this.boardService.selectedTasks );
+        this.changePublisherService.processChangesAndPublishUpdate( [res.lane, parent] )
       }else if( e.key === 'Enter' ){
         const t = e.target as HTMLElement;
         if( t && !t.classList.contains( 'task-text-content' ) ){

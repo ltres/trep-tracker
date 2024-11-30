@@ -11,6 +11,8 @@
   <board-selection-menu class="column-2 flex"></board-selection-menu>
 </main>
 <welcome-wizard-manager *ngIf="!isStatusPresent()"></welcome-wizard-manager>
-<modal *ngIf="(modalService.displayModal$ | async)?.show"></modal>
+<ng-container *ngIf="modalService.displayModal$ | async as displayModal">
+  <modal *ngIf="displayModal.show"></modal>
+</ng-container>
 <click></click>
 <update-checker></update-checker>

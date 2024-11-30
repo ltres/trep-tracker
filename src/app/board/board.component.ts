@@ -128,20 +128,19 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
       // set the board height basing on the childrens size.
       const boardEl = this.el.nativeElement as HTMLElement;
       const laneEls = boardEl.querySelectorAll( 'lane' );
-      setTimeout( () => {
-        this._height = 0;
-        this._width = 0;
-        laneEls.forEach( laneEl => {
-          const maxHeight = laneEl.getBoundingClientRect().height + laneEl.getBoundingClientRect().top + window.scrollY;
-          if( maxHeight > ( this.height ?? 0 ) ){
-            this._height = maxHeight;
-          }
-          const maxWidth = laneEl.getBoundingClientRect().width + laneEl.getBoundingClientRect().left + window.scrollX;
-          if( maxWidth > ( this.width ?? 0 ) ){
-            this._width = maxWidth;
-          }
-        } );
+      this._height = 0;
+      this._width = 0;
+      laneEls.forEach( laneEl => {
+        const maxHeight = laneEl.getBoundingClientRect().height + laneEl.getBoundingClientRect().top + window.scrollY;
+        if( maxHeight > ( this.height ?? 0 ) ){
+          this._height = maxHeight;
+        }
+        const maxWidth = laneEl.getBoundingClientRect().width + laneEl.getBoundingClientRect().left + window.scrollX;
+        if( maxWidth > ( this.width ?? 0 ) ){
+          this._width = maxWidth;
+        }
       } );
+
       //this.cdr.detectChanges();
     } );
   //this.cdr.detectChanges();

@@ -1,4 +1,4 @@
-import{ Injectable }from"@angular/core";
+import{ Injectable, Injector }from"@angular/core";
 import{ Board, Container, Lane, Task }from"../types/types";
 import{ BoardService }from"./board.service";
 import{ Observable, Subject }from"rxjs";
@@ -11,8 +11,11 @@ import{ getDescendants, getProjectComputedStatus, isArchivedOrDiscarded, isPlace
 export class ChangePublisherService{
 
   private _pushedChanges$: Subject<Container[]> = new Subject<Container[]>();
-
-  constructor( private boardService: BoardService ){
+  private boardService!: BoardService
+  constructor( 
+    private injector: Injector 
+  ){
+    setTimeout( () => this.boardService = injector.get( BoardService ) );
         
   }
 
@@ -65,13 +68,13 @@ export class ChangePublisherService{
       const computedStatus = getProjectComputedStatus( task );
       if( computedStatus !== task.status ){
         task.beforeProjectStatus = task.status
-        this.boardService.updateStatus( undefined, task, computedStatus, true );
+        this.boardService.updateStatus( undefined, task, computedStatus );
       }
     }
 
     // Update ex-project status
     if( !isProject( task ) && task.beforeProjectStatus && task.beforeProjectStatus !== task.status ){
-      this.boardService.updateStatus( undefined, task, task.beforeProjectStatus, true );
+      this.boardService.updateStatus( undefined, task, task.beforeProjectStatus );
       delete task.beforeProjectStatus
     }
 

@@ -18,7 +18,6 @@ import{ isLane, isTask }from'../utils/guards';
 export class AppComponent implements AfterViewInit{
   title = 'trep-tracker';
   board: Board | undefined;
-  displayModal = false;
   constructor(
     protected boardService: BoardService,
     protected modalService: ModalService,
@@ -52,6 +51,7 @@ export class AppComponent implements AfterViewInit{
     this.boardService.selectedBoard$.subscribe( board => {
       this.board = board; 
     } );
+    this.cdr.detectChanges()
   }
 
   getFirstLane(): Lane | undefined{

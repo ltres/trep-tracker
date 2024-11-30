@@ -93,11 +93,11 @@ export class DroppableDirective implements OnInit, OnDestroy{
     this._subscriptions.push( this.dragService.draggingCoodinates$.subscribe( ( e ) => {
       if( !this.somethingIsDragging )return;
       if( !this.canBeDroppedHere( e.c ) )return
-      const dist = cursorDistance( e.x,e.y, this.el.nativeElement.getBoundingClientRect() );
+      const dist = cursorDistance( e.x, e.y, this.el.nativeElement.getBoundingClientRect() );
       if( dist >= 0 && dist < dragProximityTreshold ){
         this.el.nativeElement.classList.add( 'something-is-dragging' )
         this.el.nativeElement.classList.remove( 'something-is-dragging-and-i-am-hovered' )
-      }else if( cursorDistance( e.x,e.y, this.el.nativeElement.getBoundingClientRect() ) < 0 ){
+      }else if( cursorDistance( e.x, e.y, this.el.nativeElement.getBoundingClientRect() ) < 0 ){
         this.el.nativeElement.classList.add( 'something-is-dragging' )
         this.el.nativeElement.classList.add( 'something-is-dragging-and-i-am-hovered' )
       }else{
