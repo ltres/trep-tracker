@@ -1,4 +1,4 @@
-import{ AfterViewInit, ApplicationRef, Component, Inject }from'@angular/core';
+import{ AfterViewInit, ApplicationRef, ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject }from'@angular/core';
 
 import{ BoardService }from'../service/board.service';
 import{ Observable }from'rxjs';
@@ -13,19 +13,24 @@ import{ isLane, isTask }from'../utils/guards';
   //imports: [RouterOutlet],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 } )
 export class AppComponent implements AfterViewInit{
   title = 'trep-tracker';
-  board!: Board;
+  board: Board | undefined;
   displayModal = false;
   constructor(
-    private boardService: BoardService,
+    protected boardService: BoardService,
     protected modalService: ModalService,
     @Inject( 'StorageServiceAbstract' ) protected storageService: StorageServiceAbstract,
+    protected cdr: ChangeDetectorRef,
     private appRef: ApplicationRef,
   ){ }
 
   receiveDrop( container: Container, event?: DragEvent ){
+    if( !this.board ){
+      return;
+    }
     if( isLane( container ) ){
       // Nothing to do
     }else if( isTask( container ) ){
@@ -45,14 +50,7 @@ export class AppComponent implements AfterViewInit{
 
   ngAfterViewInit(): void{
     this.boardService.selectedBoard$.subscribe( board => {
-      setTimeout( () => { 
-        if( !board )return; 
-        this.board = board; 
-      } );
-      //this.board = board
-    } );
-    this.modalService.displayModal$.subscribe( display => {
-      setTimeout( () => { this.displayModal = display.show; } );
+      this.board = board; 
     } );
   }
 
