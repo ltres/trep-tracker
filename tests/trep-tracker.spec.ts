@@ -488,11 +488,14 @@ test.describe.parallel( 'Trep Tracker Tasks & lanes - ', () => {
     await expect( instances[Object.keys( instances )[3]]._sortedMetasets[2]._dataset.data[instances[Object.keys( instances )[3]]._sortedMetasets[2]._dataset.data.length - 1] ).toBe( 2 ); // created bar
 
     await setTaskStatus( firstTask!, page, 'status-completed' );
+    await page.waitForTimeout( 1300 ); // animation
+
     instances = await page.evaluate( async() => {
       // @ts-expect-error extract chart instances
       const instances = ( window.chart as Chart ).instances;
       return instances;
     } );
+
     await expect( instances[Object.keys( instances )[0]]._sortedMetasets[0]._dataset.data[0] ).toBe( 1 ); // todos
     await expect( instances[Object.keys( instances )[1]]._sortedMetasets[0]._dataset.data[0] ).toBe( 2 ); // prio 1
     await expect( instances[Object.keys( instances )[2]]._sortedMetasets[0]._dataset.data[0] ).toBe( undefined ); // tags

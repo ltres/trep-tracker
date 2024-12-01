@@ -6,8 +6,9 @@ import{ ChartDataset, ChartOptions }from"chart.js/auto";
 export const performanceLoggerActive = false;
 
 export const boardDebounceDelay = {
-  small: 1000,
-  huge: 5000
+  micro: 200,
+  small: 750,
+  huge: 2000
 }
 
 export const ganttConfig = {

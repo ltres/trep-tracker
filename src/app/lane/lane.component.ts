@@ -142,6 +142,7 @@ export class LaneComponent extends ContainerComponent implements OnInit{
     this.boardService.clearSelectedTasks();
     this.boardService.toggleTaskSelection( this.lane, task );
     this.boardService.activateEditorOnTask( this.lane, task, 0 );
+    this.changePublisherService.processChangesAndPublishUpdate( [task, this.lane] );
   }
 
   deleteLane(){
@@ -165,16 +166,11 @@ export class LaneComponent extends ContainerComponent implements OnInit{
 
     if( !allOldPresent || !allNewPresent ){
       this.lane.tags = $event;
-      this.debounceBoardUpdate();
+      this.publishChange();
     }
   }
-  debounceBoardUpdate(){
-    if( this.debounce ){
-      clearTimeout( this.debounce );
-    }
-    this.debounce = setTimeout( () => {
-      this.changePublisherService.processChangesAndPublishUpdate( [this.lane] )
-    }, 500 );
+  publishChange(){
+    this.changePublisherService.processChangesAndPublishUpdate( [this.lane] )
   }
   updateStatus( $event: Status[] | Status | undefined ){
     this.lane.status = Array.isArray( $event ) ? $event : ( $event ? [$event] : undefined );

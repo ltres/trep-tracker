@@ -10,7 +10,7 @@ import{ ContainerComponent }from'../base/base.component';
 import{ ClickService }from'../../service/click.service';
 import{  fromIsoString, formatDate, getDiffInDays }from'../../utils/date-utils';
 import{ setCaretPosition, isPlaceholder, hashCode, isArchivedOrDiscarded }from'../../utils/utils';
-import{  boardDebounceDelay, millisForMagnitudeStep, minOpacityAtTreshold, similarityTreshold }from'../../types/constants';
+import{ millisForMagnitudeStep, minOpacityAtTreshold, similarityTreshold }from'../../types/constants';
 import{ isProject, isRecurringTask, isRecurringTaskChild, isTask }from'../../utils/guards';
 import{ fadeInOut }from'../../types/animations';
 import{ TagService }from'../../service/tag.service';
@@ -175,14 +175,8 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     }
   }
 
-  debounceBoardUpdate( ){
+  publishChange( ){
     this.changePublisherService.processChangesAndPublishUpdate( [this.task] )
-    if( this.debounce ){
-      clearTimeout( this.debounce );
-    }
-    this.debounce = setTimeout( () => {
-      this.changePublisherService.processChangesAndPublishUpdate( [this.task] )
-    }, boardDebounceDelay.small );
   }
 
   updateStatus( $event: Status[] | Status | undefined ){

@@ -46,14 +46,8 @@ export class BoardToolbarComponent implements AfterViewInit{
     this.changePublisherService.processChangesAndPublishUpdate( [this.board] );
   }
 
-  debounceBoardUpdate(){
-    if( this.debounce ){
-      clearTimeout( this.debounce );
-    }
-    this.debounce = setTimeout( () => {
-      this.changePublisherService.processChangesAndPublishUpdate( [this.board] );
-
-    }, 500 );
+  publishChange(){
+    this.changePublisherService.processChangesAndPublishUpdate( [this.board] );
   }
 
   updateBoardTags( $event: Tag[] ){
@@ -64,7 +58,7 @@ export class BoardToolbarComponent implements AfterViewInit{
 
     if( !allOldPresent || !allNewPresent ){
       this.board.tags = $event;
-      this.debounceBoardUpdate();
+      this.publishChange();
     }
   }
 
@@ -131,7 +125,7 @@ export class BoardToolbarComponent implements AfterViewInit{
       // @ts-expect-error
       this.board.datesConfig.dateFormat[key] = val;
     }
-    this.debounceBoardUpdate();
+    this.publishChange();
   }
 
   beautify( arg: string|undefined|boolean ){
@@ -153,7 +147,7 @@ export class BoardToolbarComponent implements AfterViewInit{
 
   setLocale( $event: Event ){
     this.board.datesConfig.locale = ( $event.target as HTMLInputElement ).value;
-    this.debounceBoardUpdate();
+    this.publishChange();
   }
 
   getLocaleNiceName( locale: Locale ){
@@ -165,7 +159,7 @@ export class BoardToolbarComponent implements AfterViewInit{
   }
   setTimezone( $event: Event ){
     this.board.datesConfig.dateFormat.timeZone = ( $event.target as HTMLInputElement ).value;
-    this.debounceBoardUpdate();
+    this.publishChange();
   }
 
   names: {[key:string]: string} = {}

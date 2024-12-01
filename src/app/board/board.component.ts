@@ -184,17 +184,12 @@ export class BoardComponent extends ContainerComponent implements OnInit, AfterV
 
     if( !allOldPresent || !allNewPresent ){
       this.board.tags = $event;
-      this.debounceBoardUpdate();
+      this.publishChange();
     }
   }
 
-  debounceBoardUpdate(){
-    if( this.debounce ){
-      clearTimeout( this.debounce );
-    }
-    this.debounce = setTimeout( () => {
-      this.changePublisherService.processChangesAndPublishUpdate( [this.board] )
-    }, 500 );
+  publishChange(){
+    this.changePublisherService.processChangesAndPublishUpdate( [this.board] )
   }
 
   hashCode( idx:number, lane: Lane ): number{

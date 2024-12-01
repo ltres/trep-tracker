@@ -1,7 +1,7 @@
 <div [class.open]="menuOpen" class="board-menu inline-flex column g-05 align-items-end justify-content-center">
   <div class="flex g-05 justify-content-center align-items-center">
     <label class="translucent">Board</label>
-    <div contenteditable="true" [(ngModel)]="board.textContent" [board]="board" (ngModelChange)="debounceBoardUpdate()" (onTagsChange)="updateBoardTags($event)" class="board-label colored-title"></div>
+    <div contenteditable="true" [(ngModel)]="board.textContent" [board]="board" (ngModelChange)="publishChange()" (onTagsChange)="updateBoardTags($event)" class="board-label colored-title"></div>
     <span (click)="menuOpen = !menuOpen" [tooltip]="!menuOpen ? 'Open board menu' : ''" [position]="'bottom'" class="board-menu-tab pointer">
       <span *ngIf="!menuOpen">☰</span>
       <span *ngIf="menuOpen">×</span>

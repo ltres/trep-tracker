@@ -3,6 +3,7 @@ import{ Subscription }from'rxjs';
 import{ Container }from'../../types/types';
 import{ ContainerComponentRegistryService }from'../../service/registry.service';
 import{ ChangePublisherService }from'../../service/change-publisher.service';
+import{ performanceLoggerActive }from'../../types/constants';
 
 // A base compoent whose data model is a Container
 // This component is responsible for managing subscriptions and unsubscribing them
@@ -29,13 +30,17 @@ export abstract class ContainerComponent implements OnInit, OnDestroy, AfterView
   ){ 
     this.subscriptions = this.changePublisherService.pushedChanges$.subscribe( c => {
       if( c.find( cont => cont.id === this.container.id ) ){
-        console.info( `Detected change for ${this.container._type} ${this.container.id}` )
+        if( performanceLoggerActive ){
+          console.debug( `Detected change for ${this.container._type} ${this.container.id}` )
+        }
         cdr.detectChanges();
       }
     } )
   }
   ngOnChanges( changes: SimpleChanges ): void{
-    console.info( `Component has detected changes on ${this.container._type} ${this.container.id}`, changes )
+    if( performanceLoggerActive ){
+      console.debug( `Component has detected changes on ${this.container._type} ${this.container.id}`, changes )
+    }
   }
   ngDoCheck(): void{
     // console.info( `Component is checking for changes on ${this.container._type} ${this.container.id}` )

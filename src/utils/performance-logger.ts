@@ -16,9 +16,9 @@ export function logPerformance( name: string, clear:boolean = false ):void{
   }
   if( entries.length > 1 ){
     const t = entries[entries.length-1] - entries[0];
-    console.log( `${name} execution time: ${ t.toFixed( 2 ) }ms - step ${entries.length}` );
+    console.info( `${name} execution time: ${ t.toFixed( 2 ) }ms - step ${entries.length}` );
   }else{
-    console.log( `${name} STARTED` );
+    console.info( `${name} STARTED` );
   }
 
 }

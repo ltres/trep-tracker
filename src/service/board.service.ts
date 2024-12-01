@@ -1,6 +1,6 @@
 import{Inject, Injectable, Injector, NgZone}from'@angular/core';
 import{Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, Timeframe, AddFloatingLaneParams, RecurringTask, Recurrence, GanttTask, RecurringTaskChild}from'../types/types';
-import{BehaviorSubject, Observable, debounceTime, map}from'rxjs';
+import{BehaviorSubject, Observable, asyncScheduler, debounceTime, map, observeOn}from'rxjs';
 import{checkTaskSimilarity, eventuallyPatch, getDescendants, getProjectComputedStatus, initGanttData, isArchived, isArchivedOrDiscarded, isPlaceholder,  isStatic,}from'../utils/utils';
 import{StorageServiceAbstract}from'../types/storage';
 import{addUnitsToDate, fromIsoString, setDateSafe, shiftByRecurrence, toIsoString}from'../utils/date-utils';
@@ -55,6 +55,7 @@ export class BoardService{
     } );
 
     this.changePublisherService.pushedChanges$.pipe(
+      observeOn( asyncScheduler ), // Switch to asynchronous execution
       debounceTime( boardDebounceDelay.huge )
     ).subscribe( ()=> {
       const boards = this._boards$.getValue();
@@ -65,22 +66,31 @@ export class BoardService{
       }
     } )
 
+    let latestSimilarities: string[] = [];
     this.changePublisherService.pushedChanges$.pipe(
+      observeOn( asyncScheduler ), // Switch to asynchronous execution
       debounceTime( boardDebounceDelay.small )
     ).subscribe( () => {
       // run expensive operations:
       const b = this._selectedBoard$.getValue()
       if( b ){
         // detect similarities in tasks:
-        const toProcess = this.manageSimilaritiesInTasks( b )
-        this.changePublisherService.processChangesAndPublishUpdate( toProcess, true );
+        const toProcess = this.manageSimilaritiesInTasks( b );
+        if( latestSimilarities.sort().toString() !== toProcess.map( p => p.id ).sort().toString()  ){
+          // republish another change if there is any change in similarities
+          latestSimilarities = toProcess.map( p => p.id ).sort();
+          this.changePublisherService.processChangesAndPublishUpdate( toProcess, true );
+        }
       }
     } ) 
 
     /**
-     * This is the main update cycle. Expect the various component to subscribe to the _boards$ as well.
+     * Rebuilds the datamodel observables on change
      */
-    this.changePublisherService.pushedChanges$.subscribe( () => {
+    this.changePublisherService.pushedChanges$.pipe(
+      observeOn( asyncScheduler ), // Switch to asynchronous execution
+      debounceTime( boardDebounceDelay.micro )
+    ).subscribe( () => {
       const b = this._boards$.getValue();
       this._boards$.next( b )
       logPerformance( "boards observable", true );

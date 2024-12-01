@@ -10,7 +10,7 @@
       @if (lane.searchTextContent) {
         <div class="colored-title no-wrap" innerHTML="{{ lane.searchTextContent }}"></div>
       } @else {
-        <div class="colored-title no-wrap" contenteditable="true" [(ngModel)]="this.lane.textContent" [board]="board" (ngModelChange)="debounceBoardUpdate()" (onTagsChange)="updateLaneTags($event)"></div>
+        <div class="colored-title no-wrap" contenteditable="true" [(ngModel)]="this.lane.textContent" [board]="board" (ngModelChange)="publishChange()" (onTagsChange)="updateLaneTags($event)"></div>
       }
 
       <prioritizer [container]="lane" [allowEmpty]="true" [multipleSelectable]="true" (onPrioritySelected)="togglePriority($event)" [tooltip]="'Set priority filter'"> </prioritizer>
