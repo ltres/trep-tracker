@@ -17,7 +17,6 @@ import{ isLane, isTask }from'../utils/guards';
 } )
 export class AppComponent implements AfterViewInit{
   title = 'trep-tracker';
-  board: Board | undefined;
   constructor(
     protected boardService: BoardService,
     protected modalService: ModalService,
@@ -27,14 +26,15 @@ export class AppComponent implements AfterViewInit{
   ){ }
 
   receiveDrop( container: Container, event?: DragEvent ){
-    if( !this.board ){
+    const board = this.boardService.selectedBoard;
+    if( !board ){
       return;
     }
     if( isLane( container ) ){
       // Nothing to do
     }else if( isTask( container ) ){
       const params: AddFloatingLaneParams ={
-        board: this.board, 
+        board: board, 
         x:( event?.clientX ) ?? 0, 
         y:( event?.clientY ) ?? 0, 
         children: [container], 
@@ -52,7 +52,8 @@ export class AppComponent implements AfterViewInit{
   }
 
   getFirstLane(): Lane | undefined{
-    return this.board?.children.find( child => child.tags.length === 0 );
+    const board = this.boardService.selectedBoard;
+    return board?.children.find( child => child.tags.length === 0 );
   }
 
   get boards$(): Observable<Board[]>{

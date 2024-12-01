@@ -1,9 +1,9 @@
 import{ Component, EventEmitter, Input, Output }from'@angular/core';
 import{ Board, Container, Status }from'../../types/types';
 import{ isPlaceholder }from'../../utils/utils';
-import{ BoardService }from'../../service/board.service';
 import{ statusValues }from'../../types/constants';
 import{ isTask }from'../../utils/guards';
+import{ ChangePublisherService }from'../../service/change-publisher.service';
 
 @Component( {
   selector: 'status[container][staticLane][board]',
@@ -25,7 +25,9 @@ export class StatusComponent{
 
   protected open = false;
 
-  constructor( private boardService: BoardService ){ }
+  constructor( 
+    private changePublisherService: ChangePublisherService 
+  ){ }
 
   get states(): Status[]{
     return Array.isArray( this.container.status ) ? this.container.status : ( this.container.status ? [this.container.status] : [] );
@@ -45,7 +47,7 @@ export class StatusComponent{
     }
 
     this.onStatusSelected.emit( toEmit );
-    //this.boardService.updateStatus(this.container, status);
+    this.changePublisherService.processChangesAndPublishUpdate( [this.container] )
     this.open = false;
   }
 

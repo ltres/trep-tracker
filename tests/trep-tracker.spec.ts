@@ -402,6 +402,7 @@ test.describe.parallel( 'Trep Tracker Tasks & lanes - ', () => {
     await setPickerToCurrentYearNextMonth( lastTask, page, 1 );
     lastTask = page.locator( 'lane' ).first().locator( '.recurrent-task-container' ).last();
 
+    // recurrences: make a task recurrent, complete a recurrence, another one should appear.
     await expect( lastTask.locator( '.recurrences-toggle' ) ).toBeVisible();
     await expect( lastTask.locator( '.task-recurrence-wrapper task' ) ).toHaveCount( 2 );
     const firstRec = lastTask.locator( 'task.child' ).first();

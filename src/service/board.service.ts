@@ -636,17 +636,22 @@ export class BoardService{
   }
 
   /**
-     * Finds the direct parent container for the given objects
+     * Finds the direct parent container for the given objects.
+     * This accounts for object including toSearch as children or as a recurrence
      */
-  findDirectParent( objs: Container[] | undefined, includeArchive = false ): Container | undefined{
-    if( !objs || objs.length === 0 ){
+  findDirectParent( toSearch: Container[] | undefined, includeArchive = false ): Container | undefined{
+    if( !toSearch || toSearch.length === 0 ){
       return;
     }
-    if( isTasks( objs ) ){
-      objs = this.getTopLevelTasks( objs );
+    if( isTasks( toSearch ) ){
+      toSearch = this.getTopLevelTasks( toSearch );
     }
+    const toSearchIds = toSearch.map( s => s.id )
 
-    let parents = this._allParents$.getValue()?.filter( p => p.children.length > 0 && p.children.find( c => objs.find( o => o.id === c.id ) ) );
+    let parents = this._allParents$.getValue()?.filter( p => 
+      ( p.children.length > 0 && p.children.map( c => c.id ).filter( childId => toSearchIds.includes( childId ) ).length > 0 ) ||
+      ( isRecurringTask( p ) && p.recurrences.length > 0 && p.recurrences.map( c => c.id ).filter( recId => toSearchIds.includes( recId ) ).length > 0 )
+    );
     // filter out duplicate parents and archive
     if( parents ){
       // remove duplicates
@@ -656,7 +661,7 @@ export class BoardService{
     }
 
     if( !parents || parents?.length !== 1 ){
-      console.info( 'findParent: objs.length !== 1', objs );
+      console.info( 'findParent: objs.length !== 1', toSearch );
       return;
     }
     return parents[0];
@@ -1044,7 +1049,8 @@ export class BoardService{
    * Compares all the tasks in the board for text similarities. If any similarity is found, tasks get linked.
    * @param board 
    */
-  manageSimilaritiesInTasks( board: Board ){
+  manageSimilaritiesInTasks( board: Board ): Container[]{
+    const ret: Container[] = [];
     const start = new Date().getTime();
     const descendants: Task[] = getDescendants( board ).filter( d => isTask( d ) ).filter( d => !isArchivedOrDiscarded( d ) );
     const processed: Task[] = [];
@@ -1056,11 +1062,13 @@ export class BoardService{
           // console.log( `${stripHTML( d.textContent )} => ${stripHTML( d2.textContent )} = ${checkTaskSimilarity( d, d2 )}` );
           d.similarTasks.push( {id:d2.id, similarity: sIndex} );
           d2.similarTasks.push( {id:d.id, similarity: sIndex} );
+          ret.push( d, d2 );
         }
       }
       processed.push( d )
     }
     console.warn( `Similarities check took ${ new Date().getTime() - start }ms` )
+    return ret;
   }
 
   /**

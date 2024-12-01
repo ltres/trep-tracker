@@ -1,10 +1,10 @@
 <!-- <ai-advisor *ngIf="board" [board]="board"></ai-advisor> -->
 <main *ngIf="boardService.selectedBoard$ | async as board" class="main flex" ondragover="event.preventDefault()">
-  <div class="column-1 flex column">
+  <div class="column-1 flex column relative">
     <board *ngIf="board && board.layout !== 'absolute'" [board]="board"></board>
     <board *ngIf="board && board.layout === 'absolute'" [board]="board" [droppable]="10" [container]="board" [executeOnDropReceived]="receiveDrop.bind(this)"></board>
 
-    <div class="bottom-bar flex g-1">
+    <div class="bottom-bar flex g-1 absolute b-0 r-0 justify-content-end align-items-end">
       <keyboard-listener></keyboard-listener>
     </div>
   </div>

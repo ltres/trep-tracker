@@ -2,7 +2,7 @@ import{ Injectable, Injector }from"@angular/core";
 import{ Board, Container, Lane, Task }from"../types/types";
 import{ BoardService }from"./board.service";
 import{ Observable, Subject }from"rxjs";
-import{ isBoard, isLane, isProject, isRecurringTask, isTask }from"../utils/guards";
+import{ isBoard, isLane, isProject, isRecurringTask, isRecurringTaskChild, isTask }from"../utils/guards";
 import{ getDescendants, getProjectComputedStatus, isArchivedOrDiscarded, isPlaceholder }from"../utils/utils";
 import{ TagService }from"./tag.service";
 
@@ -36,6 +36,8 @@ export class ChangePublisherService{
       }else if( isTask( container ) ){
         this.processTask( container, changesToPush )
       }
+      // remove duplicates
+      changesToPush = [...new Set( changesToPush )];
     }
 
     this._pushedChanges$.next( changesToPush );
@@ -62,9 +64,16 @@ export class ChangePublisherService{
 
   private processTask( task: Task, changesToPush: Container[] ){
     // recurring child management:
-    if( isRecurringTask( task ) &&   !isArchivedOrDiscarded( task ) && !isPlaceholder( task ) ){
+    if( isRecurringTask( task ) && !isArchivedOrDiscarded( task ) && !isPlaceholder( task ) ){
       const children = this.boardService.manageRecurringChildren( task );
       changesToPush.push( ...children );
+    }else if( isRecurringTaskChild( task ) && !isArchivedOrDiscarded( task ) && !isPlaceholder( task ) ){
+      const p = this.boardService.findDirectParent( [task] );
+      if( p && isRecurringTask( p ) ){
+        const children = this.boardService.manageRecurringChildren( p );
+        changesToPush.push( ...children );
+      }
+
     }
 
     // Update project states

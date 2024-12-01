@@ -12,13 +12,12 @@ main {
     //height: 100vh;
     position: relative;
     align-items: stretch;
-    .column-1{
+
+    .column-1 {
         flex-grow: 1;
     }
 }
-.bottom-bar{
-    //width: 100%;
-    justify-content: flex-end;
-    align-items: flex-end;
 
+.bottom-bar {
+    padding: $board-padding;
 }
