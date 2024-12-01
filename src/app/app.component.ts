@@ -5,6 +5,7 @@ import{ AddFloatingLaneParams, Container, Lane }from'../types/types';
 import{ ModalService }from'../service/modal.service';
 import{ StorageServiceAbstract }from'../types/storage';
 import{ isLane, isTask }from'../utils/guards';
+import{ ChangePublisherService }from'../service/change-publisher.service';
 
 @Component( {
   selector: 'app-root',
@@ -19,6 +20,7 @@ export class AppComponent implements AfterViewInit{
   constructor(
     protected boardService: BoardService,
     protected modalService: ModalService,
+    private changePublisherService: ChangePublisherService,
     @Inject( 'StorageServiceAbstract' ) protected storageService: StorageServiceAbstract,
     protected cdr: ChangeDetectorRef,
     private appRef: ApplicationRef,
@@ -47,7 +49,10 @@ export class AppComponent implements AfterViewInit{
   };
 
   ngAfterViewInit(): void{
-    this.cdr.detectChanges()
+    
+    // first push when app is loaded to populate data model
+    this.changePublisherService.processChangesAndPublishUpdate( [], true );
+    this.cdr.detectChanges();
   }
 
   getFirstLane(): Lane | undefined{
