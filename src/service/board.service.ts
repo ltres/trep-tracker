@@ -72,7 +72,8 @@ export class BoardService{
       const b = this._selectedBoard$.getValue()
       if( b ){
         // detect similarities in tasks:
-        this.manageSimilaritiesInTasks( b )
+        const toProcess = this.manageSimilaritiesInTasks( b )
+        this.changePublisherService.processChangesAndPublishUpdate( toProcess, true );
       }
     } ) 
 

@@ -23,23 +23,24 @@ export class ChangePublisherService{
 
   }
 
-  processChangesAndPublishUpdate( changesToPush: Container[] ){
+  processChangesAndPublishUpdate( changesToPush: Container[], skipProcessing = false ){
 
+    if( !skipProcessing ){
     // Update parent references (except for children of archive lane)
-    changesToPush.filter( p => !isLane( p ) || !p.isArchive ).forEach( p => p.children.forEach( c => c.parentId = p.id ) )
+      changesToPush.filter( p => !isLane( p ) || !p.isArchive ).forEach( p => p.children.forEach( c => c.parentId = p.id ) )
 
-    for( const container of changesToPush ){
-      if( isBoard( container ) ){
-        this.processBoard( container, changesToPush );
-      }else if( isLane( container ) ){
-        this.processLane( container, changesToPush )
-      }else if( isTask( container ) ){
-        this.processTask( container, changesToPush )
+      for( const container of changesToPush ){
+        if( isBoard( container ) ){
+          this.processBoard( container, changesToPush );
+        }else if( isLane( container ) ){
+          this.processLane( container, changesToPush )
+        }else if( isTask( container ) ){
+          this.processTask( container, changesToPush )
+        }
+        // remove duplicates
+        changesToPush = [...new Set( changesToPush )];
       }
-      // remove duplicates
-      changesToPush = [...new Set( changesToPush )];
     }
-
     this._pushedChanges$.next( changesToPush );
   }
 

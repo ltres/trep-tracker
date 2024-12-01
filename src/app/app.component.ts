@@ -1,8 +1,7 @@
 import{ AfterViewInit, ApplicationRef, ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject }from'@angular/core';
 
 import{ BoardService }from'../service/board.service';
-import{ Observable }from'rxjs';
-import{ AddFloatingLaneParams, Board, Container, Lane }from'../types/types';
+import{ AddFloatingLaneParams, Container, Lane }from'../types/types';
 import{ ModalService }from'../service/modal.service';
 import{ StorageServiceAbstract }from'../types/storage';
 import{ isLane, isTask }from'../utils/guards';
@@ -54,10 +53,6 @@ export class AppComponent implements AfterViewInit{
   getFirstLane(): Lane | undefined{
     const board = this.boardService.selectedBoard;
     return board?.children.find( child => child.tags.length === 0 );
-  }
-
-  get boards$(): Observable<Board[]>{
-    return this.boardService.boards$;
   }
 
   isStatusPresent(){
