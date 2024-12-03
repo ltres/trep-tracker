@@ -88,8 +88,8 @@ export class KeyboardService{
         if( isLane( parent ) ){
           return;
         }
-        this.boardService.removeChildrenAndAddAsSibling( parent, this.boardService.selectedTasks );
-        this.changePublisherService.processChangesAndPublishUpdate( [res.lane, parent] )
+        const newParent = this.boardService.removeChildrenAndAddAsSibling( parent, this.boardService.selectedTasks );
+        this.changePublisherService.processChangesAndPublishUpdate( [res.lane, parent, newParent] )
       }else if( e.key === 'Enter' ){
         const t = e.target as HTMLElement;
         if( t && !t.classList.contains( 'task-text-content' ) ){

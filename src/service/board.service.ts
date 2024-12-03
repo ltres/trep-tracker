@@ -840,9 +840,15 @@ export class BoardService{
     //this.publishBoardUpdate();
   }
 
-  removeChildrenAndAddAsSibling( parent: Container, children: Task[] | undefined ){
+  /**
+   * Removes the children from the given parent, then finds the grandparent and adds them to its children
+   * @param parent 
+   * @param children 
+   * @returns the grandparent
+   */
+  removeChildrenAndAddAsSibling( parent: Container, children: Task[] | undefined ): Container{
     if( !children || children.length === 0 ){
-      return;
+      throw new Error( `No children` )
     }
     //const boards = this._boards$.getValue();
 
@@ -858,8 +864,9 @@ export class BoardService{
     if( grandParent ){
       grandParent.children.splice( grandParent.children.findIndex( c => c.id === parent.id ) + 1, 0, ...children );
       //grandParent.children = grandParent.children.concat(children);
+      return grandParent;
     }
-
+    throw new Error( `Could not find grandparent for ${children.map( c => c.id )}` )
     // Publish the changes
     //this._boards$.next( boards );
   }
