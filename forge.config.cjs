@@ -2,10 +2,14 @@ const { FusesPlugin } = require('@electron-forge/plugin-fuses');
 const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 const path = require('path');
 
+console.log(__dirname)
+
 module.exports = {
   packagerConfig: {
-    asar: true,
-    icon: `${__dirname}/src/assets/icon/web/favicon.ico`
+    asar:true,
+    icon: path.join(process.cwd(), "src", "assets", "icon","web", "favico.icns"),
+    extraResource: [
+      path.join(process.cwd(), "src", "assets", "icon","web", "favico.icns")]
   },
   rebuildConfig: {},
   makers: [
@@ -48,6 +52,15 @@ module.exports = {
         icon: `${__dirname}/src/assets/icon/web/favicon.ico`,
       },
     },
+    {
+      name: '@electron-forge/maker-dmg',
+      config: {
+        name: 'trep-tracker',
+        icon: `${__dirname}/src/assets/icon/web/favico.icns`,
+        format: "ULFO",
+        overwrite:true
+      }
+    }
   ],
   plugins: [
     {
