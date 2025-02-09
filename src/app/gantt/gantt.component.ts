@@ -3,21 +3,23 @@ import{ Board, GanttTask, Lane, Task }from'../../types/types';
 import{ BoardService }from'../../service/board.service';
 import{ gantt, Task as DhtmlxTask, GanttStatic, Link as DhtmlxLink }from'dhtmlx-gantt';
 import{ TaskComponent }from'../task/task.component';
-import{ toIsoString, ganttDateToDate, formatDate }from'../../utils/date-utils';
+import{ toIsoString, ganttDateToDate, formatDate, fromIsoString }from'../../utils/date-utils';
 import{ getFirstMentionTag, initGanttData, getTaskBackgroundColor }from'../../utils/utils';
 import{  ganttConfig, tagTypes }from'../../types/constants';
 import{ assertIsGanttTask, isRecurringTask }from'../../utils/guards';
 import{ ChangePublisherService }from'../../service/change-publisher.service';
+import { Observable } from 'rxjs';
 
 @Component( {
-  selector: 'gantt[tasks][board]',
+  selector: 'gantt[lane][board]',
   templateUrl: './gantt.component.html',
   styleUrl: './gantt.component.scss',
 } )
 export class GanttComponent implements AfterViewInit, OnDestroy{
-  @Input() tasks: Task[] | undefined | null;
-  @Input() lane: Lane | undefined;
+  @Input() lane!: Lane;
   @Input() board! : Board;
+
+  tasks: Task[] | undefined;
 
   today = new Date();
   shownDate: Date | undefined = this.today;
@@ -35,36 +37,32 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
   ngAfterViewInit(): void{
     this.setupGantt( gantt );
 
-    this.init();
+    this.changePublisherService.pushedChanges$.subscribe( c => {
+      if( c.map( co => co.id ).includes( this.lane?.id ) ){
+        this.init( this.lane.children )
+      }
+    } )
   }
 
   ngOnDestroy(): void{
     this.dp?.destructor();
   }
 
-  private init(){
-    if( !this.tasks ){
+  private init( tasks:Task[] ){
+    if( !tasks ){
       throw new Error( 'Tasks must be defined to open gantt' );
     }
 
     /** Exclude tasks having showData = false */
-    this.tasks = this.tasks.filter( t => !t.gantt || t.gantt.showData !== false ).sort( ( t1, t2 ) => {
-      if( !this.lane ){
-        // Gantt for board
-        return( t1.gantt?.order?.board ?? 0 ) - ( t2.gantt?.order?.board ?? 0 )
-      }else{
-        // Gantt for a lane
-        return( t1.gantt?.order?.[this.lane?.id] ?? 0 ) - ( t2.gantt?.order?.[this.lane?.id] ?? 0 )
-      }
-    } )
+    tasks = tasks.filter( t => !t.gantt || t.gantt.showData !== false );
 
     gantt.clearAll();
 
     /** Convert the local datamodel to the one gantt requires */
-    const dataModel = this.toDhtmlxGanttDataModel( this.tasks, [], [], undefined, undefined );
+    const dataModel = this.toDhtmlxGanttDataModel( tasks, [], [], undefined, undefined );
 
     /** Initial task sort */
-    dataModel.convertedTasks = dataModel.convertedTasks.sort( ( a, b ) => a['order'] - b['order'] );
+    dataModel.convertedTasks = dataModel.convertedTasks;
 
     gantt.parse( {data:dataModel.convertedTasks, links: dataModel.convertedLinks} );
 
@@ -89,53 +87,62 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
 
     assertIsGanttTask( t )
 
-    if( data.start_date && data.end_date ){
-      this.boardService.setTaskDates( t, ganttDateToDate( data.start_date as unknown as string ), ganttDateToDate( data.end_date as unknown as string ) )
+    let toBeStartDate = ganttDateToDate( data.start_date as unknown as string );
+    let toBeEndDate = ganttDateToDate( data.end_date as unknown as string );
 
+    let task: Task | undefined = data['trepTask'];
+    if(!task) return;
+    // Grab predecessor and compare start date:
+    let predecessors = this.boardService.findPredecessors( task )
+    if(predecessors){
+      // Task cannot start before the end of any predecessor
+      for( let predecessor of predecessors ){
+        let predecessorEndDate = predecessor.gantt?.endDate;
+        if(!predecessorEndDate) continue;
+        if( toBeStartDate < fromIsoString(predecessorEndDate) ){
+          let delta =  fromIsoString(predecessorEndDate).getTime() - toBeStartDate.getTime();
+          toBeStartDate = fromIsoString(predecessorEndDate);
+          toBeEndDate = new Date(toBeEndDate.getTime() + delta)
+          data.start_date = toBeStartDate;
+          data.end_date = toBeEndDate;
+          this.boardService.setTaskDates( t, toBeStartDate, toBeEndDate );
+          gantt.updateTask(task.id, data);
+        }
+      }
+    }
+    let adjustSuccessor = (task : Task) => {
+      let successors = this.boardService.findSuccessors( task )
+      if(successors){
+        // Task cannot start before the end of any predecessor
+        for( let successor of successors ){
+          if(!successor.gantt || !successor.gantt?.startDate) continue;
+          if( toBeEndDate > fromIsoString(successor.gantt?.startDate) ){
+            let delta = toBeEndDate.getTime() - fromIsoString(successor.gantt?.startDate).getTime();
+            let newStartDate = new Date(fromIsoString(successor.gantt.startDate).getTime() + delta);
+            let newEndDate = new Date(fromIsoString( successor.gantt.endDate).getTime() + delta)
+            this.boardService.setTaskDates( successor, newStartDate, newEndDate )
+            let ta = gantt.getTask(successor.id);
+            ta.start_date = newStartDate;
+            ta.end_date = newEndDate
+            gantt.updateTask(successor.id, ta);
+            adjustSuccessor(successor);
+          }
+        }
+      }
+      gantt.refreshTask(task.id)
+    }
+    adjustSuccessor(task);
+
+
+    if( data.start_date && data.end_date ){
+      this.boardService.setTaskDates( t, toBeStartDate, toBeEndDate )
     }
     t.gantt.progress = data.progress ?? 0;
     t.textContent = data.text;
 
-    // Order is for each lane, or for the whole board:
-    let order = 0;
-    gantt.eachTask( ( task: DhtmlxTask ) => {
-      if( task['isRecurrenceStep'] ){
-        return;
-      }
-      const toOrder = this.boardService.getTask( task.id.toString() );
-      if( !toOrder || !toOrder.gantt ){
-        console.warn( 'Task not found' );
-        return;
-      }
-      if( !toOrder.gantt.order ){
-        toOrder.gantt.order = {};
-      }
-
-      if( !this.lane ){
-        // gantt is drawn on a board
-        toOrder.gantt.order!.board = order++
-      }else{
-        // gantt for a lane
-        toOrder.gantt.order![this.lane.id] = order++
-      }
-    } );
-
     this.changePublisherService.processChangesAndPublishUpdate( [t] );
-
-    /*
-    if( isRecurringTask(toUpdate) ){
-      // A recurrence step has been modified. We should redraw the related recurrences:
-      const newRecurrences = this.generateCenteredRecurrences( toUpdate, 0, data.parent?.toString() )
-      
-      newRecurrences.forEach((rec) => {
-        const t = gantt.getTask(rec.id);
-        t.start_date = rec.start_date;
-        t.end_date = rec.end_date;
-        gantt.updateTask(rec.id); //renders the updated task
-      });
-    }
-    */
-
+    
+    //this.init(this.lane.children);
   }
   createTask(){
     throw new Error( 'Method not implemented.' );
@@ -246,11 +253,16 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     this.selectView( this.selectedView );
 
     gantt.config.min_column_width = 25; // Set to your desired width in pixels
-
+    gantt.config.autosize = 'y'
     gantt.config.multiselect = true;
     gantt.config.multiselect_one_level = false;
+    gantt.config.preserve_scroll = true;
+    gantt.config.initial_scroll = false;
+    gantt.config.autoscroll = false;
     // default columns definition
 
+    gantt.config.columns = []
+    /*
     gantt.config.columns = [
       {
         name: 'mention',
@@ -277,7 +289,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
       } },
       { name: 'duration', label: 'Duration', align: 'center',  width: 50, },
     ];
-
+    */
     gantt.config.grid_width = ganttConfig.columnsWidth;
 
     gantt.templates.grid_file = function(){
@@ -358,27 +370,28 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
    * Performs after init operations and attaches update listeners for tasks and links
    */
   private ganttAfterInitOperations( gantt: GanttStatic ){
-    gantt.showDate( this.shownDate ?? this.today );
-      
+    // gantt.showDate( this.shownDate ?? this.today );
+    
     gantt.addMarker( { 
       start_date: new Date(), 
       css: "today", 
       title:"Today"
     } );
 
-    this.dp = gantt.createDataProcessor( {
-      task: {
-        update: ( data: DhtmlxTask ) => this.updateTask( data ),
-        create: () => this.createTask(),
-        // delete: (id: string) => console.log(id),
-      },
-      link: {
-        update: () => this.updateLink(),
-        create: ( data: DhtmlxLink ) => this.createLink( data ),
-        delete: ( id: string ) => this.deleteLink( id ),
-      },
-    } );
-    
+    if(!this.dp){
+      this.dp = gantt.createDataProcessor( {
+        task: {
+          update: ( data: DhtmlxTask ) => this.updateTask( data ),
+          create: () => this.createTask(),
+          // delete: (id: string) => console.log(id),
+        },
+        link: {
+          update: () => this.updateLink(),
+          create: ( data: DhtmlxLink ) => this.createLink( data ),
+          delete: ( id: string ) => this.deleteLink( id ),
+        },
+      } );
+    }
   }
 
   /**

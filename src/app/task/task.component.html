@@ -1,4 +1,4 @@
-<div class="task-wrapper g-05" [droppable]="3" [container]="task" [executeOnDropReceived]="receiveDrop.bind(this)" [class.editor-active]="this.editorActive" [class.selected]="this.selected" [class]="this.task.status" [class.recurrence-child]="isRecurringTaskChild(task)" [class.project]="isProject(task)" [style]="this.task.priority === 4 ? 'font-weight: bolder' : ''" (click)="clickTask()">
+<div class="task-wrapper g-05" [droppable]="3" [container]="task" [executeOnDropReceived]="receiveDrop.bind(this)" [class.editor-active]="this.editorActive" [class.selected]="this.selected" [class]="this.task.status" [class.recurrence-child]="isRecurringTaskChild(task)" [class.project]="isProject(task)" [style]="this.task.priority === 4 ? 'font-weight: bolder' : ''" (click)="clickTask()" [style.height]="enableGanttView ? '25px' : ''">
   <div class="task-main-controls flex g-05 align-items-center">
     <div [tooltip]="'Drag'" *ngIf="!isStaticView() && !isPlaceholder() && !isRecurringTaskChild(task)" class="drag-handle translucent" drag-on-this="true" draggable="true">⋮</div>
 
@@ -15,9 +15,7 @@
     <status [container]="task" [board]="board" [staticLane]="isStaticView()" (onStatusSelected)="updateStatus($event)"></status>
   </div>
   <div class="flex grow g-025 align-items-center">
-    @if (enableGanttView) {
-      <div class="task-text-content" innerHTML="{{ task.textContent }}"></div>
-    } @else if (task.searchTextContent) {
+    @if  (task.searchTextContent) {
       <div class="task-text-content" innerHTML="{{ task.searchTextContent }}"></div>
     } @else {
       <div class="task-text-content grow" [class.placeholder]="isPlaceholder()" #editor contenteditable="true" [preventEvents]="!editorActive" [board]="board" [(ngModel)]="task.textContent" (ngModelChange)="publishChange()" (onTagsChange)="updateTaskTags($event)"></div>
@@ -41,7 +39,7 @@
     </div>
   </div>
 </div>
-<div *ngIf="(task.gantt && task.gantt.showData !== false) || task.archivedDate" class="dates-n-stuff flex g-05 small">
+<div *ngIf="(task.gantt && task.gantt.showData !== false && !enableGanttView) || task.archivedDate" class="dates-n-stuff flex g-05 small">
   <div class="">
     <ng-container [ngTemplateOutlet]="datesText" [ngTemplateOutletContext]="{ task: task }"></ng-container>
   </div>
@@ -55,6 +53,7 @@
       child: child,
       last: last,
       static: isStaticView(),
+      enableGanttView
     }"
   ></ng-container>
 </div>
@@ -67,17 +66,18 @@
       child: recurrence,
       last: last,
       static: true,
+      enableGanttView
     }"
   ></ng-container>
 </div>
 
-<ng-template #taskWithLine let-child="child" let-last="last" let-static="static">
+<ng-template #taskWithLine let-child="child" let-last="last" let-static="static" let-enableGanttView="enableGanttView">
   <div class="flex">
     <div class="line">
       <div class="border-angle"></div>
       <div *ngIf="!last" class="border-line"></div>
     </div>
-    <task [draggableDir]="child" [containerEl]="el.nativeElement" [layout]="'absolute'" class="child" [staticView]="isStaticView()" [parent]="this.task" [task]="child" [board]="this.board" [lane]="this.lane"></task>
+    <task [enableGanttView]="enableGanttView" [draggableDir]="child" [containerEl]="el.nativeElement" [layout]="'absolute'" class="child" [staticView]="isStaticView()" [parent]="this.task" [task]="child" [board]="this.board" [lane]="this.lane"></task>
   </div>
 </ng-template>
 

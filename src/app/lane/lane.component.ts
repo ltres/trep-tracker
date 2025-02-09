@@ -2,7 +2,7 @@ import{ ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwa
 import{ Board, Container, Lane, PickerOutput, Priority, Status, Tag, Task, getNewTask }from'../../types/types';
 import{ BoardService }from'../../service/board.service';
 import{ hashCode, isArchive, isPlaceholder, isStatic }from'../../utils/utils';
-import{ map, Observable, of }from'rxjs';
+import{ BehaviorSubject, map, Observable, of }from'rxjs';
 import{ TaskComponent }from'../task/task.component';
 import{ DragService }from'../../service/drag.service';
 import{ KeyboardService }from'../../service/keyboard.service';

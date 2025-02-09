@@ -2421,3 +2421,8 @@ div.dhx_modal_cover {
 .has-recurrence-task-row {
     border-top: 1px solid map.get($semantic-colors, gantt-border-color)
 }
+.gantt-parent-task{
+    height: 5px!important;
+    border: none!important;
+    margin-top: 10px;
+}

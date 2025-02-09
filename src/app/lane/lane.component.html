@@ -122,24 +122,32 @@
   </div>
 
   @if (!lane.collapsed) {
-    <div [class.non-static-island]="isStatic()" class="lane-task-container flex column">
-      <div [droppable]="5" [container]="lane" [executeOnDropReceived]="receiveDropToDumb.bind(this, undefined)" *ngIf="((tasks | async) ?? []).length > 0" class="dumb-dropzone"></div>
+    <div class="lane-content flex align-items-end ">
+      <div class="lane-content-left flex column scroll-x" >
+        <div [class.non-static-island]="isStatic()" class="lane-task-container flex column">
+          <div [droppable]="5" [container]="lane" [executeOnDropReceived]="receiveDropToDumb.bind(this, undefined)" *ngIf="((tasks | async) ?? []).length > 0" class="dumb-dropzone"></div>
 
-      <ng-container *ngFor="let task of tasks | async; trackBy: trackBy">
-        <task [task]="task" [parent]="lane" [board]="board" [lane]="lane" [draggableDir]="task" [containerEl]="el.nativeElement" [layout]="board.layout" (onDragStart)="interactingWithChildTasks = true" (onDragEnd)="interactingWithChildTasks = false" (onToggleShowNotes)="interactingWithChildTasks = $event" (createNewTask)="createNewTask()" [class]="isRecurringTask(task) ? 'recurrent-task-container p-x-05 m-x--1' : ''"></task>
+          <ng-container *ngFor="let task of tasks | async; trackBy: trackBy">
+            <task [enableGanttView]="true" [task]="task" [parent]="lane" [board]="board" [lane]="lane" [draggableDir]="task" [containerEl]="el.nativeElement" [layout]="board.layout" (onDragStart)="interactingWithChildTasks = true" (onDragEnd)="interactingWithChildTasks = false" (onToggleShowNotes)="interactingWithChildTasks = $event" (createNewTask)="createNewTask()" [class]="isRecurringTask(task) ? 'recurrent-task-container p-x-05 m-x--1' : ''"></task>
 
-        <div *ngIf="!isPlaceholder(task)" [droppable]="5" [container]="lane" [executeOnDropReceived]="receiveDropToDumb.bind(this, task)" class="dumb-dropzone"></div>
-      </ng-container>
-    </div>
+            <div *ngIf="!isPlaceholder(task)" [droppable]="5" [container]="lane" [executeOnDropReceived]="receiveDropToDumb.bind(this, task)" class="dumb-dropzone"></div>
+          </ng-container>
+        </div>
 
-    <div *ngIf="isStatic()">
-      <div class="static-view flex column">
-        <task *ngFor="let task of staticTasks | async; trackBy: trackBy" [staticView]="true" [showChildren]="lane.showChildren" [task]="task" (onToggleShowNotes)="interactingWithChildTasks = $event" [parent]="lane" [board]="board" [lane]="lane" [class]="isRecurringTask(task) ? 'recurrent-task-container p-x-05 m-x--1' : ''" [@fadeInOut]></task>
+        <div *ngIf="isStatic()">
+          <div class="static-view flex column">
+            <task *ngFor="let task of staticTasks | async; trackBy: trackBy" [staticView]="true" [showChildren]="lane.showChildren" [task]="task" (onToggleShowNotes)="interactingWithChildTasks = $event" [parent]="lane" [board]="board" [lane]="lane" [class]="isRecurringTask(task) ? 'recurrent-task-container p-x-05 m-x--1' : ''" [@fadeInOut]></task>
+          </div>
+        </div>
+
+        <!-- <p class="floating-label">Lane: {{lane.id}}</p> -->
+
+
+      </div>
+      <div class="lane-content-right grow">
+        <gantt [lane]="lane" [board]="board" class="h-100"></gantt>
       </div>
     </div>
-
-    <!-- <p class="floating-label">Lane: {{lane.id}}</p> -->
-
     <div *ngIf="!isStatic()" class="lane-toolbar flex g-05">
       <div class="grow"></div>
       <button class="small no-grow new-task" (click)="createNewTask()">
@@ -153,5 +161,5 @@
 </div>
 
 <ng-template #gantt>
-  <gantt [tasks]="getGanttTasks$() | async" [lane]="lane" [board]="board"></gantt>
+  asd
 </ng-template>

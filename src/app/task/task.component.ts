@@ -10,7 +10,7 @@ import{ ContainerComponent }from'../base/base.component';
 import{ ClickService }from'../../service/click.service';
 import{  fromIsoString, formatDate, getDiffInDays }from'../../utils/date-utils';
 import{ setCaretPosition, isPlaceholder, hashCode, isArchivedOrDiscarded }from'../../utils/utils';
-import{ millisForMagnitudeStep, minOpacityAtTreshold, similarityTreshold }from'../../types/constants';
+import{ ganttConfig, millisForMagnitudeStep, minOpacityAtTreshold, similarityTreshold }from'../../types/constants';
 import{ isProject, isRecurringTask, isRecurringTaskChild, isTask }from'../../utils/guards';
 import{ fadeInOut }from'../../types/animations';
 import{ TagService }from'../../service/tag.service';
@@ -48,7 +48,10 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   showDatePicker: boolean = false;
   showArrows: boolean = false;
   debounce: ReturnType<typeof setTimeout> | undefined;
-
+ 
+  getFixedHeight(){
+    return `${ganttConfig.recurrentTaskHeight} + 'px'`;
+  }
   constructor(
     protected override changePublisherService: ChangePublisherService,
     protected override cdr: ChangeDetectorRef,
@@ -171,12 +174,12 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
 
     if( !allOldPresent || !allNewPresent ){
       this.task.tags = $event;
-      this.changePublisherService.processChangesAndPublishUpdate( [this.task] )
+      this.changePublisherService.processChangesAndPublishUpdate( [this.task, this.lane] )
     }
   }
 
   publishChange( ){
-    this.changePublisherService.processChangesAndPublishUpdate( [this.task] )
+    this.changePublisherService.processChangesAndPublishUpdate( [this.task, this.lane] )
   }
 
   updateStatus( $event: Status[] | Status | undefined ){

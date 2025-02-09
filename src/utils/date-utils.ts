@@ -36,7 +36,10 @@ export function getWorkingDays( startDate: ISODateString, endDate: ISODateString
   return Math.abs( workingDays );
 }
 
-export function ganttDateToDate( ganttDate: string ): Date{
+export function ganttDateToDate( ganttDate: string | Date ): Date{
+  if(typeof ganttDate === 'object'){
+    return ganttDate;
+  }
   // Parse the local date string
   const[datePart, timePart] = ganttDate.split( ' ' );
   const[year, month, day] = datePart.split( '-' ).map( Number );

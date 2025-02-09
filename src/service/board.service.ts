@@ -1020,6 +1020,13 @@ export class BoardService{
     //this.publishBoardUpdate();
   }
   
+  findPredecessors(task: Task): Task[] {
+    return this._allTasks$.getValue()?.filter( t => t.gantt?.successors.map( t => t.taskId).includes( task.id ) ) ?? [];
+  }
+  findSuccessors(task: Task): Task[] {
+    return this._allTasks$.getValue()?.filter( t => task.gantt?.successors.map( s => s.taskId).includes(t.id) ) ?? [];
+  }
+
   /**
    * Sets start and end date on a task, transforming it into a GanttTask (initializes gantt data if missing). If a recurrence is provided, reinitializes recurrence data (old data is erased)
    * @param task 
