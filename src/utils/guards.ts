@@ -1,5 +1,5 @@
 import{ priorityValues, statusValues }from"../types/constants";
-import{ Container, Lane, Board, GanttTask, RecurringTask, Task, Status, Priority, Tag, RecurringTaskChild, Project }from"../types/types";
+import{ Container, Lane, Board, TimedTask, Task, Status, Priority, Tag, Project, FixedTimedTask, RollingTimedTask }from"../types/types";
 
 export function isLane( parent: Container | undefined ): parent is Lane{
   if( !parent ){
@@ -7,19 +7,19 @@ export function isLane( parent: Container | undefined ): parent is Lane{
   }
   return( parent as Lane )._type === 'lane';
 }
-export function isTask( parent: Container | undefined ): parent is Task{
+export function isTask( parent: Container | unknown ): parent is Task{
   if( !parent ){
     return false;
   }
   return( parent as Task )._type === 'task';
 }
-export function assertIsTask( parent: Container | undefined ): asserts parent is Task{
+export function assertIsTask( parent: Container | unknown ): asserts parent is Task{
   if( ! isTask( parent ) ){
     throw new Error( 'Not a Task' );
   }
 }
 
-export function isBoard( parent: Container | undefined ): parent is Board{
+export function isBoard( parent: Container | unknown ): parent is Board{
   if( !parent ){
     return false;
   }
@@ -40,14 +40,40 @@ export function assertIsContainers( target: Container[] | unknown ): asserts tar
   }
 }
 
-export function isGanttTask( parent: Container | undefined ): parent is GanttTask{
+export function isTimedTask( parent: Container | unknown ): parent is TimedTask{
   if( !parent ){
     return false;
   }
-  return isTask( parent ) && !!parent.gantt;
+  return isTask( parent ) && !!parent.time;
+}
+export function assertIsTimedTask( target: Container | unknown ): asserts target is TimedTask{
+  if( !isTimedTask( target ) ){
+    throw new Error( 'Not a Container[]' );
+  }
 }
 
-export function assertIsGanttTask( parent: Container | undefined ): asserts parent is GanttTask{
+export function isFixedTimedTask( parent: Container | unknown ): parent is FixedTimedTask{
+  if( !parent ){
+    return false;
+  }
+  return isTimedTask( parent ) && parent.time.type === 'fixed';
+}
+
+export function assertIsFixedTimedTask( target: Container | unknown ): asserts target is FixedTimedTask{
+  if( !isFixedTimedTask( target ) ){
+    throw new Error( 'Not a Container[]' );
+  }
+}
+
+export function isRollingTimedTask( parent: Container | unknown ): parent is RollingTimedTask{
+  if( !parent ){
+    return false;
+  }
+  return isTimedTask( parent ) && parent.time.type === 'rolling';
+}
+
+/*
+export function assertIsGanttTask( parent: Container | undefined ): asserts parent is TimedTask{
   if( !isGanttTask( parent ) ){
     throw new Error( 'Not a ganttTask' );
   }
@@ -72,7 +98,7 @@ export function isRecurringTaskChild( parent: Container | undefined ): parent is
   }
   return isGanttTask( parent ) && typeof parent.gantt.recurringChildIndex === 'number' && !!parent.gantt.fatherRecurringTaskId;
 }
-
+*/
 export function isProject( parent: Container | undefined ): parent is Project{
   if( !parent ){
     return false;
@@ -80,12 +106,13 @@ export function isProject( parent: Container | undefined ): parent is Project{
   return isTask( parent ) && parent.children.length > 0;
 }
 
+/*
 export function assertIsRecurringTaskChild( parent: Container | undefined ): asserts parent is RecurringTaskChild{
   if( !isRecurringTaskChild( parent ) ){
     throw new Error( 'Not a RecurringTaskChild' );
   }
 }
-  
+*/
 export function isLanes( parent: Container[] ): parent is Lane[]{
   return( parent[0] as Lane )._type === 'lane';
 }

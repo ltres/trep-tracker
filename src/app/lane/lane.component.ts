@@ -2,7 +2,7 @@ import{ ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwa
 import{ Board, Container, Lane, PickerOutput, Priority, Status, Tag, Task, getNewTask }from'../../types/types';
 import{ BoardService }from'../../service/board.service';
 import{ hashCode, isArchive, isPlaceholder, isStatic }from'../../utils/utils';
-import{ BehaviorSubject, map, Observable, of }from'rxjs';
+import{ map, Observable, of }from'rxjs';
 import{ TaskComponent }from'../task/task.component';
 import{ DragService }from'../../service/drag.service';
 import{ KeyboardService }from'../../service/keyboard.service';
@@ -10,7 +10,7 @@ import{ ContainerComponentRegistryService }from'../../service/registry.service';
 import{ ContainerComponent }from'../base/base.component';
 import{ ModalService }from'../../service/modal.service';
 import{ layoutValues, tagIdentifiers }from'../../types/constants';
-import{  isPriorityArray,  isRecurringTask,  isStatusArray,  isTagArray, isTask }from'../../utils/guards';
+import{  isPriorityArray,   isStatusArray,  isTagArray, isTask }from'../../utils/guards';
 import{ fadeInOut, slowFadeInOut }from'../../types/animations';
 import{ TagService }from'../../service/tag.service';
 import{ ChangePublisherService }from'../../service/change-publisher.service';
@@ -260,7 +260,10 @@ export class LaneComponent extends ContainerComponent implements OnInit{
     this.menuOpen = !this.menuOpen
   }
   isRecurringTask( t: Task ):boolean{
-    return isRecurringTask( t )
+    if( t ){
+      return false
+    }
+    return false
   }
 
 }

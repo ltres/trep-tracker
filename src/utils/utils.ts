@@ -2,7 +2,7 @@ import{ v4 as uuidv4 }from'uuid';
 
 import{ dateFormats, ganttConfig, layoutValues, tagHtmlWrapper, tagIdentifiers, tagTypes }from'../types/constants';
 import{ addUnitsToDate, toIsoString }from'./date-utils';
-import{ Lane, Container, GanttTask, Recurrence, Board, ISODateString, LayoutProperties, getLayouts, Layout, Task, getDefaultLocale, Status }from'../types/types';
+import{ Lane, Container, TimedTask, Recurrence, Board, ISODateString, LayoutProperties, getLayouts, Layout, Task, getDefaultLocale, Status }from'../types/types';
 import{ isTask, isLane, isProject }from'./guards';
 import{stringSimilarity}from'string-similarity-js';
 
@@ -261,9 +261,9 @@ export function textToNumber( text: string, to?: number ): number{
    * @param startDate : if set, will be the task start date
    * Check the gantt-constants for config used.
   */
-export function initGanttData( task: Task, startDateIso?: Date | undefined ): GanttTask{
-  if( task.gantt ){
-    return task as GanttTask;
+export function initTimeData( task: Task, startDateIso?: Date | undefined ): TimedTask{
+  if( task.time ){
+    return task as TimedTask;
   }
   let startDate = startDateIso ?? new Date();
   if( ganttConfig.skipWeekendsInPlanning && ( startDate.getUTCDay() == 6 || startDate.getUTCDay() == 0 ) ){
@@ -276,15 +276,19 @@ export function initGanttData( task: Task, startDateIso?: Date | undefined ): Ga
     // Plan for next monday
     endDate = addUnitsToDate( endDate, endDate.getUTCDay() == 0 ? 1 : 2, 'day' );
   }
-  task.gantt = {
-    showData: true,
+  task.time = {
+    // showData: true,
     startDate: toIsoString( startDate ),
-    endDate:  toIsoString( endDate ),
+    endDate: toIsoString( endDate ),
+    type: "fixed",
+    // endDate:  toIsoString( endDate ),
     progress: 0,
-    successors: [],
-    recurrence: undefined
+    //successors: [],
+    predecessors: [],
+    duration: 1
+    //recurrence: undefined
   };
-  return task as GanttTask;
+  return task as TimedTask;
 }
 
 export function getTaskBackgroundColor( text:string ){
@@ -339,6 +343,7 @@ export function isDiscarded( task:Task ): boolean{
   return!!task.discardedDate
 }
 
+// TODO fix patch for new time management
 /**
  * Data model has undergone some changes in time. This method ensures that all the statuses get brought to the latest version.
  * @param board 
@@ -406,33 +411,35 @@ export function eventuallyPatch( board: Board ): Board{
 
       }
 
+      /*
       // cleanup successors
-      if( mayBeOldTask.gantt?.successors ){
-        for( const succ of  mayBeOldTask.gantt.successors ){
+      if( mayBeOldtask.time?.successors ){
+        for( const succ of  mayBeOldtask.time.successors ){
           if( !des.find( d => d.id === succ.taskId ) ){
-            mayBeOldTask.gantt.successors = mayBeOldTask.gantt.successors.filter( s => s.taskId !== succ.taskId )
+            mayBeOldtask.time.successors = mayBeOldtask.time.successors.filter( s => s.taskId !== succ.taskId )
           }
         }
       }
-
+      */
       // createdLaneId removal
       if( mayBeOldTask.createdLaneId ){
         delete mayBeOldTask.createdLaneId
       }
 
       // cleanup orders
-      if( mayBeOldTask.gantt?.order ){
-        for( const ord of  Object.keys( mayBeOldTask.gantt.order ) ){
+      /*
+      if( mayBeOldtask.time?.order ){
+        for( const ord of  Object.keys( mayBeOldtask.time.order ) ){
           if( ord === 'board' ){
             // Skip board order
             continue;
           }
           if( !des.find( d => d.id === ord ) ){
-            delete mayBeOldTask.gantt.order[ord]
+            delete mayBeOldtask.time.order[ord]
           }
         }
       }
-
+      */
       if( mayBeOldTask.includeInGantt ){
         delete mayBeOldTask.includeInGantt;
       }

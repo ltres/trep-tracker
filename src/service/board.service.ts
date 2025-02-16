@@ -1,11 +1,11 @@
 import{Inject, Injectable, Injector, NgZone}from'@angular/core';
-import{Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, Timeframe, AddFloatingLaneParams, RecurringTask, Recurrence, GanttTask, RecurringTaskChild}from'../types/types';
+import{Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, Timeframe, AddFloatingLaneParams, FixedTimedTask, TimedTask, ISODateString}from'../types/types';
 import{BehaviorSubject, Observable, asyncScheduler, debounceTime, map, observeOn}from'rxjs';
-import{checkTaskSimilarity, eventuallyPatch, getDescendants, getProjectComputedStatus, initGanttData, isArchived, isArchivedOrDiscarded, isPlaceholder,  isStatic,}from'../utils/utils';
+import{checkTaskSimilarity, eventuallyPatch, getDescendants, getProjectComputedStatus, initTimeData, isArchived, isArchivedOrDiscarded, isPlaceholder,  isStatic,}from'../utils/utils';
 import{StorageServiceAbstract}from'../types/storage';
-import{addUnitsToDate, fromIsoString, setDateSafe, shiftByRecurrence, toIsoString}from'../utils/date-utils';
-import{boardDebounceDelay, recurringChildrenLimit, similarityTreshold, statusValues}from'../types/constants';
-import{isTask, isLane, isTasks, assertIsRecurringTaskChild, isRecurringTask, isRecurringTaskChild, assertIsGanttTask, assertIsRecurringTask, isProject, assertIsTask, isBoard}from'../utils/guards';
+import{addUnitsToDate, calculateEndDateFromDuration, fromIsoString, setDateSafe, toIsoString}from'../utils/date-utils';
+import{boardDebounceDelay, similarityTreshold, statusValues}from'../types/constants';
+import{isTask, isLane, isTasks, isProject, assertIsTask, isBoard, isTimedTask, assertIsFixedTimedTask, isFixedTimedTask, isRollingTimedTask, assertIsTimedTask}from'../utils/guards';
 import{ logPerformance }from'../utils/performance-logger';
 import{ ChangePublisherService }from'./change-publisher.service';
 
@@ -245,9 +245,11 @@ export class BoardService{
               break;
           }
           res = res?.filter( t => {
-            if( !t.gantt )return false;
-            if( fromIsoString( t.gantt.startDate ) > now 
-              && fromIsoString( t.gantt.startDate ) < startDate ){
+            if( !isFixedTimedTask( t ) &&!isRollingTimedTask( t ) )return false;
+            const time = this.getComputedDates( t );
+
+            if( fromIsoString( time.startDate ) > now 
+              && fromIsoString( time.startDate ) < startDate ){
               return true;
             }
             return false;
@@ -276,9 +278,11 @@ export class BoardService{
               break;
           }
           res = res?.filter( t => {
-            if( !t.gantt )return false;
-            if( fromIsoString( t.gantt.endDate ) > now 
-              && fromIsoString( t.gantt.endDate ) < endDate ){
+            if( !isFixedTimedTask( t ) &&!isRollingTimedTask( t ) )return false;
+            const time = this.getComputedDates( t );
+
+            if( fromIsoString( time.endDate ) > now 
+              && fromIsoString( time.endDate ) < endDate ){
               return true;
             }
             return false;
@@ -542,13 +546,14 @@ export class BoardService{
         parent.children = parent.children.filter( t => t.id !== task.id );
       }
 
+      /*
       // task could be a recurrence child:
       const recurrenceParent = this.allTasks?.filter( t => isRecurringTask( t ) ).find( t => t.recurrences.map( r => r.id ).find( t => t === task.id ) );
       if( recurrenceParent ){
         task.parentId = recurrenceParent.id;
         recurrenceParent.recurrences = recurrenceParent.recurrences.filter( t => t.id !== task.id );
       }
-
+      */
       if( !archive ){
         // create the archive
         const params: AddFloatingLaneParams = {
@@ -577,30 +582,31 @@ export class BoardService{
         // console.warn( `Task with id ${task.id} is not a first level task in the archive.` );
         return;
       }
-
+      /*
       // if the task was a recurrence child, put it back on the parent
       if( isRecurringTaskChild( task ) ){
-        const p = this._allTasks$.getValue()?.find( p => p.id === task.gantt!.fatherRecurringTaskId );
+        const p = this._allTasks$.getValue()?.find( p => p.id === task.time!.fatherRecurringTaskId );
         if( p && isRecurringTask( p ) ){
           p.recurrences.push( task );
           p.recurrences.sort( ( r1, r2 ) => r1.gantt.recurringChildIndex - r2.gantt.recurringChildIndex )
         }
       }else{
-        // send the task back to the original lane
-        // Identify the original lane
-        const parent = this._allParents$.getValue()?.find( p => p.id === task.parentId );
-        if( parent ){
-          // add the task to the original lane
-          parent.children.push( task );
-        }else{
-          console.warn( `Cannot find lane with id ${task.parentId}` );
-          const params: AddFloatingLaneParams = {
-            board, x:0, y:0, children: [task], archive:false, width:300
-          }
-          const lane = this.addFloatingLane( params );
-          task.parentId = lane.id;
+      */
+      // send the task back to the original lane
+      // Identify the original lane
+      const parent = this._allParents$.getValue()?.find( p => p.id === task.parentId );
+      if( parent ){
+        // add the task to the original lane
+        parent.children.push( task );
+      }else{
+        console.warn( `Cannot find lane with id ${task.parentId}` );
+        const params: AddFloatingLaneParams = {
+          board, x:0, y:0, children: [task], archive:false, width:300
         }
+        const lane = this.addFloatingLane( params );
+        task.parentId = lane.id;
       }
+      //}
       delete task.archivedDate;
       // remove the task from the archive
       archive?.children.splice( archive.children.findIndex( t => t.id === task.id ), 1 );
@@ -660,8 +666,8 @@ export class BoardService{
     const toSearchIds = toSearch.map( s => s.id )
 
     let parents = this._allParents$.getValue()?.filter( p => 
-      ( p.children.length > 0 && p.children.map( c => c.id ).filter( childId => toSearchIds.includes( childId ) ).length > 0 ) ||
-      ( isRecurringTask( p ) && p.recurrences.length > 0 && p.recurrences.map( c => c.id ).filter( recId => toSearchIds.includes( recId ) ).length > 0 )
+      ( p.children.length > 0 && p.children.map( c => c.id ).filter( childId => toSearchIds.includes( childId ) ).length > 0 ) 
+      //|| ( isRecurringTask( p ) && p.recurrences.length > 0 && p.recurrences.map( c => c.id ).filter( recId => toSearchIds.includes( recId ) ).length > 0 )
     );
     // filter out duplicate parents and archive
     if( parents ){
@@ -893,7 +899,7 @@ export class BoardService{
  * @param tasks 
  */
   getTasksForGantt( tasks: Task[] ): Task[]{
-    const allDescendantsHavingDates = tasks.flatMap( t => getDescendants( t ).concat( t ) ).filter( t => isTask( t ) ).filter( t => !isProject( t ) && t.gantt?.startDate );
+    const allDescendantsHavingDates = tasks.flatMap( t => getDescendants( t ).concat( t ) ).filter( t => isTask( t ) ).filter( t => !isProject( t ) && isTimedTask( t ) );
     const projectsToAdd: Task[] = allDescendantsHavingDates.map( d => this.findDirectParent( [d] ) ).filter( p => isProject( p ) );
     return projectsToAdd.concat( allDescendantsHavingDates );
   }
@@ -1020,11 +1026,47 @@ export class BoardService{
     //this.publishBoardUpdate();
   }
   
-  findPredecessors(task: Task): Task[] {
-    return this._allTasks$.getValue()?.filter( t => t.gantt?.successors.map( t => t.taskId).includes( task.id ) ) ?? [];
+  findSuccessors( task: Task ): Task[]{
+    return this._allTasks$.getValue()?.filter( t => t.time?.predecessors?.map( t => t.taskId ).includes( task.id ) ) ?? [];
   }
-  findSuccessors(task: Task): Task[] {
-    return this._allTasks$.getValue()?.filter( t => task.gantt?.successors.map( s => s.taskId).includes(t.id) ) ?? [];
+  findPredecessors( task: Task ): Task[]{
+    return this._allTasks$.getValue()?.filter( t => task.time?.predecessors?.map( s => s.taskId ).includes( t.id ) ) ?? [];
+  }
+
+  /**
+ * Returns
+ *  Computed start and end date for rolling tasks
+ *  Start and end date for fixed tasks
+ * @param t 
+ * @returns 
+ */
+  getComputedDates( t: TimedTask, duration?: number ): {startDate: ISODateString, endDate: ISODateString}{
+
+    if( isFixedTimedTask( t ) ){
+      return{
+        startDate: t.time.startDate,
+        endDate: t.time.endDate
+      }
+    }else if( isRollingTimedTask( t ) ){
+    // find the first fixes predecessor, and calculate from there:
+      const greatestEndDateInPredecessors = t.time.predecessors.map( pred => {
+        const predT = this.findTask( pred.taskId );
+        if( predT ){
+          assertIsTimedTask( predT )
+          return fromIsoString( this.getComputedDates( predT ).endDate );
+        }else{
+          throw new Error( "Could not find predecessor" )
+        }       
+      } ).sort( ( d1, d2 ) => d2.getTime() - d1.getTime() )[0]
+
+      return{
+        startDate: toIsoString( greatestEndDateInPredecessors ),
+        endDate: toIsoString( calculateEndDateFromDuration( greatestEndDateInPredecessors, duration ?? t.time.duration ).endDate ),
+      }
+    }
+
+    throw new Error( "Task is neither fixed not rolling" )
+
   }
 
   /**
@@ -1033,42 +1075,43 @@ export class BoardService{
    * @param start 
    * @param end 
    * @param recurrence 
-   */
-  setTaskDates( task: Task, start: Date, end: Date, recurrence? :Recurrence ): GanttTask{
-    if( !task.gantt ){
-      initGanttData( task, undefined );
+ */
+  setTaskDates( task: Task, start: Date, end: Date ): FixedTimedTask{
+    if( !task.time ){
+      initTimeData( task, undefined );
     }
-    let datesChanged = false;
-    task.gantt!.showData = true;
-    if( task.gantt!.startDate !== toIsoString( start ) || task.gantt!.endDate !== toIsoString( end ) ){
-      datesChanged = true;
+    //const datesChanged = false;
+    //task.time!.showData = true;
+    if( task.time!.startDate !== toIsoString( start ) || task.time!.endDate !== toIsoString( end ) ){
+      //datesChanged = true;
     }
-    task.gantt!.startDate = toIsoString( start );
-    task.gantt!.endDate = toIsoString( end );
+    task.time!.startDate = toIsoString( start );
+    task.time!.endDate = toIsoString( end );
     
-    task.gantt!.progress = 0;
-    assertIsGanttTask( task );
+    task.time!.progress = 0;
+    assertIsFixedTimedTask( task );
 
+    /*
     if( recurrence && recurrence !== 'no' ){
-      if( !task.gantt ){
-        initGanttData( task, undefined );
+      if( !task.time ){
+        initTimeData( task, undefined );
       }
   
-      task.gantt.recurrence = recurrence;
-      task.gantt.displayRecurrence = true;
+      //task.time.recurrence = recurrence;
+      //task.time.displayRecurrence = true;
       task.recurrences = [];
       assertIsRecurringTask( task );
       
-      if( datesChanged || recurrence !== task.gantt.recurrence ){
+      if( datesChanged || recurrence !== task.time.recurrence ){
         task.recurrences = [];
       }
     }else{
-      delete task.gantt?.recurrence;
+      //delete task.time?.recurrence;
     }
-
+    */
     //this.publishBoardUpdate();
     return task;
-  }
+  }  
 
   /**
    * Compares all the tasks in the board for text similarities. If any similarity is found, tasks get linked.
@@ -1103,7 +1146,7 @@ export class BoardService{
    * @param dateToCenter 
    * @param task 
    * @returns 
-  */
+
   manageRecurringChildren( task: RecurringTask ): RecurringTaskChild[]{
     const today = new Date();
 
@@ -1124,8 +1167,8 @@ export class BoardService{
     const latestTask = recurrencesToConsider.length > 0 ? recurrencesToConsider[recurrencesToConsider.length - 1] : task
 
     // dates to begin the calculation could be the original task dates or the latest task recurrence child
-    const originalStartDate = new Date( latestTask.gantt.startDate );
-    const originalEndDate = new Date( latestTask.gantt.endDate );
+    const originalStartDate = new Date( latesttask.time.startDate );
+    const originalEndDate = new Date( latesttask.time.endDate );
 
     let childStartDate = originalStartDate;
     let childEndDate = originalEndDate;
@@ -1136,12 +1179,12 @@ export class BoardService{
     if( originalDatesInThePast ){
       // we need to find the first recurrence which has the end date in the future to display it as first recurrence:
       while( childEndDate < today ){
-        childStartDate = shiftByRecurrence( childStartDate, task.gantt.recurrence );
-        childEndDate = shiftByRecurrence( childEndDate, task.gantt.recurrence )
+        childStartDate = shiftByRecurrence( childStartDate, task.time.recurrence );
+        childEndDate = shiftByRecurrence( childEndDate, task.time.recurrence )
       }
     }else{
-      childStartDate = shiftByRecurrence( childStartDate, task.gantt.recurrence );
-      childEndDate =  shiftByRecurrence( childEndDate, task.gantt.recurrence );
+      childStartDate = shiftByRecurrence( childStartDate, task.time.recurrence );
+      childEndDate =  shiftByRecurrence( childEndDate, task.time.recurrence );
     }
 
     // now we have the date for the first child that is running today or is in the future.
@@ -1163,18 +1206,18 @@ export class BoardService{
       assertIsRecurringTaskChild( nextChild );
       task.recurrences.push( nextChild );
 
-      childStartDate = shiftByRecurrence( childStartDate, task.gantt.recurrence );
-      childEndDate =  shiftByRecurrence( childEndDate, task.gantt.recurrence );
+      childStartDate = shiftByRecurrence( childStartDate, task.time.recurrence );
+      childEndDate =  shiftByRecurrence( childEndDate, task.time.recurrence );
     }
 
     return task.recurrences
 
   }
-
+  */
   findTask( id:string ):Task | undefined{
     return this._allTasks$.getValue()?.find( t => t.id === id )
   }
-
+  
   /**
     * Deserializes the given data and updates the state of the board service.
     * Performs an update on the status basing on the iteration on the app.

@@ -11,7 +11,7 @@ import{ ClickService }from'../../service/click.service';
 import{  fromIsoString, formatDate, getDiffInDays }from'../../utils/date-utils';
 import{ setCaretPosition, isPlaceholder, hashCode, isArchivedOrDiscarded }from'../../utils/utils';
 import{ ganttConfig, millisForMagnitudeStep, minOpacityAtTreshold, similarityTreshold }from'../../types/constants';
-import{ isProject, isRecurringTask, isRecurringTaskChild, isTask }from'../../utils/guards';
+import{ isProject,  isTask }from'../../utils/guards';
 import{ fadeInOut }from'../../types/animations';
 import{ TagService }from'../../service/tag.service';
 import{ ChangePublisherService }from'../../service/change-publisher.service';
@@ -50,7 +50,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   debounce: ReturnType<typeof setTimeout> | undefined;
  
   getFixedHeight(){
-    return `${ganttConfig.recurrentTaskHeight} + 'px'`;
+    return`${ganttConfig.recurrentTaskHeight} + 'px'`;
   }
   constructor(
     protected override changePublisherService: ChangePublisherService,
@@ -218,12 +218,12 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
 
   setDates( pickerOutput: PickerOutput | undefined ){
     if( !pickerOutput ){
-      if( this.task.gantt ){
-        this.task.gantt.showData = false;
+      if( this.task.time ){
+        //this.task.time.showData = false;
       }
     }else{
       if( 'dates' in pickerOutput ){
-        this.boardService.setTaskDates( this.task, pickerOutput.dates[0], pickerOutput.dates[1], pickerOutput.recurrence );
+        this.boardService.setTaskDates( this.task, pickerOutput.dates[0], pickerOutput.dates[1] );
       }else if( 'timeframe' in pickerOutput ){
         throw new Error( 'Trying to set a timeframe on a task' );
       }
@@ -244,9 +244,11 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   }
 
   isRecurringTask( task: Task ){
-    return isRecurringTask( task );
+    if( task ){
+      return false
+    }
+    return false
   }
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   formatDate( date: ISODateString, format?: DateFormat ){
     return formatDate( date, this.board.datesConfig );
@@ -310,7 +312,10 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   }
 
   isRecurringTaskChild( r: Task ): boolean{
-    return isRecurringTaskChild( r );
+    if( r ){
+      return false
+    }
+    return false;
   }
 
   isProject( r:Task ): boolean{

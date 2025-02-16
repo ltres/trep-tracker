@@ -32,7 +32,7 @@ export class ContainerComponentRegistryService{
         return a.droppable - b.droppable;
       } )
       .filter( mayBeOverlapped => {
-        return cursorDistance( x,y, mayBeOverlapped.el.nativeElement.getBoundingClientRect() ) < 0 ;
+        return cursorDistance( x, y, mayBeOverlapped.el.nativeElement.getBoundingClientRect() ) < 0 ;
       } );
     return overlappedComponent
   }
@@ -68,7 +68,7 @@ export class ContainerComponentRegistryService{
     if( entry ){
       entry.components.push( containerComponent )
     }else{
-      curVal.push( {container,components:[containerComponent]} )
+      curVal.push( {container, components:[containerComponent]} )
     }
     this._componentRegistry$.next( curVal );
   }

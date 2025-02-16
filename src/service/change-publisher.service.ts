@@ -2,8 +2,8 @@ import{ Injectable, Injector }from"@angular/core";
 import{ Board, Container, Lane, Task }from"../types/types";
 import{ BoardService }from"./board.service";
 import{ Observable, Subject }from"rxjs";
-import{ isBoard, isLane, isProject, isRecurringTask, isRecurringTaskChild, isTask }from"../utils/guards";
-import{ getDescendants, getProjectComputedStatus, isArchivedOrDiscarded, isPlaceholder }from"../utils/utils";
+import{ isBoard, isLane, isProject, isTask }from"../utils/guards";
+import{ getDescendants, getProjectComputedStatus, isArchivedOrDiscarded }from"../utils/utils";
 import{ TagService }from"./tag.service";
 
 @Injectable( {
@@ -64,6 +64,7 @@ export class ChangePublisherService{
   }
 
   private processTask( task: Task, changesToPush: Container[] ){
+    /*
     // recurring child management:
     if( isRecurringTask( task ) && !isArchivedOrDiscarded( task ) && !isPlaceholder( task ) ){
       const children = this.boardService.manageRecurringChildren( task );
@@ -74,8 +75,8 @@ export class ChangePublisherService{
         const children = this.boardService.manageRecurringChildren( p );
         changesToPush.push( ...children );
       }
-
     }
+    */
 
     // Update project states
     if( isProject( task ) && !isArchivedOrDiscarded( task ) ){

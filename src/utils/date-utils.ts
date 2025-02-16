@@ -36,8 +36,11 @@ export function getWorkingDays( startDate: ISODateString, endDate: ISODateString
   return Math.abs( workingDays );
 }
 
-export function ganttDateToDate( ganttDate: string | Date ): Date{
-  if(typeof ganttDate === 'object'){
+export function ganttDateToDate( ganttDate: string | Date | undefined ): Date{
+  if( !ganttDate ){
+    return new Date();
+  }
+  if( typeof ganttDate === 'object' ){
     return ganttDate;
   }
   // Parse the local date string
@@ -129,4 +132,54 @@ export function getLastMonday(): Date{
   lastMonday.setHours( 0, 1, 0, 0 );
     
   return lastMonday;
+}
+
+// Function to check if a weekend starts between two dates and adjust if needed
+export function calculateEndDateFromDuration( startDate: Date, duration: number ) : {
+  startDate: Date,
+  endDate: Date,
+  weekendFound: boolean,
+  datesAdjusted: boolean
+}{
+  // Function to add days to a date
+  const addDays = ( date: Date, days:number ) => {
+    const result = new Date( date );
+    result.setDate( result.getDate() + days );
+    return result;
+  };
+  // Convert string dates to Date objects if needed
+  const start = startDate instanceof Date ? startDate : new Date( startDate );
+  let end = addDays( start, duration )
+  
+  // Function to check if a date is a Saturday
+  const isSaturday = ( date: Date ) => date.getDay() === 6;
+  
+  // Initialize result object
+  const result = {
+    startDate: new Date( start ),
+    endDate: new Date( end ),
+    weekendFound: false,
+    datesAdjusted: false
+  };
+  
+  // Check each day between start and end date
+  let currentDate = new Date( start );
+  let first = true;
+  while( currentDate < end ){
+    if( isSaturday( currentDate ) ){
+      result.weekendFound = true;
+      // Shift both dates forward by 2 days
+      if( first ){
+        result.startDate = addDays( start, 2 );
+      }
+      result.endDate = addDays( end, 2 );
+      end = result.endDate
+      result.datesAdjusted = true;
+      //break;
+    }
+    first = false;
+    currentDate = addDays( currentDate, 1 );
+  }
+  
+  return result;
 }

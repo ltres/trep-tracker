@@ -10,6 +10,25 @@ export type Environment = {
   userVersion: `${number}.${number}.${number}-${string}`,
   environment: string
 }
+
+export interface Container {
+  id: string;
+  _type: string,
+  parentId: string,
+  textContent: string;
+  searchTextContent?: string,
+  children: Container[];
+  tags: Tag[];
+  creationDate: ISODateString,
+  priority: Priority | Priority[] | undefined,
+  status: Status | Status[] | undefined,
+  dates: StateChangeDate
+  coordinates?: {
+      x: number,
+      y: number
+  },
+}
+
 export interface Board extends Container {
     layout: Layout
     parentId: "app",
@@ -34,7 +53,7 @@ export interface Lane extends Container {
 export interface Task extends Container {
     _type: 'task',
     children: Task[],
-    recurrences?: RecurringTaskChild[],
+    // recurrences?: RecurringTaskChild[],
     similarTasks: {id: string, similarity:number}[],
     priority: Priority,
     status: Status,
@@ -43,8 +62,8 @@ export interface Task extends Container {
     archivedDate?: ISODateString | undefined,
     discardedDate?: ISODateString | undefined,
 
-    startDate?: ISODateString,
-    gantt?: GanttData
+    // startDate?: ISODateString,
+    time: TimeData | undefined
 }
 
 type NonEmptyArray<T> = [T, ...T[]]; // at least one value
@@ -53,29 +72,46 @@ export interface Project extends Task {
   children: NonEmptyArray<Task>;
 }
 
-export type GanttData = {
-  showData?: boolean, // activates when 'cancel' button is clicked and prevents dates data to be displayed
-  startDate: ISODateString,
-  endDate: ISODateString,
-  progress: number,
-  order?: {
-    board?: number,
-    [laneId: string]: number | undefined
-  },
-  recurrence?: Recurrence,
-  displayRecurrence?: boolean,
-  recurringChildIndex?: number,
-  fatherRecurringTaskId?: string,
-  successors: {
-      taskId: string
-      linkId: string
+export interface TimeData{
+  startDate: ISODateString | undefined,
+  endDate: ISODateString | undefined,
+  duration: number | undefined, // in working days
+  progress: number | undefined,
+  type: "fixed" | "rolling"
+  predecessors: {
+    taskId: string
+    linkId: string
   }[]
 }
 
-export interface GanttTask extends Task{
-    gantt: GanttData
+export interface FixedTimeData extends TimeData {
+  startDate: ISODateString,
+  endDate: ISODateString,
+  type: "fixed"
+}
+export interface RollingTimeData extends TimeData {
+  startDate: undefined,
+  endDate: undefined,
+  duration: number,
+  type: "rolling",
+  predecessors:NonEmptyArray<{
+    taskId: string
+    linkId: string
+  }>
 }
 
+export interface TimedTask extends Task{
+    time: TimeData
+}
+
+export interface FixedTimedTask extends Task{
+  time: FixedTimeData
+}
+export interface RollingTimedTask extends Task{
+  time: RollingTimeData
+}
+
+/*
 export interface RecurringTask extends GanttTask{
   recurrences: RecurringTaskChild[],
   gantt: GanttData & { 
@@ -90,24 +126,7 @@ export interface RecurringTaskChild extends GanttTask{
     fatherRecurringTaskId: string
   }
 }
-
-export interface Container {
-    id: string;
-    _type: string,
-    parentId: string,
-    textContent: string;
-    searchTextContent?: string,
-    children: Container[];
-    tags: Tag[];
-    creationDate: ISODateString,
-    priority: Priority | Priority[] | undefined,
-    status: Status | Status[] | undefined,
-    dates: StateChangeDate
-    coordinates?: {
-        x: number,
-        y: number
-    },
-}
+*/
 
 export type Layout = keyof typeof layoutValues;
 
@@ -150,14 +169,13 @@ export const getNewTask: ( lane: Lane | string, id: string | undefined, textCont
     children: [],
     similarTasks: [],
     tags: [],
-    dates: {
-
-    },
+    dates: {},
     _type: 'task',
     creationDate: new Date().toISOString() as ISODateString,
     priority: 1,
     status: 'todo',
-  };
+    time: undefined
+  }
   // initGanttData(t, new Date());
 
   return t
