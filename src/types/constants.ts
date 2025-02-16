@@ -19,10 +19,15 @@ export const ganttConfig = {
   externalTaskCssClass: "gantt-external-task",
   recurrentTaskHeight: 25,
   recurrenceIterationsShown: 10,
-  startOfDay:9,
-  endOfDay:18,
+  startOfWorkingDay:9,
+  endOfWorkingDay:18,
+  pauseInWorkingDayHours:1,
   columnsWidth: 500,
-  undefinedDurationTaskHours: 4
+  undefinedDurationTaskHours: 4,
+}
+
+export function getWorkingDayHoursNumber(){
+  return ganttConfig.endOfWorkingDay - ganttConfig.startOfWorkingDay - ganttConfig.pauseInWorkingDayHours
 }
 
 // learn more about this from

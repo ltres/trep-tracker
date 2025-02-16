@@ -1,9 +1,9 @@
 import{ AfterViewInit, ApplicationRef, Component, createComponent, Input, OnDestroy }from'@angular/core';
-import{ Board, TimedTask, Lane, Task, ISODateString }from'../../types/types';
+import{ Board, TimedTask, Lane, Task }from'../../types/types';
 import{ BoardService }from'../../service/board.service';
 import{ gantt, Task as DhtmlxTask, GanttStatic, Link as DhtmlxLink }from'dhtmlx-gantt';
 import{ TaskComponent }from'../task/task.component';
-import{ ganttDateToDate, fromIsoString, toIsoString }from'../../utils/date-utils';
+import{ calculateWorkingHoursDuration, ganttDateToDate, toIsoString }from'../../utils/date-utils';
 import{ getFirstMentionTag, initTimeData, getTaskBackgroundColor }from'../../utils/utils';
 import{  ganttConfig, tagTypes }from'../../types/constants';
 import{ assertIsTimedTask, isFixedTimedTask, isRollingTimedTask }from'../../utils/guards';
@@ -105,52 +105,33 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     // t.time.endDate = toIsoString( toBeEndDate );
 
     if( t.time.predecessors.length > 0 ){
-      const d = this.boardService.getComputedDates( t, data.duration );
-      data.start_date = fromIsoString( d.startDate );
-      data.end_date =  fromIsoString( d.endDate );
+      const workingHoursDuration = calculateWorkingHoursDuration( ganttDateToDate( data.start_date ), ganttDateToDate( data.end_date ) )
+      const d = this.boardService.getComputedDatesAccountingForWorkingDays( t, workingHoursDuration );
+      data.start_date =  d.startDate;
+      data.end_date =  d.endDate;
       t.time.startDate = undefined
       t.time.endDate = undefined
-      t.time.duration = data.duration
+      t.time.durationInWorkingHours = workingHoursDuration
       t.time.type = 'rolling';
       gantt.updateTask( t.id, data );
     }else{
       // no predecessors, task becomes fixed
-      t.time.startDate = toIsoString( ganttDateToDate( data.start_date ) )
-      t.time.endDate = toIsoString( ganttDateToDate( data.end_date ) )
-      t.time.duration = undefined
+      const startDate = ganttDateToDate( data.start_date );
+      const endDate = ganttDateToDate( data.end_date );
+      startDate.setHours( ganttConfig.startOfWorkingDay );
+      endDate.setHours( ganttConfig.endOfWorkingDay )
+      t.time.startDate = toIsoString(  startDate )
+      t.time.endDate = toIsoString( endDate )
+      data.start_date =  startDate;
+      data.end_date =  endDate;
+      t.time.durationInWorkingHours = undefined
       t.time.type = 'fixed'
+      gantt.updateTask( t.id, data );
     }
     const successors = this.boardService.findSuccessors( t );
     if( successors.length > 0 ){
       successors.forEach( s => gantt.updateTask( s.id ) )
     }
-    /*
-    const adjustSuccessor = ( task : Task ) => {
-      const successors = this.boardService.findSuccessors( task )
-      if( successors ){
-        // Task cannot start before the end of any predecessor
-        for( const successor of successors ){
-          if( !successor.time || !successor.time?.startDate )continue;
-          //if( ganttDateToDate( data.end_date ) > fromIsoString( successor.gantt?.startDate ) ){
-          handleAsapConstraint( task, successor, true );
-
-          // this.boardService.setTaskDates( successor, newStartDate, newEndDate )
-          const ta = gantt.getTask( successor.id );
-          ta.start_date = fromIsoString( successor.time.startDate );
-          ta.end_date = fromIsoString( successor.time.endDate || toIsoString( new Date() ) );
-          gantt.updateTask( successor.id, ta );
-          adjustSuccessor( successor );
-          //}
-        }
-      }
-      gantt.refreshTask( task.id )
-    }
-    adjustSuccessor( t );
-    */
-    /*
-    if( data.start_date && data.end_date ){
-      this.boardService.setTaskDates( t, toBeStartDate, toBeEndDate )
-    }*/
 
     t.time.progress = data.progress ?? 0;
     t.textContent = data.text;
@@ -284,6 +265,11 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     gantt.config.preserve_scroll = true;
     gantt.config.initial_scroll = false;
     gantt.config.autoscroll = false;
+    //gantt.config.min_duration = 1 * 1000 * 3600;
+    //gantt.config.duration_unit = "day"
+    //gantt.config.round_dnd_dates = false;
+    //gantt.config.time_step = 60
+
     // default columns definition
 
     gantt.config.columns = []
@@ -325,10 +311,10 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     const start = new Date( Date.UTC( this.today.getUTCFullYear(), this.today.getUTCMonth(), 0 ) );
     const end = new Date( Date.UTC( this.today.getUTCFullYear(), this.today.getUTCMonth() + ganttConfig.shownMonths, 0 ) );
 
-    gantt.config.work_time = true;
-    gantt.setWorkTime( { hours: [`${ganttConfig.startOfDay}:00-${ganttConfig.endOfDay}:00`] } );//global working hours. 8:00-12:00, 13:00-17:00
+    //gantt.config.work_time = true;
+    gantt.setWorkTime( { hours: [`${ganttConfig.startOfWorkingDay}:00-${ganttConfig.endOfWorkingDay}:00`] } );//global working hours. 8:00-12:00, 13:00-17:00
     gantt.templates.timeline_cell_class = function( task, date ){
-      if( !gantt.isWorkTime( date ) ){
+      if( date.getDay() === 0 || date.getDay() === 6 ){
         return'gantt-weekend';
       }
       return'';
@@ -350,7 +336,6 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
         return false;
       }
       return true;
-      
     } );
 
     gantt.templates.task_class = function( start, end, task ){
@@ -429,16 +414,16 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     const isProject = task.children.length > 0; 
     //const isRecurrentTask = isRecurringTask( task ); 
     
-    let dates: {startDate: ISODateString, endDate: ISODateString} | undefined;
+    let dates: {startDate: Date, endDate: Date} | undefined;
     if( isProject ){
       dates = undefined;
     }else if( isFixedTimedTask( task ) || isRollingTimedTask( task ) ){
-      dates = this.boardService.getComputedDates( task );     
+      dates = this.boardService.getComputedDatesAccountingForWorkingDays( task );     
     }else{
       // no dates
       dates = {
-        startDate: toIsoString( new Date() ),
-        endDate: toIsoString( new Date() ),
+        startDate:  new Date(),
+        endDate:  new Date(),
       }
     }
 
@@ -446,8 +431,8 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
       id: task.id,
       text: task.textContent,
       type: isProject  ? 'project' : 'task',
-      start_date: !dates ? undefined : new Date( dates.startDate ),
-      end_date:  !dates  ? undefined : new Date( dates.endDate ),
+      start_date: !dates ? undefined :  dates.startDate,
+      end_date:  !dates  ? undefined :  dates.endDate,
       parent: parentId,
       progress: task.time?.progress ?? 0,
       css: cssClass,
@@ -506,6 +491,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
           unit: 'month',
           format: '%F'
         }]
+        gantt.config.duration_unit = "month"
         break
       case"days":
         gantt.config.scales = [{
@@ -515,6 +501,9 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
           unit: 'day',
           date: '%j'
         }]
+        //gantt.config.duration_unit = "hour"
+        //gantt.config.skip_off_time = false;
+        // gantt.config.round_dnd_dates = false;
         break;
       case"hours":
         gantt.config.scales = [{
@@ -527,6 +516,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
           unit: 'hour',
           date: '%H'
         }]
+        gantt.config.duration_unit = "hour"
         break;    
     }
     gantt.render()

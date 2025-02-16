@@ -61,7 +61,7 @@ export function isFixedTimedTask( parent: Container | unknown ): parent is Fixed
 
 export function assertIsFixedTimedTask( target: Container | unknown ): asserts target is FixedTimedTask{
   if( !isFixedTimedTask( target ) ){
-    throw new Error( 'Not a Container[]' );
+    throw new Error( 'Not a FixedTimedTask' );
   }
 }
 
@@ -70,6 +70,12 @@ export function isRollingTimedTask( parent: Container | unknown ): parent is Rol
     return false;
   }
   return isTimedTask( parent ) && parent.time.type === 'rolling';
+}
+
+export function assertIsRollingTimedTask( target: Container | unknown ): asserts target is FixedTimedTask{
+  if( !isRollingTimedTask( target ) ){
+    throw new Error( 'Not a RollingTimedTask' );
+  }
 }
 
 /*

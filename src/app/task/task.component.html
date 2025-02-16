@@ -16,20 +16,20 @@
     <status [container]="task" [board]="board" [staticLane]="isStaticView()" (onStatusSelected)="updateStatus($event)"></status>
   </div>
   <div class="flex grow g-025 align-items-center">
-    @if  (task.searchTextContent) {
+    @if (task.searchTextContent) {
       <div class="task-text-content" innerHTML="{{ task.searchTextContent }}"></div>
     } @else {
       <div class="task-text-content grow" [class.placeholder]="isPlaceholder()" #editor contenteditable="true" [preventEvents]="!editorActive" [board]="board" [(ngModel)]="task.textContent" (ngModelChange)="publishChange()" (onTagsChange)="updateTaskTags($event)"></div>
     }
 
     <div class="grow"></div>
-    <span *ngIf="task.similarTasks.length > 0" [style]="'opacity:' + getMaxSimilarityIndex(task, true) + '%'" class="pill pointer color-2 similar-pill" [tooltip]="getSimilarTasksTooltip(task)" (mouseenter)="showArrows = true" (mouseleave)="showArrows = false" [@fadeInOut]>
+    <span *ngIf="!enableGanttView && task.similarTasks.length > 0" [style]="'opacity:' + getMaxSimilarityIndex(task, true) + '%'" class="pill pointer color-2 similar-pill" [tooltip]="getSimilarTasksTooltip(task)" (mouseenter)="showArrows = true" (mouseleave)="showArrows = false" [@fadeInOut]>
       <span>{{ task.similarTasks.length }} similar ({{ getMaxSimilarityIndex(task, false) }}%)</span>
     </span>
     <similar-arrows *ngIf="showArrows" [source]="this" [destinations]="getSimilarTasksComponents(task)"></similar-arrows>
-    <div  class="task-toolbar relative flex align-items-center g-025">
+    <div class="task-toolbar relative flex align-items-center g-025">
       <span class="task-archive pointer" *ngIf="!isPlaceholder()" [tooltip]="'Archive this task'" [position]="'top'" (click)="archive(task)"> 📁 </span>
-      <span *ngIf="!isPlaceholder() && task.children.length === 0" [class.selected]="(task.time?.startDate || task.time?.endDate) " class="select-dates pointer" (click)="openDatePicker()">
+      <span *ngIf="!isPlaceholder() && task.children.length === 0" [class.selected]="task.time?.startDate || task.time?.endDate" class="select-dates pointer" (click)="openDatePicker()">
         <span [tooltip]="'Set start/end dated'" [position]="'top'">📅</span>
         <date-picker *ngIf="showDatePicker" [dateDisplayConfig]="board.datesConfig" [showRecurrences]="true" [startDate]="fromIsoString(task.time?.startDate)" [endDate]="fromIsoString(task.time?.endDate)" [selectedRecurrence]="undefined" (onSetClicked)="setDates($event)" (onCancel)="setDates(undefined)" (onClose)="showDatePicker = false"></date-picker>
       </span>
@@ -40,7 +40,7 @@
     </div>
   </div>
 </div>
-<div *ngIf="(task.time && !enableGanttView) || task.archivedDate" class="dates-n-stuff flex g-05 small">
+<div *ngIf="task.time || task.archivedDate" class="dates-n-stuff flex g-05 small">
   <div class="">
     <ng-container [ngTemplateOutlet]="datesText" [ngTemplateOutletContext]="{ task: task }"></ng-container>
   </div>
@@ -54,7 +54,7 @@
       child: child,
       last: last,
       static: isStaticView(),
-      enableGanttView
+      enableGanttView,
     }"
   ></ng-container>
 </div>
@@ -86,44 +86,19 @@
 <ng-template #datesText let-task="task">
   @if (task.archivedDate) {
     <span class="translucent">created </span>
-    <ng-container
-      [ngTemplateOutlet]="date"
-      [ngTemplateOutletContext]="{
-        date: this.task.creationDate,
-      }"
-    ></ng-container>
+    <ng-container [ngTemplateOutlet]="date" [ngTemplateOutletContext]="{ date: this.task.creationDate }"></ng-container>
   }
 
   @if (task.time && task.children.length === 0) {
     @if (task.archivedDate) {
       <span>, </span>
     }
-    <!--
-    @if (isRecurringTask(task)) {
-      <span class="translucent">{{ task.time.recurrence }}</span>
-    } @else if (isRecurringTaskChild(task)) {
-      <span class="translucent">recurrence </span><span class="half-translucent">{{ task.time.recurringChildIndex }}</span
-      ><span class="translucent">: </span>
-    } @else {
-      
-    }-->
+
     <span class="translucent">planned </span>
-<!--
-    @if (!isRecurringTask(task)) {-->
-      <span [innerHTML]="getProximityIcons(task.time.startDate, 'start')"></span>
-      <ng-container [ngTemplateOutlet]="date" [ngTemplateOutletContext]="{ date: task.time.startDate }"></ng-container>
-      @if (task.time.startDate && task.time.endDate && task.time.startDate !== task.time.endDate) {
-        <span class="translucent"> ⤳ </span>
-        <span [innerHTML]="getProximityIcons(task.time.nextRecurrenceEndDate ?? task.time.endDate, 'end')"></span>
-        <ng-container
-          [ngTemplateOutlet]="date"
-          [ngTemplateOutletContext]="{
-            date: task.time.nextRecurrenceEndDate ?? task.time.endDate,
-          }"
-        ></ng-container>
-        <span *ngIf="this.task.time" class="translucent"> ({{ getDiffInDays(this.task.time.startDate!, this.task.time.endDate!) }} day{{ getDiffInDays(this.task.time.startDate!, this.task.time.endDate!) != 1 ? 's' : '' }})</span>
-      }
-   <!-- }-->
+    <ng-container [ngTemplateOutlet]="date" [ngTemplateOutletContext]="{ date: getComputedDates(task).startDate }"></ng-container>
+    <span class="translucent"> ⤳ </span>
+    <ng-container [ngTemplateOutlet]="date" [ngTemplateOutletContext]="{ date: getComputedDates(task).endDate }"></ng-container>
+    <input type="number" [value]="calculateWorkingHoursDuration(task)" (change)="updateTaskDuration($event)" />
   }
 
   @if (task.status === 'completed') {

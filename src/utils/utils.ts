@@ -285,7 +285,7 @@ export function initTimeData( task: Task, startDateIso?: Date | undefined ): Tim
     progress: 0,
     //successors: [],
     predecessors: [],
-    duration: 1
+    durationInWorkingHours: 1
     //recurrence: undefined
   };
   return task as TimedTask;

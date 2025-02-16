@@ -9,9 +9,9 @@ import{ ContainerComponentRegistryService }from'../../service/registry.service';
 import{ ContainerComponent }from'../base/base.component';
 import{ ClickService }from'../../service/click.service';
 import{  fromIsoString, formatDate, getDiffInDays }from'../../utils/date-utils';
-import{ setCaretPosition, isPlaceholder, hashCode, isArchivedOrDiscarded }from'../../utils/utils';
+import{ setCaretPosition, isPlaceholder, hashCode, isArchivedOrDiscarded, initTimeData }from'../../utils/utils';
 import{ ganttConfig, millisForMagnitudeStep, minOpacityAtTreshold, similarityTreshold }from'../../types/constants';
-import{ isProject,  isTask }from'../../utils/guards';
+import{ assertIsRollingTimedTask, isProject,  isTask, isTimedTask }from'../../utils/guards';
 import{ fadeInOut }from'../../types/animations';
 import{ TagService }from'../../service/tag.service';
 import{ ChangePublisherService }from'../../service/change-publisher.service';
@@ -29,6 +29,7 @@ import{ ChangePublisherService }from'../../service/change-publisher.service';
   animations: fadeInOut
 } )
 export class TaskComponent extends ContainerComponent implements OnInit, OnDestroy{
+
   @ViewChild( 'editor' ) editor: ElementRef | undefined;
   @Input() task!: Task;
   @Input() lane!: Lane;
@@ -340,6 +341,32 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
 
   archive( task: Task ){
     this.boardService.archive( this.board, task );
+  }
+
+  getComputedDates( task: Task ): {startDate: Date, endDate: Date}{
+    if( !isTimedTask( task ) ){
+      return{
+        startDate : new Date(),
+        endDate: new Date()
+      }
+    }
+    return this.boardService.getComputedDatesAccountingForWorkingDays( task );
+  }
+
+  calculateWorkingHoursDuration( task: Task ){
+    if( !isTimedTask( task ) ){
+      return
+    }
+
+    return this.boardService.calculateWorkingHoursDuration( task );
+  }
+
+  updateTaskDuration( $event: Event ){
+    console.log( ( $event.target! as HTMLInputElement ).value )
+    initTimeData( this.task );
+    assertIsRollingTimedTask( this.task );
+    this.task.time.durationInWorkingHours = Number( ( $event.target! as HTMLInputElement ).value );
+    this.changePublisherService.processChangesAndPublishUpdate( [this.task, this.lane] )
   }
     
 }

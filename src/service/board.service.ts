@@ -1,9 +1,9 @@
 import{Inject, Injectable, Injector, NgZone}from'@angular/core';
-import{Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, Timeframe, AddFloatingLaneParams, FixedTimedTask, TimedTask, ISODateString}from'../types/types';
+import{Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, Timeframe, AddFloatingLaneParams, FixedTimedTask, TimedTask}from'../types/types';
 import{BehaviorSubject, Observable, asyncScheduler, debounceTime, map, observeOn}from'rxjs';
 import{checkTaskSimilarity, eventuallyPatch, getDescendants, getProjectComputedStatus, initTimeData, isArchived, isArchivedOrDiscarded, isPlaceholder,  isStatic,}from'../utils/utils';
 import{StorageServiceAbstract}from'../types/storage';
-import{addUnitsToDate, calculateEndDateFromDuration, fromIsoString, setDateSafe, toIsoString}from'../utils/date-utils';
+import{addUnitsToDate, calculateDatesWithWorkingDays, calculateWorkingHoursDuration, fromIsoString, setDateSafe, toIsoString}from'../utils/date-utils';
 import{boardDebounceDelay, similarityTreshold, statusValues}from'../types/constants';
 import{isTask, isLane, isTasks, isProject, assertIsTask, isBoard, isTimedTask, assertIsFixedTimedTask, isFixedTimedTask, isRollingTimedTask, assertIsTimedTask}from'../utils/guards';
 import{ logPerformance }from'../utils/performance-logger';
@@ -246,10 +246,9 @@ export class BoardService{
           }
           res = res?.filter( t => {
             if( !isFixedTimedTask( t ) &&!isRollingTimedTask( t ) )return false;
-            const time = this.getComputedDates( t );
+            const time = this.getComputedDatesAccountingForWorkingDays( t );
 
-            if( fromIsoString( time.startDate ) > now 
-              && fromIsoString( time.startDate ) < startDate ){
+            if(  time.startDate > now && time.startDate < startDate ){
               return true;
             }
             return false;
@@ -279,10 +278,9 @@ export class BoardService{
           }
           res = res?.filter( t => {
             if( !isFixedTimedTask( t ) &&!isRollingTimedTask( t ) )return false;
-            const time = this.getComputedDates( t );
+            const time = this.getComputedDatesAccountingForWorkingDays( t );
 
-            if( fromIsoString( time.endDate ) > now 
-              && fromIsoString( time.endDate ) < endDate ){
+            if(  time.endDate  > now && time.endDate < endDate ){
               return true;
             }
             return false;
@@ -1040,33 +1038,55 @@ export class BoardService{
  * @param t 
  * @returns 
  */
-  getComputedDates( t: TimedTask, duration?: number ): {startDate: ISODateString, endDate: ISODateString}{
+  getComputedDatesAccountingForWorkingDays( t: TimedTask, durationInWorkingHours?: number ): {startDate: Date, endDate: Date}{
 
     if( isFixedTimedTask( t ) ){
       return{
-        startDate: t.time.startDate,
-        endDate: t.time.endDate
+        startDate: fromIsoString( t.time.startDate ),
+        endDate: fromIsoString( t.time.endDate )
       }
     }else if( isRollingTimedTask( t ) ){
     // find the first fixes predecessor, and calculate from there:
-      const greatestEndDateInPredecessors = t.time.predecessors.map( pred => {
+      let greatestEndDateInPredecessors = t.time.predecessors.map( pred => {
         const predT = this.findTask( pred.taskId );
         if( predT ){
           assertIsTimedTask( predT )
-          return fromIsoString( this.getComputedDates( predT ).endDate );
+          return this.getComputedDatesAccountingForWorkingDays( predT ).endDate;
         }else{
-          throw new Error( "Could not find predecessor" )
+          console.error( "Could not find predecessor" );
+          return undefined;
         }       
-      } ).sort( ( d1, d2 ) => d2.getTime() - d1.getTime() )[0]
-
+      } ).filter( e => !!e ).sort( ( d1, d2 ) => d2.getTime() - d1.getTime() )[0]
+      if( !greatestEndDateInPredecessors ){
+        greatestEndDateInPredecessors = new Date();
+      }
+      const dates = calculateDatesWithWorkingDays( greatestEndDateInPredecessors, durationInWorkingHours ?? t.time.durationInWorkingHours );
       return{
-        startDate: toIsoString( greatestEndDateInPredecessors ),
-        endDate: toIsoString( calculateEndDateFromDuration( greatestEndDateInPredecessors, duration ?? t.time.duration ).endDate ),
+        startDate: dates.startDate,
+        endDate: dates.endDate
       }
     }
 
     throw new Error( "Task is neither fixed not rolling" )
+  }
 
+  calculateWorkingHoursDuration( t:TimedTask ): number{
+    let startDate: Date | undefined;
+    let endDate: Date | undefined;
+  
+    if( isFixedTimedTask( t ) ){
+      startDate = fromIsoString( t.time.startDate );
+      endDate = fromIsoString( t.time.endDate );
+  
+    }else if( isRollingTimedTask( t ) ){
+      const d = this.getComputedDatesAccountingForWorkingDays( t );
+      startDate = d.startDate;
+      endDate = d.endDate
+    }else{
+      throw new Error( "Task is neither fixed not rolling" )
+    }
+
+    return calculateWorkingHoursDuration( startDate, endDate )
   }
 
   /**
