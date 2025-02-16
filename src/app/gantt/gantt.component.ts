@@ -98,13 +98,17 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
 
     assertIsTimedTask( t )
 
-    //const toBeStartDate = ganttDateToDate( data.start_date );
-    //const toBeEndDate = ganttDateToDate( data.end_date );
+    let predecessors = t.time.predecessors;
 
-    //t.time.startDate = toIsoString( toBeStartDate );
-    // t.time.endDate = toIsoString( toBeEndDate );
+    let containingProject: Task | undefined = this.boardService.findTask( t.parentId );
+    while( containingProject ){
+      if( containingProject?.time?.predecessors ){
+        predecessors = predecessors.concat( containingProject.time.predecessors )
+      }
+      containingProject= this.boardService.findTask( containingProject.parentId );
+    }
 
-    if( t.time.predecessors.length > 0 ){
+    if( predecessors.length > 0 ){
       const workingHoursDuration = calculateWorkingHoursDuration( ganttDateToDate( data.start_date ), ganttDateToDate( data.end_date ) )
       const d = this.boardService.getComputedDatesAccountingForWorkingDays( t, workingHoursDuration );
       data.start_date =  d.startDate;
@@ -128,9 +132,21 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
       t.time.type = 'fixed'
       gantt.updateTask( t.id, data );
     }
-    const successors = this.boardService.findSuccessors( t );
+    let successors = this.boardService.findSuccessors( t );
+    // we need to account also for project successors:
+    containingProject = this.boardService.findTask( t.parentId );
+    while( containingProject ){
+      successors = successors.concat( this.boardService.findSuccessors( containingProject ) );
+      successors = successors.concat( containingProject.children )
+      containingProject= this.boardService.findTask( containingProject.parentId );
+    }
     if( successors.length > 0 ){
-      successors.forEach( s => gantt.updateTask( s.id ) )
+      successors.forEach( s => {
+        gantt.updateTask( s.id )
+        if( s.children ){
+          s.children.forEach( c => gantt.updateTask( c.id ) )
+        }
+      } )
     }
 
     t.time.progress = data.progress ?? 0;
@@ -432,12 +448,10 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
       text: task.textContent,
       type: isProject  ? 'project' : 'task',
       start_date: !dates ? undefined :  dates.startDate,
-      end_date:  !dates  ? undefined :  dates.endDate,
+      end_date:  !dates ? undefined :  dates.endDate,
       parent: parentId,
       progress: task.time?.progress ?? 0,
       css: cssClass,
-      row_height: ganttConfig.recurrentTaskHeight,
-      bar_height:  ganttConfig.recurrentTaskHeight,
       color,
       order: order,
       mention: getFirstMentionTag( task ),
@@ -499,7 +513,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
           format: '%F'
         }, {
           unit: 'day',
-          date: '%j'
+          date: '%j',
         }]
         //gantt.config.duration_unit = "hour"
         //gantt.config.skip_off_time = false;

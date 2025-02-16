@@ -10,7 +10,7 @@ import{ ContainerComponent }from'../base/base.component';
 import{ ClickService }from'../../service/click.service';
 import{  fromIsoString, formatDate, getDiffInDays }from'../../utils/date-utils';
 import{ setCaretPosition, isPlaceholder, hashCode, isArchivedOrDiscarded, initTimeData }from'../../utils/utils';
-import{ ganttConfig, millisForMagnitudeStep, minOpacityAtTreshold, similarityTreshold }from'../../types/constants';
+import{ millisForMagnitudeStep, minOpacityAtTreshold, similarityTreshold }from'../../types/constants';
 import{ assertIsRollingTimedTask, isProject,  isTask, isTimedTask }from'../../utils/guards';
 import{ fadeInOut }from'../../types/animations';
 import{ TagService }from'../../service/tag.service';
@@ -51,7 +51,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   debounce: ReturnType<typeof setTimeout> | undefined;
  
   getFixedHeight(){
-    return`${ganttConfig.recurrentTaskHeight} + 'px'`;
+    return'25px';
   }
   constructor(
     protected override changePublisherService: ChangePublisherService,

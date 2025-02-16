@@ -140,21 +140,7 @@ export function calculateDatesWithWorkingDays( startDate: Date, durationInWorkin
   startDate: Date,
   endDate: Date
 }{
-  let start = startDate instanceof Date ? startDate : new Date( startDate );
-  
-  // Function to add days to a date
-  const addDays = ( date: Date, days:number ) => {
-    const result = new Date( date );
-    result.setDate( result.getDate() + days );
-    return result;
-  };
-  const addHours = ( date: Date, hours:number ) => {
-    const result = new Date( date );
-    result.setHours( result.getHours() + hours );
-    return result;
-  };
-  const isSaturday = ( date: Date ) => date.getDay() === 6;
-  const isSunday = ( date: Date ) => date.getDay() === 0;
+  const start = startDate instanceof Date ? startDate : new Date( startDate );
 
   if( start.getHours() < ganttConfig.startOfWorkingDay ){
     // adjust day start
@@ -163,29 +149,29 @@ export function calculateDatesWithWorkingDays( startDate: Date, durationInWorkin
   if( start.getHours() >= ganttConfig.endOfWorkingDay ){
     // adjust day start
     start.setHours( ganttConfig.startOfWorkingDay );
-    start = addDays( start, 1 )
+    start.setDate( start.getDate() +1 )
   }
-  if( isSaturday( start ) || isSunday( start ) ){
+  while( !ganttConfig.workDays.includes( start.getDay() ) ){
     // Starting on weekends
-    const amount = isSaturday( start )?2 : 1;
-    start = addDays( start, amount )
+    start.setDate( start.getDate() + 1 )
   }
 
-  let end = start;
+  const end = new Date( start );
 
   for( let h = 0; h < durationInWorkingHours; h++ ){
-    end = addHours( end, 1 );
+    end.setHours( end.getHours() +1 )
 
     if( h !== durationInWorkingHours -1 && end.getHours() >= ganttConfig.endOfWorkingDay ){
-      end = addDays( end, 1 );
+      end.setDate( end.getDate()+1 )
       end.setHours( ganttConfig.startOfWorkingDay );
     }
     if( h !== durationInWorkingHours -1 && end.getHours() === 13 && ganttConfig.pauseInWorkingDayHours ){
-      end = addHours( end, ganttConfig.pauseInWorkingDayHours )
+      end.setHours( end.getHours() + ganttConfig.pauseInWorkingDayHours );
     }
 
-    if( isSaturday( end ) || isSunday( end ) ){
-      end = addDays( end, isSaturday( end )? 2: 1 )
+    while( !ganttConfig.workDays.includes( end.getDay() ) ){
+      // Ending on weekends
+      end.setDate( end.getDate() + 1 )
     }
 
   }
@@ -201,20 +187,6 @@ export function calculateDatesWithWorkingDays( startDate: Date, durationInWorkin
 export function calculateWorkingHoursDuration( start: Date, end: Date ): number{
   let duration = 0;
 
-  // Function to add days to a date
-  const addDays = ( date: Date, days:number ) => {
-    const result = new Date( date );
-    result.setDate( result.getDate() + days );
-    return result;
-  };
-  const addHours = ( date: Date, hours:number ) => {
-    const result = new Date( date );
-    result.setHours( result.getHours() + hours );
-    return result;
-  };
-  const isSaturday = ( date: Date ) => date.getDay() === 6;
-  const isSunday = ( date: Date ) => date.getDay() === 0;
-
   if( start.getHours() < ganttConfig.startOfWorkingDay ){
     // adjust day start
     start.setHours( ganttConfig.startOfWorkingDay );
@@ -222,29 +194,29 @@ export function calculateWorkingHoursDuration( start: Date, end: Date ): number{
   if( start.getHours() >= ganttConfig.endOfWorkingDay ){
     // adjust day start
     start.setHours( ganttConfig.startOfWorkingDay );
-    start = addDays( start, 1 )
+    start.setDate( start.getDate() +1 )
   }
 
-  if( isSaturday( start ) || isSunday( start ) ){
+  while( !ganttConfig.workDays.includes( start.getDay() ) ){
     // Starting on weekends
-    const amount = isSaturday( start )? 2 : 1;
-    start = addDays( start, amount )
+    start.setDate( start.getDate() + 1 )
   }
 
-  let current = start
+  const current = new Date( start )
   while( current.getTime() < end.getTime() ){
-    current = addHours( current, 1 )
+    current.setHours( current.getHours() + 1 )
     duration ++ ;
     if( current.getHours() >= ganttConfig.endOfWorkingDay ){
-      current = addDays( current, 1 );
+      current.setDate( current.getDate() + 1 ) 
       current.setHours( ganttConfig.startOfWorkingDay );
     }
     if( current.getHours() === 13 && ganttConfig.pauseInWorkingDayHours ){
-      current = addHours( current, ganttConfig.pauseInWorkingDayHours )
+      current.setHours( current.getHours() + ganttConfig.pauseInWorkingDayHours )
     }
-
-    if( isSaturday( current ) || isSunday( current ) ){
-      current = addDays( current, isSaturday( current )? 2: 1 )
+    
+    while( !ganttConfig.workDays.includes( current.getDay() ) ){
+    // Starting on weekends
+      current.setDate( current.getDate() + 1 )
     }
   }
 

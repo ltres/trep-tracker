@@ -15,15 +15,14 @@ export const ganttConfig = {
   baseTaskDuration : 2,
   shownMonths: 4,
   skipWeekendsInPlanning: true,
-  recurrentTaskCssClass:"recurrent-task",
   externalTaskCssClass: "gantt-external-task",
-  recurrentTaskHeight: 25,
-  recurrenceIterationsShown: 10,
+  columnsWidth: 500,
+  undefinedDurationTaskHours: 4,
+
   startOfWorkingDay:9,
   endOfWorkingDay:18,
   pauseInWorkingDayHours:1,
-  columnsWidth: 500,
-  undefinedDurationTaskHours: 4,
+  workDays: [1, 2, 3, 4, 5]
 }
 
 export function getWorkingDayHoursNumber(){

@@ -1024,11 +1024,13 @@ export class BoardService{
     //this.publishBoardUpdate();
   }
   
+  /**
+   * Returns tasks linked.
+   * @param task 
+   * @returns 
+   */
   findSuccessors( task: Task ): Task[]{
     return this._allTasks$.getValue()?.filter( t => t.time?.predecessors?.map( t => t.taskId ).includes( task.id ) ) ?? [];
-  }
-  findPredecessors( task: Task ): Task[]{
-    return this._allTasks$.getValue()?.filter( t => task.time?.predecessors?.map( s => s.taskId ).includes( t.id ) ) ?? [];
   }
 
   /**
@@ -1046,17 +1048,26 @@ export class BoardService{
         endDate: fromIsoString( t.time.endDate )
       }
     }else if( isRollingTimedTask( t ) ){
-    // find the first fixes predecessor, and calculate from there:
-      let greatestEndDateInPredecessors = t.time.predecessors.map( pred => {
-        const predT = this.findTask( pred.taskId );
-        if( predT ){
-          assertIsTimedTask( predT )
-          return this.getComputedDatesAccountingForWorkingDays( predT ).endDate;
-        }else{
-          console.error( "Could not find predecessor" );
-          return undefined;
-        }       
-      } ).filter( e => !!e ).sort( ( d1, d2 ) => d2.getTime() - d1.getTime() )[0]
+      // find the first fixes predecessor, and calculate from there:
+      let predecessors = t.time.predecessors.map( p => this.findTask( p.taskId ) )
+
+      let containingProject: Task | undefined = this.findTask( t.parentId );
+      while( containingProject ){
+        if( containingProject?.time?.predecessors ){
+          predecessors = predecessors.concat( containingProject.time.predecessors.map( p => this.findTask( p.taskId ) ) );
+        }
+        containingProject= this.findTask( containingProject.parentId );
+      }
+
+      let greatestEndDateInPredecessors = predecessors
+        
+        .filter( p => !!p )
+        .flatMap<Task[]>( pred => isProject( pred ) ? pred.children : [pred] )
+        .map( pred => {
+          assertIsTimedTask( pred )
+          return this.getComputedDatesAccountingForWorkingDays( pred ).endDate;
+               
+        } ).filter( e => !!e ).sort( ( d1, d2 ) => d2.getTime() - d1.getTime() )[0]
       if( !greatestEndDateInPredecessors ){
         greatestEndDateInPredecessors = new Date();
       }
