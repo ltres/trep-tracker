@@ -5,6 +5,9 @@ import{ ChartDataset, ChartOptions }from"chart.js/auto";
 
 export const performanceLoggerActive = false;
 
+const today = new Date();
+const showMonths = 4;
+
 export const boardDebounceDelay = {
   micro: 200,
   small: 750,
@@ -13,7 +16,7 @@ export const boardDebounceDelay = {
 
 export const ganttConfig = {
   baseTaskDuration : 2,
-  shownMonths: 4,
+  shownMonths: showMonths,
   skipWeekendsInPlanning: true,
   externalTaskCssClass: "gantt-external-task",
   columnsWidth: 500,
@@ -21,12 +24,15 @@ export const ganttConfig = {
 
   startOfWorkingDay:9,
   endOfWorkingDay:18,
-  pauseInWorkingDayHours:1,
-  workDays: [1, 2, 3, 4, 5]
+  pauseInWorkingDayHours:[{hour:13, pause:1}],
+  workDays: [1, 2, 3, 4, 5],
+
+  startDate: new Date( Date.UTC( today.getUTCFullYear(), today.getUTCMonth(), 1 ) ),
+  endDate: new Date( Date.UTC( today.getUTCFullYear(), today.getUTCMonth() + showMonths, 1 ) )
 }
 
 export function getWorkingDayHoursNumber(){
-  return ganttConfig.endOfWorkingDay - ganttConfig.startOfWorkingDay - ganttConfig.pauseInWorkingDayHours
+  return ganttConfig.endOfWorkingDay - ganttConfig.startOfWorkingDay - ganttConfig.pauseInWorkingDayHours.map( h => h.pause ).reduce( ( acc, h ) =>  acc + h, 0 )
 }
 
 // learn more about this from

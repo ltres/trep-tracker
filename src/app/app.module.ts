@@ -49,6 +49,7 @@ import{ ChartComponent }from'./chart/chart.component';
 import{ ChartService }from'../service/chart.service';
 import{ GanttButtonComponent }from'./gantt-button/gantt-button.component';
 import{ ChangePublisherService }from'../service/change-publisher.service';
+import{ PlanService }from'../service/plan.service';
 
 @NgModule( { declarations: [
   AppComponent,
@@ -99,6 +100,7 @@ providers: [
   provideExperimentalZonelessChangeDetection(),
   ChangePublisherService,
   BoardService,
+  PlanService,
   KeyboardService,
   DragService,
   ContainerComponentRegistryService,

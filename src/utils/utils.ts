@@ -283,6 +283,7 @@ export function initTimeData( task: Task, startDateIso?: Date | undefined ): Tim
     type: "fixed",
     // endDate:  toIsoString( endDate ),
     progress: 0,
+    resourcesAllocation: 100,
     //successors: [],
     predecessors: [],
     durationInWorkingHours: 1

@@ -3,7 +3,7 @@ import{Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Sta
 import{BehaviorSubject, Observable, asyncScheduler, debounceTime, map, observeOn}from'rxjs';
 import{checkTaskSimilarity, eventuallyPatch, getDescendants, getProjectComputedStatus, initTimeData, isArchived, isArchivedOrDiscarded, isPlaceholder,  isStatic,}from'../utils/utils';
 import{StorageServiceAbstract}from'../types/storage';
-import{addUnitsToDate, calculateDatesWithWorkingDays, calculateWorkingHoursDuration, fromIsoString, setDateSafe, toIsoString}from'../utils/date-utils';
+import{addUnitsToDate, calculateDatesWithWorkingDays, calculateWorkingHours, fromIsoString, setDateSafe, toIsoString}from'../utils/date-utils';
 import{boardDebounceDelay, similarityTreshold, statusValues}from'../types/constants';
 import{isTask, isLane, isTasks, isProject, assertIsTask, isBoard, isTimedTask, assertIsFixedTimedTask, isFixedTimedTask, isRollingTimedTask, assertIsTimedTask}from'../utils/guards';
 import{ logPerformance }from'../utils/performance-logger';
@@ -1097,7 +1097,7 @@ export class BoardService{
       throw new Error( "Task is neither fixed not rolling" )
     }
 
-    return calculateWorkingHoursDuration( startDate, endDate )
+    return calculateWorkingHours( startDate, endDate ).total
   }
 
   /**

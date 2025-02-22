@@ -77,20 +77,43 @@ export function addUnitsToDate( date: Date | ISODateString, amount: number, unit
 }
 
 export function getTimezoneShortName( timeZone: Timezone ): string{
-  try{
-    const tz1 = Intl.DateTimeFormat( "ia", {
-      timeZoneName: "short",
-      timeZone,
-    } )
-    if( !tz1 )return"";
-    const format = tz1.formatToParts()
-    if( !format )return"";
-    return format.find( ( i ) => i.type === "timeZoneName" )?.value ?? "";
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  }catch( e ){
+  const tz1 = Intl.DateTimeFormat( "ia", {
+    timeZoneName: "short",
+    timeZone,
+  } )
+  if( !tz1 )return"";
+  const format = tz1.formatToParts()
+  if( !format )return"";
+  return format.find( ( i ) => i.type === "timeZoneName" )?.value ?? "";
   
-    return""
-  }
+};
+
+export function getOffset( timeZone: Timezone ): number{
+  const tz1 = Intl.DateTimeFormat( "ia", {
+    timeZoneName: "shortOffset",
+    timeZone,
+  } )
+  if( !tz1 ){
+    throw new Error( "No timezone" )
+  };
+  const format = tz1.formatToParts()
+  if( !format ){
+    throw new Error( "No timezone" )
+  };
+  const shortName = format.find( ( i ) => i.type === "timeZoneName" )?.value ?? "";
+  const offset = shortName.slice( 3 );
+  if( !offset )return 0;
+
+  const matchData = offset.match( /([+-])(\d+)(?::(\d+))?/ );
+  if( !matchData )throw`cannot parse timezone name: ${shortName}`;
+
+  const[, sign, hour, minute] = matchData;
+  let result = parseInt( hour );
+  if( sign === "-" ) result *= -1;
+  if( minute ) result += parseInt( minute );
+
+  return result;
+
 };
 
 /**
@@ -135,7 +158,13 @@ export function getLastMonday(): Date{
   return lastMonday;
 }
 
-// Function to check if a weekend starts between two dates and adjust if needed
+/**
+ * Calculates the start and end dates from a start date and a duration
+ * @param startDate 
+ * @param durationInWorkingHours 
+ * @returns 
+ */
+
 export function calculateDatesWithWorkingDays( startDate: Date, durationInWorkingHours: number ) : {
   startDate: Date,
   endDate: Date
@@ -151,6 +180,12 @@ export function calculateDatesWithWorkingDays( startDate: Date, durationInWorkin
     start.setHours( ganttConfig.startOfWorkingDay );
     start.setDate( start.getDate() +1 )
   }
+  if( start.getHours() == 13 ){
+    // adjust day start
+    start.setHours( start.getHours()+1 );
+
+  }
+
   while( !ganttConfig.workDays.includes( start.getDay() ) ){
     // Starting on weekends
     start.setDate( start.getDate() + 1 )
@@ -165,8 +200,9 @@ export function calculateDatesWithWorkingDays( startDate: Date, durationInWorkin
       end.setDate( end.getDate()+1 )
       end.setHours( ganttConfig.startOfWorkingDay );
     }
-    if( h !== durationInWorkingHours -1 && end.getHours() === 13 && ganttConfig.pauseInWorkingDayHours ){
-      end.setHours( end.getHours() + ganttConfig.pauseInWorkingDayHours );
+    const p = ganttConfig.pauseInWorkingDayHours.find( e => e.hour === end.getHours() );
+    if( h !== durationInWorkingHours -1 && p && ganttConfig.pauseInWorkingDayHours ){
+      end.setHours( end.getHours() + p.pause );
     }
 
     while( !ganttConfig.workDays.includes( end.getDay() ) ){
@@ -184,8 +220,13 @@ export function calculateDatesWithWorkingDays( startDate: Date, durationInWorkin
   return result;
 }
 
-export function calculateWorkingHoursDuration( start: Date, end: Date ): number{
-  let duration = 0;
+/**
+ * Returns the total working hours between the two dates, accounting for start of working day, end, pauses, weekends..
+ * @param start 
+ * @param end 
+ * @returns 
+ */
+export function calculateWorkingHours( start: Date, end: Date ): {total:number, detail: {startDate: Date, endDate: Date}[]}{
 
   if( start.getHours() < ganttConfig.startOfWorkingDay ){
     // adjust day start
@@ -201,17 +242,23 @@ export function calculateWorkingHoursDuration( start: Date, end: Date ): number{
     // Starting on weekends
     start.setDate( start.getDate() + 1 )
   }
-
+  const ret: {total:number, detail: {startDate: Date, endDate: Date}[]} = {total:0, detail: []}
   const current = new Date( start )
   while( current.getTime() < end.getTime() ){
+    const start =  new Date( current );
     current.setHours( current.getHours() + 1 )
-    duration ++ ;
+    const end =  new Date( current );
+
+    ret.total ++ ;
+    ret.detail.push( {startDate: start, endDate:end} );
     if( current.getHours() >= ganttConfig.endOfWorkingDay ){
       current.setDate( current.getDate() + 1 ) 
       current.setHours( ganttConfig.startOfWorkingDay );
     }
-    if( current.getHours() === 13 && ganttConfig.pauseInWorkingDayHours ){
-      current.setHours( current.getHours() + ganttConfig.pauseInWorkingDayHours )
+
+    const p = ganttConfig.pauseInWorkingDayHours.find( e => e.hour === current.getHours() );
+    if( p && ganttConfig.pauseInWorkingDayHours ){
+      current.setHours( current.getHours() + p.pause )
     }
     
     while( !ganttConfig.workDays.includes( current.getDay() ) ){
@@ -219,6 +266,56 @@ export function calculateWorkingHoursDuration( start: Date, end: Date ): number{
       current.setDate( current.getDate() + 1 )
     }
   }
+  return ret
+}
 
-  return duration;
+/**
+ * Groups by weeks from startDate - endDate
+ * @param startDate 
+ * @param endDate 
+ */
+export function getWeeksBetweenDates( startDate: Date, endDate: Date, timeZoneOffsetHours: number ): {startDate: Date, endDate: Date}[]{
+  const offsetMs = timeZoneOffsetHours * 3600 * 1000;
+  const intervals: { startDate: Date; endDate: Date }[] = [];
+  let currentTimestamp = startDate.getTime();
+  const endTimestamp = endDate.getTime();
+
+  if( currentTimestamp > endTimestamp ){
+    return intervals;
+  }
+
+  const msInADay = 1000 * 3600 * 24
+
+  while( currentTimestamp <= endTimestamp ){
+    // Adjust current timestamp to the target timezone's local time
+    const adjustedTime = currentTimestamp + offsetMs;
+    const adjustedDate = new Date( adjustedTime );
+    const dayOfWeek = adjustedDate.getUTCDay();
+
+    // Calculate days to subtract to get to the previous Monday (0 represents Sunday)
+    const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    const startOfWeekAdjusted = adjustedTime - daysToSubtract * msInADay;
+
+    // Find the start of the day (midnight) in local time
+    const startOfWeekStartOfDay = startOfWeekAdjusted - ( startOfWeekAdjusted % msInADay );
+
+    // Convert back to UTC
+    const startUTC = startOfWeekStartOfDay - offsetMs;
+
+    // Calculate end of the week (Sunday 23:59:59.999 in local time)
+    const endUTC = startUTC + 7 * msInADay - 1;
+
+    // Ensure the interval does not exceed the endDate
+    const intervalEnd = Math.min( endUTC, endTimestamp );
+
+    intervals.push( {
+      startDate: new Date( startUTC ),
+      endDate: new Date( intervalEnd )
+    } );
+
+    // Move to the next week (start just after the current interval ends)
+    currentTimestamp = intervalEnd + 1;
+  }
+
+  return intervals;
 }

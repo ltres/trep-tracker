@@ -9,11 +9,13 @@ import{ KeyboardService }from'../../service/keyboard.service';
 import{ ContainerComponentRegistryService }from'../../service/registry.service';
 import{ ContainerComponent }from'../base/base.component';
 import{ ModalService }from'../../service/modal.service';
-import{ layoutValues, tagIdentifiers }from'../../types/constants';
+import{ ganttConfig, getWorkingDayHoursNumber, layoutValues, tagIdentifiers }from'../../types/constants';
 import{  isPriorityArray,   isStatusArray,  isTagArray, isTask }from'../../utils/guards';
 import{ fadeInOut, slowFadeInOut }from'../../types/animations';
 import{ TagService }from'../../service/tag.service';
 import{ ChangePublisherService }from'../../service/change-publisher.service';
+import{ Allocation, Allocations, PlanService }from'../../service/plan.service';
+import{ getOffset, getWeeksBetweenDates }from'../../utils/date-utils';
 
 @Component( {
   selector: 'lane[lane][board]',
@@ -28,7 +30,6 @@ import{ ChangePublisherService }from'../../service/change-publisher.service';
   animations: [slowFadeInOut, fadeInOut]
 } )
 export class LaneComponent extends ContainerComponent implements OnInit{
-
   @ViewChildren( TaskComponent, { read: ElementRef } ) taskComponentsElRefs: QueryList<ElementRef> | undefined;
   @ViewChildren( TaskComponent ) taskComponents: QueryList<TaskComponent> | undefined;
   @Input() lane!: Lane;
@@ -44,6 +45,8 @@ export class LaneComponent extends ContainerComponent implements OnInit{
   debounce: ReturnType<typeof setTimeout> | undefined;
   showDatePicker: boolean = false;
 
+  JSON = JSON;
+
   constructor(
     protected override changePublisherService: ChangePublisherService,
     protected override cdr: ChangeDetectorRef,
@@ -53,7 +56,8 @@ export class LaneComponent extends ContainerComponent implements OnInit{
     protected override registry: ContainerComponentRegistryService,
     protected modalService: ModalService,
     public override el: ElementRef,
-    private tagService: TagService
+    private tagService: TagService,
+    private planService: PlanService
   ){
     super( changePublisherService, cdr, registry, el );
 
@@ -113,6 +117,13 @@ export class LaneComponent extends ContainerComponent implements OnInit{
   // Lane's self children, eventually filtered by priority, status.
   get tasks(): Observable<Task[] | undefined>{
     return this.boardService.getTasks$( this.lane, this.lane.priority, this.lane.status, undefined, 'desc' );
+  }
+
+  get allocations(): Observable<Allocations>{
+    return this.boardService.getTasks$( this.lane, this.lane.priority, this.lane.status, undefined, 'desc' ).pipe(
+      map( t => t ? this.planService.calculateAllocations( ganttConfig.startDate, ganttConfig.endDate, t ) : [] )
+    );
+  
   }
 
   get tasksCount(): Observable<number | undefined>{
@@ -264,6 +275,21 @@ export class LaneComponent extends ContainerComponent implements OnInit{
       return false
     }
     return false
+  }
+
+  getPlan(){
+    return JSON.stringify( this.planService.calculateAllocations( ganttConfig.startDate, ganttConfig.endDate, this.boardService.getTasksForGantt( this.lane.children ) ) );
+  }
+
+  getWeeks(){
+    if( !this.board.datesConfig.dateFormat.timeZone ){
+      throw new Error( "No timezone set for board" )
+    }
+    return getWeeksBetweenDates( ganttConfig.startDate, ganttConfig.endDate, getOffset(  this.board.datesConfig.dateFormat.timeZone ) )  ;
+  }
+
+  getAllocationForWeek( allocation: { resource: string; allocations: Allocation[]}, dates :{startDate: Date, endDate: Date} ){
+    return allocation.allocations.reduce( ( acc, all ) => all.startDate.getTime() >= dates.startDate.getTime() &&  all.endDate.getTime() <= dates.endDate.getTime() ? ( acc + all.allocation ) : acc, 0 )  / ( getWorkingDayHoursNumber() * ganttConfig.workDays.length )
   }
 
 }

@@ -3,7 +3,7 @@ import{ Board, TimedTask, Lane, Task }from'../../types/types';
 import{ BoardService }from'../../service/board.service';
 import{ gantt, Task as DhtmlxTask, GanttStatic, Link as DhtmlxLink }from'dhtmlx-gantt';
 import{ TaskComponent }from'../task/task.component';
-import{ calculateWorkingHoursDuration, ganttDateToDate, toIsoString }from'../../utils/date-utils';
+import{ calculateWorkingHours, ganttDateToDate, toIsoString }from'../../utils/date-utils';
 import{ getFirstMentionTag, initTimeData, getTaskBackgroundColor }from'../../utils/utils';
 import{  ganttConfig, tagTypes }from'../../types/constants';
 import{ assertIsTimedTask, isFixedTimedTask, isRollingTimedTask }from'../../utils/guards';
@@ -109,21 +109,21 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     }
 
     if( predecessors.length > 0 ){
-      const workingHoursDuration = calculateWorkingHoursDuration( ganttDateToDate( data.start_date ), ganttDateToDate( data.end_date ) )
-      const d = this.boardService.getComputedDatesAccountingForWorkingDays( t, workingHoursDuration );
+      const workingHoursDuration = calculateWorkingHours( ganttDateToDate( data.start_date ), ganttDateToDate( data.end_date ) )
+      const d = this.boardService.getComputedDatesAccountingForWorkingDays( t, workingHoursDuration.total );
       data.start_date =  d.startDate;
       data.end_date =  d.endDate;
       t.time.startDate = undefined
       t.time.endDate = undefined
-      t.time.durationInWorkingHours = workingHoursDuration
+      t.time.durationInWorkingHours = workingHoursDuration.total
       t.time.type = 'rolling';
       gantt.updateTask( t.id, data );
     }else{
       // no predecessors, task becomes fixed
       const startDate = ganttDateToDate( data.start_date );
       const endDate = ganttDateToDate( data.end_date );
-      startDate.setHours( ganttConfig.startOfWorkingDay );
-      endDate.setHours( ganttConfig.endOfWorkingDay )
+
+      //endDate.setHours( ganttConfig.endOfWorkingDay )
       t.time.startDate = toIsoString(  startDate )
       t.time.endDate = toIsoString( endDate )
       data.start_date =  startDate;
@@ -281,8 +281,11 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     gantt.config.preserve_scroll = true;
     gantt.config.initial_scroll = false;
     gantt.config.autoscroll = false;
-    //gantt.config.min_duration = 1 * 1000 * 3600;
-    //gantt.config.duration_unit = "day"
+    //gantt.config.min_duration = 0;
+    gantt.config.duration_unit = "hour"
+    gantt.config.duration_step = 1
+    //gantt.config.round_end_date = false;
+
     //gantt.config.round_dnd_dates = false;
     //gantt.config.time_step = 60
 
@@ -324,11 +327,11 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     };
     gantt.config.sort = true;
 
-    const start = new Date( Date.UTC( this.today.getUTCFullYear(), this.today.getUTCMonth(), 0 ) );
-    const end = new Date( Date.UTC( this.today.getUTCFullYear(), this.today.getUTCMonth() + ganttConfig.shownMonths, 0 ) );
+    const start = ganttConfig.startDate;
+    const end = ganttConfig.endDate;
 
     //gantt.config.work_time = true;
-    gantt.setWorkTime( { hours: [`${ganttConfig.startOfWorkingDay}:00-${ganttConfig.endOfWorkingDay}:00`] } );//global working hours. 8:00-12:00, 13:00-17:00
+    //gantt.setWorkTime( { hours: [`${ganttConfig.startOfWorkingDay}:00-${ganttConfig.endOfWorkingDay}:00`] } );//global working hours. 8:00-12:00, 13:00-17:00
     gantt.templates.timeline_cell_class = function( task, date ){
       if( date.getDay() === 0 || date.getDay() === 6 ){
         return'gantt-weekend';

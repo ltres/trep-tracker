@@ -75,7 +75,8 @@ export interface Project extends Task {
 export interface TimeData{
   startDate: ISODateString | undefined,
   endDate: ISODateString | undefined,
-  durationInWorkingHours: number | undefined, // in working days
+  durationInWorkingHours: number | undefined,
+  resourcesAllocation: number | undefined, //0-100%
   progress: number | undefined,
   type: "fixed" | "rolling"
   predecessors: {

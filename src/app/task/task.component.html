@@ -20,6 +20,7 @@
       <div class="task-text-content" innerHTML="{{ task.searchTextContent }}"></div>
     } @else {
       <div class="task-text-content grow" [class.placeholder]="isPlaceholder()" #editor contenteditable="true" [preventEvents]="!editorActive" [board]="board" [(ngModel)]="task.textContent" (ngModelChange)="publishChange()" (onTagsChange)="updateTaskTags($event)"></div>
+      <input type="number" [value]="calculateWorkingHoursDuration(task)" (change)="updateTaskDuration($event)" />
     }
 
     <div class="grow"></div>
@@ -98,7 +99,6 @@
     <ng-container [ngTemplateOutlet]="date" [ngTemplateOutletContext]="{ date: getComputedDates(task).startDate }"></ng-container>
     <span class="translucent"> ⤳ </span>
     <ng-container [ngTemplateOutlet]="date" [ngTemplateOutletContext]="{ date: getComputedDates(task).endDate }"></ng-container>
-    <input type="number" [value]="calculateWorkingHoursDuration(task)" (change)="updateTaskDuration($event)" />
   }
 
   @if (task.status === 'completed') {

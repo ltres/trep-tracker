@@ -8,10 +8,10 @@ import{ KeyboardService }from'../../service/keyboard.service';
 import{ ContainerComponentRegistryService }from'../../service/registry.service';
 import{ ContainerComponent }from'../base/base.component';
 import{ ClickService }from'../../service/click.service';
-import{  fromIsoString, formatDate, getDiffInDays }from'../../utils/date-utils';
+import{  fromIsoString, formatDate, getDiffInDays, calculateDatesWithWorkingDays, toIsoString }from'../../utils/date-utils';
 import{ setCaretPosition, isPlaceholder, hashCode, isArchivedOrDiscarded, initTimeData }from'../../utils/utils';
 import{ millisForMagnitudeStep, minOpacityAtTreshold, similarityTreshold }from'../../types/constants';
-import{ assertIsRollingTimedTask, isProject,  isTask, isTimedTask }from'../../utils/guards';
+import{ isFixedTimedTask, isProject,  isRollingTimedTask,  isTask, isTimedTask }from'../../utils/guards';
 import{ fadeInOut }from'../../types/animations';
 import{ TagService }from'../../service/tag.service';
 import{ ChangePublisherService }from'../../service/change-publisher.service';
@@ -364,9 +364,18 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   updateTaskDuration( $event: Event ){
     console.log( ( $event.target! as HTMLInputElement ).value )
     initTimeData( this.task );
-    assertIsRollingTimedTask( this.task );
-    this.task.time.durationInWorkingHours = Number( ( $event.target! as HTMLInputElement ).value );
-    this.changePublisherService.processChangesAndPublishUpdate( [this.task, this.lane] )
+    if( isRollingTimedTask( this.task ) ){
+      this.task.time.durationInWorkingHours = Number( ( $event.target! as HTMLInputElement ).value );
+      this.changePublisherService.processChangesAndPublishUpdate( [this.task, this.lane] )
+    }else if( isFixedTimedTask(  this.task ) ){
+      const dates = calculateDatesWithWorkingDays( fromIsoString( this.task.time.startDate ), Number( ( $event.target! as HTMLInputElement ).value ) );
+      this.task.time.startDate = toIsoString(  dates.startDate )
+
+      this.task.time.endDate = toIsoString( dates.endDate )
+      this.changePublisherService.processChangesAndPublishUpdate( [this.task, this.lane] )
+
+    }
+
   }
     
 }
