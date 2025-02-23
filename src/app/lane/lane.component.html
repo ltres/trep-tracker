@@ -122,8 +122,8 @@
   </div>
 
   @if (!lane.collapsed) {
-    <div class="lane-content flex align-items-end">
-      <div class="lane-content-left flex column scroll-x">
+    <div class="lane-grid">
+      <div class="lane-content-left flex column justify-content-end">
         <div [class.non-static-island]="isStatic()" class="lane-task-container flex column">
           <div [droppable]="5" [container]="lane" [executeOnDropReceived]="receiveDropToDumb.bind(this, undefined)" *ngIf="((tasks | async) ?? []).length > 0" class="dumb-dropzone"></div>
 
@@ -145,12 +145,8 @@
       <div class="lane-content-right grow">
         <gantt [lane]="lane" [board]="board"></gantt>
       </div>
-    </div>
-    <div class="lane-content flex align-items-end">
-      <div class="lane-content-left flex column">Allocations</div>
-      <div class="lane-content-right grow">
-        <div [ngTemplateOutlet]="allocationRows"></div>
-      </div>
+
+      <ng-container [ngTemplateOutlet]="allocationRows"></ng-container>
     </div>
     <div *ngIf="!isStatic()" class="lane-toolbar flex g-05">
       <div class="grow"></div>
@@ -167,17 +163,34 @@
 <ng-template #gantt> asd a</ng-template>
 
 <ng-template #allocationRows>
-  <div *ngFor="let allocation of allocations | async">
-    <span>{{ allocation.resource }}: </span>
-    @let weeks = getAllocationForWeeks(allocation, getWeeks());
-    <span *ngFor="let week of weeks">
-      <span [class]="week.allocationPercentage > 0 ? 'green' : 'red'">
-        <span>from: {{ formatDate(week.startDate) }} </span>
-        <span>to: {{ formatDate(week.endDate) }} </span>
-        <span *ngIf="week.streakDuration > 0">({{ week.streakDuration }} weeks) </span>
-        <span *ngIf="week.allocationPercentage > 0"> ALLOCATION {{ week.allocationPercentage }} </span>
-        <span *ngIf="week.allocationPercentage === 0">NO alloc </span>
+  <div class="lane-content-left flex column">
+    <div *ngFor="let allocation of allocations | async">
+      <span>{{ allocation.resource }}: </span>
+    </div>
+  </div>
+  <div class="lane-content-right">
+    <div class="flex" *ngFor="let allocation of allocations | async">
+      @let weeks = getAllocationForWeeks(allocation, getWeeks(), false);
+      <span class="grow" *ngFor="let week of weeks">
+        <span [class]="week.allocationPercentage > 0 ? (week.allocationPercentage <= 100 ? 'green' : 'yellow') : 'red'">
+          <!-- <span>from: {{ formatDate(week.startDate) }} </span>
+          <span>to: {{ formatDate(week.endDate) }} </span> -->
+          <span *ngIf="week.streakDuration > 0">({{ week.streakDuration }} weeks) </span>
+          <span *ngIf="week.allocationPercentage > 0"> ALLOCATION {{ week.allocationPercentage }} </span>
+          <span *ngIf="week.allocationPercentage === 0">NO alloc </span>
+        </span>
       </span>
-    </span>
+      <!--      @let weeksGrouped = getAllocationForWeeks(allocation, getWeeks(), true);
+      <span *ngFor="let week of weeksGrouped">
+        <span [class]="week.allocationPercentage > 0 ? (week.allocationPercentage <= 100 ? 'green' : 'yellow') : 'red'">
+          <span>from: {{ formatDate(week.startDate) }} </span>
+          <span>to: {{ formatDate(week.endDate) }} </span>
+          <span *ngIf="week.streakDuration > 0">({{ week.streakDuration }} weeks) </span>
+          <span *ngIf="week.allocationPercentage > 0"> ALLOCATION {{ week.allocationPercentage }} </span>
+          <span *ngIf="week.allocationPercentage === 0">NO alloc </span>
+        </span>
+      </span>
+      -->
+    </div>
   </div>
 </ng-template>

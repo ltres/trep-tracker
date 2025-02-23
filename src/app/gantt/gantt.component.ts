@@ -275,7 +275,8 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     this.selectView( this.selectedView );
 
     gantt.config.min_column_width = 25; // Set to your desired width in pixels
-    gantt.config.autosize = 'y'
+    gantt.config.row_height = ganttConfig.rowHeight;
+    gantt.config.autosize = 'xy'
     gantt.config.multiselect = true;
     gantt.config.multiselect_one_level = false;
     gantt.config.preserve_scroll = true;

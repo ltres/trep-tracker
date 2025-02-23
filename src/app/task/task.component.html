@@ -1,52 +1,45 @@
-<div class="task-wrapper g-05" [droppable]="3" [container]="task" [executeOnDropReceived]="receiveDrop.bind(this)" [class.editor-active]="this.editorActive" [class.selected]="this.selected" [class]="this.task.status" [class.recurrence-child]="isRecurringTaskChild(task)" [class.project]="isProject(task)" [style]="this.task.priority === 4 ? 'font-weight: bolder' : ''" (click)="clickTask()" [style.height]="enableGanttView ? '25px' : ''">
-  <div class="task-main-controls flex g-05 align-items-center">
-    <div [tooltip]="'Drag'" *ngIf="!isStaticView() && !isPlaceholder() && !isRecurringTaskChild(task)" class="drag-handle translucent" drag-on-this="true" draggable="true">⋮</div>
+<div [style.height]="enableGanttView ? ganttConfig.rowHeight + 'px' : ''">
+  <div class="task-wrapper g-05" [droppable]="3" [container]="task" [executeOnDropReceived]="receiveDrop.bind(this)" [class.editor-active]="this.editorActive" [class.selected]="this.selected" [class]="this.task.status" [class.recurrence-child]="isRecurringTaskChild(task)" [class.project]="isProject(task)" [style]="this.task.priority === 4 ? 'font-weight: bolder' : ''" (click)="clickTask()" [style.height]="enableGanttView ? ganttConfig.rowHeight + '' : ''">
+    <div class="task-main-controls flex g-05 align-items-center">
+      <div [tooltip]="'Drag'" *ngIf="!isStaticView() && !isPlaceholder() && !isRecurringTaskChild(task)" class="drag-handle translucent" drag-on-this="true" draggable="true">⋮</div>
+      <prioritizer *ngIf="!isPlaceholder()" (onPrioritySelected)="updatePriority($event)" [container]="task"> </prioritizer>
 
-    <!--
-    <label *ngIf="task.time && task.time.recurrence" (click)="task.time.displayRecurrence = !task.time.displayRecurrence" class="pointer">
-      @if (task.time.displayRecurrence) {
-        <span class="recurrences-toggle" tooltip="Hide recurrences">↻</span>
+      <status [container]="task" [board]="board" [staticLane]="isStaticView()" (onStatusSelected)="updateStatus($event)"></status>
+    </div>
+    <div class="flex grow g-025 align-items-center">
+      @if (task.searchTextContent) {
+        <div class="task-text-content" innerHTML="{{ task.searchTextContent }}"></div>
       } @else {
-        <span class="translucent recurrences-toggle" tooltip="Show recurrences">↻</span>
+        <div class="task-text-content grow" [class.placeholder]="isPlaceholder()" #editor contenteditable="true" [preventEvents]="!editorActive" [board]="board" [(ngModel)]="task.textContent" (ngModelChange)="publishChange()" (onTagsChange)="updateTaskTags($event)"></div>
       }
-    </label>
-    -->
-    <prioritizer *ngIf="!isPlaceholder()" (onPrioritySelected)="updatePriority($event)" [container]="task"> </prioritizer>
 
-    <status [container]="task" [board]="board" [staticLane]="isStaticView()" (onStatusSelected)="updateStatus($event)"></status>
-  </div>
-  <div class="flex grow g-025 align-items-center">
-    @if (task.searchTextContent) {
-      <div class="task-text-content" innerHTML="{{ task.searchTextContent }}"></div>
-    } @else {
-      <div class="task-text-content grow" [class.placeholder]="isPlaceholder()" #editor contenteditable="true" [preventEvents]="!editorActive" [board]="board" [(ngModel)]="task.textContent" (ngModelChange)="publishChange()" (onTagsChange)="updateTaskTags($event)"></div>
-      <input type="number" [value]="calculateWorkingHoursDuration(task)" (change)="updateTaskDuration($event)" />
-    }
-
-    <div class="grow"></div>
-    <span *ngIf="!enableGanttView && task.similarTasks.length > 0" [style]="'opacity:' + getMaxSimilarityIndex(task, true) + '%'" class="pill pointer color-2 similar-pill" [tooltip]="getSimilarTasksTooltip(task)" (mouseenter)="showArrows = true" (mouseleave)="showArrows = false" [@fadeInOut]>
-      <span>{{ task.similarTasks.length }} similar ({{ getMaxSimilarityIndex(task, false) }}%)</span>
-    </span>
-    <similar-arrows *ngIf="showArrows" [source]="this" [destinations]="getSimilarTasksComponents(task)"></similar-arrows>
-    <div class="task-toolbar relative flex align-items-center g-025">
-      <span class="task-archive pointer" *ngIf="!isPlaceholder()" [tooltip]="'Archive this task'" [position]="'top'" (click)="archive(task)"> 📁 </span>
-      <span *ngIf="!isPlaceholder() && task.children.length === 0" [class.selected]="task.time?.startDate || task.time?.endDate" class="select-dates pointer" (click)="openDatePicker()">
-        <span [tooltip]="'Set start/end dated'" [position]="'top'">📅</span>
-        <date-picker *ngIf="showDatePicker" [dateDisplayConfig]="board.datesConfig" [showRecurrences]="true" [startDate]="fromIsoString(task.time?.startDate)" [endDate]="fromIsoString(task.time?.endDate)" [selectedRecurrence]="undefined" (onSetClicked)="setDates($event)" (onCancel)="setDates(undefined)" (onClose)="showDatePicker = false"></date-picker>
+      <div class="grow"></div>
+      <span *ngIf="!enableGanttView && task.similarTasks.length > 0" [style]="'opacity:' + getMaxSimilarityIndex(task, true) + '%'" class="pill pointer color-2 similar-pill" [tooltip]="getSimilarTasksTooltip(task)" (mouseenter)="showArrows = true" (mouseleave)="showArrows = false" [@fadeInOut]>
+        <span>{{ task.similarTasks.length }} similar ({{ getMaxSimilarityIndex(task, false) }}%)</span>
       </span>
+      <similar-arrows *ngIf="showArrows" [source]="this" [destinations]="getSimilarTasksComponents(task)"></similar-arrows>
+      <div class="task-toolbar relative flex align-items-center g-025">
+        <span class="task-archive pointer" *ngIf="!isPlaceholder()" [tooltip]="'Archive this task'" [position]="'top'" (click)="archive(task)"> 📁 </span>
+        <span *ngIf="!isPlaceholder() && task.children.length === 0" [class.selected]="task.time?.startDate || task.time?.endDate" class="select-dates pointer" (click)="openDatePicker()">
+          <span [tooltip]="'Set start/end dated'" [position]="'top'">📅</span>
+          <date-picker *ngIf="showDatePicker" [dateDisplayConfig]="board.datesConfig" [showRecurrences]="true" [startDate]="fromIsoString(task.time?.startDate)" [endDate]="fromIsoString(task.time?.endDate)" [selectedRecurrence]="undefined" (onSetClicked)="setDates($event)" (onCancel)="setDates(undefined)" (onClose)="showDatePicker = false"></date-picker>
+        </span>
 
-      <!-- <span *ngIf="!isPlaceholder() && !isRecurringTaskChild(task)" [tooltip]="'Toggle show in Gantt chart'" [position]="'top'" [class.selected]="task.includeInGantt" (click)="toggleShowInGantt()" class="show-in-gantter pointer"> 📊 </span> -->
-      <span class="task-notes pointer" *ngIf="!isPlaceholder()" [tooltip]="task.notes && task.notes.length > 0 ? task.notes : 'Create task notes'" [position]="'top'" (click)="toggleShowNotes()" [class.selected]="task.notes && task.notes.length > 0" [class.open]="showNotes"> 🗒️ </span>
-      <notes [notes]="task.notes" (onNoteChanged)="storeNotes($event)" *ngIf="showNotes"></notes>
+        <!-- <span *ngIf="!isPlaceholder() && !isRecurringTaskChild(task)" [tooltip]="'Toggle show in Gantt chart'" [position]="'top'" [class.selected]="task.includeInGantt" (click)="toggleShowInGantt()" class="show-in-gantter pointer"> 📊 </span> -->
+        <span class="task-notes pointer" *ngIf="!isPlaceholder()" [tooltip]="task.notes && task.notes.length > 0 ? task.notes : 'Create task notes'" [position]="'top'" (click)="toggleShowNotes()" [class.selected]="task.notes && task.notes.length > 0" [class.open]="showNotes"> 🗒️ </span>
+        <notes [notes]="task.notes" (onNoteChanged)="storeNotes($event)" *ngIf="showNotes"></notes>
+      </div>
     </div>
   </div>
-</div>
-<div *ngIf="task.time || task.archivedDate" class="dates-n-stuff flex g-05 small">
-  <div class="">
-    <ng-container [ngTemplateOutlet]="datesText" [ngTemplateOutletContext]="{ task: task }"></ng-container>
+  <div *ngIf="!enableGanttView && (task.time || task.archivedDate)" class="dates-n-stuff flex g-05 small">
+    <div class="">
+      <ng-container [ngTemplateOutlet]="datesText" [ngTemplateOutletContext]="{ task: task }"></ng-container>
+    </div>
+  </div>
+  <div *ngIf="enableGanttView" class="gantt-controls flex g-05 small">
+    <ng-container [ngTemplateOutlet]="ganttControls"></ng-container>
   </div>
 </div>
-
 <div *ngIf="showChildren" class="task-children-wrapper g-025">
   <ng-container
     *ngFor="let child of this.task.children; let last = last; trackBy: trackBy"
@@ -135,4 +128,19 @@
   } @else {
     <span class="half-translucent pointer" [tooltip]="formatDate(date, 'fullDateFormat') + ' - ' + -getDiffInDays(getToday(), date) + ' day' + (-getDiffInDays(getToday(), date) != 1 ? 's' : '') + ' ago'">{{ formatDate(date) }}</span>
   }
+</ng-template>
+
+<ng-template #ganttControls>
+  <span class="flex g-05">
+    <span class="half-translucent pointer"> Working hours: </span>
+    <input type="number" class="w-10-rem" [value]="calculateWorkingHoursDuration(task)" (change)="updateTaskDuration($event)" />
+  </span>
+  <span class="flex g-05">
+    <span class="half-translucent pointer"> From: </span>
+    <date-picker (onSetClicked)="setStartDate($event)" [startDate]="fromIsoString(task.time?.startDate)" [inputMode]="true" [dateDisplayConfig]="board.datesConfig"></date-picker>
+  </span>
+  <span class="flex g-05">
+    <span class="half-translucent pointer"> To: </span>
+    <date-picker (onSetClicked)="setEndDate($event)" [startDate]="fromIsoString(task.time?.endDate)" [inputMode]="true" [dateDisplayConfig]="board.datesConfig"></date-picker>
+  </span>
 </ng-template>

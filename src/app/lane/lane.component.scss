@@ -21,6 +21,11 @@
     }
 }
 
+.lane-grid{
+    display: grid;
+    grid-template-columns: 30% 1fr;
+}
+
 .lane-wrapper {
     padding: $lane-padding;
     display: flex;

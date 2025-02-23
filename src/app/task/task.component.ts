@@ -10,8 +10,8 @@ import{ ContainerComponent }from'../base/base.component';
 import{ ClickService }from'../../service/click.service';
 import{  fromIsoString, formatDate, getDiffInDays, calculateDatesWithWorkingDays, toIsoString }from'../../utils/date-utils';
 import{ setCaretPosition, isPlaceholder, hashCode, isArchivedOrDiscarded, initTimeData }from'../../utils/utils';
-import{ millisForMagnitudeStep, minOpacityAtTreshold, similarityTreshold }from'../../types/constants';
-import{ isFixedTimedTask, isProject,  isRollingTimedTask,  isTask, isTimedTask }from'../../utils/guards';
+import{ ganttConfig, millisForMagnitudeStep, minOpacityAtTreshold, similarityTreshold }from'../../types/constants';
+import{ assertIsTimedTask, isFixedTimedTask, isProject,  isRollingTimedTask,  isTask, isTimedTask }from'../../utils/guards';
 import{ fadeInOut }from'../../types/animations';
 import{ TagService }from'../../service/tag.service';
 import{ ChangePublisherService }from'../../service/change-publisher.service';
@@ -50,6 +50,8 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   showArrows: boolean = false;
   debounce: ReturnType<typeof setTimeout> | undefined;
  
+  ganttConfig = ganttConfig
+
   getFixedHeight(){
     return'25px';
   }
@@ -305,7 +307,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     this.showDatePicker = true;
   }
 
-  fromIsoString( d: ISODateString|undefined ){
+  fromIsoString( d: ISODateString | undefined ){
     if( !d ){
       return
     }
@@ -375,7 +377,24 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
       this.changePublisherService.processChangesAndPublishUpdate( [this.task, this.lane] )
 
     }
-
+  }
+  setEndDate( pickerOutput: PickerOutput ){
+    if( 'timeframe' in pickerOutput ){
+      throw new Error( "Wrong type" )
+    }
+    initTimeData( this.task );
+    assertIsTimedTask( this.task );
+    this.task.time.endDate = toIsoString( pickerOutput.dates[0] );
+    this.changePublisherService.processChangesAndPublishUpdate( [this.task, this.lane] )
+  }
+  setStartDate( pickerOutput: PickerOutput ){
+    if( 'timeframe' in pickerOutput ){
+      throw new Error( "Wrong type" )
+    }
+    initTimeData( this.task );
+    assertIsTimedTask( this.task );
+    this.task.time.startDate = toIsoString( pickerOutput.dates[0] );
+    this.changePublisherService.processChangesAndPublishUpdate( [this.task, this.lane] )
   }
     
 }

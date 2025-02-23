@@ -13,10 +13,14 @@ const ONE_DAY = 24 * 60 * 60 * 1000;
 export class DatePickerComponent implements AfterViewInit{
 
   @ViewChild( 'trigger' ) trigger: ElementRef<{click:() =>unknown}> | null = null;
+  @Input() inputMode = false;
+
   @Input() showRecurrences = false;
   @Input() showTimeframes = false;
   @Input() hideCalendar = false;
   @Input() dateDisplayConfig!:DateDisplayConfig
+
+  singleDate: Date | undefined
 
   @Input() startDate: Date | undefined = new Date( Date.now() - ONE_DAY );
   @Input() endDate: Date | undefined = new Date( Date.now() + ONE_DAY )
@@ -30,8 +34,6 @@ export class DatePickerComponent implements AfterViewInit{
   public selectedMoments: Date[] | undefined;
   protected recurrenceValues = recurrenceValues
   protected timeframeValues= timeframeValues
-
-  protected initialized = false;
 
   dateTime = false
   today = new Date();
@@ -47,16 +49,26 @@ export class DatePickerComponent implements AfterViewInit{
     this.startDate = this.startDate ?? new Date( this.today.getFullYear(), this.today.getMonth(), this.today.getDate(), 0, 1, 0 );
     this.endDate = this.endDate ??  new Date( this.today.getFullYear(), this.today.getMonth(), this.today.getDate(), 23, 59, 0 );
 
+    this.singleDate = new Date( this.startDate.getTime() )
+
     this.selectedMoments =[
       this.startDate,
       this.endDate
     ]
-    this.initialized = true
-    this.trigger?.nativeElement.click();
+    if( !this.inputMode ){
+      this.trigger?.nativeElement.click();
+
+    }
   }
   
   protected setButtonClicked( date: Date | ( Date | null )[] ): void{
-    if( this.showTimeframes || !date || !Array.isArray( date ) || date.length !== 2 || date[0] === null ){
+    if( !Array.isArray( date )  ){
+      // single case
+      this.onSetClicked.emit( {
+        dates: [date, date],
+        recurrence: this.selectedRecurrence
+      } )
+    }if( this.showTimeframes || !date || !Array.isArray( date ) || date.length !== 2 || date[0] === null ){
       // no dates, timeframe?
       if( !this.selectedTimeframe ){
         throw new Error( "No dates nor timeframe selected" );

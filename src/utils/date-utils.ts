@@ -141,8 +141,8 @@ export function shiftByRecurrence( date: Date, recurrence: Recurrence ): Date{
   return date
 }
 
-export function getLastMonday(): Date{
-  const today = new Date();
+export function getLastMonday( d?: Date ): Date{
+  const today = d ?? new Date();
   const day = today.getDay(); // 0 is Sunday, 1 is Monday, etc.
     
   // Calculate how many days to subtract to get to last Monday
@@ -156,6 +156,22 @@ export function getLastMonday(): Date{
   lastMonday.setHours( 0, 1, 0, 0 );
     
   return lastMonday;
+}
+
+export function getLastSunday( d?: Date ): Date{
+  const today = d ?? new Date();
+  const day = today.getDay(); // 0 is Sunday, 1 is Monday, etc.
+    
+  // Calculate how many days to subtract to get to last Monday
+    
+  // Create new date for last Monday
+  const lastSunday = new Date( today );
+  lastSunday.setDate( today.getDate() - day );
+    
+  // Set time to 00:01
+  lastSunday.setHours( 0, 1, 0, 0 );
+    
+  return lastSunday;
 }
 
 /**
@@ -226,8 +242,9 @@ export function calculateDatesWithWorkingDays( startDate: Date, durationInWorkin
  * @param end 
  * @returns 
  */
-export function calculateWorkingHours( start: Date, end: Date ): {total:number, detail: {startDate: Date, endDate: Date}[]}{
-
+export function calculateWorkingHours( startDate: Date, endDate: Date ): {total:number, detail: {startDate: Date, endDate: Date}[]}{
+  const start = new Date( startDate.getTime() );
+  const end = new Date( endDate.getTime() );
   if( start.getHours() < ganttConfig.startOfWorkingDay ){
     // adjust day start
     start.setHours( ganttConfig.startOfWorkingDay );
@@ -242,6 +259,10 @@ export function calculateWorkingHours( start: Date, end: Date ): {total:number, 
     // Starting on weekends
     start.setDate( start.getDate() + 1 )
   }
+  start.setMinutes( 0 );
+  start.setSeconds( 0 );
+  start.setMilliseconds( 0 );
+
   const ret: {total:number, detail: {startDate: Date, endDate: Date}[]} = {total:0, detail: []}
   const current = new Date( start )
   while( current.getTime() < end.getTime() ){

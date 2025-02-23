@@ -1,12 +1,12 @@
 import{ OwlDateTimeFormats }from"@ltres/angular-datetime-picker";
 import{ DateDisplayConfig, Status, TagType }from"./types";
-import{ formatDate }from"../utils/date-utils";
+import{ formatDate, getLastMonday, getLastSunday }from"../utils/date-utils";
 import{ ChartDataset, ChartOptions }from"chart.js/auto";
 
 export const performanceLoggerActive = false;
 
 const today = new Date();
-const showMonths = 4;
+const showMonths = 2;
 
 export const boardDebounceDelay = {
   micro: 200,
@@ -20,6 +20,7 @@ export const ganttConfig = {
   skipWeekendsInPlanning: true,
   externalTaskCssClass: "gantt-external-task",
   columnsWidth: 500,
+  rowHeight: 40,
   undefinedDurationTaskHours: 4,
 
   startOfWorkingDay:9,
@@ -27,8 +28,8 @@ export const ganttConfig = {
   pauseInWorkingDayHours:[{hour:13, pause:1}],
   workDays: [1, 2, 3, 4, 5],
 
-  startDate: new Date( Date.UTC( today.getUTCFullYear(), today.getUTCMonth(), 1 ) ),
-  endDate: new Date( Date.UTC( today.getUTCFullYear(), today.getUTCMonth() + showMonths, 1 ) )
+  startDate: getLastMonday( new Date( Date.UTC( today.getUTCFullYear(), today.getUTCMonth(), 1 ) ) ),
+  endDate: getLastSunday( new Date( Date.UTC( today.getUTCFullYear(), today.getUTCMonth() + showMonths, 1 ) ) )
 }
 
 export function getWorkingDayHoursNumber(){

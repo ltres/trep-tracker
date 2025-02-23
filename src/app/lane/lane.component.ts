@@ -289,27 +289,29 @@ export class LaneComponent extends ContainerComponent implements OnInit{
     return getWeeksBetweenDates( ganttConfig.startDate, ganttConfig.endDate, getOffset(  this.board.datesConfig.dateFormat.timeZone ) )  ;
   }
 
-  getAllocationForWeeks( allocation: { resource: string; allocations: Allocation[]}, weeks :{startDate: Date, endDate: Date}[] ): {startDate: Date, endDate: Date, allocationPercentage:number, streakDuration: number }[]{
+  getAllocationForWeeks( allocation: { resource: string; allocations: Allocation[]}, weeks :{startDate: Date, endDate: Date}[], group: boolean ): {startDate: Date, endDate: Date, allocationPercentage:number, streakDuration: number }[]{
     const ret: {startDate: Date, endDate: Date, allocationPercentage:number, streakDuration: number }[] = []
     let streakDuration = 0;
-    let startOfStreak: Date | undefined;
-    let lastAllocationValue = -1;
+    //const startOfStreak: Date = weeks[0].startDate;
+    let lastAllocationValue;
     for( const[i, week]of weeks.entries() ){
       const allocationThisWeek = allocation.allocations.reduce( ( acc, all ) => all.startDate.getTime() >= week.startDate.getTime() &&  all.endDate.getTime() <= week.endDate.getTime() ? ( acc + all.allocationPercentage ) : acc, 0 )  / ( getWorkingDayHoursNumber() * ganttConfig.workDays.length );
-      if( lastAllocationValue < 0 ){
-        lastAllocationValue = allocationThisWeek
-        startOfStreak = week.startDate
-      }
-      if( lastAllocationValue === allocationThisWeek && i !== weeks.length -1 ){
-        streakDuration ++;
-        // continue
+      if( !group ){
+        ret.push( {startDate: week.startDate, endDate: week.endDate, allocationPercentage: allocationThisWeek, streakDuration} )
       }else{
-        // variation, push
-        ret.push( {startDate: startOfStreak ?? week.startDate, endDate: startOfStreak? week.startDate : week.endDate, allocationPercentage: lastAllocationValue, streakDuration} )
-        streakDuration = 1;
+
+        if( typeof lastAllocationValue === 'undefined' || ( group && lastAllocationValue === allocationThisWeek && i !== weeks.length -1 ) ){
+          streakDuration ++;
+          // continue
+        }else{
+          // variation, push
+          ret.push( {startDate: week.startDate, endDate: week.endDate, allocationPercentage: allocationThisWeek, streakDuration} )
+          streakDuration = 1;
+          //startOfStreak = week.startDate
+        }
         lastAllocationValue = allocationThisWeek;
-        startOfStreak = week.startDate
       }
+
     }
 
     return ret;
