@@ -270,7 +270,7 @@ export function calculateWorkingHours( start: Date, end: Date ): {total:number, 
 }
 
 /**
- * Groups by weeks from startDate - endDate
+ * Groups by weeks from startDate - endDate account for the timezone offset (weeks start and end differently)
  * @param startDate 
  * @param endDate 
  */

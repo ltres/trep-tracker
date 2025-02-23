@@ -896,7 +896,7 @@ export class BoardService{
  * If any of those tasks belong to a project, return it as well.
  * @param tasks 
  */
-  getTasksForGantt( tasks: Task[] ): Task[]{
+  getAllTimedDescendants( tasks: Task[] ): Task[]{
     const allDescendantsHavingDates = tasks.flatMap( t => getDescendants( t ).concat( t ) ).filter( t => isTask( t ) ).filter( t => !isProject( t ) && isTimedTask( t ) );
     const projectsToAdd: Task[] = allDescendantsHavingDates.map( d => this.findDirectParent( [d] ) ).filter( p => isProject( p ) );
     return projectsToAdd.concat( allDescendantsHavingDates );

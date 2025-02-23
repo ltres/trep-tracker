@@ -15,6 +15,7 @@
 }
 
 @include generate-semantic-color-classes($semantic-colors);
+@include generate-semantic-color-classes($colors);
 
 html {
   background-color: map.get($colors, dark-gray-2-muted);

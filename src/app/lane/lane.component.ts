@@ -1,5 +1,5 @@
 import{ ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, HostBinding, Input, OnInit, QueryList, TemplateRef, ViewChild, ViewChildren }from'@angular/core';
-import{ Board, Container, Lane, PickerOutput, Priority, Status, Tag, Task, getNewTask }from'../../types/types';
+import{ Board, Container, ISODateString, Lane, PickerOutput, Priority, Status, Tag, Task, getNewTask }from'../../types/types';
 import{ BoardService }from'../../service/board.service';
 import{ hashCode, isArchive, isPlaceholder, isStatic }from'../../utils/utils';
 import{ map, Observable, of }from'rxjs';
@@ -15,7 +15,7 @@ import{ fadeInOut, slowFadeInOut }from'../../types/animations';
 import{ TagService }from'../../service/tag.service';
 import{ ChangePublisherService }from'../../service/change-publisher.service';
 import{ Allocation, Allocations, PlanService }from'../../service/plan.service';
-import{ getOffset, getWeeksBetweenDates }from'../../utils/date-utils';
+import{ formatDate, getOffset, getWeeksBetweenDates }from'../../utils/date-utils';
 
 @Component( {
   selector: 'lane[lane][board]',
@@ -121,6 +121,7 @@ export class LaneComponent extends ContainerComponent implements OnInit{
 
   get allocations(): Observable<Allocations>{
     return this.boardService.getTasks$( this.lane, this.lane.priority, this.lane.status, undefined, 'desc' ).pipe(
+      map( t => t ? this.boardService.getAllTimedDescendants( t )  : [] ),
       map( t => t ? this.planService.calculateAllocations( ganttConfig.startDate, ganttConfig.endDate, t ) : [] )
     );
   
@@ -231,9 +232,9 @@ export class LaneComponent extends ContainerComponent implements OnInit{
     return isStatic( this.lane ) ?
       this.staticTasks.pipe( map( tasks => {
         if( !tasks )return;
-        return this.boardService.getTasksForGantt( tasks )
+        return this.boardService.getAllTimedDescendants( tasks )
       } ) ) :
-      of( this.boardService.getTasksForGantt( this.lane.children ) );
+      of( this.boardService.getAllTimedDescendants( this.lane.children ) );
   }
   toggleCollapse(){
     this.lane.collapsed = !this.lane.collapsed
@@ -278,7 +279,7 @@ export class LaneComponent extends ContainerComponent implements OnInit{
   }
 
   getPlan(){
-    return JSON.stringify( this.planService.calculateAllocations( ganttConfig.startDate, ganttConfig.endDate, this.boardService.getTasksForGantt( this.lane.children ) ) );
+    return JSON.stringify( this.planService.calculateAllocations( ganttConfig.startDate, ganttConfig.endDate, this.boardService.getAllTimedDescendants( this.lane.children ) ) );
   }
 
   getWeeks(){
@@ -288,8 +289,34 @@ export class LaneComponent extends ContainerComponent implements OnInit{
     return getWeeksBetweenDates( ganttConfig.startDate, ganttConfig.endDate, getOffset(  this.board.datesConfig.dateFormat.timeZone ) )  ;
   }
 
-  getAllocationForWeek( allocation: { resource: string; allocations: Allocation[]}, dates :{startDate: Date, endDate: Date} ){
-    return allocation.allocations.reduce( ( acc, all ) => all.startDate.getTime() >= dates.startDate.getTime() &&  all.endDate.getTime() <= dates.endDate.getTime() ? ( acc + all.allocation ) : acc, 0 )  / ( getWorkingDayHoursNumber() * ganttConfig.workDays.length )
+  getAllocationForWeeks( allocation: { resource: string; allocations: Allocation[]}, weeks :{startDate: Date, endDate: Date}[] ): {startDate: Date, endDate: Date, allocationPercentage:number, streakDuration: number }[]{
+    const ret: {startDate: Date, endDate: Date, allocationPercentage:number, streakDuration: number }[] = []
+    let streakDuration = 0;
+    let startOfStreak: Date | undefined;
+    let lastAllocationValue = -1;
+    for( const[i, week]of weeks.entries() ){
+      const allocationThisWeek = allocation.allocations.reduce( ( acc, all ) => all.startDate.getTime() >= week.startDate.getTime() &&  all.endDate.getTime() <= week.endDate.getTime() ? ( acc + all.allocationPercentage ) : acc, 0 )  / ( getWorkingDayHoursNumber() * ganttConfig.workDays.length );
+      if( lastAllocationValue < 0 ){
+        lastAllocationValue = allocationThisWeek
+        startOfStreak = week.startDate
+      }
+      if( lastAllocationValue === allocationThisWeek && i !== weeks.length -1 ){
+        streakDuration ++;
+        // continue
+      }else{
+        // variation, push
+        ret.push( {startDate: startOfStreak ?? week.startDate, endDate: startOfStreak? week.startDate : week.endDate, allocationPercentage: lastAllocationValue, streakDuration} )
+        streakDuration = 1;
+        lastAllocationValue = allocationThisWeek;
+        startOfStreak = week.startDate
+      }
+    }
+
+    return ret;
+  }
+
+  formatDate( date: ISODateString | Date ){
+    return formatDate( date, this.board.datesConfig );
   }
 
 }

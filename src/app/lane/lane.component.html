@@ -147,12 +147,9 @@
       </div>
     </div>
     <div class="lane-content flex align-items-end">
-      <div class="lane-content-left flex column">asd</div>
+      <div class="lane-content-left flex column">Allocations</div>
       <div class="lane-content-right grow">
-        <div *ngFor="let allocation of allocations | async">
-          <span>{{ allocation.resource }}</span>
-          <span *ngFor="let week of getWeeks()"> {{ JSON.stringify(week) }} => {{ getAllocationForWeek(allocation, week) }} </span>
-        </div>
+        <div [ngTemplateOutlet]="allocationRows"></div>
       </div>
     </div>
     <div *ngIf="!isStatic()" class="lane-toolbar flex g-05">
@@ -167,4 +164,20 @@
   }
 </div>
 
-<ng-template #gantt> asd </ng-template>
+<ng-template #gantt> asd a</ng-template>
+
+<ng-template #allocationRows>
+  <div *ngFor="let allocation of allocations | async">
+    <span>{{ allocation.resource }}: </span>
+    @let weeks = getAllocationForWeeks(allocation, getWeeks());
+    <span *ngFor="let week of weeks">
+      <span [class]="week.allocationPercentage > 0 ? 'green' : 'red'">
+        <span>from: {{ formatDate(week.startDate) }} </span>
+        <span>to: {{ formatDate(week.endDate) }} </span>
+        <span *ngIf="week.streakDuration > 0">({{ week.streakDuration }} weeks) </span>
+        <span *ngIf="week.allocationPercentage > 0"> ALLOCATION {{ week.allocationPercentage }} </span>
+        <span *ngIf="week.allocationPercentage === 0">NO alloc </span>
+      </span>
+    </span>
+  </div>
+</ng-template>

@@ -5,7 +5,7 @@ import{ tagTypes }from'../types/constants';
 import{ calculateWorkingHours }from'../utils/date-utils';
 import{ isTimedTask }from'../utils/guards';
 
-export type Allocation = {startDate: Date, endDate: Date, allocation: number};
+export type Allocation = {startDate: Date, endDate: Date, allocationPercentage: number};
 export type Allocations = {resource: string, allocations: Allocation[]  }[]
 
 @Injectable( {
@@ -44,7 +44,7 @@ export class PlanService{
         // Resource allocation is the sum of the percentages of allocations in any task they are involved
         const isWoringInHours = resourceTasks.filter( ta => ta.startDate.getTime() <= hour.startDate.getTime() && ta.endDate.getTime() >= hour.endDate.getTime()  )
         if( isWoringInHours.length > 0 ){
-          toPush.allocations.push( {startDate: hour.startDate, endDate: hour.endDate, allocation: isWoringInHours.reduce( ( acc, wh ) => acc + ( wh.resourcesAllocation ?? 100 ), 0 )} )
+          toPush.allocations.push( {startDate: hour.startDate, endDate: hour.endDate, allocationPercentage: isWoringInHours.reduce( ( acc, wh ) => acc + ( wh.resourcesAllocation ?? 100 ), 0 )} )
         }
       }
 

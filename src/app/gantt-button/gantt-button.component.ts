@@ -24,7 +24,7 @@ export class GanttButtonComponent{
 
   getGanttTasks$(): Observable<Task[] | undefined>{
     return this.boardService.getTasksForBoard$( this.board ).pipe(
-      map( tasks => this.boardService.getTasksForGantt( tasks ) ),
+      map( tasks => this.boardService.getAllTimedDescendants( tasks ) ),
     );
   }
 
