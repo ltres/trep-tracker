@@ -6,7 +6,7 @@ import{ TaskComponent }from'../task/task.component';
 import{ calculateWorkingHours, ganttDateToDate, toIsoString }from'../../utils/date-utils';
 import{ getFirstMentionTag, initTimeData, getTaskBackgroundColor }from'../../utils/utils';
 import{  ganttConfig, tagTypes }from'../../types/constants';
-import{ assertIsTimedTask, isFixedTimedTask, isRollingTimedTask }from'../../utils/guards';
+import{ assertIsTimedTask, isFixedTimedTask, isProject, isRollingTimedTask }from'../../utils/guards';
 import{ ChangePublisherService }from'../../service/change-publisher.service';
 
 @Component( {
@@ -98,56 +98,8 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
 
     assertIsTimedTask( t )
 
-    let predecessors = t.time.predecessors;
-
-    let containingProject: Task | undefined = this.boardService.findTask( t.parentId );
-    while( containingProject ){
-      if( containingProject?.time?.predecessors ){
-        predecessors = predecessors.concat( containingProject.time.predecessors )
-      }
-      containingProject= this.boardService.findTask( containingProject.parentId );
-    }
-
-    if( predecessors.length > 0 ){
-      const workingHoursDuration = calculateWorkingHours( ganttDateToDate( data.start_date ), ganttDateToDate( data.end_date ) )
-      const d = this.boardService.getComputedDatesAccountingForWorkingDays( t, workingHoursDuration.total );
-      data.start_date =  d.startDate;
-      data.end_date =  d.endDate;
-      t.time.startDate = undefined
-      t.time.endDate = undefined
-      t.time.durationInWorkingHours = workingHoursDuration.total
-      t.time.type = 'rolling';
-      gantt.updateTask( t.id, data );
-    }else{
-      // no predecessors, task becomes fixed
-      const startDate = ganttDateToDate( data.start_date );
-      const endDate = ganttDateToDate( data.end_date );
-
-      //endDate.setHours( ganttConfig.endOfWorkingDay )
-      t.time.startDate = toIsoString(  startDate )
-      t.time.endDate = toIsoString( endDate )
-      data.start_date =  startDate;
-      data.end_date =  endDate;
-      t.time.durationInWorkingHours = undefined
-      t.time.type = 'fixed'
-      gantt.updateTask( t.id, data );
-    }
-    let successors = this.boardService.findSuccessors( t );
-    // we need to account also for project successors:
-    containingProject = this.boardService.findTask( t.parentId );
-    while( containingProject ){
-      successors = successors.concat( this.boardService.findSuccessors( containingProject ) );
-      successors = successors.concat( containingProject.children )
-      containingProject= this.boardService.findTask( containingProject.parentId );
-    }
-    if( successors.length > 0 ){
-      successors.forEach( s => {
-        gantt.updateTask( s.id )
-        if( s.children ){
-          s.children.forEach( c => gantt.updateTask( c.id ) )
-        }
-      } )
-    }
+    this.updateTaskAccountingForPredecessors( t, data );
+    this.updateTaskSuccessors( t )
 
     t.time.progress = data.progress ?? 0;
     t.textContent = data.text;
@@ -156,6 +108,78 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     setTimeout( ()=> { this.lastUpdatedTasks = [] }, 100 )
     //this.init(this.lane.children);
   }
+
+  updateTaskAccountingForPredecessors( t : TimedTask, data: DhtmlxTask ){
+    let predecessors = t.time.predecessors;
+    
+    let containingProject: Task | undefined = this.boardService.findTask( t.parentId );
+    while( containingProject ){
+      if( containingProject?.time?.predecessors ){
+        predecessors = predecessors.concat( containingProject.time.predecessors )
+      }
+      containingProject= this.boardService.findTask( containingProject.parentId );
+    }
+    // const durationBeforeModification = t.time.durationInWorkingHours
+    // const datesBeforeModification = this.boardService.getComputedDatesAccountingForWorkingDays( t, durationBeforeModification );
+
+    if( predecessors.length > 0 ){
+
+      const durationAfterModification = calculateWorkingHours( ganttDateToDate( data.start_date ), ganttDateToDate( data.end_date ) )
+      const datesAfterModification = this.boardService.getComputedDatesAccountingForWorkingDays( t, durationAfterModification.total );
+
+      data.start_date =  datesAfterModification.startDate;
+      data.end_date =  datesAfterModification.endDate;
+      t.time.startDate = undefined
+      t.time.endDate = undefined
+      t.time.durationInWorkingHours = durationAfterModification.total
+      t.time.type = 'rolling';
+      gantt.updateTask( t.id, data ); // triggers an 'updateTask'
+
+    }else{
+
+      const startDate = ganttDateToDate( data.start_date );
+      const endDate = ganttDateToDate( data.end_date );
+
+      // no predecessors, task becomes fixed
+
+      //endDate.setHours( ganttConfig.endOfWorkingDay )
+      t.time.startDate = toIsoString(  startDate )
+      t.time.endDate = toIsoString( endDate )
+      data.start_date =  startDate;
+      data.end_date =  endDate;
+      t.time.durationInWorkingHours = undefined
+      t.time.type = 'fixed'
+      gantt.updateTask( t.id, data ); // triggers an 'updateTask'
+      
+    }
+  }
+
+  updateTaskSuccessors( t : TimedTask ){
+    let successors = this.boardService.findSuccessors( t );
+    
+    // we need to account also for project successors:
+    let containingProject = this.boardService.findTask( t.parentId );
+    while( containingProject ){
+      successors = successors.concat( this.boardService.findSuccessors( containingProject ) );
+      successors = successors.concat( containingProject.children )
+      containingProject= this.boardService.findTask( containingProject.parentId );
+    }
+    if( isProject( t ) ){
+      // containing tasks need updating as well
+      successors = successors.concat( t.children )
+
+    }
+
+    if( successors.length > 0 ){
+      successors.forEach( s => {
+        gantt.updateTask( s.id )
+        if( s.children ){
+          s.children.forEach( c => gantt.updateTask( c.id ) ) // triggers an 'updateTask'
+        }
+      } )
+    }
+  }
+
   createTask(){
     throw new Error( 'Method not implemented.' );
   }
@@ -177,12 +201,32 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     }
 
     assertIsTimedTask( target );
+    assertIsTimedTask( source );
 
     target.time.predecessors.push( {
       taskId: source.id,
       linkId: data.id.toString(),
     } )
-    this.changePublisherService.processChangesAndPublishUpdate( [source, target] );
+    // task becomes ROLLING. if the target is a project, its first children becomes rolling as well
+    const toRoll: Task[] = [target];
+    if( isProject( target ) ){
+      toRoll.push( target.children[0] )
+    }
+    toRoll.forEach( t => {
+      if( !t.time ){
+        initTimeData( t, new Date() );
+      }
+
+      assertIsTimedTask( t )
+      t.time.startDate = undefined
+      t.time.endDate = undefined
+      t.time.durationInWorkingHours = 1
+      t.time.type="rolling"
+    } )
+
+    this.changePublisherService.processChangesAndPublishUpdate( [source] );
+
+    gantt.updateTask( target.id )
 
     /*
     source.time!.successors = source.time!.successors ?? [];
@@ -196,10 +240,10 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     //this.changePublisherService.processChangesAndPublishUpdate( [source, target] );
 
   }
-  deleteLink( id: string ){
+  deleteLink( id: number ){
     this.boardService.allTasks?.forEach( task => {
       if( task.time?.predecessors ){
-        task.time.predecessors = task.time.predecessors.filter( p => p.linkId !== id );
+        task.time.predecessors = task.time.predecessors.filter( p => p.linkId !== id.toString() );
         this.changePublisherService.processChangesAndPublishUpdate( [task] );
       }
     } );
@@ -421,7 +465,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
         link: {
           update: () => this.updateLink(),
           create: ( data: DhtmlxLink ) => this.createLink( data ),
-          delete: ( id: string ) => this.deleteLink( id ),
+          delete: ( id: number ) => this.deleteLink( id ),
         },
       } );
     }

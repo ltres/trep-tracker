@@ -340,3 +340,13 @@ export function getWeeksBetweenDates( startDate: Date, endDate: Date, timeZoneOf
 
   return intervals;
 }
+
+export function isSameDate( d1: Date | undefined, d2: Date | undefined ){
+  if( !d1 && !d2 ){
+    return true
+  }else if( d1 && !d2 || d2 && !d1 ){
+    return false;
+  }else{
+    return d1?.getTime() === d2?.getTime()
+  }
+}
