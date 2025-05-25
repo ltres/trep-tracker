@@ -44,8 +44,8 @@ export class DatePickerComponent implements AfterViewInit{
   }
   ngOnChanges( changes: SimpleChanges ){
     const changed = changes['startDate'];
-    if( changed && !changed.isFirstChange() ){
-      if( changed.previousValue.getTime() !== changed.currentValue.getTime() ){
+    if( changed ){
+      if( !changed.previousValue || changed.previousValue.getTime() !== changed.currentValue.getTime() ){
         this.ngAfterViewInit();
       }
     }

@@ -11,7 +11,7 @@ import{ ClickService }from'../../service/click.service';
 import{  fromIsoString, formatDate, getDiffInDays }from'../../utils/date-utils';
 import{ setCaretPosition, isPlaceholder, hashCode, isArchivedOrDiscarded, initTimeData }from'../../utils/utils';
 import{ ganttConfig, millisForMagnitudeStep, minOpacityAtTreshold, similarityTreshold }from'../../types/constants';
-import{ assertIsFixedTimedTask, assertIsRollingTimedTask, isProject,  isRollingTimedTask,  isTask, isTimedTask }from'../../utils/guards';
+import{ assertIsFixedTimedTask, assertIsTimedTask, isProject,  isRollingTimedTask,  isTask, isTimedTask }from'../../utils/guards';
 import{ fadeInOut }from'../../types/animations';
 import{ TagService }from'../../service/tag.service';
 import{ ChangePublisherService }from'../../service/change-publisher.service';
@@ -358,11 +358,11 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
         endDate: new Date()
       }
     }
-    return this.boardService.getRollingTaskDates( task );
+    return this.boardService.getComputedTaskDates( task );
   }
 
   calculateWorkingHoursDuration( task: Task ){
-    if( !isTimedTask( task ) ){
+    if( !isTimedTask( task ) && !isProject( task ) ){
       return
     }
 
@@ -398,18 +398,18 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     return isRollingTimedTask( task );
   }
 
-  getRollingTaskDates( task: Task ): {
+  getComputedTaskDates( task: Task ): {
     startDate: Date;
     endDate: Date;
 }{
-    assertIsRollingTimedTask( task );
+    assertIsTimedTask( task );
     if( this.rollingStartDate && this.rollingEndDate ){
       return{
         startDate: this.rollingStartDate,
         endDate: this.rollingEndDate
       }
     }
-    const dates = this.boardService.getRollingTaskDates( task );
+    const dates = this.boardService.getComputedTaskDates( task );
     this.rollingStartDate= dates.startDate;
     this.rollingEndDate=dates.endDate;
     return dates

@@ -1,5 +1,5 @@
 import{Inject, Injectable, Injector, NgZone}from'@angular/core';
-import{Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, Timeframe, AddFloatingLaneParams, TimedTask}from'../types/types';
+import{Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, Timeframe, AddFloatingLaneParams, TimedTask, Project}from'../types/types';
 import{BehaviorSubject, Observable, asyncScheduler, debounceTime, map, observeOn}from'rxjs';
 import{checkTaskSimilarity, eventuallyPatch, getDescendants, getProjectComputedStatus, initTimeData, isArchived, isArchivedOrDiscarded, isPlaceholder,  isStatic,}from'../utils/utils';
 import{StorageServiceAbstract}from'../types/storage';
@@ -252,7 +252,7 @@ export class BoardService{
           }
           res = res?.filter( t => {
             if( !isFixedTimedTask( t ) &&!isRollingTimedTask( t ) )return false;
-            const time = this.getRollingTaskDates( t );
+            const time = this.getComputedTaskDates( t );
 
             if(  time.startDate > now && time.startDate < startDate ){
               return true;
@@ -284,7 +284,7 @@ export class BoardService{
           }
           res = res?.filter( t => {
             if( !isFixedTimedTask( t ) &&!isRollingTimedTask( t ) )return false;
-            const time = this.getRollingTaskDates( t );
+            const time = this.getComputedTaskDates( t );
 
             if(  time.endDate  > now && time.endDate < endDate ){
               return true;
@@ -705,6 +705,20 @@ export class BoardService{
     return undefined;
   }
 
+  /**
+   * Returns all the parents for the object
+   * @param obj 
+   */
+  findParents( obj: Container ): Container[]{
+    const parents: Container[] = [];
+    let parent = this.findDirectParent( [obj], false );
+    while( parent ){
+      parents.push( parent );
+      parent = this.findDirectParent( [parent], true );
+    }
+    return parents;
+  }
+
   findParentBoard( objs: Container[] | undefined ): Board | undefined{
     if( !objs || objs.length === 0 ){
       return;
@@ -1056,9 +1070,21 @@ export class BoardService{
  * @param t 
  * @returns 
  */
-  getRollingTaskDates( t: TimedTask, durationInWorkingHours?: number ): {startDate: Date, endDate: Date}{
+  getComputedTaskDates( t: TimedTask, durationInWorkingHours?: number ): {startDate: Date, endDate: Date}{
+    if( isProject( t ) ){
+      const d = getDescendants( t )
+        .filter( d => isTimedTask( d ) )
+        .flatMap( d => {
+          const dates = this.getComputedTaskDates( d );
+          return[dates.startDate, dates.endDate]
+        } )
+        .sort( ( d1, d2 ) => d2.getTime() - d1.getTime() )
+      return{
+        startDate: d[d.length-1],
+        endDate: d[0]
+      }
 
-    if( isFixedTimedTask( t ) ){
+    }else if( isFixedTimedTask( t ) ){
       return{
         startDate: fromIsoString( t.time.startDate ),
         endDate: fromIsoString( t.time.endDate )
@@ -1081,7 +1107,7 @@ export class BoardService{
         .flatMap<Task[]>( pred => isProject( pred ) ? pred.children : [pred] )
         .map( pred => {
           assertIsTimedTask( pred )
-          return this.getRollingTaskDates( pred ).endDate;
+          return this.getComputedTaskDates( pred ).endDate;
                
         } ).filter( e => !!e ).sort( ( d1, d2 ) => d2.getTime() - d1.getTime() )[0]
       if( !greatestEndDateInPredecessors ){
@@ -1134,23 +1160,34 @@ export class BoardService{
     // snap to work days if needed
     // commit the changes
     //this.changePublisherService.processChangesAndPublishUpdate( [modelTask, this.lane] );
-    this.publishUpdateOnTaskAndSuccessors( modelTask, lane );
+    this.publishUpdateOnTaskAndSuccessorsAndContainers( modelTask, lane );
   }
-  private publishUpdateOnTaskAndSuccessors( task: Task, lane: Lane ){
+  private publishUpdateOnTaskAndSuccessorsAndContainers( task: Task, lane: Lane ){
     const succ = this.findSuccessors( task, true );
-    this.changePublisherService.processChangesAndPublishUpdate( [task, ...succ, lane ] )
+    const parents = this.findParents( task ).filter( p => isTask( p ) );
+    this.changePublisherService.processChangesAndPublishUpdate( [task, ...succ, ...parents, lane ] )
   }
 
-  calculateWorkingHoursDuration( t:TimedTask ): number{
+  calculateWorkingHoursDuration( t:TimedTask | Project ): number{
     let startDate: Date | undefined;
     let endDate: Date | undefined;
-  
-    if( isFixedTimedTask( t ) ){
+    
+    if( isProject( t ) ){
+      const d = getDescendants( t )
+        .filter( d => isTimedTask( d ) )
+        .flatMap( d => {
+          const dates = this.getComputedTaskDates( d );
+          return[dates.startDate, dates.endDate]
+        } )
+        .sort( ( d1, d2 ) => d2.getTime() - d1.getTime() )
+      startDate = d[d.length-1];
+      endDate = d[0]
+    }else if( isFixedTimedTask( t ) ){
       startDate = fromIsoString( t.time.startDate );
       endDate = fromIsoString( t.time.endDate );
   
     }else if( isRollingTimedTask( t ) ){
-      const d = this.getRollingTaskDates( t );
+      const d = this.getComputedTaskDates( t );
       startDate = d.startDate;
       endDate = d.endDate
     }else{

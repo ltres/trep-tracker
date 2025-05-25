@@ -363,6 +363,10 @@ input:-internal-autofill-selected {
   box-sizing: border-box;
   border-radius: calc(map.get($fonts, font-size)/3) !important;
   margin: -0.5px 0 !important;
+  &[disabled]{
+    opacity: .35;
+    cursor:default!important;
+  }
 }
 
 .chevron-down:after {

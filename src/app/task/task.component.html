@@ -133,21 +133,25 @@
 <ng-template #ganttControls>
   <span class="flex g-05">
     <span class="half-translucent pointer"> Working hours: </span>
-    <input type="number" class="w-10-rem" [value]="calculateWorkingHoursDuration(task)" (change)="updateTaskDuration($event)" />
+    <input [disabled]="isProject(task)" type="number" class="w-10-rem" [value]="calculateWorkingHoursDuration(task)" (change)="updateTaskDuration($event)" />
   </span>
+  {{ isRollingTimedTask(task) }}
   <span class="flex g-05">
     <span class="half-translucent pointer"> From: </span>
-    {{ task.time?.startDate }}
-    @if (isRollingTimedTask(task)) {
-      <date-picker [disabled]="true" [startDate]="getRollingTaskDates(task).startDate" [inputMode]="true" [dateDisplayConfig]="board.datesConfig"></date-picker>
+    @if (isProject(task)) {
+      <date-picker [disabled]="true" [startDate]="getComputedTaskDates(task).startDate" [inputMode]="true" [dateDisplayConfig]="board.datesConfig"></date-picker>
+    } @else if (isRollingTimedTask(task)) {
+      <date-picker [disabled]="true" [startDate]="getComputedTaskDates(task).startDate" [inputMode]="true" [dateDisplayConfig]="board.datesConfig"></date-picker>
     } @else {
       <date-picker [disabled]="false" (onSetClicked)="setStartDate($event)" [startDate]="fromIsoString(task.time?.startDate)" [inputMode]="true" [dateDisplayConfig]="board.datesConfig"></date-picker>
     }
   </span>
   <span class="flex g-05">
     <span class="half-translucent pointer"> To: </span>
-    @if (isRollingTimedTask(task)) {
-      <date-picker [disabled]="true" [startDate]="getRollingTaskDates(task).endDate" [inputMode]="true" [dateDisplayConfig]="board.datesConfig"></date-picker>
+    @if (isProject(task)) {
+      <date-picker [disabled]="true" [startDate]="getComputedTaskDates(task).endDate" [inputMode]="true" [dateDisplayConfig]="board.datesConfig"></date-picker>
+    } @else if (isRollingTimedTask(task)) {
+      <date-picker [disabled]="true" [startDate]="getComputedTaskDates(task).endDate" [inputMode]="true" [dateDisplayConfig]="board.datesConfig"></date-picker>
     } @else {
       <date-picker [disabled]="false" (onSetClicked)="setEndDate($event)" [startDate]="fromIsoString(task.time?.endDate)" [inputMode]="true" [dateDisplayConfig]="board.datesConfig"></date-picker>
     }

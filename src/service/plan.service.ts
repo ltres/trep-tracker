@@ -31,7 +31,7 @@ export class PlanService{
       const toPush:{ resource: string, allocations: Allocation[] } = { resource: mention, allocations: [] };
       const workingHours = calculateWorkingHours( startDate, endDate );
       const resourceTasks = tasks.filter( t => t.tags.find( ta => ta.tag === mention ) ).filter( t => t && isTimedTask( t ) ).map( t => {
-        const calcDates = this.boardService.getRollingTaskDates( t );
+        const calcDates = this.boardService.getComputedTaskDates( t );
         return{
           startDate: calcDates.startDate,
           endDate: calcDates.endDate,
