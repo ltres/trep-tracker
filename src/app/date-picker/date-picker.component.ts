@@ -1,4 +1,4 @@
-import{ AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild }from"@angular/core";
+import{ AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, SimpleChanges, ViewChild }from"@angular/core";
 import{ datePickerFormatFuncz, recurrenceValues, timeframeValues }from"../../types/constants";
 import{ DateTimeAdapter }from"@ltres/angular-datetime-picker";
 import{ DateDisplayConfig, PickerOutput, Recurrence, Timeframe }from"../../types/types";
@@ -41,6 +41,14 @@ export class DatePickerComponent implements AfterViewInit{
   constructor( private dateTimeAdapter: DateTimeAdapter<unknown> ){
    
   }
+  ngOnChanges( changes: SimpleChanges ){
+    const changed = changes['startDate'];
+    if( changed && !changed.isFirstChange() ){
+      if( changed.previousValue.getTime() !== changed.currentValue.getTime() ){
+        this.ngAfterViewInit();
+      }
+    }
+  }
 
   ngAfterViewInit(){ 
     this.dateTimeAdapter.setLocale( "it-IT" );
@@ -68,7 +76,9 @@ export class DatePickerComponent implements AfterViewInit{
         dates: [date, date],
         recurrence: this.selectedRecurrence
       } )
-    }if( this.showTimeframes || !date || !Array.isArray( date ) || date.length !== 2 || date[0] === null ){
+    }
+    /*
+    if( this.showTimeframes || !date || !Array.isArray( date ) || date.length !== 2 || date[0] === null ){
       // no dates, timeframe?
       if( !this.selectedTimeframe ){
         throw new Error( "No dates nor timeframe selected" );
@@ -81,7 +91,7 @@ export class DatePickerComponent implements AfterViewInit{
         dates: [date[0], date[1] ?? date[0]],
         recurrence: this.selectedRecurrence
       } )
-    }
+    }*/
   }
 
   protected cancelClicked(): void{
