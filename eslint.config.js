@@ -20,6 +20,7 @@ export default [
       "linebreak-style": ["error", "unix"],
       "no-prototype-builtins":'off',
       "no-case-declarations": 'off',
+      "no-constant-condition": "off",
       "no-multiple-empty-lines": ["error", { "max": 1, "maxEOF": 0 }],
       
       "@stylistic/js/space-before-blocks": ["error", "never"], // if() {} => if(){}
