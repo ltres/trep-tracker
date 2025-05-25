@@ -49,6 +49,6 @@
   </ng-template>
 </ng-container>
 <ng-container *ngIf="inputMode && singleDate">
-  <input [(ngModel)]="singleDate" [owlDateTime]="dt2" placeholder="Date Time" [owlDateTimeTrigger]="dt2" />
+  <input [disabled]="disabled" [(ngModel)]="singleDate" [owlDateTime]="dt2" placeholder="Date Time" [owlDateTimeTrigger]="dt2" />
   <owl-date-time #dt2 [startAt]="singleDate" (confirmSelectedChange)="setButtonClicked($event)"></owl-date-time>
 </ng-container>

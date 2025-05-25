@@ -19,6 +19,7 @@ export class DatePickerComponent implements AfterViewInit{
   @Input() showTimeframes = false;
   @Input() hideCalendar = false;
   @Input() dateDisplayConfig!:DateDisplayConfig
+  @Input() disabled = false;
 
   singleDate: Date | undefined
 

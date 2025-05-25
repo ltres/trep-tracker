@@ -5,7 +5,7 @@ import{ gantt, Task as DhtmlxTask, GanttStatic, Link as DhtmlxLink }from'dhtmlx-
 import{ TaskComponent }from'../task/task.component';
 import{ calculateWorkingHours, ganttDateToDate, snapToWorkDays, toIsoString }from'../../utils/date-utils';
 import{ getFirstMentionTag, initTimeData, getTaskBackgroundColor }from'../../utils/utils';
-import{ ganttConfig, getWorkingDayHoursNumber, tagTypes }from'../../types/constants';
+import{ ganttConfig, tagTypes }from'../../types/constants';
 import{ assertIsFixedTimedTask, assertIsRollingTimedTask, assertIsTimedTask, isFixedTimedTask, isProject, isRollingTimedTask }from'../../utils/guards';
 import{ ChangePublisherService }from'../../service/change-publisher.service';
 
@@ -94,31 +94,25 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
 
     if( isFixedTimedTask( modelTask ) ){
       // from gantt, we are receiving start_date and end_date. We use the data to update the task time data
-      const modelWorkingHours = calculateWorkingHours( modelTask.time.startDate, modelTask.time.endDate );
       if( mode === 'move' ){
-        // task has been moved, we should preserve the current duration
-        const snapped = snapToWorkDays( incomingStartDate, modelWorkingHours.total );
-        modelTask.time.startDate = toIsoString( snapped.startDate );
-        modelTask.time.endDate = toIsoString( snapped.endDate );
-        modelTask.time.durationInWorkingHours = undefined;
+        // task has been moved, we should preserve the current duration:
+        const currentDuration = calculateWorkingHours( modelTask.time.startDate, modelTask.time.endDate )
+        const snapped = snapToWorkDays( incomingStartDate, currentDuration.total )
+        this.boardService.updateTaskTimeDimension( modelTask, {startDate: snapped.startDate, endDate: snapped.endDate}, this.lane )
       }else if( mode === 'resize' ){
         // task has been resized, recalculate
-
-        // snap to work days if needed
-
-        const workingHours = calculateWorkingHours( incomingStartDate, incomingEndDate );
-        const snapped = snapToWorkDays( incomingStartDate, workingHours.total );
-
-        modelTask.time.startDate = toIsoString( snapped.startDate );
-        modelTask.time.endDate = toIsoString( snapped.endDate );
-        modelTask.time.durationInWorkingHours = undefined;
+        const ganttWorkingHours = calculateWorkingHours( incomingStartDate, incomingEndDate );
+        this.boardService.updateTaskTimeDimension( modelTask, {durationInWorkingHours: ganttWorkingHours.total}, this.lane )
       }
-    }else if( modelTask.time.type === 'rolling' ){
+    }else if( isRollingTimedTask( modelTask ) ){
       // TODO: update the rolling task
+      if( mode === 'move' ){
+        console.info( "Moved a rolling task, nothing to do" );
+      }else if( mode === 'resize' ){
+        const ganttWorkingHours = calculateWorkingHours( incomingStartDate, incomingEndDate );
+        this.boardService.updateTaskTimeDimension( modelTask, {durationInWorkingHours: ganttWorkingHours.total}, this.lane )
+      }
     }
-    // snap to work days if needed
-    // commit the changes
-    this.changePublisherService.processChangesAndPublishUpdate( [modelTask, this.lane] );
   }
 
   /**
@@ -170,12 +164,12 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
 
     if( predecessors.length > 0 ){
       const durationAfterModification = calculateWorkingHours( ganttDateToDate( data.start_date ), ganttDateToDate( data.end_date ) );
-      const datesAfterModification = this.boardService.getComputedDatesAccountingForWorkingDays( t, durationAfterModification.total );
+      const datesAfterModification = this.boardService.getRollingTaskDates( t, durationAfterModification.total );
 
       data.start_date = datesAfterModification.startDate;
       data.end_date = datesAfterModification.endDate;
-      t.time.startDate = undefined;
-      t.time.endDate = undefined;
+      //t.time.startDate = undefined;
+      //t.time.endDate = undefined;
       t.time.durationInWorkingHours = durationAfterModification.total;
       t.time.type = 'rolling';
       gantt.updateTask( t.id, data ); // triggers an 'updateTask'
@@ -259,13 +253,14 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
       }
 
       assertIsTimedTask( t );
-      t.time.startDate = undefined;
-      t.time.endDate = undefined;
-      t.time.durationInWorkingHours = t.time.durationInWorkingHours || getWorkingDayHoursNumber();
+
+      t.time.durationInWorkingHours = t.time.startDate && t.time.endDate ? calculateWorkingHours( t.time.startDate, t.time.endDate ).total : t.time.durationInWorkingHours ;
+      //const dates = this.boardService.getRollingTaskDates( t );
+      t.time.startDate = undefined; //toIsoString( dates.startDate );
+      t.time.endDate = undefined; //toIsoString( dates.endDate );
       t.time.type = 'rolling';
     } );
-    
-    this.changePublisherService.processChangesAndPublishUpdate( [target, this.lane] );
+    this.publishUpdateOnTaskAndSuccessors( target );
 
     // target task needs to be updated:
     //gantt.updateTask( target.id );
@@ -281,6 +276,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     } );*/
     //this.changePublisherService.processChangesAndPublishUpdate( [source, target] );
   }
+
   deleteLink( id: number ){
     this.boardService.allTasks?.forEach( ( task ) => {
       if( task.time?.predecessors && task.time.predecessors.find( p => p.linkId === id.toString() ) ){
@@ -290,7 +286,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
 
         if( task.time.predecessors.length === 1 ){
           const workingHours = task.time.durationInWorkingHours;
-          const dates = this.boardService.getComputedDatesAccountingForWorkingDays( task, workingHours );
+          const dates = this.boardService.getRollingTaskDates( task, workingHours );
           fixed.time.type = 'fixed';
           assertIsFixedTimedTask( fixed );
           fixed.time.startDate = toIsoString( dates.startDate );
@@ -299,9 +295,14 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
         }
         fixed.time.predecessors = fixed.time.predecessors.filter( ( p ) => p.linkId !== id.toString() );
 
-        this.changePublisherService.processChangesAndPublishUpdate( [fixed] );
+        this.publishUpdateOnTaskAndSuccessors( fixed );
       }
     } );
+  }
+
+  private publishUpdateOnTaskAndSuccessors( task: Task ){
+    const succ = this.boardService.findSuccessors( task, true );
+    this.changePublisherService.processChangesAndPublishUpdate( [task, ...succ, this.lane] )
   }
 
   private toDhtmlxGanttDataModel( tasks: Task[], convertedTasks: DhtmlxTask[], convertedLinks: DhtmlxLink[], parentId: string | undefined, tasksCssClass: string | undefined ): { convertedTasks: DhtmlxTask[]; convertedLinks: DhtmlxLink[] }{
@@ -457,7 +458,6 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     gantt.attachEvent( 'onAfterTaskDrag', ( id, mode ) => {
       const task = gantt.getTask( id );
       this.updateTask( task, mode as 'move' | 'resize' );
-      console.log( 'drag' );
     } );
 
     gantt.templates.task_class = function( start, end, task ){
@@ -539,7 +539,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     if( isProject ){
       dates = undefined;
     }else if( isFixedTimedTask( task ) || isRollingTimedTask( task ) ){
-      dates = this.boardService.getComputedDatesAccountingForWorkingDays( task );
+      dates = this.boardService.getRollingTaskDates( task );
     }else{
       // no dates
       dates = {

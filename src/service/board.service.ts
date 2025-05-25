@@ -97,40 +97,46 @@ export class BoardService{
 
       // const date = new Date();
       console.warn( 'Boards updated', this.boardUpdateCounter++ );
-      let allTasks: Task[] = [];
-      let allLanes: Lane[] = [];
-      const allArchivedTasks: Task[] = [];
-      b.forEach( board => {
-        board.children.forEach( lane => {
-          // lane.children = lane.children.filter(  c => !c.archivedDate )
-          allTasks = allTasks.concat( lane.children );
-          lane.children.forEach( task => {
-            allTasks = allTasks.concat( getDescendants( task ).filter( t => isTask( t ) ) as Task[] );
-          } );
-          if( lane.isArchive ){
-            allArchivedTasks.concat( getDescendants( lane ).filter( d => isTask( d ) ) )
-          }
-        } );
-        logPerformance( "boards observable" );
-
-        // remove lanes without children
-        // board.children = board.children.filter(l => l.children.length > 0);
-
-        allLanes = allLanes.concat( board.children );
-      } );
-
-      this._allTasks$.next( allTasks );
-      this._allArchivedTasksIds$.next( allArchivedTasks.map( t => t.id ) )
-      this._allLanes$.next( allLanes );
-      const allParents = [...allTasks, ...allLanes, ...this.boards];
-
-      // Update parent references (except for children of archive lane)
-      allParents.filter( p => !isLane( p ) || !p.isArchive ).forEach( p => p.children.forEach( c => c.parentId = p.id ) )
-
-      this._allParents$.next( allParents );
-      logPerformance( "boards observable" );
+      this.populateDatamodelDerivedObservables( b )
 
     } );
+  }
+
+  populateDatamodelDerivedObservables( b: Board[] ){
+
+    // const date = new Date();
+    let allTasks: Task[] = [];
+    let allLanes: Lane[] = [];
+    const allArchivedTasks: Task[] = [];
+    b.forEach( board => {
+      board.children.forEach( lane => {
+        // lane.children = lane.children.filter(  c => !c.archivedDate )
+        allTasks = allTasks.concat( lane.children );
+        lane.children.forEach( task => {
+          allTasks = allTasks.concat( getDescendants( task ).filter( t => isTask( t ) ) as Task[] );
+        } );
+        if( lane.isArchive ){
+          allArchivedTasks.concat( getDescendants( lane ).filter( d => isTask( d ) ) )
+        }
+      } );
+      logPerformance( "boards observable" );
+
+      // remove lanes without children
+      // board.children = board.children.filter(l => l.children.length > 0);
+
+      allLanes = allLanes.concat( board.children );
+    } );
+
+    this._allTasks$.next( allTasks );
+    this._allArchivedTasksIds$.next( allArchivedTasks.map( t => t.id ) )
+    this._allLanes$.next( allLanes );
+    const allParents = [...allTasks, ...allLanes, ...this.boards];
+
+    // Update parent references (except for children of archive lane)
+    allParents.filter( p => !isLane( p ) || !p.isArchive ).forEach( p => p.children.forEach( c => c.parentId = p.id ) )
+
+    this._allParents$.next( allParents );
+    logPerformance( "boards observable" );
   }
 
   addNewBoard(): Board{
@@ -246,7 +252,7 @@ export class BoardService{
           }
           res = res?.filter( t => {
             if( !isFixedTimedTask( t ) &&!isRollingTimedTask( t ) )return false;
-            const time = this.getComputedDatesAccountingForWorkingDays( t );
+            const time = this.getRollingTaskDates( t );
 
             if(  time.startDate > now && time.startDate < startDate ){
               return true;
@@ -278,7 +284,7 @@ export class BoardService{
           }
           res = res?.filter( t => {
             if( !isFixedTimedTask( t ) &&!isRollingTimedTask( t ) )return false;
-            const time = this.getComputedDatesAccountingForWorkingDays( t );
+            const time = this.getRollingTaskDates( t );
 
             if(  time.endDate  > now && time.endDate < endDate ){
               return true;
@@ -1025,12 +1031,22 @@ export class BoardService{
   }
   
   /**
-   * Returns tasks linked.
+   * Returns tasks which has the task as predecessor.
+   * If deep, returns all the subtree of linked tasks.
    * @param task 
    * @returns 
    */
-  findSuccessors( task: Task ): Task[]{
-    return this._allTasks$.getValue()?.filter( t => t.time?.predecessors?.map( t => t.taskId ).includes( task.id ) ) ?? [];
+  findSuccessors( task: Task, deep = false ): Task[]{
+    let ret: Task[] = []
+    const directChildren = this._allTasks$.getValue()?.filter( t => t.time?.predecessors?.map( t => t.taskId ).includes( task.id ) ) ?? [];
+    ret = ret.concat( directChildren )
+    if( deep ){
+      directChildren.forEach( ( child ) => {
+        const succ = this.findSuccessors( child, true );
+        ret = ret.concat( succ );
+      } )
+    }
+    return ret;
   }
 
   /**
@@ -1040,7 +1056,7 @@ export class BoardService{
  * @param t 
  * @returns 
  */
-  getComputedDatesAccountingForWorkingDays( t: TimedTask, durationInWorkingHours?: number ): {startDate: Date, endDate: Date}{
+  getRollingTaskDates( t: TimedTask, durationInWorkingHours?: number ): {startDate: Date, endDate: Date}{
 
     if( isFixedTimedTask( t ) ){
       return{
@@ -1065,7 +1081,7 @@ export class BoardService{
         .flatMap<Task[]>( pred => isProject( pred ) ? pred.children : [pred] )
         .map( pred => {
           assertIsTimedTask( pred )
-          return this.getComputedDatesAccountingForWorkingDays( pred ).endDate;
+          return this.getRollingTaskDates( pred ).endDate;
                
         } ).filter( e => !!e ).sort( ( d1, d2 ) => d2.getTime() - d1.getTime() )[0]
       if( !greatestEndDateInPredecessors ){
@@ -1081,6 +1097,50 @@ export class BoardService{
     throw new Error( "Task is neither fixed not rolling" )
   }
 
+  updateTaskTimeDimension( task: Task, dimension: {startDate: Date, endDate: Date} | {durationInWorkingHours: number}, lane: Lane ){
+    // find the task in the model
+    const modelTask = task;
+
+    // depending on the task type, update the task time data
+    if( !modelTask.time ){
+      initTimeData( modelTask, new Date() );
+    }
+    assertIsTimedTask( modelTask );
+
+    if( 'durationInWorkingHours' in dimension ){
+      // Handle the case where dimension is { durationInWorkingHours: number }
+      if( isFixedTimedTask( modelTask ) ){
+      // from gantt, we are receiving start_date and end_date. We use the data to update the task time data
+        const snapped = snapToWorkDays( fromIsoString( modelTask.time.startDate ), dimension.durationInWorkingHours );
+        modelTask.time.startDate = toIsoString( snapped.startDate );
+        modelTask.time.endDate = toIsoString( snapped.endDate );
+        modelTask.time.durationInWorkingHours = undefined;
+      }else if( isRollingTimedTask( modelTask ) ){
+        modelTask.time.durationInWorkingHours = dimension.durationInWorkingHours;
+      }
+    }else{
+      if( isFixedTimedTask( modelTask ) ){
+        const modelWorkingHours = calculateWorkingHours( dimension.startDate, dimension.endDate );
+        const snapped = snapToWorkDays( dimension.startDate, modelWorkingHours.total );
+
+        // from gantt, we are receiving start_date and end_date. We use the data to update the task time data
+        modelTask.time.startDate = toIsoString( snapped.startDate );
+        modelTask.time.endDate = toIsoString( snapped.endDate );
+        modelTask.time.durationInWorkingHours = undefined;
+      }else if( isRollingTimedTask( modelTask ) ){
+        console.warn( "Setting dates on a rolling task" )
+      }
+    }
+    // snap to work days if needed
+    // commit the changes
+    //this.changePublisherService.processChangesAndPublishUpdate( [modelTask, this.lane] );
+    this.publishUpdateOnTaskAndSuccessors( modelTask, lane );
+  }
+  private publishUpdateOnTaskAndSuccessors( task: Task, lane: Lane ){
+    const succ = this.findSuccessors( task, true );
+    this.changePublisherService.processChangesAndPublishUpdate( [task, ...succ, lane ] )
+  }
+
   calculateWorkingHoursDuration( t:TimedTask ): number{
     let startDate: Date | undefined;
     let endDate: Date | undefined;
@@ -1090,7 +1150,7 @@ export class BoardService{
       endDate = fromIsoString( t.time.endDate );
   
     }else if( isRollingTimedTask( t ) ){
-      const d = this.getComputedDatesAccountingForWorkingDays( t );
+      const d = this.getRollingTaskDates( t );
       startDate = d.startDate;
       endDate = d.endDate
     }else{
@@ -1269,6 +1329,7 @@ export class BoardService{
       for( let board of o.boards ){
         board = eventuallyPatch( board );
       }
+      this.populateDatamodelDerivedObservables( o.boards )
       this._boards$.next( o.boards );
     }
 

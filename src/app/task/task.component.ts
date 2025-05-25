@@ -1,5 +1,5 @@
 /* eslint-disable no-fallthrough */
-import{ ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, forwardRef, Input, OnDestroy, OnInit, Output, ViewChild }from'@angular/core';
+import{ ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, forwardRef, Input, OnChanges, OnDestroy, OnInit, Output, ViewChild }from'@angular/core';
 import{ Board, Lane, Container, Task, Tag, Status, Priority, ISODateString, PickerOutput, DateFormat }from'../../types/types';
 import{ BoardService }from'../../service/board.service';
 import{ DragService }from'../../service/drag.service';
@@ -11,7 +11,7 @@ import{ ClickService }from'../../service/click.service';
 import{  fromIsoString, formatDate, getDiffInDays, snapToWorkDays, toIsoString }from'../../utils/date-utils';
 import{ setCaretPosition, isPlaceholder, hashCode, isArchivedOrDiscarded, initTimeData }from'../../utils/utils';
 import{ ganttConfig, millisForMagnitudeStep, minOpacityAtTreshold, similarityTreshold }from'../../types/constants';
-import{ assertIsTimedTask, isFixedTimedTask, isProject,  isRollingTimedTask,  isTask, isTimedTask }from'../../utils/guards';
+import{ assertIsRollingTimedTask, assertIsTimedTask, isFixedTimedTask, isProject,  isRollingTimedTask,  isTask, isTimedTask }from'../../utils/guards';
 import{ fadeInOut }from'../../types/animations';
 import{ TagService }from'../../service/tag.service';
 import{ ChangePublisherService }from'../../service/change-publisher.service';
@@ -28,7 +28,7 @@ import{ ChangePublisherService }from'../../service/change-publisher.service';
   ],
   animations: fadeInOut
 } )
-export class TaskComponent extends ContainerComponent implements OnInit, OnDestroy{
+export class TaskComponent extends ContainerComponent implements OnInit, OnDestroy, OnChanges{
 
   @ViewChild( 'editor' ) editor: ElementRef | undefined;
   @Input() task!: Task;
@@ -52,6 +52,9 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
  
   ganttConfig = ganttConfig
 
+  rollingStartDate: Date | undefined;
+  rollingEndDate: Date | undefined;
+
   getFixedHeight(){
     return'25px';
   }
@@ -68,7 +71,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   ){
     super( changePublisherService, cdr, registry, el );
   }
-  
+
   receiveDrop( container: Container ){
     if( !isTask( container ) ){
       throw new Error( "Cannot drop something that is not a task on a task" )
@@ -82,6 +85,11 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
   
   override get container(): Container{
     return this.task;
+  }
+
+  override performBeforeChangeDetection(){
+    this.rollingEndDate = undefined;
+    this.rollingStartDate = undefined
   }
 
   updateValue( $event: Event ){
@@ -352,7 +360,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
         endDate: new Date()
       }
     }
-    return this.boardService.getComputedDatesAccountingForWorkingDays( task );
+    return this.boardService.getRollingTaskDates( task );
   }
 
   calculateWorkingHoursDuration( task: Task ){
@@ -395,6 +403,26 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     assertIsTimedTask( this.task );
     this.task.time.startDate = toIsoString( pickerOutput.dates[0] );
     this.changePublisherService.processChangesAndPublishUpdate( [this.task, this.lane] )
+  }
+  isRollingTimedTask( task: Task ): boolean{
+    return isRollingTimedTask( task );
+  }
+
+  getRollingTaskDates( task: Task ): {
+    startDate: Date;
+    endDate: Date;
+}{
+    assertIsRollingTimedTask( task );
+    if( this.rollingStartDate && this.rollingEndDate ){
+      return{
+        startDate: this.rollingStartDate,
+        endDate: this.rollingEndDate
+      }
+    }
+    const dates = this.boardService.getRollingTaskDates( task );
+    this.rollingStartDate= dates.startDate;
+    this.rollingEndDate=dates.endDate;
+    return dates
   }
     
 }

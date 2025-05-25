@@ -33,6 +33,8 @@ export abstract class ContainerComponent implements OnInit, OnDestroy, AfterView
         if( performanceLoggerActive ){
           console.debug( `Detected change for ${this.container._type} ${this.container.id}` )
         }
+        this.performBeforeChangeDetection();
+
         cdr.detectChanges();
       }
     } )
@@ -45,6 +47,10 @@ export abstract class ContainerComponent implements OnInit, OnDestroy, AfterView
   ngDoCheck(): void{
     // console.info( `Component is checking for changes on ${this.container._type} ${this.container.id}` )
   }
+
+  performBeforeChangeDetection(): void{
+
+  };
 
   abstract get container(): Container;
 
