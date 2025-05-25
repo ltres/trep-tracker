@@ -43,6 +43,6 @@ export class TimeBarComponent{
         ret.push( status );
       }
     }
-    return ret.sort( ( a,b ) => Object.keys( statusValues ).indexOf( a ) - Object.keys( statusValues ).indexOf( b ) );
+    return ret.sort( ( a, b ) => Object.keys( statusValues ).indexOf( a ) - Object.keys( statusValues ).indexOf( b ) );
   }
 }

@@ -1,12 +1,12 @@
 import{ AfterViewInit, ApplicationRef, Component, createComponent, Input, OnDestroy }from'@angular/core';
-import{ Board, TimedTask, Lane, Task }from'../../types/types';
+import{ Board, TimedTask, Lane, Task, FixedTimedTask }from'../../types/types';
 import{ BoardService }from'../../service/board.service';
 import{ gantt, Task as DhtmlxTask, GanttStatic, Link as DhtmlxLink }from'dhtmlx-gantt';
 import{ TaskComponent }from'../task/task.component';
-import{ calculateWorkingHours, ganttDateToDate, toIsoString }from'../../utils/date-utils';
+import{ calculateWorkingHours, ganttDateToDate, snapToWorkDays, toIsoString }from'../../utils/date-utils';
 import{ getFirstMentionTag, initTimeData, getTaskBackgroundColor }from'../../utils/utils';
-import{  ganttConfig, tagTypes }from'../../types/constants';
-import{ assertIsTimedTask, isFixedTimedTask, isProject, isRollingTimedTask }from'../../utils/guards';
+import{ ganttConfig, getWorkingDayHoursNumber, tagTypes }from'../../types/constants';
+import{ assertIsFixedTimedTask, assertIsRollingTimedTask, assertIsTimedTask, isFixedTimedTask, isProject, isRollingTimedTask }from'../../utils/guards';
 import{ ChangePublisherService }from'../../service/change-publisher.service';
 
 @Component( {
@@ -16,45 +16,44 @@ import{ ChangePublisherService }from'../../service/change-publisher.service';
 } )
 export class GanttComponent implements AfterViewInit, OnDestroy{
   @Input() lane!: Lane;
-  @Input() board! : Board;
+  @Input() board!: Board;
 
   tasks: Task[] | undefined;
 
   today = new Date();
   shownDate: Date | undefined = this.today;
 
-  selectedView: "months" | "days" | "hours" = 'days'
-  dp: {destructor: () => unknown} | undefined; // data processor
-  
-  lastUpdatedTasks: string[] = []
+  selectedView: 'months' | 'days' | 'hours' = 'days';
+  dp: { destructor: () => unknown } | undefined; // data processor
+
+  lastUpdatedTasks: string[] = [];
 
   constructor(
     protected changePublisherService: ChangePublisherService,
 
     protected boardService: BoardService,
-    protected applicationRef: ApplicationRef
-  ){ }
+    protected applicationRef: ApplicationRef,
+  ){}
 
   ngAfterViewInit(): void{
     this.setupGantt( gantt );
 
     setTimeout( () => {
-      this.init( this.lane.children )
+      this.init( this.lane.children );
+    }, 1000 );
 
-    }, 1000 )
-
-    this.changePublisherService.pushedChanges$.subscribe( c => {
-      if( c.map( co => co.id ).includes( this.lane?.id ) ){
-        this.init( this.lane.children )
+    this.changePublisherService.pushedChanges$.subscribe( ( c ) => {
+      if( c.map( ( co ) => co.id ).includes( this.lane?.id ) ){
+        this.init( this.lane.children );
       }
-    } )
+    } );
   }
 
   ngOnDestroy(): void{
     this.dp?.destructor();
   }
 
-  private init( tasks:Task[] ){
+  private init( tasks: Task[] ){
     if( !tasks ){
       throw new Error( 'Tasks must be defined to open gantt' );
     }
@@ -70,21 +69,66 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     /** Initial task sort */
     //dataModel.convertedTasks = dataModel.convertedTasks;
 
-    gantt.parse( {data:dataModel.convertedTasks, links: dataModel.convertedLinks} );
+    gantt.parse( { data: dataModel.convertedTasks, links: dataModel.convertedLinks } );
 
     gantt.init( 'gantt' );
 
-    this.ganttAfterInitOperations( gantt )
+    this.ganttAfterInitOperations( gantt );
+  }
+
+  updateTask( data: DhtmlxTask, mode: 'move' | 'resize' ){
+    // find the task in the model
+    const modelTask = this.boardService.getTask( data.id.toString() );
+    if( !modelTask ){
+      console.log( 'Task ' + data.id + 'not found' );
+      return;
+    }
+    // depending on the task type, update the task time data
+    if( !modelTask.time ){
+      initTimeData( modelTask, new Date() );
+    }
+    assertIsTimedTask( modelTask );
+
+    const incomingStartDate = ganttDateToDate( data.start_date );
+    const incomingEndDate = ganttDateToDate( data.end_date );
+
+    if( isFixedTimedTask( modelTask ) ){
+      // from gantt, we are receiving start_date and end_date. We use the data to update the task time data
+      const modelWorkingHours = calculateWorkingHours( modelTask.time.startDate, modelTask.time.endDate );
+      if( mode === 'move' ){
+        // task has been moved, we should preserve the current duration
+        const snapped = snapToWorkDays( incomingStartDate, modelWorkingHours.total );
+        modelTask.time.startDate = toIsoString( snapped.startDate );
+        modelTask.time.endDate = toIsoString( snapped.endDate );
+        modelTask.time.durationInWorkingHours = undefined;
+      }else if( mode === 'resize' ){
+        // task has been resized, recalculate
+
+        // snap to work days if needed
+
+        const workingHours = calculateWorkingHours( incomingStartDate, incomingEndDate );
+        const snapped = snapToWorkDays( incomingStartDate, workingHours.total );
+
+        modelTask.time.startDate = toIsoString( snapped.startDate );
+        modelTask.time.endDate = toIsoString( snapped.endDate );
+        modelTask.time.durationInWorkingHours = undefined;
+      }
+    }else if( modelTask.time.type === 'rolling' ){
+      // TODO: update the rolling task
+    }
+    // snap to work days if needed
+    // commit the changes
+    this.changePublisherService.processChangesAndPublishUpdate( [modelTask, this.lane] );
   }
 
   /**
    * Called from the gantt when a task gets modified via the GUI
    */
-  updateTask( data: DhtmlxTask ){
-    if( this.lastUpdatedTasks.includes( data.id + "" ) ){
+  updateTask2( data: DhtmlxTask ){
+    if( this.lastUpdatedTasks.includes( data.id + '' ) ){
       return;
     }
-    this.lastUpdatedTasks.push( data.id + "" )
+    this.lastUpdatedTasks.push( data.id + '' );
 
     const t = this.boardService.getTask( data.id.toString() );
     if( !t ){
@@ -96,87 +140,84 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
       initTimeData( t, new Date() );
     }
 
-    assertIsTimedTask( t )
+    assertIsTimedTask( t );
 
     this.updateTaskAccountingForPredecessors( t, data );
-    this.updateTaskSuccessors( t )
+    this.updateTaskSuccessors( t );
 
     t.time.progress = data.progress ?? 0;
     t.textContent = data.text;
 
     this.changePublisherService.processChangesAndPublishUpdate( [t] );
-    setTimeout( ()=> { this.lastUpdatedTasks = [] }, 100 )
+    setTimeout( () => {
+      this.lastUpdatedTasks = [];
+    }, 100 );
     //this.init(this.lane.children);
   }
 
-  updateTaskAccountingForPredecessors( t : TimedTask, data: DhtmlxTask ){
+  updateTaskAccountingForPredecessors( t: TimedTask, data: DhtmlxTask ){
     let predecessors = t.time.predecessors;
-    
+
     let containingProject: Task | undefined = this.boardService.findTask( t.parentId );
     while( containingProject ){
       if( containingProject?.time?.predecessors ){
-        predecessors = predecessors.concat( containingProject.time.predecessors )
+        predecessors = predecessors.concat( containingProject.time.predecessors );
       }
-      containingProject= this.boardService.findTask( containingProject.parentId );
+      containingProject = this.boardService.findTask( containingProject.parentId );
     }
     // const durationBeforeModification = t.time.durationInWorkingHours
     // const datesBeforeModification = this.boardService.getComputedDatesAccountingForWorkingDays( t, durationBeforeModification );
 
     if( predecessors.length > 0 ){
-
-      const durationAfterModification = calculateWorkingHours( ganttDateToDate( data.start_date ), ganttDateToDate( data.end_date ) )
+      const durationAfterModification = calculateWorkingHours( ganttDateToDate( data.start_date ), ganttDateToDate( data.end_date ) );
       const datesAfterModification = this.boardService.getComputedDatesAccountingForWorkingDays( t, durationAfterModification.total );
 
-      data.start_date =  datesAfterModification.startDate;
-      data.end_date =  datesAfterModification.endDate;
-      t.time.startDate = undefined
-      t.time.endDate = undefined
-      t.time.durationInWorkingHours = durationAfterModification.total
+      data.start_date = datesAfterModification.startDate;
+      data.end_date = datesAfterModification.endDate;
+      t.time.startDate = undefined;
+      t.time.endDate = undefined;
+      t.time.durationInWorkingHours = durationAfterModification.total;
       t.time.type = 'rolling';
       gantt.updateTask( t.id, data ); // triggers an 'updateTask'
-
     }else{
-
       const startDate = ganttDateToDate( data.start_date );
       const endDate = ganttDateToDate( data.end_date );
 
       // no predecessors, task becomes fixed
 
       //endDate.setHours( ganttConfig.endOfWorkingDay )
-      t.time.startDate = toIsoString(  startDate )
-      t.time.endDate = toIsoString( endDate )
-      data.start_date =  startDate;
-      data.end_date =  endDate;
-      t.time.durationInWorkingHours = undefined
-      t.time.type = 'fixed'
+      t.time.startDate = toIsoString( startDate );
+      t.time.endDate = toIsoString( endDate );
+      data.start_date = startDate;
+      data.end_date = endDate;
+      t.time.durationInWorkingHours = undefined;
+      t.time.type = 'fixed';
       gantt.updateTask( t.id, data ); // triggers an 'updateTask'
-      
     }
   }
 
-  updateTaskSuccessors( t : TimedTask ){
+  updateTaskSuccessors( t: TimedTask ){
     let successors = this.boardService.findSuccessors( t );
-    
+
     // we need to account also for project successors:
     let containingProject = this.boardService.findTask( t.parentId );
     while( containingProject ){
       successors = successors.concat( this.boardService.findSuccessors( containingProject ) );
-      successors = successors.concat( containingProject.children )
-      containingProject= this.boardService.findTask( containingProject.parentId );
+      successors = successors.concat( containingProject.children );
+      containingProject = this.boardService.findTask( containingProject.parentId );
     }
     if( isProject( t ) ){
       // containing tasks need updating as well
-      successors = successors.concat( t.children )
-
+      successors = successors.concat( t.children );
     }
 
     if( successors.length > 0 ){
-      successors.forEach( s => {
-        gantt.updateTask( s.id )
+      successors.forEach( ( s ) => {
+        gantt.updateTask( s.id );
         if( s.children ){
-          s.children.forEach( c => gantt.updateTask( c.id ) ) // triggers an 'updateTask'
+          s.children.forEach( ( c ) => gantt.updateTask( c.id ) ); // triggers an 'updateTask'
         }
-      } )
+      } );
     }
   }
 
@@ -187,13 +228,12 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     throw new Error( 'Method not implemented.' );
   }
   createLink( data: DhtmlxLink ){
-    const start = gantt.getTask( data.source.toString() );
-    const end = gantt.getTask( data.target.toString() )
-
+    /*
     if( start['isRecurrenceStep'] || end['isRecurrenceStep'] ){
-      console.warn( "cannot create links for recurrent tasks" );
+      console.warn( 'cannot create links for recurrent tasks' );
       return;
-    }
+    }*/
+
     const source = this.boardService.getTask( data.source.toString() );
     const target = this.boardService.getTask( data.target.toString() );
     if( !source || !target ){
@@ -206,27 +246,29 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     target.time.predecessors.push( {
       taskId: source.id,
       linkId: data.id.toString(),
-    } )
+    } );
     // task becomes ROLLING. if the target is a project, its first children becomes rolling as well
     const toRoll: Task[] = [target];
+    
     if( isProject( target ) ){
-      toRoll.push( target.children[0] )
+      toRoll.push( target.children[0] );
     }
-    toRoll.forEach( t => {
+    toRoll.forEach( ( t ) => {
       if( !t.time ){
         initTimeData( t, new Date() );
       }
 
-      assertIsTimedTask( t )
-      t.time.startDate = undefined
-      t.time.endDate = undefined
-      t.time.durationInWorkingHours = 1
-      t.time.type="rolling"
-    } )
+      assertIsTimedTask( t );
+      t.time.startDate = undefined;
+      t.time.endDate = undefined;
+      t.time.durationInWorkingHours = t.time.durationInWorkingHours || getWorkingDayHoursNumber();
+      t.time.type = 'rolling';
+    } );
+    
+    this.changePublisherService.processChangesAndPublishUpdate( [target, this.lane] );
 
-    this.changePublisherService.processChangesAndPublishUpdate( [source] );
-
-    gantt.updateTask( target.id )
+    // target task needs to be updated:
+    //gantt.updateTask( target.id );
 
     /*
     source.time!.successors = source.time!.successors ?? [];
@@ -238,34 +280,45 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
       linkId: data.id.toString(),
     } );*/
     //this.changePublisherService.processChangesAndPublishUpdate( [source, target] );
-
   }
   deleteLink( id: number ){
-    this.boardService.allTasks?.forEach( task => {
-      if( task.time?.predecessors ){
-        task.time.predecessors = task.time.predecessors.filter( p => p.linkId !== id.toString() );
-        this.changePublisherService.processChangesAndPublishUpdate( [task] );
+    this.boardService.allTasks?.forEach( ( task ) => {
+      if( task.time?.predecessors && task.time.predecessors.find( p => p.linkId === id.toString() ) ){
+        // if there are no predecessors anymore, task should become "FIXED"
+        assertIsRollingTimedTask( task );
+        const fixed = task as unknown as FixedTimedTask;
+
+        if( task.time.predecessors.length === 1 ){
+          const workingHours = task.time.durationInWorkingHours;
+          const dates = this.boardService.getComputedDatesAccountingForWorkingDays( task, workingHours );
+          fixed.time.type = 'fixed';
+          assertIsFixedTimedTask( fixed );
+          fixed.time.startDate = toIsoString( dates.startDate );
+          fixed.time.endDate = toIsoString( dates.endDate );
+          fixed.time.durationInWorkingHours = undefined;
+        }
+        fixed.time.predecessors = fixed.time.predecessors.filter( ( p ) => p.linkId !== id.toString() );
+
+        this.changePublisherService.processChangesAndPublishUpdate( [fixed] );
       }
     } );
-    
   }
 
-  private toDhtmlxGanttDataModel( tasks: Task[], convertedTasks: DhtmlxTask[], convertedLinks: DhtmlxLink[], parentId: string | undefined, tasksCssClass: string | undefined ): { convertedTasks: DhtmlxTask[], convertedLinks: DhtmlxLink[] }{
-
+  private toDhtmlxGanttDataModel( tasks: Task[], convertedTasks: DhtmlxTask[], convertedLinks: DhtmlxLink[], parentId: string | undefined, tasksCssClass: string | undefined ): { convertedTasks: DhtmlxTask[]; convertedLinks: DhtmlxLink[] }{
     let order = convertedTasks.length;
 
     for( const task of tasks ){
-      if( convertedTasks.find( t => t.id === task.id ) ){
+      if( convertedTasks.find( ( t ) => t.id === task.id ) ){
         continue;
       }
-      const lastDateInConverted = convertedTasks[convertedTasks.length-1]?.end_date ?? new Date();
+      const lastDateInConverted = convertedTasks[convertedTasks.length - 1]?.end_date ?? new Date();
 
       // Init the gantt data and convert
       const initializedTask = initTimeData( task, lastDateInConverted );
-      const firstResourceTag = task.tags?.find( t => t.type === tagTypes.tagOrange )?.tag;
+      const firstResourceTag = task.tags?.find( ( t ) => t.type === tagTypes.tagOrange )?.tag;
       const dhtmlxTask = this.toDhtmlxTask( initializedTask, firstResourceTag ? getTaskBackgroundColor( firstResourceTag ) : undefined, order++, parentId, tasksCssClass, false, undefined );
       convertedTasks.push( dhtmlxTask );
-      
+
       /*
       if( isRecurringTask( initializedTask ) && task.recurrences ){
         // Task has recurrence. Retrieve its recurrences.
@@ -291,7 +344,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
           };
           convertedLinks.push( link );
           // It may happen that a successor is not between the tasks or their descendants. We need to retrieve it and process it.
-          if( tasks.map( t => t.id ).indexOf( predecessor.taskId ) < 0 ){
+          if( tasks.map( ( t ) => t.id ).indexOf( predecessor.taskId ) < 0 ){
             const retrievedSucc = this.boardService.getTask( predecessor.taskId );
             if( !retrievedSucc ){
               console.error( 'Task ' + predecessor.taskId + ' not found' );
@@ -303,14 +356,13 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
       }
     }
 
-    return{convertedTasks, convertedLinks};
+    return{ convertedTasks, convertedLinks };
   }
 
   /**
    * Configures the gantt object
    */
   private setupGantt( gantt: GanttStatic ){
-    
     gantt.plugins( {
       multiselect: true,
       marker: true,
@@ -320,15 +372,15 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
 
     gantt.config.min_column_width = 25; // Set to your desired width in pixels
     gantt.config.row_height = ganttConfig.rowHeight;
-    gantt.config.autosize = 'xy'
+    gantt.config.autosize = 'xy';
     gantt.config.multiselect = true;
     gantt.config.multiselect_one_level = false;
     gantt.config.preserve_scroll = true;
     gantt.config.initial_scroll = false;
     gantt.config.autoscroll = false;
     //gantt.config.min_duration = 0;
-    gantt.config.duration_unit = "hour"
-    gantt.config.duration_step = 1
+    gantt.config.duration_unit = 'hour';
+    gantt.config.duration_step = 1;
     //gantt.config.round_end_date = false;
 
     //gantt.config.round_dnd_dates = false;
@@ -336,7 +388,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
 
     // default columns definition
 
-    gantt.config.columns = []
+    gantt.config.columns = [];
     /*
     gantt.config.columns = [
       {
@@ -368,7 +420,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     gantt.config.grid_width = ganttConfig.columnsWidth;
 
     gantt.templates.grid_file = function(){
-      return"";
+      return'';
     };
     gantt.config.sort = true;
 
@@ -393,13 +445,19 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     } );
 
     // Prevents links to recurrence asteps
-    gantt.attachEvent( "onBeforeLinkAdd", function( id, link ){
+    gantt.attachEvent( 'onBeforeLinkAdd', function( id, link ){
       const sourceTask = gantt.getTask( link.source );
       const targetTask = gantt.getTask( link.target );
       if( sourceTask['isRecurrenceStep'] || targetTask['isRecurrenceStep'] ){
         return false;
       }
       return true;
+    } );
+
+    gantt.attachEvent( 'onAfterTaskDrag', ( id, mode ) => {
+      const task = gantt.getTask( id );
+      this.updateTask( task, mode as 'move' | 'resize' );
+      console.log( 'drag' );
     } );
 
     gantt.templates.task_class = function( start, end, task ){
@@ -411,36 +469,35 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
       }
     };
     gantt.templates.task_text = function( start, end, task ){
-      return task.text + " (" + task.duration + " days)";
+      return task.text + ' (' + task.duration + ' days)';
     };
     gantt.templates.task_row_class = function( start, end, task ){
-      if( task['isRecurrenceStep'] === true || task['isRecurrenceStep'] === "highlighted" ){
-        return"recurrent-task-row";
-      }else if( task['isRecurrenceStep'] === "last" ){
-        return"recurrent-task-row last";
+      if( task['isRecurrenceStep'] === true || task['isRecurrenceStep'] === 'highlighted' ){
+        return'recurrent-task-row';
+      }else if( task['isRecurrenceStep'] === 'last' ){
+        return'recurrent-task-row last';
       }
       if( task['hasRecurrence'] ){
-        return"has-recurrence-task-row";
+        return'has-recurrence-task-row';
       }
 
-      return"";
+      return'';
     };
 
     gantt.templates.grid_row_class = function( start, end, task ){
-      if( task['isRecurrenceStep'] === true || task['isRecurrenceStep'] === "highlighted" ){
-        return"recurrent-task-row";
-      }else if( task['isRecurrenceStep'] === "last" ){
-        return"recurrent-task-row last";
+      if( task['isRecurrenceStep'] === true || task['isRecurrenceStep'] === 'highlighted' ){
+        return'recurrent-task-row';
+      }else if( task['isRecurrenceStep'] === 'last' ){
+        return'recurrent-task-row last';
       }
       if( task['hasRecurrence'] ){
-        return"has-recurrence-task-row";
+        return'has-recurrence-task-row';
       }
-      return"";
+      return'';
     };
 
     gantt.config.order_branch = true;
-    gantt.config.date_format = "%Y-%m-%d %H:%i";
-
+    gantt.config.date_format = '%Y-%m-%d %H:%i';
   }
 
   /**
@@ -448,17 +505,17 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
    */
   private ganttAfterInitOperations( gantt: GanttStatic ){
     // gantt.showDate( this.shownDate ?? this.today );
-    
-    gantt.addMarker( { 
-      start_date: new Date(), 
-      css: "today", 
-      title:"Today"
+
+    gantt.addMarker( {
+      start_date: new Date(),
+      css: 'today',
+      title: 'Today',
     } );
 
     if( !this.dp ){
       this.dp = gantt.createDataProcessor( {
         task: {
-          update: ( data: DhtmlxTask ) => this.updateTask( data ),
+          update: ( /*data: DhtmlxTask*/ ) => {},
           create: () => this.createTask(),
           // delete: (id: string) => console.log(id),
         },
@@ -474,29 +531,29 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
   /**
    * Converts a local task to a DHX task
    */
-  private toDhtmlxTask( task:TimedTask, color: string | undefined, order: number, parentId: string | undefined, cssClass: string | undefined, isRecurrenceStep: boolean, recurrenceIndex: number | undefined ): DhtmlxTask{
-    const isProject = task.children.length > 0; 
-    //const isRecurrentTask = isRecurringTask( task ); 
-    
-    let dates: {startDate: Date, endDate: Date} | undefined;
+  private toDhtmlxTask( task: TimedTask, color: string | undefined, order: number, parentId: string | undefined, cssClass: string | undefined, isRecurrenceStep: boolean, recurrenceIndex: number | undefined ): DhtmlxTask{
+    const isProject = task.children.length > 0;
+    //const isRecurrentTask = isRecurringTask( task );
+
+    let dates: { startDate: Date; endDate: Date } | undefined;
     if( isProject ){
       dates = undefined;
     }else if( isFixedTimedTask( task ) || isRollingTimedTask( task ) ){
-      dates = this.boardService.getComputedDatesAccountingForWorkingDays( task );     
+      dates = this.boardService.getComputedDatesAccountingForWorkingDays( task );
     }else{
       // no dates
       dates = {
-        startDate:  new Date(),
-        endDate:  new Date(),
-      }
+        startDate: new Date(),
+        endDate: new Date(),
+      };
     }
 
     const dhtmlxTask: DhtmlxTask = {
       id: task.id,
       text: task.textContent,
-      type: isProject  ? 'project' : 'task',
-      start_date: !dates ? undefined :  dates.startDate,
-      end_date:  !dates ? undefined :  dates.endDate,
+      type: isProject ? 'project' : 'task',
+      start_date: !dates ? undefined : dates.startDate,
+      end_date: !dates ? undefined : dates.endDate,
       parent: parentId,
       progress: task.time?.progress ?? 0,
       css: cssClass,
@@ -508,36 +565,36 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
       //readonly: !!isRecurrenceStep,
       open: true,
       recurrenceIndex,
-      trepTask: task
+      trepTask: task,
     };
     if( !parentId ){
-      delete dhtmlxTask.parent
+      delete dhtmlxTask.parent;
     }
     return dhtmlxTask;
   }
 
   /**
-   *  Returns the html for a task using the TaskComponent 
+   *  Returns the html for a task using the TaskComponent
    */
   private getTaskComponentHTML( task: DhtmlxTask ): string{
     if( task['isRecurrenceStep'] ){
-      return""
+      return'';
     }
-    const component = createComponent( TaskComponent, {environmentInjector: this.applicationRef.injector} )
+    const component = createComponent( TaskComponent, { environmentInjector: this.applicationRef.injector } );
     const t = task['trepTask'] as TimedTask;
     if( !t ){
       // may be a recurrence
-      throw new Error( "Task not found" );
+      throw new Error( 'Task not found' );
     }
     component.instance.task = t;
     component.instance.staticView = true;
     const l = this.boardService.findParentLane( [t] );
     if( l ){
       component.instance.lane = l;
-      component.instance.parent = l
+      component.instance.parent = l;
     }
     component.instance.board = this.board;
-    component.instance.enableGanttView = true
+    component.instance.enableGanttView = true;
     component.instance.showChildren = false;
     component.changeDetectorRef.detectChanges();
     const html = component.location.nativeElement.outerHTML;
@@ -545,43 +602,51 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     return html;
   }
 
-  protected selectView( view: "months" | "days" | "hours" ){
+  protected selectView( view: 'months' | 'days' | 'hours' ){
     this.selectedView = view;
     switch( this.selectedView ){
-      case"months":
-        gantt.config.scales = [{
-          unit: 'month',
-          format: '%F'
-        }]
-        gantt.config.duration_unit = "month"
-        break
-      case"days":
-        gantt.config.scales = [{
-          unit: 'month',
-          format: '%F'
-        }, {
-          unit: 'day',
-          date: '%j',
-        }]
+      case'months':
+        gantt.config.scales = [
+          {
+            unit: 'month',
+            format: '%F',
+          },
+        ];
+        gantt.config.duration_unit = 'month';
+        break;
+      case'days':
+        gantt.config.scales = [
+          {
+            unit: 'month',
+            format: '%F',
+          },
+          {
+            unit: 'day',
+            date: '%j',
+          },
+        ];
         //gantt.config.duration_unit = "hour"
         //gantt.config.skip_off_time = false;
         // gantt.config.round_dnd_dates = false;
         break;
-      case"hours":
-        gantt.config.scales = [{
-          unit: 'month',
-          format: '%F'
-        }, {
-          unit: 'day',
-          date: '%j'
-        }, {
-          unit: 'hour',
-          date: '%H'
-        }]
-        gantt.config.duration_unit = "hour"
-        break;    
+      case'hours':
+        gantt.config.scales = [
+          {
+            unit: 'month',
+            format: '%F',
+          },
+          {
+            unit: 'day',
+            date: '%j',
+          },
+          {
+            unit: 'hour',
+            date: '%H',
+          },
+        ];
+        gantt.config.duration_unit = 'hour';
+        break;
     }
-    gantt.render()
+    gantt.render();
   }
-
 }

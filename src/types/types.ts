@@ -2,8 +2,9 @@ import{ Type }from'@angular/core';
 import{ generateUUID }from'../utils/utils';
  
 import{ StorageServiceAbstract }from'./storage';
-import{ layoutValues, recurrenceValues, timeframeValues, statusValues, priorityValues, timezoneValues, dateFormats }from'./constants';
+import{ layoutValues, recurrenceValues, timeframeValues, statusValues, priorityValues, timezoneValues, dateFormats, getWorkingDayHoursNumber }from'./constants';
 import{ ChartDataset }from'chart.js';
+import{ snapToWorkDays, toIsoString, tomorrow }from'../utils/date-utils';
 
 export type Environment = {
   storageService: Type<StorageServiceAbstract>,
@@ -88,6 +89,7 @@ export interface TimeData{
 export interface FixedTimeData extends TimeData {
   startDate: ISODateString,
   endDate: ISODateString,
+  durationInWorkingHours: undefined,
   type: "fixed"
 }
 export interface RollingTimeData extends TimeData {
@@ -161,8 +163,10 @@ export type StateChangeDate = {
 export type ISODateString = `${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`
 export type TagType = 'tag-orange' | 'tag-yellow' | 'tag-green';
 
-export const getNewTask: ( lane: Lane | string, id: string | undefined, textContent: string | undefined ) => Task = ( lane: Lane | string, id: string | undefined, textContent?: string | undefined ) => {
+export const getNewTask: ( lane: Lane | string, id: string | undefined, textContent: string | undefined, initTimeData:boolean ) => Task = ( lane: Lane | string, id: string | undefined, textContent?: string | undefined, initTimeData = false ) => {
   const taskId = id ?? generateUUID()
+
+  const dates = snapToWorkDays( tomorrow(), getWorkingDayHoursNumber() );
   const t: Task = {
     id: taskId,
     parentId: typeof lane === 'string' ? lane : lane.id,
@@ -175,7 +179,15 @@ export const getNewTask: ( lane: Lane | string, id: string | undefined, textCont
     creationDate: new Date().toISOString() as ISODateString,
     priority: 1,
     status: 'todo',
-    time: undefined
+    time: initTimeData ? {
+      startDate: toIsoString( dates.startDate ),
+      endDate: toIsoString( dates.endDate ),
+      durationInWorkingHours: undefined,
+      resourcesAllocation: 100, //0-100%
+      progress: 0,
+      type: 'fixed',
+      predecessors: [],
+    } : undefined,
   }
   // initGanttData(t, new Date());
 

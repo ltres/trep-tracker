@@ -8,7 +8,7 @@ import{ KeyboardService }from'../../service/keyboard.service';
 import{ ContainerComponentRegistryService }from'../../service/registry.service';
 import{ ContainerComponent }from'../base/base.component';
 import{ ClickService }from'../../service/click.service';
-import{  fromIsoString, formatDate, getDiffInDays, calculateDatesWithWorkingDays, toIsoString }from'../../utils/date-utils';
+import{  fromIsoString, formatDate, getDiffInDays, snapToWorkDays, toIsoString }from'../../utils/date-utils';
 import{ setCaretPosition, isPlaceholder, hashCode, isArchivedOrDiscarded, initTimeData }from'../../utils/utils';
 import{ ganttConfig, millisForMagnitudeStep, minOpacityAtTreshold, similarityTreshold }from'../../types/constants';
 import{ assertIsTimedTask, isFixedTimedTask, isProject,  isRollingTimedTask,  isTask, isTimedTask }from'../../utils/guards';
@@ -370,7 +370,7 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
       this.task.time.durationInWorkingHours = Number( ( $event.target! as HTMLInputElement ).value );
       this.changePublisherService.processChangesAndPublishUpdate( [this.task, this.lane] )
     }else if( isFixedTimedTask(  this.task ) ){
-      const dates = calculateDatesWithWorkingDays( fromIsoString( this.task.time.startDate ), Number( ( $event.target! as HTMLInputElement ).value ) );
+      const dates = snapToWorkDays( fromIsoString( this.task.time.startDate ), Number( ( $event.target! as HTMLInputElement ).value ) );
       this.task.time.startDate = toIsoString(  dates.startDate )
 
       this.task.time.endDate = toIsoString( dates.endDate )

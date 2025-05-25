@@ -48,7 +48,7 @@ export function isTimedTask( parent: Container | unknown ): parent is TimedTask{
 }
 export function assertIsTimedTask( target: Container | unknown ): asserts target is TimedTask{
   if( !isTimedTask( target ) ){
-    throw new Error( 'Not a Container[]' );
+    throw new Error( 'Not a timed task' );
   }
 }
 

@@ -3,7 +3,7 @@ import{Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Sta
 import{BehaviorSubject, Observable, asyncScheduler, debounceTime, map, observeOn}from'rxjs';
 import{checkTaskSimilarity, eventuallyPatch, getDescendants, getProjectComputedStatus, initTimeData, isArchived, isArchivedOrDiscarded, isPlaceholder,  isStatic,}from'../utils/utils';
 import{StorageServiceAbstract}from'../types/storage';
-import{addUnitsToDate, calculateDatesWithWorkingDays, calculateWorkingHours, fromIsoString, setDateSafe, toIsoString}from'../utils/date-utils';
+import{addUnitsToDate, snapToWorkDays, calculateWorkingHours, fromIsoString, setDateSafe, toIsoString}from'../utils/date-utils';
 import{boardDebounceDelay, similarityTreshold, statusValues}from'../types/constants';
 import{isTask, isLane, isTasks, isProject, assertIsTask, isBoard, isTimedTask, assertIsFixedTimedTask, isFixedTimedTask, isRollingTimedTask, assertIsTimedTask}from'../utils/guards';
 import{ logPerformance }from'../utils/performance-logger';
@@ -959,7 +959,7 @@ export class BoardService{
 
       };
       if( prevPriority && children[i].priority !== prevPriority ){
-        children.splice( i, 0, getNewTask( lane, undefined, '' ) );
+        children.splice( i, 0, getNewTask( lane, undefined, '', false ) );
         continue;
       }
       prevPriority = children[i].priority;
@@ -1071,7 +1071,7 @@ export class BoardService{
       if( !greatestEndDateInPredecessors ){
         greatestEndDateInPredecessors = new Date();
       }
-      const dates = calculateDatesWithWorkingDays( greatestEndDateInPredecessors, durationInWorkingHours ?? t.time.durationInWorkingHours );
+      const dates = snapToWorkDays( greatestEndDateInPredecessors, durationInWorkingHours ?? t.time.durationInWorkingHours );
       return{
         startDate: dates.startDate,
         endDate: dates.endDate

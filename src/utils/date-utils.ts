@@ -181,7 +181,7 @@ export function getLastSunday( d?: Date ): Date{
  * @returns 
  */
 
-export function calculateDatesWithWorkingDays( startDate: Date, durationInWorkingHours: number ) : {
+export function snapToWorkDays( startDate: Date, durationInWorkingHours: number ) : {
   startDate: Date,
   endDate: Date
 }{
@@ -242,9 +242,9 @@ export function calculateDatesWithWorkingDays( startDate: Date, durationInWorkin
  * @param end 
  * @returns 
  */
-export function calculateWorkingHours( startDate: Date, endDate: Date ): {total:number, detail: {startDate: Date, endDate: Date}[]}{
-  const start = new Date( startDate.getTime() );
-  const end = new Date( endDate.getTime() );
+export function calculateWorkingHours( startDate: Date | ISODateString, endDate: Date | ISODateString ): {total:number, detail: {startDate: Date, endDate: Date}[]}{
+  const start = typeof startDate === 'string' ? fromIsoString( startDate ) : new Date( startDate.getTime() );
+  const end = typeof endDate === 'string' ? fromIsoString( endDate ) : new Date( endDate.getTime() );
   if( start.getHours() < ganttConfig.startOfWorkingDay ){
     // adjust day start
     start.setHours( ganttConfig.startOfWorkingDay );
@@ -349,4 +349,11 @@ export function isSameDate( d1: Date | undefined, d2: Date | undefined ){
   }else{
     return d1?.getTime() === d2?.getTime()
   }
+}
+
+export function tomorrow(): Date{
+  const today = new Date();
+  const tomorrow = new Date( today.getFullYear(), today.getMonth(), today.getDate() + 1 );
+  tomorrow.setHours( 0, 0, 0, 0 ); // Set time to midnight
+  return tomorrow;
 }
