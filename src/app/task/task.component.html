@@ -149,7 +149,7 @@
     @if (isRollingTimedTask(task)) {
       <date-picker [disabled]="true" [startDate]="getRollingTaskDates(task).endDate" [inputMode]="true" [dateDisplayConfig]="board.datesConfig"></date-picker>
     } @else {
-      <date-picker [disabled]="false" (onSetClicked)="setStartDate($event)" [startDate]="fromIsoString(task.time?.endDate)" [inputMode]="true" [dateDisplayConfig]="board.datesConfig"></date-picker>
+      <date-picker [disabled]="false" (onSetClicked)="setEndDate($event)" [startDate]="fromIsoString(task.time?.endDate)" [inputMode]="true" [dateDisplayConfig]="board.datesConfig"></date-picker>
     }
   </span>
 </ng-template>

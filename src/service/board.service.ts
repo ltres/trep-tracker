@@ -1,11 +1,11 @@
 import{Inject, Injectable, Injector, NgZone}from'@angular/core';
-import{Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, Timeframe, AddFloatingLaneParams, FixedTimedTask, TimedTask}from'../types/types';
+import{Board, Lane, Container, Task, Tag, getNewBoard, getNewLane, Priority, Status, StateChangeDate, getNewTask, Timeframe, AddFloatingLaneParams, TimedTask}from'../types/types';
 import{BehaviorSubject, Observable, asyncScheduler, debounceTime, map, observeOn}from'rxjs';
 import{checkTaskSimilarity, eventuallyPatch, getDescendants, getProjectComputedStatus, initTimeData, isArchived, isArchivedOrDiscarded, isPlaceholder,  isStatic,}from'../utils/utils';
 import{StorageServiceAbstract}from'../types/storage';
 import{addUnitsToDate, snapToWorkDays, calculateWorkingHours, fromIsoString, setDateSafe, toIsoString}from'../utils/date-utils';
 import{boardDebounceDelay, similarityTreshold, statusValues}from'../types/constants';
-import{isTask, isLane, isTasks, isProject, assertIsTask, isBoard, isTimedTask, assertIsFixedTimedTask, isFixedTimedTask, isRollingTimedTask, assertIsTimedTask}from'../utils/guards';
+import{isTask, isLane, isTasks, isProject, assertIsTask, isBoard, isTimedTask, isFixedTimedTask, isRollingTimedTask, assertIsTimedTask}from'../utils/guards';
 import{ logPerformance }from'../utils/performance-logger';
 import{ ChangePublisherService }from'./change-publisher.service';
 
@@ -1158,50 +1158,6 @@ export class BoardService{
     }
 
     return calculateWorkingHours( startDate, endDate ).total
-  }
-
-  /**
-   * Sets start and end date on a task, transforming it into a GanttTask (initializes gantt data if missing). If a recurrence is provided, reinitializes recurrence data (old data is erased)
-   * @param task 
-   * @param start 
-   * @param end 
-   * @param recurrence 
- */
-  setTaskDates( task: Task, start: Date, end: Date ): FixedTimedTask{
-    if( !task.time ){
-      initTimeData( task, undefined );
-    }
-    //const datesChanged = false;
-    //task.time!.showData = true;
-    if( task.time!.startDate !== toIsoString( start ) || task.time!.endDate !== toIsoString( end ) ){
-      //datesChanged = true;
-    }
-    task.time!.startDate = toIsoString( start );
-    task.time!.endDate = toIsoString( end );
-    
-    task.time!.progress = 0;
-    assertIsFixedTimedTask( task );
-
-    /*
-    if( recurrence && recurrence !== 'no' ){
-      if( !task.time ){
-        initTimeData( task, undefined );
-      }
-  
-      //task.time.recurrence = recurrence;
-      //task.time.displayRecurrence = true;
-      task.recurrences = [];
-      assertIsRecurringTask( task );
-      
-      if( datesChanged || recurrence !== task.time.recurrence ){
-        task.recurrences = [];
-      }
-    }else{
-      //delete task.time?.recurrence;
-    }
-    */
-    //this.publishBoardUpdate();
-    return task;
   }  
 
   /**
