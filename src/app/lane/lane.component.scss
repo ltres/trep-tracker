@@ -3,7 +3,7 @@
 @import "../../assets/variables";
 @import "../../assets/mixins";
 
-:host {
+:host:not(.no-wrapper) {
     resize: horizontal;
     display: inline-block;
     min-width: 20rem;
@@ -23,7 +23,12 @@
 
 .lane-grid{
     display: grid;
-    grid-template-columns: 30% 1fr;
+    grid-template-columns: auto 1fr;
+    max-height: 80vh;
+    overflow-y: scroll;
+    &.singleColumn{
+        grid-template-columns: 1fr;
+    }
 }
 
 .lane-wrapper {

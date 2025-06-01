@@ -35,8 +35,13 @@ export class LaneComponent extends ContainerComponent implements OnInit{
   @Input() lane!: Lane;
   @Input() board!: Board;
   @Input() displayedInFixedLayout: boolean = false;
+
+  @HostBinding( 'class.no-wrapper' )
+  @Input() removeWrapper = false;
+
   @ViewChild( 'gantt' ) ganttTemplate: TemplateRef<unknown> | null = null;
 
+  @Input() enableGanttView = false;
   menuOpen = false;
   hoveringTooltip = false;
 

@@ -133,14 +133,16 @@ p {
   opacity: 1;
 }
 
-.relative {
+.relative, .position-relative {
   position: relative !important;
 }
 
-.absolute {
+.absolut, .position-absolute {
   position: absolute;
 }
-
+.whitespace-nowrap{
+  white-space: nowrap;
+}
 .inline-block {
   display: inline-bloc;
 }

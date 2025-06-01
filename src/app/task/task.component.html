@@ -5,21 +5,19 @@
       <prioritizer *ngIf="!isPlaceholder()" (onPrioritySelected)="updatePriority($event)" [container]="task"> </prioritizer>
 
       <status [container]="task" [board]="board" [staticLane]="isStaticView()" (onStatusSelected)="updateStatus($event)"></status>
-      
+
       <div *ngIf="isProject(task)" class="project-chevron pointer" [tooltip]="task.collapsed ? 'Expand project' : 'Collapse project'" [position]="'top'" (click)="toggleProjectCollapse()">
         <span [class.collapsed]="task.collapsed">{{ task.collapsed ? '▶' : '▼' }}</span>
       </div>
     </div>
     <div class="flex grow g-025 align-items-center">
+      <span *ngIf="isProject(task)" class="project-children-count translucent small"> ({{ task.children.length }}) </span>
+
       @if (task.searchTextContent) {
         <div class="task-text-content" innerHTML="{{ task.searchTextContent }}"></div>
       } @else {
         <div class="task-text-content grow" [class.placeholder]="isPlaceholder()" #editor contenteditable="true" [preventEvents]="!editorActive" [board]="board" [(ngModel)]="task.textContent" (ngModelChange)="publishChange()" (onTagsChange)="updateTaskTags($event)"></div>
       }
-      
-      <span *ngIf="isProject(task)" class="project-children-count translucent small">
-        ({{ task.children.length }})
-      </span>
 
       <div class="grow"></div>
       <span *ngIf="!enableGanttView && task.similarTasks.length > 0" [style]="'opacity:' + getMaxSimilarityIndex(task, true) + '%'" class="pill pointer color-2 similar-pill" [tooltip]="getSimilarTasksTooltip(task)" (mouseenter)="showArrows = true" (mouseleave)="showArrows = false" [@fadeInOut]>
@@ -140,10 +138,10 @@
 
 <ng-template #ganttControls>
   <span class="flex g-05">
-    <span class="half-translucent pointer"> Working hours: </span>
+    <span class="half-translucent pointer whitespace-nowrap"> Working hours: </span>
     <input [disabled]="isProject(task)" type="number" class="w-10-rem" [value]="calculateWorkingHoursDuration(task)" (change)="updateTaskDuration($event)" />
   </span>
-  {{ isRollingTimedTask(task) }}
+
   <span class="flex g-05">
     <span class="half-translucent pointer"> From: </span>
     @if (isProject(task)) {

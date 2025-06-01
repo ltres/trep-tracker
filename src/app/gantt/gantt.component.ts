@@ -8,6 +8,7 @@ import{ getFirstMentionTag, initTimeData, getTaskBackgroundColor }from'../../uti
 import{ ganttConfig, tagTypes }from'../../types/constants';
 import{ assertIsTimedTask, isFixedTimedTask, isProject, isRollingTimedTask }from'../../utils/guards';
 import{ ChangePublisherService }from'../../service/change-publisher.service';
+import{ Subscription }from'rxjs';
 
 @Component( {
   selector: 'gantt[lane][board]',
@@ -28,6 +29,14 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
 
   lastUpdatedTasks: string[] = [];
 
+  changesSubscription: Subscription | undefined;
+
+  // Drag-to-scroll properties
+  private isDragging = false;
+  private startX = 0;
+  private scrollLeft = 0;
+  private ganttElement: HTMLElement | null = null;
+
   constructor(
     protected changePublisherService: ChangePublisherService,
 
@@ -42,7 +51,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
       this.init( this.lane.children );
     }, 1000 );
 
-    this.changePublisherService.pushedChanges$.subscribe( ( c ) => {
+    this.changesSubscription = this.changePublisherService.pushedChanges$.subscribe( ( c ) => {
       if( c.map( ( co ) => co.id ).includes( this.lane?.id ) ){
         this.init( this.lane.children );
       }
@@ -51,6 +60,8 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
 
   ngOnDestroy(): void{
     this.dp?.destructor();
+    this.changesSubscription?.unsubscribe();
+    this.removeDragScrollListeners();
   }
 
   private init( tasks: Task[] ){
@@ -73,6 +84,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     setTimeout( () => {
       gantt.init( 'gantt' );
       this.ganttAfterInitOperations( gantt );
+      this.setupDragScroll();
     }, 10 )
   }
 
@@ -619,5 +631,104 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
         break;
     }
     gantt.render();
+  }
+
+  private setupDragScroll(): void{
+    this.ganttElement = document.getElementById( 'gantt' );
+    if( !this.ganttElement )return;
+
+    // Find the timeline area (the scrollable part)
+    const timelineArea = this.ganttElement.querySelector( '.gantt_task_scale, .gantt_data_area, .gantt_task_area' );
+    if( !timelineArea )return;
+
+    // Add event listeners for drag scrolling
+    this.ganttElement.addEventListener( 'mousedown', this.onMouseDown.bind( this ) );
+    document.addEventListener( 'mousemove', this.onMouseMove.bind( this ) );
+    document.addEventListener( 'mouseup', this.onMouseUp.bind( this ) );
+    
+    // Prevent text selection during drag
+    this.ganttElement.style.userSelect = 'none';
+  }
+
+  private removeDragScrollListeners(): void{
+    if( this.ganttElement ){
+      this.ganttElement.removeEventListener( 'mousedown', this.onMouseDown.bind( this ) );
+    }
+    document.removeEventListener( 'mousemove', this.onMouseMove.bind( this ) );
+    document.removeEventListener( 'mouseup', this.onMouseUp.bind( this ) );
+  }
+
+  private onMouseDown( e: MouseEvent ): void{
+    // Check if we're clicking on a task or task-related element
+    const target = e.target as HTMLElement;
+    const timelineScroll = document.querySelectorAll( '.lines.scroll-x' )[0];
+
+    if( this.isTaskElement( target ) ){
+      return; // Let normal task dragging behavior handle this
+    }
+    
+    // Only start drag scrolling if clicking on empty space
+    this.isDragging = true;
+    this.startX = e.pageX;
+    
+    this.scrollLeft = timelineScroll?.scrollLeft || 0;
+    
+    if( this.ganttElement ){
+      this.ganttElement.style.cursor = 'grabbing';
+    }
+  }
+
+  private onMouseMove( e: MouseEvent ): void{
+    if( !this.isDragging || !this.ganttElement )return;
+    const timelineScroll = document.querySelectorAll( '.lines.scroll-x' )[0];
+
+    e.preventDefault();
+    
+    const x = e.pageX;
+    const walk = ( x - this.startX ) * 1; // Multiply by 2 for faster scrolling
+    const newScrollLeft = this.scrollLeft - walk;
+    
+    //console.log( 'Mouse move - x:', x, 'startX:', this.startX, 'walk:', walk, 'newScrollLeft:', newScrollLeft );
+    
+    if( timelineScroll ){
+      //console.log( 'Updating scroll from', timelineScroll.scrollLeft, 'to', newScrollLeft );
+      timelineScroll.scrollLeft = newScrollLeft;
+    }else{
+      console.error( 'No scrollable element found!' );
+    }
+  }
+
+  private onMouseUp(): void{
+    this.isDragging = false;
+    if( this.ganttElement ){
+      this.ganttElement.style.cursor = 'default';
+    }
+  }
+
+  private isTaskElement( element: HTMLElement ): boolean{
+    // Check if the clicked element or its parents contain task-related classes
+    let current: HTMLElement | null = element;
+    
+    while( current && current !== this.ganttElement ){
+      
+      // Immediately return false for empty cells - these should allow drag scrolling
+      if( current.classList.contains( 'gantt_task_cell' ) ){
+        return false;
+      }
+      
+      // Only return true for elements that are definitely draggable task bars
+      if( current.classList.contains( 'gantt_task_line' ) ||
+          current.classList.contains( 'gantt_task_content' ) ||
+          current.classList.contains( 'gantt_task_progress' ) ||
+          current.classList.contains( 'gantt_task_drag' ) ||
+          current.classList.contains( 'gantt_link_arrow' ) ||
+          current.classList.contains( 'gantt_link_point' ) ){
+        return true;
+      }
+      
+      current = current.parentElement;
+    }
+    
+    return false;
   }
 }

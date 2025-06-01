@@ -1,11 +1,11 @@
-<div class="lane-wrapper p-x-05 p-y-025" [class.archive-lane]="isArchive(lane)" [class.static-view]="isStatic() && (tasks | async)?.length === 0" [droppable]="6" [container]="lane" [executeOnDropReceived]="receiveDrop.bind(this)">
+<div [class]="removeWrapper ? 'no-wrapper' : 'lane-wrapper p-x-05 p-y-025'" [class.archive-lane]="isArchive(lane)" [class.static-view]="isStatic() && (tasks | async)?.length === 0" [droppable]="6" [container]="lane" [executeOnDropReceived]="receiveDrop.bind(this)">
   <!-- <div *ngIf="this.active" [@fadeInOut] class="lane-graphs-label flex column">
     <chart [chartType]="'tasksByStatus'" [board]="board" [tasks]="isStatic() ? staticTasks : tasks" class="flex-child"></chart>
     <chart [chartType]="'tasksByPriority'" [board]="board" [tasks]="isStatic() ? staticTasks : tasks" class="flex-child"></chart>
     <chart [chartType]="'tasksByTag'" [board]="board" [tasks]="isStatic() ? staticTasks : tasks" class="flex-child"></chart>
     <tags-viewer [board]="board" [lane]="lane"></tags-viewer>
   </div> -->
-  <div class="lane-toolbar flex align-items-center g-05">
+  <div *ngIf="!removeWrapper" class="lane-toolbar flex align-items-center g-05">
     <div class="grow no-wrap flex align-items-center g-05">
       @if (lane.searchTextContent) {
         <div class="colored-title no-wrap" innerHTML="{{ lane.searchTextContent }}"></div>
@@ -122,13 +122,13 @@
   </div>
 
   @if (!lane.collapsed) {
-    <div class="lane-grid">
+    <div class="lane-grid" [class.singleColumn]="!enableGanttView">
       <div class="lane-content-left flex column justify-content-end">
         <div [class.non-static-island]="isStatic()" class="lane-task-container flex column">
           <div [droppable]="5" [container]="lane" [executeOnDropReceived]="receiveDropToDumb.bind(this, undefined)" *ngIf="((tasks | async) ?? []).length > 0" class="dumb-dropzone"></div>
 
           <ng-container *ngFor="let task of tasks | async; trackBy: trackBy">
-            <task [enableGanttView]="true" [task]="task" [parent]="lane" [board]="board" [lane]="lane" [draggableDir]="task" [containerEl]="el.nativeElement" [layout]="board.layout" (onDragStart)="interactingWithChildTasks = true" (onDragEnd)="interactingWithChildTasks = false" (onToggleShowNotes)="interactingWithChildTasks = $event" (createNewTask)="createNewTask()" [class]="isRecurringTask(task) ? 'recurrent-task-container p-x-05 m-x--1' : ''"></task>
+            <task [enableGanttView]="enableGanttView" [task]="task" [parent]="lane" [board]="board" [lane]="lane" [draggableDir]="task" [containerEl]="el.nativeElement" [layout]="board.layout" (onDragStart)="interactingWithChildTasks = true" (onDragEnd)="interactingWithChildTasks = false" (onToggleShowNotes)="interactingWithChildTasks = $event" (createNewTask)="createNewTask()" [class]="isRecurringTask(task) ? 'recurrent-task-container p-x-05 m-x--1' : ''"></task>
 
             <div *ngIf="!isPlaceholder(task)" [droppable]="5" [container]="lane" [executeOnDropReceived]="receiveDropToDumb.bind(this, task)" class="dumb-dropzone"></div>
           </ng-container>
@@ -142,11 +142,11 @@
 
         <!-- <p class="floating-label">Lane: {{lane.id}}</p> -->
       </div>
-      <div class="lane-content-right grow">
+      <div *ngIf="enableGanttView" class="lane-content-right grow overflow-hidden">
         <gantt [lane]="lane" [board]="board"></gantt>
       </div>
 
-      <ng-container [ngTemplateOutlet]="allocationRows"></ng-container>
+      <ng-container *ngIf="enableGanttView" [ngTemplateOutlet]="allocationRows"></ng-container>
     </div>
     <div *ngIf="!isStatic()" class="lane-toolbar flex g-05">
       <div class="grow"></div>
@@ -160,7 +160,9 @@
   }
 </div>
 
-<ng-template #gantt> asd a</ng-template>
+<ng-template #gantt>
+  <lane [enableGanttView]="true" [removeWrapper]="true" [displayedInFixedLayout]="true" [lane]="lane" [board]="this.board" [draggableDir]="lane" [containerEl]="el.nativeElement" [layout]="'flex1'"></lane>
+</ng-template>
 
 <ng-template #allocationRows>
   <div class="lane-content-left flex column">
