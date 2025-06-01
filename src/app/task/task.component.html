@@ -5,6 +5,10 @@
       <prioritizer *ngIf="!isPlaceholder()" (onPrioritySelected)="updatePriority($event)" [container]="task"> </prioritizer>
 
       <status [container]="task" [board]="board" [staticLane]="isStaticView()" (onStatusSelected)="updateStatus($event)"></status>
+      
+      <div *ngIf="isProject(task)" class="project-chevron pointer" [tooltip]="task.collapsed ? 'Expand project' : 'Collapse project'" [position]="'top'" (click)="toggleProjectCollapse()">
+        <span [class.collapsed]="task.collapsed">{{ task.collapsed ? '▶' : '▼' }}</span>
+      </div>
     </div>
     <div class="flex grow g-025 align-items-center">
       @if (task.searchTextContent) {
@@ -12,6 +16,10 @@
       } @else {
         <div class="task-text-content grow" [class.placeholder]="isPlaceholder()" #editor contenteditable="true" [preventEvents]="!editorActive" [board]="board" [(ngModel)]="task.textContent" (ngModelChange)="publishChange()" (onTagsChange)="updateTaskTags($event)"></div>
       }
+      
+      <span *ngIf="isProject(task)" class="project-children-count translucent small">
+        ({{ task.children.length }})
+      </span>
 
       <div class="grow"></div>
       <span *ngIf="!enableGanttView && task.similarTasks.length > 0" [style]="'opacity:' + getMaxSimilarityIndex(task, true) + '%'" class="pill pointer color-2 similar-pill" [tooltip]="getSimilarTasksTooltip(task)" (mouseenter)="showArrows = true" (mouseleave)="showArrows = false" [@fadeInOut]>
@@ -40,7 +48,7 @@
     <ng-container [ngTemplateOutlet]="ganttControls"></ng-container>
   </div>
 </div>
-<div *ngIf="showChildren" class="task-children-wrapper g-025">
+<div *ngIf="showChildren && !task.collapsed" class="task-children-wrapper g-025">
   <ng-container
     *ngFor="let child of this.task.children; let last = last; trackBy: trackBy"
     [ngTemplateOutlet]="taskWithLine"

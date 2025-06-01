@@ -134,6 +134,13 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
       throw new Error( 'Task not found' );
     }
 
+    // Validate the link before creating it
+    const validation = this.boardService.validateGanttLink( source, target );
+    if( !validation.valid ){
+      gantt.message( { type: 'error', text: validation.reason || 'Cannot create this link' } );
+      return; // Prevent link creation
+    }
+
     assertIsTimedTask( target );
     assertIsTimedTask( source );
 
@@ -363,13 +370,30 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
       return false;
     } );
 
-    // Prevents links to recurrence asteps
-    gantt.attachEvent( 'onBeforeLinkAdd', function( id, link ){
+    // Validates links before creation
+    gantt.attachEvent( 'onBeforeLinkAdd', ( id, link ) => {
       const sourceTask = gantt.getTask( link.source );
       const targetTask = gantt.getTask( link.target );
+      
+      // Prevent links to/from recurrence steps
       if( sourceTask['isRecurrenceStep'] || targetTask['isRecurrenceStep'] ){
         return false;
       }
+
+      // Get the actual task objects from board service
+      const source = this.boardService.getTask( link.source.toString() );
+      const target = this.boardService.getTask( link.target.toString() );
+      if( !source || !target ){
+        return false;
+      }
+
+      // Use comprehensive validation
+      const validation = this.boardService.validateGanttLink( source, target );
+      if( !validation.valid ){
+        gantt.message( { type: 'error', text: validation.reason || 'Cannot create this link' } );
+        return false;
+      }
+
       return true;
     } );
 
@@ -381,6 +405,9 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
     gantt.templates.task_class = function( start, end, task ){
       if( gantt.hasChild( task.id ) ){
         return'gantt-parent-task';
+      }
+      if( task.type === 'milestone' ){
+        return'gantt-milestone';
       }
       if( task['css'] ){
         return task['css'];
@@ -447,6 +474,24 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
   }
 
   /**
+   * Checks if a task is a milestone (has duration = 0)
+   */
+  private isMilestone( task: TimedTask ): boolean{
+    if( !task.time )return false;
+    
+    // Check if task has zero duration
+    if( isFixedTimedTask( task ) ){
+      const start = new Date( task.time.startDate );
+      const end = new Date( task.time.endDate );
+      return start.getTime() === end.getTime();
+    }else if( isRollingTimedTask( task ) ){
+      return task.time.durationInWorkingHours === 0;
+    }
+    
+    return false;
+  }
+
+  /**
    * Converts a local task to a DHX task
    */
   private toDhtmlxTask( task: TimedTask, color: string | undefined, order: number, parentId: string | undefined, cssClass: string | undefined, isRecurrenceStep: boolean, recurrenceIndex: number | undefined ): DhtmlxTask{
@@ -466,10 +511,18 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
       };
     }
 
+    // Determine task type
+    let taskType: 'project' | 'task' | 'milestone' = 'task';
+    if( isProject ){
+      taskType = 'project';
+    }else if( this.isMilestone( task ) ){
+      taskType = 'milestone';
+    }
+
     const dhtmlxTask: DhtmlxTask = {
       id: task.id,
       text: task.textContent,
-      type: isProject ? 'project' : 'task',
+      type: taskType,
       start_date: !dates ? undefined : dates.startDate,
       end_date: !dates ? undefined : dates.endDate,
       parent: parentId,
@@ -481,7 +534,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
       //hasRecurrence: task.time.recurrence,
       //isRecurrenceStep: isRecurrenceStep,
       //readonly: !!isRecurrenceStep,
-      open: true,
+      open: !task.collapsed,
       recurrenceIndex,
       trepTask: task,
     };

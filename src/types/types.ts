@@ -62,6 +62,7 @@ export interface Task extends Container {
     notes?: string,
     archivedDate?: ISODateString | undefined,
     discardedDate?: ISODateString | undefined,
+    collapsed?: boolean, // for projects, whether children are collapsed
 
     // startDate?: ISODateString,
     time: TimeData | undefined

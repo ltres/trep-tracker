@@ -100,3 +100,33 @@
         ///border-bottom: 1px solid $todo-color;
     }
 }
+
+.project-chevron {
+    display: flex;
+    align-items: center;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+    font-size: 0.75rem;
+    
+    &:hover {
+        opacity: 1;
+    }
+    
+    span {
+        transition: transform 0.2s ease;
+        
+        &.collapsed {
+            transform: rotate(0deg);
+        }
+        
+        &:not(.collapsed) {
+            transform: rotate(0deg);
+        }
+    }
+}
+
+.project-children-count {
+    margin-left: 0.25rem;
+    font-size: 0.85rem;
+    opacity: 0.6;
+}

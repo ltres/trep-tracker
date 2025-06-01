@@ -752,6 +752,21 @@ export class BoardService{
 
     tasks = this.getTopLevelTasks( tasks );
 
+    // Detect and resolve gantt link conflicts when moving to a new parent
+    if( isTask( parent ) ){
+      const conflicts = this.detectLinkConflicts( parent, tasks );
+      if( conflicts.length > 0 ){
+        const conflictedTasks = this.resolveGanttConflicts( conflicts );
+        console.log( `Resolved ${conflicts.length} gantt conflicts when moving tasks as siblings` );
+        
+        // Update all affected tasks and their successors
+        if( conflictedTasks.length > 0 ){
+          const allAffected = this.cascadeGanttUpdates( conflictedTasks );
+          this.changePublisherService.processChangesAndPublishUpdate( allAffected );
+        }
+      }
+    }
+
     // remove the task from any parent
     this._allParents$.getValue()?.forEach( p => {
       p.children = p.children.filter( c => !tasks?.find( t => t.id === c.id ) );
@@ -796,6 +811,21 @@ export class BoardService{
 
     // incoming tasks could be related one another. Keep only the top level tasks
     children = this.getTopLevelTasks( children );
+
+    // Detect and resolve gantt link conflicts before moving tasks
+    if( isTask( parent ) ){
+      const conflicts = this.detectLinkConflicts( parent, children );
+      if( conflicts.length > 0 ){
+        const conflictedTasks = this.resolveGanttConflicts( conflicts );
+        console.log( `Resolved ${conflicts.length} gantt conflicts when moving tasks` );
+        
+        // Update all affected tasks and their successors
+        if( conflictedTasks.length > 0 ){
+          const allAffected = this.cascadeGanttUpdates( conflictedTasks );
+          this.changePublisherService.processChangesAndPublishUpdate( allAffected );
+        }
+      }
+    }
 
     // sort children basing on their in the current parent's children
     const curParent = this.findDirectParent( children );
@@ -1442,5 +1472,221 @@ export class BoardService{
     } );
     
     return Array.from( allAffected );
+  }
+
+  /**
+   * Detects if moving tasks as children would create circular dependencies
+   * Returns the conflicting predecessor relationships that need to be removed
+   */
+  detectLinkConflicts( parent: Task, children: Task[] ): { taskId: string, linkId: string, conflictReason: string }[]{
+    const conflicts: { taskId: string, linkId: string, conflictReason: string }[] = [];
+    
+    // Get all ancestors of the parent (where the children will be moved)
+    const parentAncestors = this.getTaskAncestors( parent );
+    
+    children.forEach( child => {
+      if( !child.time?.predecessors )return;
+      
+      child.time.predecessors.forEach( pred => {
+        const predecessorTask = this.findTask( pred.taskId );
+        if( !predecessorTask )return;
+        
+        // Check if the predecessor is the new parent or any of its ancestors
+        if( predecessorTask.id === parent.id ){
+          conflicts.push( {
+            taskId: child.id,
+            linkId: pred.linkId,
+            conflictReason: `Task ${child.id} cannot be a child of its predecessor ${parent.id}`
+          } );
+        }else if( parentAncestors.some( ancestor => ancestor.id === predecessorTask.id ) ){
+          conflicts.push( {
+            taskId: child.id,
+            linkId: pred.linkId,
+            conflictReason: `Task ${child.id} cannot be a descendant of its predecessor ${predecessorTask.id}`
+          } );
+        }
+        
+        // Check if the predecessor is a descendant of any of the children being moved
+        const childDescendants = this.getAllProjectDescendants( child );
+        if( childDescendants.some( desc => desc.id === predecessorTask.id ) ){
+          conflicts.push( {
+            taskId: child.id,
+            linkId: pred.linkId,
+            conflictReason: `Task ${child.id} has predecessor ${predecessorTask.id} which is its descendant`
+          } );
+        }
+      } );
+      
+      // Also check if any descendants of the child have conflicting predecessors
+      this.getAllProjectDescendants( child ).forEach( descendant => {
+        if( !descendant.time?.predecessors )return;
+        
+        descendant.time.predecessors.forEach( pred => {
+          const predecessorTask = this.findTask( pred.taskId );
+          if( !predecessorTask )return;
+          
+          if( predecessorTask.id === parent.id || parentAncestors.some( ancestor => ancestor.id === predecessorTask.id ) ){
+            conflicts.push( {
+              taskId: descendant.id,
+              linkId: pred.linkId,
+              conflictReason: `Descendant ${descendant.id} cannot have predecessor ${predecessorTask.id} when moved under ${parent.id}`
+            } );
+          }
+        } );
+      } );
+    } );
+    
+    return conflicts;
+  }
+
+  /**
+   * Gets all ancestors of a task (parent, grandparent, etc.)
+   */
+  getTaskAncestors( task: Task ): Task[]{
+    const ancestors: Task[] = [];
+    let currentParent = this.findTask( task.parentId );
+    
+    while( currentParent && isTask( currentParent ) ){
+      ancestors.push( currentParent );
+      currentParent = this.findTask( currentParent.parentId );
+    }
+    
+    return ancestors;
+  }
+
+  /**
+   * Removes conflicting predecessor links to prevent circular dependencies
+   */
+  resolveGanttConflicts( conflicts: { taskId: string, linkId: string, conflictReason: string }[] ): Task[]{
+    const affectedTasks: Task[] = [];
+    
+    conflicts.forEach( conflict => {
+      const task = this.findTask( conflict.taskId );
+      if( !task?.time?.predecessors )return;
+      
+      // Remove the conflicting predecessor
+      const originalPredCount = task.time.predecessors.length;
+      task.time.predecessors = task.time.predecessors.filter( p => p.linkId !== conflict.linkId );
+      
+      if( task.time.predecessors.length < originalPredCount ){
+        console.warn( `Removed conflicting link: ${conflict.conflictReason}` );
+        affectedTasks.push( task );
+        
+        // If task has no more predecessors and is rolling, convert back to fixed
+        if( task.time.predecessors.length === 0 && isRollingTimedTask( task ) && !this.hasAncestorWithPredecessors( task ) ){
+          this.convertRollingToFixed( task );
+        }
+      }
+    } );
+    
+    return affectedTasks;
+  }
+
+  /**
+   * Converts a rolling task back to fixed
+   */
+  convertRollingToFixed( task: Task ): void{
+    if( !isRollingTimedTask( task ) )return;
+    
+    const workingHours = task.time.durationInWorkingHours;
+    const dates = this.getComputedTaskDates( task, workingHours );
+    
+    const fixedTime = {
+      startDate: toIsoString( dates.startDate ),
+      endDate: toIsoString( dates.endDate ),
+      durationInWorkingHours: undefined,
+      resourcesAllocation: task.time.resourcesAllocation,
+      progress: task.time.progress,
+      type: 'fixed' as const,
+      predecessors: task.time.predecessors || []
+    };
+    ( task as TimedTask ).time = fixedTime;
+  }
+
+  /**
+   * Checks if a task is a nested project (a project that has a parent project)
+   */
+  isNestedProject( task: Task ): boolean{
+    if( !isProject( task ) )return false;
+    
+    // Check if any ancestor is also a project
+    const ancestors = this.getTaskAncestors( task );
+    return ancestors.some( ancestor => isProject( ancestor ) );
+  }
+
+  /**
+   * Checks if two projects are siblings (have the same direct parent)
+   */
+  areSiblingProjects( project1: Task, project2: Task ): boolean{
+    if( !isProject( project1 ) || !isProject( project2 ) )return false;
+    
+    // Both must have the same parent
+    return project1.parentId === project2.parentId;
+  }
+
+  /**
+   * Validates if a gantt link can be created between source and target tasks
+   */
+  validateGanttLink( source: Task, target: Task ): { valid: boolean, reason?: string }{
+    // Check if both are projects
+    const bothAreProjects = isProject( source ) && isProject( target );
+    
+    if( bothAreProjects ){
+      // Allow sibling projects to be linked
+      if( this.areSiblingProjects( source, target ) ){
+        // Sibling projects are allowed to link
+      }else if( this.isNestedProject( target ) || this.isNestedProject( source ) ){
+        // One or both are nested projects and they're not siblings
+        return{
+          valid: false,
+          reason: `Cannot create links between nested projects that are not siblings. "${source.textContent}" and "${target.textContent}" must be at the same level.`
+        };
+      }
+    }else{
+      // Handle cases where only one is a project
+      // Prevent linking to nested projects
+      if( isProject( target ) && this.isNestedProject( target ) ){
+        return{
+          valid: false,
+          reason: `Cannot create predecessor link to nested project "${target.textContent}". Links to projects within other projects are not supported.`
+        };
+      }
+
+      // Prevent linking from nested projects  
+      if( isProject( source ) && this.isNestedProject( source ) ){
+        return{
+          valid: false,
+          reason: `Cannot create predecessor link from nested project "${source.textContent}". Links from projects within other projects are not supported.`
+        };
+      }
+    }
+
+    // Prevent circular dependencies
+    const sourceAncestors = this.getTaskAncestors( source );
+    const targetAncestors = this.getTaskAncestors( target );
+    
+    if( sourceAncestors.some( ancestor => ancestor.id === target.id ) ){
+      return{
+        valid: false,
+        reason: `Cannot create link: "${source.textContent}" is already a descendant of "${target.textContent}".`
+      };
+    }
+
+    if( targetAncestors.some( ancestor => ancestor.id === source.id ) ){
+      return{
+        valid: false,
+        reason: `Cannot create link: "${target.textContent}" is already a descendant of "${source.textContent}".`
+      };
+    }
+
+    // Check if target already has this source as predecessor
+    if( target.time?.predecessors?.some( pred => pred.taskId === source.id ) ){
+      return{
+        valid: false,
+        reason: `Link already exists between "${source.textContent}" and "${target.textContent}".`
+      };
+    }
+
+    return{ valid: true };
   }
 }

@@ -331,6 +331,13 @@ export class TaskComponent extends ContainerComponent implements OnInit, OnDestr
     return isProject( r );
   }
 
+  toggleProjectCollapse(): void{
+    if( isProject( this.task ) ){
+      this.task.collapsed = !this.task.collapsed;
+      this.changePublisherService.processChangesAndPublishUpdate( [this.task, this.lane] );
+    }
+  }
+
   getSimilarTasks( t: Task ): Task[]{
     return t.similarTasks.map( sim => this.boardService.findTask( sim.id ) ).filter( t => !!t );
   }

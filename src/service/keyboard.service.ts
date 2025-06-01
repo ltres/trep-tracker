@@ -4,7 +4,7 @@ import{ BehaviorSubject, Observable }from'rxjs';
 import{ BoardService }from'./board.service';
 import{ ContainerComponentRegistryService }from'./registry.service';
 import{ Container, Lane, Task, getNewTask }from'../types/types';
-import{ getCaretPosition, isPlaceholder }from'../utils/utils';
+import{ getCaretPosition, isPlaceholder, initTimeData }from'../utils/utils';
 import{ isLane, isTask }from'../utils/guards';
 import{ logPerformance }from'../utils/performance-logger';
 import{ ChangePublisherService }from'./change-publisher.service';
@@ -112,14 +112,28 @@ export class KeyboardService{
         }*/
         let parentObject = this.boardService.findDirectParent( this.boardService.selectedTasks );
         let sibling: Container | undefined = this.boardService.lastSelectedTask?.task;
-        while( parentObject && !isLane( parentObject ) ){
-          sibling = parentObject;
-          parentObject = this.boardService.findDirectParent( [parentObject] );
+        
+        // If the current task belongs to a project, create sibling within the project
+        if( parentObject && isTask( parentObject ) ){
+          // Current task is a child of another task (project)
+          // Create new task as sibling within this project
+          sibling = this.boardService.lastSelectedTask?.task;
+        }else{
+          // Current task is at lane level, traverse up to find lane
+          while( parentObject && !isLane( parentObject ) ){
+            sibling = parentObject;
+            parentObject = this.boardService.findDirectParent( [parentObject] );
+          }
         }
-        if( !parentObject || !isLane( parentObject ) || !isTask( sibling ) ){
+        
+        if( !parentObject || ( !isLane( parentObject ) && !isTask( parentObject ) ) || !isTask( sibling ) ){
           throw new Error( 'Wrong parent or sibling' );
         }
-        const task = getNewTask( parentObject, undefined, '', false );
+        
+        // Create new task with correct parent
+        const task = isLane( parentObject ) 
+          ? getNewTask( parentObject, undefined, '', false )
+          : getNewTask( parentObject.id, undefined, '', false );
         /*
         let lane = isLane(parent) ? parent : this.boardService.findParentLane([parent]);
         if (!lane) {
@@ -127,9 +141,28 @@ export class KeyboardService{
         }*/
 
         this.boardService.addAsSiblings( parentObject, sibling, [task], !isPlaceholder( task ) && caretPos === 0 ? 'before' : 'after' );
-        this.boardService.activateEditorOnTask( parentObject, task, 0 );
+        
+        // If we're in a project context, create an end-to-start relation between original and new task
+        if( isTask( parentObject ) && sibling ){
+          const insertBefore = !isPlaceholder( task ) && caretPos === 0;
+          if( insertBefore ){
+            // New task is inserted before current task, so current task depends on new task
+            this.createProjectSequenceLink( task, sibling );
+          }else{
+            // New task is inserted after current task, so new task depends on current task
+            this.createProjectSequenceLink( sibling, task );
+          }
+        }
+        
+        // Find the actual lane for editor activation and selection
+        const actualLane = isLane( parentObject ) ? parentObject : this.boardService.findParentLane( [task] );
+        if( !actualLane ){
+          throw new Error( 'Cannot find parent lane for new task' );
+        }
+        
+        this.boardService.activateEditorOnTask( actualLane, task, 0 );
         this.boardService.clearSelectedTasks();
-        this.boardService.addToSelection( parentObject, task );
+        this.boardService.addToSelection( actualLane, task );
       }else if( e.key === 'Backspace' || e.key === 'Delete' ){
         // Delete placeholder
         const res = this.getLastSelectedTaskData();
@@ -175,6 +208,37 @@ export class KeyboardService{
       task, lane: this.boardService.lastSelectedTask.lane, el, caretPos,
     };
 
+  }
+
+  /**
+   * Creates an end-to-start link between two tasks within a project
+   */
+  private createProjectSequenceLink( sourceTask: Task, targetTask: Task ): void{
+    // Ensure both tasks have time data
+    if( !sourceTask.time ){
+      initTimeData( sourceTask, new Date() );
+    }
+    if( !targetTask.time ){
+      initTimeData( targetTask, new Date() );
+    }
+
+    // Generate a unique link ID
+    const linkId = `link_${sourceTask.id}_${targetTask.id}`;
+
+    // Add the predecessor relationship
+    targetTask.time!.predecessors.push( {
+      taskId: sourceTask.id,
+      linkId: linkId
+    } );
+
+    // Convert the target task to rolling since it now has a predecessor
+    this.boardService.convertTaskToRolling( targetTask );
+
+    // Trigger updates for both tasks and their successors
+    const allAffected = this.boardService.cascadeGanttUpdates( [sourceTask, targetTask] );
+    this.changePublisherService.processChangesAndPublishUpdate( allAffected );
+
+    console.log( `Created automatic sequence link: ${sourceTask.textContent} → ${targetTask.textContent}` );
   }
 
   publishKeyboardEvent( event: KeyboardEvent | undefined ){

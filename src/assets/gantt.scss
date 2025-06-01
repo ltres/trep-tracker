@@ -1206,8 +1206,8 @@ div.dhx_modal_cover {
 
 .gantt_task_line.gantt_milestone {
     visibility: hidden;
-    background-color: #D33DAF;
-    border: 0px solid #61164f;
+    background-color: map.get($semantic-colors, tag-orange-color, background);
+    border: 0px solid map.get($semantic-colors, tag-orange-color, background);
     box-sizing: content-box;
     -moz-box-sizing: content-box;
 }
