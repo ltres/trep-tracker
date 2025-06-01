@@ -822,6 +822,24 @@ export class BoardService{
       delete c.coordinates;
     } );
 
+    // Check if parent or any ancestor project has predecessors, and if so, make children rolling
+    if( isTask( parent ) ){
+      const hasProjectPredecessors = this.hasAncestorWithPredecessors( parent );
+      if( hasProjectPredecessors ){
+        children.forEach( child => {
+          if( isTask( child ) ){
+            this.convertTaskToRolling( child );
+            // Also convert all descendants if it's a project
+            if( isProject( child ) ){
+              this.getAllProjectDescendants( child ).forEach( descendant => {
+                this.convertTaskToRolling( descendant );
+              } );
+            }
+          }
+        } );
+      }
+    }
+
     // Publish the changes
     //this._boards$.next( boards );
   }
@@ -1104,7 +1122,6 @@ export class BoardService{
       let greatestEndDateInPredecessors = predecessors
         
         .filter( p => !!p )
-        .flatMap<Task[]>( pred => isProject( pred ) ? pred.children : [pred] )
         .map( pred => {
           assertIsTimedTask( pred )
           return this.getComputedTaskDates( pred ).endDate;
@@ -1334,5 +1351,96 @@ export class BoardService{
 
   reset(){
     this._boards$.next( [] );
+  }
+
+  /**
+   * Checks if a task or any of its ancestor projects has predecessors
+   */
+  hasAncestorWithPredecessors( task: Task ): boolean{
+    // Check if the task itself has predecessors
+    if( task.time?.predecessors && task.time.predecessors.length > 0 ){
+      return true;
+    }
+
+    // Walk up the hierarchy to check parent projects
+    let currentParent: Task | undefined = this.findTask( task.parentId );
+    while( currentParent && isTask( currentParent ) ){
+      if( currentParent.time?.predecessors && currentParent.time.predecessors.length > 0 ){
+        return true;
+      }
+      currentParent = this.findTask( currentParent.parentId );
+    }
+
+    return false;
+  }
+
+  /**
+   * Converts a fixed task to rolling, preserving duration and other properties
+   */
+  convertTaskToRolling( task: Task ): void{
+    if( !task.time ){
+      initTimeData( task, new Date() );
+    }
+    
+    assertIsTimedTask( task );
+    
+    if( isFixedTimedTask( task ) ){
+      const currentDuration = task.time.startDate && task.time.endDate ? 
+        calculateWorkingHours( fromIsoString( task.time.startDate ), fromIsoString( task.time.endDate ) ).total : 
+        8; // default 8 hours if no duration
+
+      // Convert to rolling by recreating the time object
+      const rollingTime = {
+        startDate: undefined,
+        endDate: undefined,
+        durationInWorkingHours: currentDuration,
+        resourcesAllocation: task.time.resourcesAllocation,
+        progress: task.time.progress,
+        type: 'rolling' as const,
+        predecessors: task.time.predecessors || []
+      };
+      ( task as TimedTask ).time = rollingTime;
+    }else if( isRollingTimedTask( task ) ){
+      // Already rolling, preserve current duration
+      task.time.durationInWorkingHours = task.time.durationInWorkingHours || 8;
+    }
+  }
+
+  /**
+   * Gets all descendant tasks of a project recursively
+   */
+  getAllProjectDescendants( project: Task ): Task[]{
+    const descendants: Task[] = [];
+    
+    project.children.forEach( child => {
+      if( isTask( child ) ){
+        descendants.push( child );
+        if( isProject( child ) ){
+          descendants.push( ...this.getAllProjectDescendants( child ) );
+        }
+      }
+    } );
+    
+    return descendants;
+  }
+
+  /**
+   * Handles cascading updates when tasks change their rolling/fixed status
+   * Updates all successors that may be affected by the change
+   */
+  cascadeGanttUpdates( affectedTasks: Task[] ): Task[]{
+    const allAffected = new Set<Task>( affectedTasks );
+    
+    // For each affected task, find its successors and add them to the update list
+    affectedTasks.forEach( task => {
+      const successors = this.findSuccessors( task, true );
+      successors.forEach( successor => allAffected.add( successor ) );
+      
+      // Also add parent projects as they may need date recalculation
+      const parents = this.findParents( task ).filter( p => isTask( p ) );
+      parents.forEach( parent => allAffected.add( parent as Task ) );
+    } );
+    
+    return Array.from( allAffected );
   }
 }

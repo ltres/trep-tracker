@@ -1,12 +1,12 @@
 import{ AfterViewInit, ApplicationRef, Component, createComponent, Input, OnDestroy }from'@angular/core';
-import{ Board, TimedTask, Lane, Task, FixedTimedTask }from'../../types/types';
+import{ Board, TimedTask, Lane, Task }from'../../types/types';
 import{ BoardService }from'../../service/board.service';
 import{ gantt, Task as DhtmlxTask, GanttStatic, Link as DhtmlxLink }from'dhtmlx-gantt';
 import{ TaskComponent }from'../task/task.component';
 import{ calculateWorkingHours, ganttDateToDate, snapToWorkDays, toIsoString }from'../../utils/date-utils';
 import{ getFirstMentionTag, initTimeData, getTaskBackgroundColor }from'../../utils/utils';
 import{ ganttConfig, tagTypes }from'../../types/constants';
-import{ assertIsFixedTimedTask, assertIsRollingTimedTask, assertIsTimedTask, isFixedTimedTask, isProject, isRollingTimedTask }from'../../utils/guards';
+import{ assertIsTimedTask, isFixedTimedTask, isProject, isRollingTimedTask }from'../../utils/guards';
 import{ ChangePublisherService }from'../../service/change-publisher.service';
 
 @Component( {
@@ -141,54 +141,86 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
       taskId: source.id,
       linkId: data.id.toString(),
     } );
-    // task becomes ROLLING. if the target is a project, its first children becomes rolling as well
-    const toRoll: Task[] = [target];
+    // task becomes ROLLING. if the target is a project, ALL its children become rolling as well
+    this.boardService.convertTaskToRolling( target );
     
     if( isProject( target ) ){
-      toRoll.push( target.children[0] );
+      // Convert all descendants recursively
+      this.boardService.getAllProjectDescendants( target ).forEach( descendant => {
+        this.boardService.convertTaskToRolling( descendant );
+      } );
     }
-    toRoll.forEach( ( t ) => {
-      if( !t.time ){
-        initTimeData( t, new Date() );
-      }
-
-      assertIsTimedTask( t );
-
-      t.time.durationInWorkingHours = t.time.startDate && t.time.endDate ? calculateWorkingHours( t.time.startDate, t.time.endDate ).total : t.time.durationInWorkingHours ;
-      //const dates = this.boardService.getRollingTaskDates( t );
-      t.time.startDate = undefined; //toIsoString( dates.startDate );
-      t.time.endDate = undefined; //toIsoString( dates.endDate );
-      t.time.type = 'rolling';
-    } );
-    this.publishUpdateOnTaskAndSuccessors( target );
+    // Collect all affected tasks for cascading updates
+    const allAffected = [target];
+    if( isProject( target ) ){
+      allAffected.push( ...this.boardService.getAllProjectDescendants( target ).filter( d => d.time ) as TimedTask[] );
+    }
+    const cascadedTasks = this.boardService.cascadeGanttUpdates( allAffected );
+    this.changePublisherService.processChangesAndPublishUpdate( [this.lane, ...cascadedTasks] );
   }
 
   deleteLink( id: number ){
     this.boardService.allTasks?.forEach( ( task ) => {
       if( task.time?.predecessors && task.time.predecessors.find( p => p.linkId === id.toString() ) ){
-        // if there are no predecessors anymore, task should become "FIXED"
-        assertIsRollingTimedTask( task );
-        const fixed = task as unknown as FixedTimedTask;
+        // Remove the predecessor first
+        task.time.predecessors = task.time.predecessors.filter( ( p ) => p.linkId !== id.toString() );
 
-        if( task.time.predecessors.length === 1 ){
+        // Check if task still has any predecessors (direct or through ancestor projects)
+        const stillHasPredecessors = this.boardService.hasAncestorWithPredecessors( task );
+
+        if( !stillHasPredecessors && isRollingTimedTask( task ) ){
+          // Convert back to fixed since no more predecessors
           const workingHours = task.time.durationInWorkingHours;
           const dates = this.boardService.getComputedTaskDates( task, workingHours );
-          fixed.time.type = 'fixed';
-          assertIsFixedTimedTask( fixed );
-          fixed.time.startDate = toIsoString( dates.startDate );
-          fixed.time.endDate = toIsoString( dates.endDate );
-          fixed.time.durationInWorkingHours = undefined;
-        }
-        fixed.time.predecessors = fixed.time.predecessors.filter( ( p ) => p.linkId !== id.toString() );
+          
+          const fixedTime = {
+            startDate: toIsoString( dates.startDate ),
+            endDate: toIsoString( dates.endDate ),
+            durationInWorkingHours: undefined,
+            resourcesAllocation: task.time.resourcesAllocation,
+            progress: task.time.progress,
+            type: 'fixed' as const,
+            predecessors: []
+          };
+          ( task as TimedTask ).time = fixedTime;
 
-        this.publishUpdateOnTaskAndSuccessors( fixed );
+          // If this is a project, also convert its children back to fixed if they don't have their own predecessors
+          if( isProject( task ) ){
+            this.boardService.getAllProjectDescendants( task ).forEach( descendant => {
+              if( isRollingTimedTask( descendant ) && !this.boardService.hasAncestorWithPredecessors( descendant ) ){
+                this.convertRollingToFixed( descendant );
+              }
+            } );
+          }
+        }
+
+        // Collect all affected tasks for cascading updates
+        const allAffected = [task];
+        if( isProject( task ) ){
+          allAffected.push( ...this.boardService.getAllProjectDescendants( task ).filter( d => d.time ) as TimedTask[] );
+        }
+        const cascadedTasks = this.boardService.cascadeGanttUpdates( allAffected );
+        this.changePublisherService.processChangesAndPublishUpdate( [this.lane, ...cascadedTasks] );
       }
     } );
   }
 
-  private publishUpdateOnTaskAndSuccessors( task: Task ){
-    const succ = this.boardService.findSuccessors( task, true );
-    this.changePublisherService.processChangesAndPublishUpdate( [task, ...succ, this.lane] )
+  private convertRollingToFixed( task: Task ){
+    if( isRollingTimedTask( task ) ){
+      const workingHours = task.time.durationInWorkingHours;
+      const dates = this.boardService.getComputedTaskDates( task, workingHours );
+      
+      const fixedTime = {
+        startDate: toIsoString( dates.startDate ),
+        endDate: toIsoString( dates.endDate ),
+        durationInWorkingHours: undefined,
+        resourcesAllocation: task.time.resourcesAllocation,
+        progress: task.time.progress,
+        type: 'fixed' as const,
+        predecessors: []
+      };
+      ( task as TimedTask ).time = fixedTime;
+    }
   }
 
   private toDhtmlxGanttDataModel( tasks: Task[], convertedTasks: DhtmlxTask[], convertedLinks: DhtmlxLink[], parentId: string | undefined, tasksCssClass: string | undefined ): { convertedTasks: DhtmlxTask[]; convertedLinks: DhtmlxLink[] }{
