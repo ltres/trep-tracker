@@ -154,7 +154,7 @@ export class LaneComponent extends ContainerComponent implements OnInit{
   }
 
   createNewTask(){
-    const task: Task = getNewTask( this.lane, undefined, undefined, true );
+    const task: Task = getNewTask( this.lane, undefined, undefined, false );
     this.boardService.addAsChild( this.lane, [task] );
     this.boardService.clearSelectedTasks();
     this.boardService.toggleTaskSelection( this.lane, task );

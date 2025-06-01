@@ -78,11 +78,14 @@ test.describe.parallel( 'Trep Tracker Tasks & lanes - ', () => {
 
     // drag second over first one
     const handle3 = getTaskByContent( page, 0 ).locator( '[draggable="true"]' ).first();
-    await drag( page, handle3, -200, -100, true, getTaskByContent( page, 1 ) );
+    await drag( page, handle3, -200, -100, true, getTaskByContent( page, 1 ).locator( '.task-text-content' ) );
     expect( await lanes.count() ).toBe( 3 )
-    expect( await page.locator( '.child' ).count() ).toBe( 1 )
+    await page.waitForTimeout( 3000 );
+
+    expect( await page.locator( '.child' ).count() ).toBe( 1 );
+    await page.waitForTimeout( 3000 );
     // remove child
-    await getTaskByContent( page, 0 ).click()
+    await getTaskByContent( page, 0 ).locator( '.task-text-content' ).click()
     await page.keyboard.press( 'Control+ArrowLeft' );
     expect( await page.locator( '.child' ).count() ).toBe( 0 )
 
@@ -188,7 +191,7 @@ test.describe.parallel( 'Trep Tracker Tasks & lanes - ', () => {
     }
 
     // add first mention w @ char
-    const firstTask = getTaskByContent( page, 0 )
+    const firstTask = getTaskByContent( page, 0 ).locator( '.task-text-content' )
     await firstTask.click()
     for( let k= 0; k<text.length; k++ ){
       await page.keyboard.press( 'ArrowRight' );
@@ -197,7 +200,7 @@ test.describe.parallel( 'Trep Tracker Tasks & lanes - ', () => {
     expect( await page.locator( '.tag-orange' ).count() ).toBe( 1 )
 
     // add second w/o @char
-    const secondTask = getTaskByContent( page, 1 )
+    const secondTask = getTaskByContent( page, 1 ).locator( '.task-text-content' )
     await secondTask.click()
     for( let k= 0; k<text.length; k++ ){
       await page.keyboard.press( 'ArrowRight' );
@@ -220,7 +223,7 @@ test.describe.parallel( 'Trep Tracker Tasks & lanes - ', () => {
     expect( await staticLaneLoc.locator( 'task' ).count() ).toBe( 2 )
 
     // add another tag to task
-    const thirdTask = getTaskByContent( page, 2 )
+    const thirdTask = getTaskByContent( page, 2 ).locator( '.task-text-content' )
     await thirdTask.click()
     for( let k= 0; k<text.length; k++ ){
       await page.keyboard.press( 'ArrowRight' );
@@ -567,7 +570,7 @@ function getTaskByContent( page: Page, content: number ): Locator{
 async function addTask( page: Page, k: number ){
   await page.click( '.new-task' );
   // write on a task
-  const curTask = page.locator( 'task' ).nth( k );
+  const curTask = page.locator( 'task' ).nth( k ).locator( '.task-text-content' );
   await curTask.click()
   await page.keyboard.press( 'Control+A' );
   await page.keyboard.press( 'Backspace' );
