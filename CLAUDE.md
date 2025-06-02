@@ -60,6 +60,129 @@ Uses `ContainerComponent` base class with smart directives:
 
 **Similarity Detection**: Automatic detection and linking of similar tasks using string matching algorithms.
 
+## Time Management & Gantt System
+
+### Task Time Types
+
+The system supports sophisticated time management with two fundamental task types:
+
+#### Fixed Tasks (`FixedTimedTask`)
+- **Definition**: Tasks with explicit start and end dates
+- **Structure**: `{ startDate: ISODateString, endDate: ISODateString, type: "fixed" }`
+- **Behavior**: 
+  - User sets specific start/end dates
+  - Duration automatically calculated from date range
+  - When moved in Gantt: preserves duration, updates dates
+  - When resized in Gantt: updates duration and end date
+- **Use Cases**: Meetings, deadlines, time-bound activities
+
+#### Rolling Tasks (`RollingTimedTask`)
+- **Definition**: Tasks with duration but no fixed dates - scheduled dynamically based on dependencies
+- **Structure**: `{ durationInWorkingHours: number, type: "rolling", predecessors: NonEmptyArray<{taskId, linkId}> }`
+- **Behavior**:
+  - No explicit start/end dates stored
+  - Computed dates based on predecessor completion + duration
+  - Must have at least one predecessor to exist
+  - When moved in Gantt: no effect (auto-calculated)
+  - When resized in Gantt: updates duration only
+- **Use Cases**: Dependent work, sequential tasks, project phases
+
+### Task Conversion System
+
+**Fixed → Rolling**: Automatic when creating predecessor links
+```typescript
+// Creating a link converts target task to rolling
+target.time.predecessors.push({taskId: source.id, linkId: data.id});
+this.boardService.convertTaskToRolling(target);
+```
+
+**Rolling → Fixed**: Automatic when removing all predecessors
+```typescript
+// When last predecessor removed, converts back to fixed with computed dates
+const dates = this.boardService.getComputedTaskDates(task, workingHours);
+task.time = {
+  startDate: toIsoString(dates.startDate),
+  endDate: toIsoString(dates.endDate),
+  type: 'fixed',
+  predecessors: []
+};
+```
+
+### Gantt Component Architecture (`src/app/gantt/gantt.component.ts`)
+
+#### Core Functionality
+- **Library**: dhtmlx-gantt with extensive customization
+- **Views**: Supports months, days, and hours scales
+- **Features**: Task links, progress tracking, milestone support, drag-scrolling
+
+#### Task Processing Pipeline
+1. **Data Conversion**: `toDhtmlxGanttDataModel()` converts internal task structure to dhtmlx format
+2. **Time Initialization**: `initTimeData()` sets default dates for tasks without time data
+3. **Date Computation**: `getComputedTaskDates()` calculates rolling task dates from predecessors
+4. **Cascading Updates**: Changes propagate through dependency chains
+
+#### Project Handling
+- **Parent Tasks**: Projects display as summary bars spanning child date ranges
+- **Hierarchy**: Supports unlimited nesting with parent-child relationships
+- **Dependency Inheritance**: Creating links to projects affects all descendants
+
+### Date & Duration Calculations
+
+#### Working Time System
+- **Working Hours**: Configurable business hours (default 8:00-17:00)
+- **Weekend Handling**: Excludes Saturday/Sunday from calculations
+- **Snap-to-Work-Days**: `snapToWorkDays()` ensures dates fall on working time
+- **Duration Units**: Hours-based with automatic day/week conversions
+
+#### Milestone Support
+- **Definition**: Tasks with zero duration (start_date === end_date)
+- **Display**: Special diamond shape in Gantt view
+- **Behavior**: Moveable but not resizable
+
+### Link Validation & Management
+
+#### Validation Rules (`boardService.validateGanttLink()`)
+- Prevents circular dependencies
+- Blocks parent→child and child→parent links
+- Validates cross-project dependencies
+- Ensures logical predecessor relationships
+
+#### Link Types
+- **Finish-to-Start**: Default dependency type (predecessor must complete before successor starts)
+- **External References**: Tasks from other lanes can be linked
+- **Cascading Updates**: Link changes propagate through entire dependency chain
+
+### Gantt UI Features
+
+#### Interaction Modes
+- **Task Movement**: Drag tasks to change dates (fixed) or no effect (rolling)
+- **Task Resizing**: Drag edges to modify duration
+- **Link Creation**: Drag from task connection points to create dependencies
+- **Drag Scrolling**: Empty space dragging for timeline navigation
+
+#### Visual Elements
+- **Today Marker**: Red line indicating current date
+- **Progress Bars**: Visual progress tracking within tasks
+- **CSS Classes**: `gantt-parent-task`, `gantt-milestone`, `gantt-weekend`
+- **Resource Coloring**: Task colors based on assigned resources
+
+#### Error Handling
+- **Deletion Prevention**: Tasks cannot be deleted from Gantt view
+- **Invalid Link Alerts**: User feedback for forbidden dependency creation
+- **Graceful Fallbacks**: Handles undated tasks and empty lanes
+
+### Integration with Board System
+
+#### Change Propagation
+- **Publisher Service**: Gantt changes trigger board-wide updates
+- **Debounced Updates**: Prevents excessive recalculations during rapid changes
+- **Lane Synchronization**: Gantt reflects current lane's task hierarchy
+
+#### Data Persistence
+- **Time Data Storage**: Embedded in task objects as `TimeData` interface
+- **Link Persistence**: Stored as predecessor arrays in target tasks
+- **State Consistency**: BoardService ensures data integrity across views
+
 ## Development Patterns
 
 ### Code Style
