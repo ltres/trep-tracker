@@ -209,7 +209,7 @@ export const tagCapturingGroup = ( symbol: string ) => ( `${symbol}([A-Za-z0-9-_
 export const expiredTasksStillVisibleHours = 6;
 export const millisForMagnitudeStep = 1000 * 3600 * 24; // one day
 
-export const timezoneValues = Intl.supportedValuesOf( 'timeZone' );
+export const timezoneValues = 'supportedValuesOf' in Intl ? ( Intl as { supportedValuesOf: ( type: string ) => string[] } ).supportedValuesOf( 'timeZone' ) : [];
 
 export const dragStartTreshold = 30;
 export const dragProximityTreshold = 10;
