@@ -15,6 +15,13 @@ import{ ChangePublisherService }from'./change-publisher.service';
 export class KeyboardService{
   _keyboardEvent$: BehaviorSubject<KeyboardEvent | undefined> = new BehaviorSubject<KeyboardEvent | undefined>( undefined );
 
+  /**
+   * On Mac, meta key is CMD, while on WIN/UNIX is CTRL
+   */
+  isMetaKeyPressed( e: KeyboardEvent | undefined ):boolean{
+    return e?.ctrlKey || e?.metaKey || false
+  }
+
   constructor(
     protected changePublisherService: ChangePublisherService,
     private boardService: BoardService,
@@ -29,18 +36,18 @@ export class KeyboardService{
         return
       }
       /*
-      if(e.key === 'd' && e.ctrlKey === true){
+      if(e.key === 'd' && isMetaKeyPressed(e)){
         // Mark as Done selected tasks
         e.preventDefault();
         this.boardService.selectedTasks?.filter(t => !isPlaceholder(t) ).forEach(t => this.boardService.nextStatus(t) );
-      }else if(e.key === 'a' && e.ctrlKey === true){
+      }else if(e.key === 'a' && isMetaKeyPressed(e)){
         // Archive tasks
         let board = this.boardService.selectedBoard;
         if(!board)return;
         e.preventDefault();
         this.boardService.selectedTasks?.filter(t => !isPlaceholder(t) ).forEach(t => this.boardService.evaluateArchiveMove(board,t) );
       }else */
-      if( e.key === 'f' && e.ctrlKey === true ){
+      if( e.key === 'f' && this.isMetaKeyPressed( e ) ){
         // Focus search input
         this.boardService.focusSearch();
       }else if( e.key === 'ArrowDown' || e.key === 'ArrowUp' ){
@@ -55,7 +62,7 @@ export class KeyboardService{
           return;
         }
         if( e.shiftKey === true ){
-          if( e.ctrlKey === true ){
+          if( this.isMetaKeyPressed( e ) ){
             // Move case
             this.boardService.switchPosition( this.boardService.selectedTasks, e.key );
           }else{
@@ -71,7 +78,7 @@ export class KeyboardService{
           this.boardService.addToSelection( lane, nearby );
         }
         logPerformance( "moveTask" );
-      }else if( e.key === 'ArrowRight' && e.ctrlKey === true ){
+      }else if( e.key === 'ArrowRight' && this.isMetaKeyPressed( e ) ){
         // Make this task a child of the task on the top
         const wannaBeParent = this.boardService.getTaskInDirection( this.boardService.selectedTasks, res.lane, 'up' );
         if( !wannaBeParent ){
@@ -79,7 +86,7 @@ export class KeyboardService{
         }
         this.boardService.addAsChild( wannaBeParent, this.boardService.selectedTasks );
         this.changePublisherService.processChangesAndPublishUpdate( [res.lane, wannaBeParent] )
-      }else if( e.key === 'ArrowLeft' && e.ctrlKey === true ){
+      }else if( e.key === 'ArrowLeft' && this.isMetaKeyPressed( e ) ){
         // Children task gets promoted to the same level as the parent
         const parent = this.boardService.findDirectParent( this.boardService.selectedTasks );
         if( !parent ){

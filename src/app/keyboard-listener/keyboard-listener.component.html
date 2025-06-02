@@ -2,10 +2,10 @@
   <h3>Commands</h3>
   <div class="line">↑↓ : move cursor</div>
   <div class="line">shift + ↑↓ : select task(s)</div>
-  <div class="line">shift + ctrl + ↑↓ : move task(s)</div>
+  <div class="line">shift + {{ getMetaButton() }} + ↑↓ : move task(s)</div>
   <div class="line">Enter : new task</div>
-  <div class="line">ctrl + ←→ : indent/outdent</div>
-  <div class="line">Enter + ctrl + D : toggle done/todo</div>
-  <div class="line">Enter + ctrl + A : archive</div>
-  <div class="line">ctrl + F : search</div>
+  <div class="line">{{ getMetaButton() }} + ←→ : indent/outdent</div>
+  <div class="line">Enter + {{ getMetaButton() }} + D : toggle done/todo</div>
+  <div class="line">Enter + {{ getMetaButton() }} + A : archive</div>
+  <div class="line">{{ getMetaButton() }} + F : search</div>
 </div>

@@ -12,7 +12,10 @@ import{ KeyboardService }from'../../service/keyboard.service';
   },
 } )
 export class KeyboardListenerComponent{
-  constructor( private keyboardService: KeyboardService ){ }
+  isMac: boolean;
+  constructor( private keyboardService: KeyboardService ){
+    this.isMac = navigator.platform.toUpperCase().indexOf( 'MAC' ) >= 0;
+  }
   event: KeyboardEvent | undefined;
 
   @HostListener( 'document:keydown', ['$event'] )
@@ -20,6 +23,9 @@ export class KeyboardListenerComponent{
   handleKeyboardEvent( event: KeyboardEvent ){
     this.event = event;
     this.keyboardService.publishKeyboardEvent( event );
+  }
+  getMetaButton(){
+    return this.isMac ? "cmd" : "ctrl"
   }
 
 }

@@ -615,6 +615,8 @@ export class BoardService{
       // remove the task from the archive
       archive?.children.splice( archive.children.findIndex( t => t.id === task.id ), 1 );
     }
+    // Finally, push the changes
+    this.changePublisherService.processChangesAndPublishUpdate( [archive, task] )
   }
 
   //@TimingDecorator()
@@ -681,8 +683,11 @@ export class BoardService{
       parents = parents?.filter( p => !isLane( p ) || ( isLane( p ) && ( includeArchive || !p.isArchive ) ) );
     }
 
-    if( !parents || parents?.length !== 1 ){
-      console.info( 'findParent: objs.length !== 1', toSearch );
+    if( !parents || parents.length === 0 ){
+      console.debug( `Container ${toSearch.map( c => c.id )} has no parents (includeArchive = ${includeArchive})`, toSearch );
+      return;
+    }else if( parents?.length !== 1 ){
+      console.error( `Container ${toSearch.map( c => c.id )} have multiple parents, this should never happen`, toSearch );
       return;
     }
     return parents[0];
