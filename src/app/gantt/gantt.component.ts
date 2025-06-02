@@ -1,4 +1,4 @@
-import{ AfterViewInit, ApplicationRef, Component, createComponent, Input, OnDestroy }from'@angular/core';
+import{ AfterViewInit, ApplicationRef, ChangeDetectorRef, Component, createComponent, Input, OnDestroy }from'@angular/core';
 import{ Board, TimedTask, Lane, Task }from'../../types/types';
 import{ BoardService }from'../../service/board.service';
 import{ gantt, Task as DhtmlxTask, GanttStatic, Link as DhtmlxLink }from'dhtmlx-gantt';
@@ -9,11 +9,13 @@ import{ ganttConfig, tagTypes }from'../../types/constants';
 import{ assertIsTimedTask, isFixedTimedTask, isProject, isRollingTimedTask }from'../../utils/guards';
 import{ ChangePublisherService }from'../../service/change-publisher.service';
 import{ Subscription }from'rxjs';
+import{ fadeInOut, slowFadeInOut }from'../../types/animations';
 
 @Component( {
   selector: 'gantt[lane][board]',
   templateUrl: './gantt.component.html',
   styleUrl: './gantt.component.scss',
+  animations: [slowFadeInOut, fadeInOut]
 } )
 export class GanttComponent implements AfterViewInit, OnDestroy{
   @Input() lane!: Lane;
@@ -30,7 +32,6 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
   lastUpdatedTasks: string[] = [];
 
   changesSubscription: Subscription | undefined;
-
   // Drag-to-scroll properties
   private isDragging = false;
   private startX = 0;
@@ -42,6 +43,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
 
     protected boardService: BoardService,
     protected applicationRef: ApplicationRef,
+    protected cdr: ChangeDetectorRef
   ){}
 
   ngAfterViewInit(): void{
@@ -49,7 +51,7 @@ export class GanttComponent implements AfterViewInit, OnDestroy{
 
     setTimeout( () => {
       this.init( this.lane.children );
-    }, 1000 );
+    }, 1 );
 
     this.changesSubscription = this.changePublisherService.pushedChanges$.subscribe( ( c ) => {
       if( c.map( ( co ) => co.id ).includes( this.lane?.id ) ){
