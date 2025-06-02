@@ -1,6 +1,7 @@
 import{ test, expect, Locator, Page }from'@playwright/test';
 import{ statusValues }from'../src/types/constants';
 import Chart from'chart.js/auto';
+import*as os from'os';
 
 const text = 'Hello World!';
 const mention = 'mention';
@@ -14,6 +15,8 @@ let boardMenu: Locator | undefined;
 
 const nOfTasks = 2;
 const writeDelay = 5;
+
+const metaKey =   os.platform() === 'darwin' ? "Meta" : "Control"
 
 test.describe.configure( { mode: 'parallel' } );
 
@@ -51,19 +54,19 @@ test.describe.parallel( 'Trep Tracker Tasks & lanes - ', () => {
   test( 'Task move, indent, outdent', async( { page } ) => {
 
     // switch position
-    await page.keyboard.press( 'Control+Shift+ArrowDown' );
+    await page.keyboard.press( metaKey + '+Shift+ArrowDown' );
     await expect( page.locator( 'task' ).nth( 1 ) ).toHaveText( new RegExp( text ) );
-    await page.keyboard.press( 'Control+Shift+ArrowUp' );
+    await page.keyboard.press( metaKey + '+Shift+ArrowUp' );
     await expect( page.locator( 'task' ).nth( 0 ) ).toHaveText( new RegExp( text ) );
-    await page.keyboard.press( 'Control+Shift+ArrowDown' );
+    await page.keyboard.press( metaKey + '+Shift+ArrowDown' );
 
     // Child + remove
-    await page.keyboard.press( 'Control+ArrowRight', {delay:200} );
+    await page.keyboard.press( metaKey + '+ArrowRight', {delay:200} );
     await expect( page.locator( '.child' ) ).toHaveText( new RegExp( text ) );
-    await page.keyboard.press( 'Control+ArrowLeft' );
+    await page.keyboard.press( metaKey + '+ArrowLeft', {delay:200} );
     expect( await page.locator( '.child' ).count() ).toBe( 0 )
 
-    await page.keyboard.press( 'Control+Shift+ArrowUp' );
+    await page.keyboard.press( metaKey + '+Shift+ArrowUp' );
   } );
 
   test( 'Task drag & Lane resize', async( { page } ) => {
@@ -80,13 +83,11 @@ test.describe.parallel( 'Trep Tracker Tasks & lanes - ', () => {
     const handle3 = getTaskByContent( page, 0 ).locator( '[draggable="true"]' ).first();
     await drag( page, handle3, -200, -100, true, getTaskByContent( page, 1 ).locator( '.task-text-content' ) );
     expect( await lanes.count() ).toBe( 3 )
-    await page.waitForTimeout( 3000 );
 
     expect( await page.locator( '.child' ).count() ).toBe( 1 );
-    await page.waitForTimeout( 3000 );
     // remove child
-    await getTaskByContent( page, 0 ).locator( '.task-text-content' ).click()
-    await page.keyboard.press( 'Control+ArrowLeft' );
+    await getTaskByContent( page, 0 ).click()
+    await page.keyboard.press( metaKey + '+ArrowLeft' );
     expect( await page.locator( '.child' ).count() ).toBe( 0 )
 
     // resize
@@ -171,12 +172,12 @@ test.describe.parallel( 'Trep Tracker Tasks & lanes - ', () => {
     */
     // unarchive by drag
     await archived.locator( ".drag-handle" ).hover();
-    await page.mouse.down();
-    await firstLane!.hover()
-    await page.mouse.up();
-    await page.locator( "task" ).nth( 1 ).click(); 
+    const archivedHandle = archived.locator( '[draggable="true"]' ).first();
+    await drag( page, archivedHandle, -200, -100, false, firstLane );
 
-    await page.keyboard.press( 'Control+ArrowLeft', {delay:200} );
+    await page.waitForTimeout( 1000 );
+
+    await page.keyboard.press( metaKey + '+ArrowLeft', {delay:200} );
 
     // Board task counts
     expect( await archive.locator( 'task' ).count() ).toBe( 0 )
@@ -215,7 +216,7 @@ test.describe.parallel( 'Trep Tracker Tasks & lanes - ', () => {
     //await page.waitForSelector('lane:nth-child(1)');
     const staticLaneLoc = page.locator( 'lane' ).nth( 1 );
     await staticLaneLoc.locator( '.colored-title' ).click();
-    await page.keyboard.press( `Control+A` )
+    await page.keyboard.press( `${metaKey}+A` )
     await page.keyboard.type( ` ${mention}`, {delay: writeDelay} )
 
     await staticLaneLoc.locator( 'task' ).nth( 1 ).waitFor( {state:'visible'} );
@@ -251,14 +252,14 @@ test.describe.parallel( 'Trep Tracker Tasks & lanes - ', () => {
     const fTask = page.locator( 'task' ).first()
     await fTask.hover()
     await fTask.click()
-    await page.keyboard.press( `Control+A` )
+    await page.keyboard.press( `${metaKey}+A` )
 
     await fTask.pressSequentially( `Tag refactoring !${mention}` )
     await page.waitForTimeout( 1000 );
 
     expect( await page.locator( '.task-text-content', {hasText: new RegExp( '!' + mention )} ).count() ).toBe( 4 )
     await fTask.click()
-    await page.keyboard.press( `Control+A` )
+    await page.keyboard.press( `${metaKey}+A` )
 
     await fTask.pressSequentially( `Tag refactoring #${mention}` )
     await page.waitForTimeout( 1000 );
@@ -367,7 +368,7 @@ test.describe.parallel( 'Trep Tracker Tasks & lanes - ', () => {
     expect( await page.locator( 'task' ).count() ).toBe( 0 )
     // change name
     await page.locator( '.board-label' ).click();
-    await page.keyboard.press( 'Control+A' );
+    await page.keyboard.press( metaKey + '+A' );
     await page.keyboard.press( 'Backspace' );
     await page.keyboard.type( "My new board", {delay:writeDelay} );
     expect( await page.locator( '.board-selection.active', {hasText: /My new board/} ).count() ).toBe( 1 )
@@ -418,10 +419,10 @@ test.describe.parallel( 'Trep Tracker Tasks & lanes - ', () => {
     await addTask( page, 1 );
 
     await page.locator( 'task' ).nth( 1 ).click();
-    await page.keyboard.press( 'Control+ArrowRight', {delay:200} );
+    await page.keyboard.press( metaKey + '+ArrowRight', {delay:200} );
     await page.locator( 'task' ).nth( 2 ).click();
-    await page.keyboard.press( 'Control+ArrowRight', {delay:200} );
-    await page.keyboard.press( 'Control+ArrowLeft', {delay:200} );
+    await page.keyboard.press( metaKey + '+ArrowRight', {delay:200} );
+    await page.keyboard.press( metaKey + '+ArrowLeft', {delay:200} );
 
     // Initially the project is in progress
     await expect( page.locator( '.project' ) ).toHaveCount( 1 );
@@ -572,7 +573,7 @@ async function addTask( page: Page, k: number ){
   // write on a task
   const curTask = page.locator( 'task' ).nth( k ).locator( '.task-text-content' );
   await curTask.click()
-  await page.keyboard.press( 'Control+A' );
+  await page.keyboard.press( metaKey + '+A' );
   await page.keyboard.press( 'Backspace' );
   await page.keyboard.type( `${text} ${k}`, {delay:writeDelay} );
   await expect( curTask ).toHaveText( new RegExp( `${text} ${k}` ) );
@@ -589,6 +590,10 @@ async function drag( page: Page, locator: Locator, deltax: number, deltay: numbe
   
     if( targetLocator ){
       await targetLocator.hover();
+      if( task ){
+        await page.waitForTimeout( 350 );
+        await targetLocator.hover();
+      }
       await page.mouse.up();
 
     }else{

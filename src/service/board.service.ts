@@ -102,7 +102,7 @@ export class BoardService{
     } );
   }
 
-  populateDatamodelDerivedObservables( b: Board[] ){
+  public populateDatamodelDerivedObservables( b: Board[] ){
 
     // const date = new Date();
     let allTasks: Task[] = [];
@@ -800,15 +800,15 @@ export class BoardService{
 
   /**
    * Adds the task(s) to the container, removing them from any other parent. Performs top level reduction for tasks.
-   * @param parent 
+   * @param targetParent 
    * @param children 
    * @returns 
    */
-  addAsChild( parent: Container, children: Task[] | undefined, topPosition:boolean = false ){
+  addAsChild( targetParent: Container, children: Task[] | undefined, topPosition:boolean = false ){
     if( !children || children.length === 0 ){
       return;
     }
-    if( isTask( parent ) && isPlaceholder( parent ) ){
+    if( isTask( targetParent ) && isPlaceholder( targetParent ) ){
       console.warn( `Parent is a placeholder` );
       return;
     }
@@ -818,8 +818,8 @@ export class BoardService{
     children = this.getTopLevelTasks( children );
 
     // Detect and resolve gantt link conflicts before moving tasks
-    if( isTask( parent ) ){
-      const conflicts = this.detectLinkConflicts( parent, children );
+    if( isTask( targetParent ) ){
+      const conflicts = this.detectLinkConflicts( targetParent, children );
       if( conflicts.length > 0 ){
         const conflictedTasks = this.resolveGanttConflicts( conflicts );
         console.log( `Resolved ${conflicts.length} gantt conflicts when moving tasks` );
@@ -833,9 +833,9 @@ export class BoardService{
     }
 
     // sort children basing on their in the current parent's children
-    const curParent = this.findDirectParent( children );
-    if( curParent ){
-      children = children.sort( ( a, b ) => curParent.children.findIndex( c => c.id === a.id ) - curParent.children.findIndex( c => c.id === b.id ) );
+    const currentParent = this.findDirectParent( children, true );
+    if( currentParent ){
+      children = children.sort( ( a, b ) => currentParent.children.findIndex( c => c.id === a.id ) - currentParent.children.findIndex( c => c.id === b.id ) );
     }
     // remove the child from any children set
     this._allParents$.getValue()?.forEach( p => {
@@ -843,11 +843,11 @@ export class BoardService{
     } );
     // add the child to the parent, if it is not already there
     children.forEach( child => {
-      if( !parent.children.find( c => c.id === child.id ) ){
+      if( !targetParent.children.find( c => c.id === child.id ) ){
         if( topPosition ){
-          parent.children.unshift( child )
+          targetParent.children.unshift( child )
         }else{
-          parent.children.push( child )
+          targetParent.children.push( child )
         }
       }
     } );
@@ -858,8 +858,8 @@ export class BoardService{
     } );
 
     // Check if parent or any ancestor project has predecessors, and if so, make children rolling
-    if( isTask( parent ) ){
-      const hasProjectPredecessors = this.hasAncestorWithPredecessors( parent );
+    if( isTask( targetParent ) ){
+      const hasProjectPredecessors = this.hasAncestorWithPredecessors( targetParent );
       if( hasProjectPredecessors ){
         children.forEach( child => {
           if( isTask( child ) ){
@@ -874,9 +874,9 @@ export class BoardService{
         } );
       }
     }
-
+    const toUpdate = [targetParent, currentParent, ...children ].filter( e => !!e );
     // Publish the changes
-    //this._boards$.next( boards );
+    this.changePublisherService.processChangesAndPublishUpdate( toUpdate )
   }
 
   //@TimingDecorator()
@@ -975,7 +975,7 @@ export class BoardService{
     return projectsToAdd.concat( allDescendantsHavingDates );
   }
 
-  hasNextSibling( board: Board, task: Task ): boolean{
+  hasNextSibling( _board: Board, task: Task ): boolean{
     let has: boolean = false;
     this._allParents$.getValue()?.forEach( p => {
       const index = p.children.findIndex( c => c.id === task.id );

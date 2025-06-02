@@ -26,7 +26,12 @@ export class ChangePublisherService{
   processChangesAndPublishUpdate( changesToPush: Container[], skipProcessing = false ){
 
     if( !skipProcessing ){
-    // Update parent references (except for children of archive lane)
+      // PREPROCESS: Update derived observables before processing changes
+      // This ensures operations have access to current parent relationships
+      const currentBoards = this.boardService.boards;
+      this.boardService.populateDatamodelDerivedObservables( currentBoards );
+
+      // Update parent references (except for children of archive lane)
       changesToPush.filter( p => !isLane( p ) || !p.isArchive ).forEach( p => p.children.forEach( c => c.parentId = p.id ) )
 
       for( const container of changesToPush ){
@@ -40,6 +45,10 @@ export class ChangePublisherService{
         // remove duplicates
         changesToPush = [...new Set( changesToPush )];
       }
+      
+      // POSTPROCESS: Update derived observables again after processing changes
+      // This ensures the final state is reflected in observables
+      this.boardService.populateDatamodelDerivedObservables( currentBoards );
     }
     this._pushedChanges$.next( changesToPush );
   }
