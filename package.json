@@ -24,6 +24,11 @@
     "lint-pretty": "npx eslint ./src --fix && npx prettier -w ./src/**/*.html",
     "test": "start-server-and-test 'ng serve' http://localhost:4200 'npx playwright test'",
     "test-gui": "start-server-and-test 'ng serve' http://localhost:4200 'npx playwright test --ui'",
+    "test-gui-refactored": "start-server-and-test 'ng serve' http://localhost:4200 'npx playwright test --ui trep-tracker-refactored.spec.ts'",
+    "test-gui-additional": "start-server-and-test 'ng serve' http://localhost:4200 'npx playwright test --ui additional-coverage.spec.ts'",
+    "test-refactored": "start-server-and-test 'ng serve' http://localhost:4200 'npx playwright test trep-tracker-refactored.spec.ts'",
+    "test-coverage": "start-server-and-test 'ng serve' http://localhost:4200 'npx playwright test additional-coverage.spec.ts'",
+    "test-all": "start-server-and-test 'ng serve' http://localhost:4200 'npx playwright test trep-tracker-refactored.spec.ts additional-coverage.spec.ts'",
     "prepare": "husky",
     "link-picker": "npm link @ltres/angular-datetime-picker"
   },

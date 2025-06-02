@@ -1,0 +1,476 @@
+import{ test, expect }from'@playwright/test';
+import{ TrepTrackerPage }from'./page-objects/trep-tracker.page';
+import{ 
+  TaskKeyboardActions, 
+  ChartTestHelpers, 
+  LaneTestHelpers, 
+  GanttTestHelpers,
+  DEFAULT_CONFIG,
+  expectEventuallyVisible,
+  expectEventuallyCount
+}from'./utils/test-helpers';
+
+test.describe.configure( { mode: 'parallel' } );
+
+test.describe( 'Trep Tracker E2E Tests', () => {
+  let trepPage: TrepTrackerPage;
+  let keyboardActions: TaskKeyboardActions;
+  let chartHelpers: ChartTestHelpers;
+  let laneHelpers: LaneTestHelpers;
+  let ganttHelpers: GanttTestHelpers;
+
+  test.beforeEach( async( { page } ) => {
+    trepPage = new TrepTrackerPage( page );
+    keyboardActions = new TaskKeyboardActions( page, trepPage.metaKey );
+    chartHelpers = new ChartTestHelpers( page );
+    laneHelpers = new LaneTestHelpers( page );
+    ganttHelpers = new GanttTestHelpers( page );
+
+    await trepPage.goto();
+    await trepPage.setupNewBoard();
+    await trepPage.createTasks( DEFAULT_CONFIG.nOfTasks );
+  } );
+
+  test.describe( 'Task Management', () => {
+    test( 'should move tasks up and down with keyboard shortcuts', async() => {
+      const firstTask = trepPage.getFirstTask();
+      await firstTask.click();
+
+      // Move task down
+      await keyboardActions.moveTaskDown();
+      await expect( trepPage.page.locator( 'task' ).nth( 1 ) ).toHaveText( new RegExp( trepPage.testText ) );
+
+      // Move task back up
+      await keyboardActions.moveTaskUp();
+      await expect( trepPage.page.locator( 'task' ).nth( 0 ) ).toHaveText( new RegExp( trepPage.testText ) );
+    } );
+
+    test( 'should indent and outdent tasks', async() => {
+      const firstTask = trepPage.getFirstTask();
+      await firstTask.click();
+
+      // Move task down first
+      await keyboardActions.moveTaskDown();
+
+      // Indent to create parent-child relationship
+      await keyboardActions.indentTask();
+      await expectEventuallyCount( trepPage.page.locator( '.child' ), 1 );
+
+      // Outdent to remove parent-child relationship
+      await keyboardActions.outdentTask();
+      await expectEventuallyCount( trepPage.page.locator( '.child' ), 0 );
+    } );
+
+    test( 'should set task priority', async() => {
+      const firstTask = trepPage.getFirstTask();
+      
+      // Verify initial priority
+      await expect( firstTask.locator( '.priority-1' ) ).toHaveCount( 1 );
+
+      await trepPage.setTaskPriority( firstTask, 4 );
+      await expect( firstTask.locator( '.priority-4' ) ).toHaveCount( 1 );
+
+      // Verify priority counter in menu
+      await expect( trepPage.menu.locator( '.priority-4 div', { hasText: '1' } ) ).toHaveCount( 1 );
+    } );
+
+    test( 'should set task status', async() => {
+      const firstTask = trepPage.getFirstTask();
+      await trepPage.setTaskStatus( firstTask, 'status-completed' );
+    } );
+
+    test( 'should add and toggle task notes', async() => {
+      const firstTask = trepPage.getFirstTask();
+      const notesToggle = firstTask.locator( '.task-notes' ).first();
+      
+      // Open notes
+      await notesToggle.click();
+      const notes = firstTask.locator( 'notes' );
+      await expectEventuallyVisible( notes );
+
+      // Add note content
+      await notes.click();
+      await trepPage.page.keyboard.type( trepPage.testText, { delay: trepPage.writeDelay } );
+      
+      // Verify content
+      const noteContent = await notes.locator( 'textarea' ).inputValue();
+      expect( noteContent ).toContain( trepPage.testText );
+
+      // Toggle notes closed and open again
+      await notesToggle.click();
+      await expect( notes ).toBeHidden();
+      await notesToggle.click();
+      await expectEventuallyVisible( notes );
+
+      // Verify content persisted
+      const persistedContent = await notes.locator( 'textarea' ).inputValue();
+      expect( persistedContent ).toContain( trepPage.testText );
+    } );
+  } );
+
+  test.describe( 'Task Archiving', () => {
+    test( 'should archive and unarchive tasks', async() => {
+      const firstTask = trepPage.getFirstTask();
+
+      // Archive the task
+      await trepPage.archiveTask( firstTask );
+
+      // Verify archive lane appears
+      const archive = await trepPage.getArchiveLane();
+      await expectEventuallyVisible( archive );
+      await expect( archive.locator( '.task-count' ).first() ).toHaveText( '1 tasks' );
+
+      // Expand archive and verify task is there
+      await trepPage.expandArchive();
+      await expectEventuallyCount( archive.locator( 'task' ), 1 );
+
+      // Unarchive by drag
+      const archivedTask = archive.locator( 'task' );
+      await archivedTask.locator( '.drag-handle' ).hover();
+      const archivedHandle = archivedTask.locator( '[draggable="true"]' ).first();
+      await trepPage.dragElement( archivedHandle, -200, -100, false, trepPage.firstLane );
+
+      await trepPage.page.waitForTimeout( 1000 );
+      await keyboardActions.outdentTask();
+
+      // Verify task is removed from archive
+      await expectEventuallyCount( archive.locator( 'task' ), 0 );
+      
+      // Verify task count is restored
+      await expect( trepPage.menu.locator( '.priority-1 div', { 
+        hasText: `${DEFAULT_CONFIG.nOfTasks}` 
+      } ) ).toHaveCount( 1 );
+    } );
+  } );
+
+  test.describe( 'Task Drag and Drop', () => {
+    test( 'should drag tasks to create new lanes and parent-child relationships', async() => {
+      // Drag first task to create new lane
+      const firstTaskHandle = trepPage.getTaskByContent( 0 ).locator( '[draggable="true"]' ).first();
+      await trepPage.dragElement( firstTaskHandle, 100, 100, true );
+      
+      await trepPage.expectLaneCount( 2 );
+      await expect( trepPage.firstLane.locator( 'task' ) ).toHaveCount( DEFAULT_CONFIG.nOfTasks - 1 );
+
+      // Drag second task to create another lane
+      const secondTaskHandle = trepPage.getTaskByContent( 1 ).locator( '[draggable="true"]' ).first();
+      await trepPage.dragElement( secondTaskHandle, -200, -100, true );
+      
+      await trepPage.expectLaneCount( 3 );
+
+      // Drag task over another to create parent-child relationship
+      const thirdTaskHandle = trepPage.getTaskByContent( 0 ).locator( '[draggable="true"]' ).first();
+      const targetTask = trepPage.getTaskByContent( 1 ).locator( '.task-text-content' );
+      await trepPage.dragElement( thirdTaskHandle, -200, -100, true, targetTask );
+      
+      await expectEventuallyCount( trepPage.page.locator( '.child' ), 1 );
+
+      // Remove parent-child relationship
+      await trepPage.getTaskByContent( 0 ).click();
+      await keyboardActions.outdentTask();
+      await expectEventuallyCount( trepPage.page.locator( '.child' ), 0 );
+    } );
+
+    test( 'should resize lanes', async() => {
+      // Create additional lanes first
+      const firstTaskHandle = trepPage.getTaskByContent( 0 ).locator( '[draggable="true"]' ).first();
+      await trepPage.dragElement( firstTaskHandle, 100, 100, true );
+      await trepPage.dragElement( firstTaskHandle, 100, 100, true );
+
+      const thirdLane = trepPage.lanes.nth( 2 );
+      await laneHelpers.resizeLane( thirdLane, 100 );
+    } );
+  } );
+
+  test.describe( 'Tags and Static Lanes', () => {
+    test( 'should add tags and create static lanes for filtering', async() => {
+      // Create additional tasks for tag testing
+      for( let i = DEFAULT_CONFIG.nOfTasks; i < DEFAULT_CONFIG.nOfTasks + 2; i++ ){
+        await trepPage.addTask( i );
+      }
+
+      // Add tag with @ symbol
+      const firstTask = trepPage.getTaskByContent( 0 );
+      await trepPage.addTagToTask( firstTask, trepPage.testMention, true );
+      await expectEventuallyCount( trepPage.page.locator( '.tag-orange' ), 1 );
+
+      // Add tag without @ symbol  
+      const secondTask = trepPage.getTaskByContent( 1 );
+      await trepPage.page.waitForTimeout( 1000 );
+      await trepPage.addTagToTask( secondTask, trepPage.testMention, false );
+      await expectEventuallyCount( trepPage.page.locator( '.tag-orange' ), 2 );
+
+      // Create static lane for filtering by tag
+      const staticLane = await trepPage.createStaticLane( trepPage.testMention );
+      await staticLane.locator( 'task' ).nth( 1 ).waitFor( { state: 'visible' } );
+      await expectEventuallyCount( staticLane.locator( 'task' ), 2 );
+
+      // Add tag to third task
+      const thirdTask = trepPage.getTaskByContent( 2 );
+      await trepPage.addTagToTask( thirdTask, trepPage.testMention, false );
+      await staticLane.locator( 'task' ).nth( 2 ).waitFor( { state: 'visible' } );
+      await expectEventuallyCount( staticLane.locator( 'task' ), 3 );
+
+      // Test priority filtering in static lane
+      await staticLane.locator( '.selectable.priority' ).click();
+      await staticLane.locator( '.priority.priority-2' ).click();
+      await trepPage.page.waitForTimeout( 350 );
+      await expectEventuallyCount( staticLane.locator( 'task' ), 0 );
+
+      // Set task priority to match filter
+      await trepPage.setTaskPriority( firstTask, 2 );
+      await staticLane.locator( 'task' ).first().waitFor( { state: 'visible' } );
+      await expectEventuallyCount( staticLane.locator( 'task' ), 1 );
+    } );
+
+    test( 'should restructure tags across tasks', async() => {
+      // Setup tasks with tags
+      for( let i = DEFAULT_CONFIG.nOfTasks; i < DEFAULT_CONFIG.nOfTasks + 2; i++ ){
+        await trepPage.addTask( i );
+      }
+
+      const firstTask = trepPage.getTaskByContent( 0 );
+      await trepPage.addTagToTask( firstTask, trepPage.testMention, true );
+      
+      const secondTask = trepPage.getTaskByContent( 1 );
+      await trepPage.addTagToTask( secondTask, trepPage.testMention, false );
+
+      await trepPage.createStaticLane( trepPage.testMention );
+      
+      const thirdTask = trepPage.getTaskByContent( 2 );
+      await trepPage.addTagToTask( thirdTask, trepPage.testMention, false );
+
+      // Verify @mention tags exist
+      await expectEventuallyCount(
+        trepPage.page.locator( '.task-text-content', { 
+          hasText: new RegExp( '@' + trepPage.testMention ) 
+        } ), 
+        4
+      );
+
+      // Change @mention to !mention
+      const firstTaskElement = trepPage.page.locator( 'task' ).first();
+      await firstTaskElement.hover();
+      await firstTaskElement.click();
+      await keyboardActions.selectAll();
+      await firstTaskElement.pressSequentially( `Tag refactoring !${trepPage.testMention}`, { timeout: 300 } );
+      await trepPage.page.waitForTimeout( 1000 );
+
+      await expectEventuallyCount(
+        trepPage.page.locator( '.task-text-content', { 
+          hasText: new RegExp( '!' + trepPage.testMention ) 
+        } ), 
+        4
+      );
+
+      // Change to #mention
+      await firstTaskElement.click();
+      await keyboardActions.selectAll();
+      await firstTaskElement.pressSequentially( `Tag refactoring #${trepPage.testMention}`, { timeout: 300 } );
+      await trepPage.page.waitForTimeout( 1000 );
+
+      await expectEventuallyCount(
+        trepPage.page.locator( '.task-text-content', { 
+          hasText: new RegExp( '#' + trepPage.testMention ) 
+        } ), 
+        4
+      );
+    } );
+  } );
+
+  test.describe( 'Board Management', () => {
+    test( 'should create and switch between boards', async() => {
+      // Verify initial state
+      await expect( trepPage.page.locator( '.available-board' ) ).toHaveCount( 1 );
+
+      // Create new board
+      await trepPage.createBoard( 'My new board' );
+      await expect( trepPage.page.locator( '.available-board' ) ).toHaveCount( 2 );
+      await trepPage.expectTaskCount( 0 );
+
+      // Verify board name
+      await expect( trepPage.page.locator( '.board-selection.active', { 
+        hasText: /My new board/ 
+      } ) ).toHaveCount( 1 );
+
+      // Add task to new board
+      await trepPage.newTaskButton.click();
+      await trepPage.expectTaskCount( 1 );
+
+      // Switch back to original board
+      await trepPage.switchToBoard( 0 );
+      await trepPage.expectTaskCount( DEFAULT_CONFIG.nOfTasks );
+    } );
+
+    test( 'should switch between different layouts', async() => {
+      await trepPage.openBoardMenu();
+
+      const toolbar = trepPage.page.locator( 'board-toolbar' );
+      const layouts = toolbar.locator( '.layout' );
+      await expect( layouts ).toHaveCount( 5 );
+
+      for( let i = 0; i < 5; i++ ){
+        await laneHelpers.switchLayout( i );
+        
+        if( i === 0 ){
+          await laneHelpers.expectLayoutPosition( trepPage.lanes, true );
+        }else{
+          await trepPage.openBoardMenu();
+          await laneHelpers.expectLayoutPosition( trepPage.lanes, false );
+          await expect( trepPage.board.locator( '.board-column' ) ).toHaveCount( i );
+        }
+        
+        await trepPage.expectLaneCount( 1 );
+      }
+    } );
+  } );
+
+  test.describe( 'Search Functionality', () => {
+    test( 'should search and find tasks', async() => {
+      await trepPage.searchTasks( trepPage.testText );
+      await trepPage.expectSearchResults( 2 );
+    } );
+  } );
+
+  test.describe( 'Date Management', () => {
+    test( 'should set dates on tasks and create date-filtered lanes', async() => {
+      // Set dates on all visible tasks
+      const taskCount = await trepPage.page.locator( 'task' ).count();
+      for( let i = 0; i < taskCount; i++ ){
+        const task = trepPage.page.locator( 'task' ).nth( i );
+        await trepPage.setDatePicker( task );
+      }
+
+      // Create date-filtered lane
+      await trepPage.openBoardMenu();
+      await trepPage.page.locator( '.add-lane' ).last().click();
+      await expect( trepPage.lanes ).toHaveCount( 2 );
+      
+      await trepPage.lanes.last().locator( '.select-dates' ).click();
+      await expect( trepPage.page.locator( 'owl-date-time-container' ) ).toHaveCount( 1 );
+      
+      await trepPage.page.locator( '.recurrence-option' ).nth( 3 ).click();
+      await trepPage.page.locator( '.owl-dt-control-button-content' ).last().click();
+      await expect( trepPage.lanes.last().locator( 'task' ) ).toHaveCount( 2 );
+
+      // Test recurrence functionality
+      await trepPage.addTask( 1 );
+      const lastTask = trepPage.lanes.first().locator( 'task' ).last();
+      await trepPage.setDatePicker( lastTask, 3, 1 );
+    } );
+  } );
+
+  test.describe( 'Project Management', () => {
+    test( 'should create projects and manage child task statuses', async() => {
+      await trepPage.addTask( 1 );
+
+      // Create project structure
+      await trepPage.page.locator( 'task' ).nth( 1 ).click();
+      await keyboardActions.indentTask();
+      await trepPage.page.locator( 'task' ).nth( 2 ).click();
+      await keyboardActions.indentTask();
+      await keyboardActions.outdentTask();
+
+      // Verify project was created
+      await expectEventuallyCount( trepPage.page.locator( '.project' ), 1 );
+      await expect( trepPage.page.locator( 'task' ).first().locator( '.status' ).nth( 0 ) )
+        .toHaveClass( /status-todo/ );
+
+      // Change child status should update project to 'in progress'
+      await trepPage.setTaskStatus( trepPage.page.locator( 'task' ).nth( 1 ), 'status-delegated' );
+      await expect( trepPage.page.locator( 'task' ).first().locator( '.status' ).nth( 0 ) )
+        .toHaveClass( /status-in-progress/ );
+
+      // When all children have same status, project should inherit it
+      await trepPage.setTaskStatus( trepPage.page.locator( 'task' ).nth( 2 ), 'status-delegated' );
+      await expect( trepPage.page.locator( 'task' ).first().locator( '.status' ).nth( 0 ) )
+        .toHaveClass( /status-delegated/ );
+
+      // Changing one child should return project to 'in progress'
+      await trepPage.setTaskStatus( trepPage.page.locator( 'task' ).nth( 1 ), 'status-to-be-delegated' );
+      await expect( trepPage.page.locator( 'task' ).first().locator( '.status' ).nth( 0 ) )
+        .toHaveClass( /status-in-progress/ );
+    } );
+  } );
+
+  test.describe( 'Gantt Charts', () => {
+    test( 'should open gantt view and manipulate tasks', async() => {
+      // Set dates on tasks first
+      const taskCount = await trepPage.page.locator( 'task' ).count();
+      for( let i = 0; i < taskCount; i++ ){
+        const task = trepPage.page.locator( 'task' ).nth( i );
+        await trepPage.setDatePicker( task );
+      }
+
+      // Open gantt view
+      await trepPage.openGanttFromLane();
+      await expect( trepPage.page.locator( 'gantt' ) ).toHaveCount( 1 );
+      await expect( trepPage.page.locator( '.gantt_task_row' ) ).toHaveCount( 2 );
+
+      // Test gantt bar manipulation
+      await ganttHelpers.moveGanttBar( '.gantt_bar_task', 100 );
+      await ganttHelpers.resizeGanttBar( '.gantt_bar_task', 300 );
+
+      await expect( trepPage.page.locator( '.gantt_last_cell' ).nth( 1 ) ).toHaveText( /[012]/ );
+      
+      const taskLine = await trepPage.page.locator( '.gantt_task_line' ).first().boundingBox();
+      expect( taskLine?.x ).toBeGreaterThan( 200 );
+    } );
+  } );
+
+  test.describe( 'Task Similarity', () => {
+    test( 'should detect and display similar tasks', async() => {
+      // Wait for similarity evaluation
+      await trepPage.page.waitForTimeout( DEFAULT_CONFIG.similarityEvaluationDelay );
+      
+      // Resize lane to make similarity pills visible
+      await laneHelpers.resizeLane( trepPage.firstLane, 300 );
+
+      await expectEventuallyCount( trepPage.page.locator( '.similar-pill' ), 2 );
+      await expect( trepPage.page.locator( '.similar-pill' ).first().locator( 'span' ) )
+        .toHaveText( '1 similar (92%)' );
+
+      // Test similarity arrows
+      await trepPage.page.locator( '.similar-pill' ).first().hover();
+      await trepPage.page.waitForSelector( '.leader-line' );
+      await expectEventuallyCount( trepPage.page.locator( '.leader-line' ), 1 );
+
+      // Add another similar task
+      await trepPage.addTask( 2 );
+      await trepPage.page.waitForTimeout( 1300 );
+
+      await expectEventuallyCount( trepPage.page.locator( '.similar-pill' ), 3 );
+      await expect( trepPage.page.locator( '.similar-pill' ).first().locator( 'span' ) )
+        .toHaveText( '2 similar (92%)' );
+
+      await trepPage.page.locator( '.similar-pill' ).first().hover();
+      await trepPage.page.waitForSelector( '.leader-line' );
+      await expectEventuallyCount( trepPage.page.locator( '.leader-line' ), 2 );
+    } );
+  } );
+
+  test.describe( 'Charts and Analytics', () => {
+    test( 'should display and update charts based on task data', async() => {
+      await trepPage.charts.click();
+      await trepPage.page.waitForTimeout( DEFAULT_CONFIG.animationDelay );
+      await expect( trepPage.page.locator( 'chart' ) ).toHaveCount( 4 );
+
+      // Verify initial chart data
+      await chartHelpers.expectChartData( 0, 0, 2 ); // todos
+      await chartHelpers.expectChartData( 1, 0, 2 ); // priority 1
+      await chartHelpers.expectChartData( 2, 0, undefined ); // tags
+
+      await chartHelpers.expectTimeSeriesData( 3, 2, 2 ); // created tasks
+
+      // Change task status and verify chart updates
+      const firstTask = trepPage.getFirstTask();
+      await trepPage.setTaskStatus( firstTask, 'status-completed' );
+      await trepPage.page.waitForTimeout( DEFAULT_CONFIG.animationDelay );
+
+      await chartHelpers.expectChartData( 0, 0, 1 ); // todos (reduced)
+      await chartHelpers.expectChartData( 1, 0, 2 ); // priority 1 (unchanged)
+      await chartHelpers.expectTimeSeriesData( 3, 2, 2 ); // created tasks (unchanged)
+      await chartHelpers.expectTimeSeriesData( 3, 3, 1 ); // completed tasks
+    } );
+  } );
+} );
