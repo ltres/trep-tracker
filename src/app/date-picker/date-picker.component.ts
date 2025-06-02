@@ -71,14 +71,14 @@ export class DatePickerComponent implements AfterViewInit{
   }
   
   protected setButtonClicked( date: Date | ( Date | null )[] ): void{
-    if( !Array.isArray( date )  ){
-      // single case
-      this.onSetClicked.emit( {
-        dates: [date, date],
-        recurrence: this.selectedRecurrence
-      } )
-    }
+    // single case
     /*
+    this.onSetClicked.emit( {
+      dates: Array.isArray( date ) ? date as [Date, Date] : [date, date],
+      recurrence: this.selectedRecurrence
+    } )
+    */
+    
     if( this.showTimeframes || !date || !Array.isArray( date ) || date.length !== 2 || date[0] === null ){
       // no dates, timeframe?
       if( !this.selectedTimeframe ){
@@ -92,7 +92,7 @@ export class DatePickerComponent implements AfterViewInit{
         dates: [date[0], date[1] ?? date[0]],
         recurrence: this.selectedRecurrence
       } )
-    }*/
+    }
   }
 
   protected cancelClicked(): void{

@@ -42,11 +42,11 @@
     </span>
 
     <div class="no-grow relative flex align-items-center">
-      <div [position]="'top'" [tooltip]="'Open lane menu'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="small no-grow" (click)="toggleLaneMenu(); $event.stopPropagation()">☰</div>
+      <div [position]="'top'" [tooltip]="'Open lane menu'" (mouseenter)="hoveringTooltip = true" (mouseleave)="hoveringTooltip = false" class="open-lane-menu small no-grow" (click)="toggleLaneMenu(); $event.stopPropagation()">☰</div>
       <lane-menu *ngIf="menuOpen" [lane]="lane" (onClose)="menuOpen = false">
         <button class="small no-grow" *ngIf="!isStatic() && !isArchive(lane)" (click)="autoSort()">✨ Auto-sort tasks</button>
 
-        <button class="small no-grow" *ngIf="getGanttTasks$() | async" (click)="openGantt()">📊 Show lane Gantt..</button>
+        <button class="small no-grow gantt" *ngIf="getGanttTasks$() | async" (click)="openGantt()">📊 Show lane Gantt..</button>
 
         <button class="small no-grow" *ngIf="!isStatic() && !isArchive(lane)" (click)="archiveDones()">📁 Archive dones</button>
         <button class="small no-grow" *ngIf="!isStatic()" (click)="showMoveToBoards = !showMoveToBoards">🚛 Move to board..</button>

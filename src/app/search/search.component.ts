@@ -60,6 +60,7 @@ export class SearchComponent{
       } )
       this.changePublisherService.processChangesAndPublishUpdate( this.boardService.parents, true );
     }
+    this.cdr.detectChanges()
 
   }
 
@@ -68,6 +69,7 @@ export class SearchComponent{
       delete p.searchTextContent
       // this.changePublisherService.processChangesAndPublishUpdate( [p] );
     } )
+    this.cdr.detectChanges()
   }
 
   onFocus(){
