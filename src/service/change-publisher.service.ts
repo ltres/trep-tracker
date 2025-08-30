@@ -102,10 +102,5 @@ export class ChangePublisherService{
       delete task.beforeProjectStatus
     }
 
-    if( this.tagService && this.tagService.latestEditedTagsContainer && this.boardService.selectedBoard ){
-      const toProcess = this.tagService.restructureTags( this.tagService.latestEditedTagsContainer, this.boardService.selectedBoard );
-      changesToPush.push( ...toProcess );
-    }
-
   }
 }

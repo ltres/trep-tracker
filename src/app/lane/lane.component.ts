@@ -78,6 +78,10 @@ export class LaneComponent extends ContainerComponent implements OnInit{
     if( !isTask( container ) ){
       throw new Error( "Cannot drop something that is not a task on a lane" )
     }
+    if( precedingTask && container.id === precedingTask.id  ){
+      console.warn( "Dropping on the same element is not allowed" );
+      return;
+    }
     if( !precedingTask ){
       this.boardService.addAsChild( this.lane, [container], true );
     }else{
