@@ -8,6 +8,7 @@ import{boardDebounceDelay, recurringChildrenLimit, similarityTreshold, statusVal
 import{isTask, isLane, isTasks, assertIsRecurringTaskChild, isRecurringTask, isRecurringTaskChild, assertIsGanttTask, assertIsRecurringTask, isProject, assertIsTask, isBoard}from'../utils/guards';
 import{ logPerformance }from'../utils/performance-logger';
 import{ ChangePublisherService }from'./change-publisher.service';
+import{ TagService }from'./tag.service';
 
 @Injectable( {
   providedIn: 'root',
@@ -31,7 +32,7 @@ export class BoardService{
 
   private boardUpdateCounter: number = 0;
   private statusStoredCounter: number = 0;
-
+  private tagService!: TagService
   constructor(
     private injector: Injector,
     zone: NgZone,
@@ -39,6 +40,7 @@ export class BoardService{
         private changePublisherService: ChangePublisherService
   ){
     setTimeout( () => this.changePublisherService = injector.get( ChangePublisherService ) );
+    setTimeout( () => this.tagService = injector.get( TagService ) );
 
     const latestStatus = this.storageService.getStatus();
     if( latestStatus !== null ){
@@ -82,6 +84,12 @@ export class BoardService{
           this.changePublisherService.processChangesAndPublishUpdate( toProcess, true );
         }
       }
+      if( this.tagService && this.tagService.latestEditedTagsContainer && this.selectedBoard ){
+        console.warn( "Restructuring" )
+        const toProcess = this.tagService.restructureTags( this.tagService.latestEditedTagsContainer, this.selectedBoard );
+        this.changePublisherService.processChangesAndPublishUpdate( toProcess, true );
+        this.tagService.setLatestEditedTagsContainer( undefined )
+      }
     } ) 
 
     /**
@@ -89,7 +97,7 @@ export class BoardService{
      */
     this.changePublisherService.pushedChanges$.pipe(
       observeOn( asyncScheduler ), // Switch to asynchronous execution
-      debounceTime( boardDebounceDelay.micro )
+      debounceTime( boardDebounceDelay.small )
     ).subscribe( () => {
       const b = this._boards$.getValue();
       this._boards$.next( b )

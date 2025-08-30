@@ -176,7 +176,7 @@ export class TagService{
     return modified;
   }
 
-  setLatestEditedTagsContainer( c : Container ){
+  setLatestEditedTagsContainer( c : Container | undefined ){
     this._latestEditedTagsContainer = c;
   }
 

@@ -36,22 +36,25 @@ export class ContenteditableDirective implements ControlValueAccessor{
     
     @HostListener( 'keyup', ['$event'] )
     onInteract( $event:KeyboardEvent ): void{
+      const start = new Date().getTime();
       if(  $event.key === 'ArrowDown' || $event.key === 'ArrowUp' || $event.key === 'ArrowLeft' || $event.key === 'ArrowRight'  ){
         // Task is being selected or moved
-        return;
+        return; 
       }
       // get the current cursor position:
       const value =  this.elementRef.nativeElement.textContent;
       const result = this.tagService.extractTags( value, this.board );
-      
+
       this.caretShift = result.caretShift;
 
       if( !this.preventEvents ){
-        this.onTagsChange.emit( result.tags );
+        this.onTagsChange.emit( result.tags ); 
+        
       }
       if( !this.preventEvents ){
         this.ngModelChange.emit( result.taggedString ); // makes the ngModel effectively update. Triggers ngOnChange
       }
+      console.log( "keyup in" + ( new Date().getTime() - start ) )
     }
 
     private onChange: ( value: string ) => void = () => {};
