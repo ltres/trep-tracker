@@ -197,7 +197,7 @@ test.describe.parallel( 'Trep Tracker Tasks & lanes - ', () => {
     for( let k= 0; k<text.length; k++ ){
       await page.keyboard.press( 'ArrowRight' );
     }
-    await firstTask.pressSequentially( ` @${mention}`, {timeout: 300} )
+    await page.keyboard.type( ` @${mention}`, {delay: 30} )
     expect( await page.locator( '.tag-orange' ).count() ).toBe( 1 )
 
     // add second w/o @char
@@ -208,7 +208,8 @@ test.describe.parallel( 'Trep Tracker Tasks & lanes - ', () => {
     }
     await page.waitForTimeout( 1000 );
 
-    await secondTask.pressSequentially( ` ${mention}`, {timeout: 300} )
+    await page.keyboard.type( ` ${mention}`, {delay: 30} )
+    await page.waitForTimeout( 1000 );
 
     expect( await page.locator( '.tag-orange' ).count() ).toBe( 2 )
 
@@ -251,13 +252,13 @@ test.describe.parallel( 'Trep Tracker Tasks & lanes - ', () => {
 
     // tag restructuring: change @mention to !mention
     expect( await page.locator( '.task-text-content', {hasText: new RegExp( '@' + mention )} ).count() ).toBe( 4 )
-    const fTask = page.locator( 'task' ).first()
+    const fTask = page.locator( 'task' ).first().locator( '.task-text-content' )
     await fTask.hover()
     await fTask.click()
     await page.keyboard.press( `${metaKey}+A` )
 
-    await fTask.pressSequentially( `Tag refactoring !${mention}`, {timeout: 300} )
-    await page.waitForTimeout( 1000 );
+    await page.keyboard.type( `Tag refactoring !${mention}`, {delay: 30} )
+    await page.waitForTimeout( 2000 );
 
     expect( await page.locator( '.task-text-content', {hasText: new RegExp( '!' + mention )} ).count() ).toBe( 4 )
     await fTask.click()
@@ -339,12 +340,17 @@ test.describe.parallel( 'Trep Tracker Tasks & lanes - ', () => {
     await expect( page.locator( '.gantt_task_row' ).first() ).toHaveText( new RegExp( `${text} ${1}` ) )
     */
     // move
+    await page.waitForTimeout( 1000 );
     const ganttBar = page.locator( '.gantt_bar_task' ).first();
+
+    await ganttBar.hover();
     const bb = await ganttBar.boundingBox();
+    console.log( bb )
+
     if( !bb ){
       return;
     }
-    await ganttBar.hover();
+
     await page.mouse.down();
     await page.mouse.move( bb.x + 100, bb.y );
     await page.mouse.up();

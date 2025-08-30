@@ -40,7 +40,7 @@ export class ChangePublisherService{
         }else if( isLane( container ) ){
           this.processLane( container, changesToPush )
         }else if( isTask( container ) ){
-          this.processTask( container, changesToPush )
+          this.processTask( container )
         }
         // remove duplicates
         changesToPush = [...new Set( changesToPush )];
@@ -72,7 +72,7 @@ export class ChangePublisherService{
     }
   }
 
-  private processTask( task: Task, changesToPush: Container[] ){
+  private processTask( task: Task ){
     /*
     // recurring child management:
     if( isRecurringTask( task ) && !isArchivedOrDiscarded( task ) && !isPlaceholder( task ) ){
