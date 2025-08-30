@@ -35,10 +35,13 @@ test.describe( 'Gantt Chart Features', () => {
 
       // Open gantt view
       await trepPage.openGanttFromLane();
+      await trepPage.page.waitForTimeout( 1000 )
+
       await expectEventuallyVisible( trepPage.page.locator( 'gantt' ) );
-      
+      await trepPage.page.waitForTimeout( 1000 )
       // Verify gantt structure
-      trepPage.page.locator( '.gantt_bar_task' ).first().hover();
+      await expectEventuallyVisible( trepPage.page.locator( '.gantt_bar_task' ).first() );
+      await trepPage.page.locator( '.gantt_bar_task' ).first().hover();
 
       await expect( trepPage.page.locator( '.gantt_task_row' ) ).toHaveCount( taskCount );
       const taskBars = await trepPage.page.locator( '.gantt_bar_task' ).count();
@@ -70,6 +73,7 @@ test.describe( 'Gantt Chart Features', () => {
         await expectEventuallyVisible( ganttArea, 5000 );
         await ganttArea.hover();
       }catch( error ){
+        console.log( error )
         // If gantt area not found, try alternative approach
         const ganttContainer = trepPage.page.locator( 'gantt' );
         await ganttContainer.hover();
@@ -209,7 +213,7 @@ test.describe( 'Gantt Chart Features', () => {
       try{
         await ganttHelpers.moveGanttBar( '.gantt_bar_task', 100 );
       }catch( error ){
-        console.log( 'Gantt bar movement failed, continuing test...' );
+        console.log( 'Gantt bar movement failed, continuing test...', error );
       }
       
       // Verify gantt still shows correct task relationships
@@ -441,7 +445,7 @@ test.describe( 'Gantt Chart Features', () => {
         }
       }catch( error ){
         // Gantt may not load without dates in some implementations
-        console.log( 'Gantt without dates handling varies by implementation' );
+        console.log( 'Gantt without dates handling varies by implementation', error );
       }
     } );
 
@@ -478,7 +482,7 @@ test.describe( 'Gantt Chart Features', () => {
           await trepPage.page.waitForTimeout( 200 );
         }catch( error ){
           // Some movements may fail due to precision - that's expected
-          console.log( `Movement ${i + 1} failed, continuing...` );
+          console.log( `Movement ${i + 1} failed, continuing...`, error );
         }
       }
       
