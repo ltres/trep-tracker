@@ -207,8 +207,11 @@ test.describe( 'Trep Tracker E2E Tests', () => {
 
       // Add tag to third task
       const thirdTask = trepPage.getTaskByContent( 2 );
+      await trepPage.page.waitForTimeout( 2000 );
+
       await trepPage.addTagToTask( thirdTask, trepPage.testMention, false );
       await staticLane.locator( 'task' ).nth( 2 ).waitFor( { state: 'visible' } );
+
       await expectEventuallyCount( staticLane.locator( 'task' ), 3 );
 
       // Test priority filtering in static lane

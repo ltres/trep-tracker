@@ -169,9 +169,9 @@ export class TrepTrackerPage{
     await taskContent.pressSequentially( ` ${tagText}`, { timeout: 300 } );
   }
 
-  async setDatePicker( task: Locator, daysFromNow: number = 3, recurrence?: number ): Promise<void>{
+  async setDatePicker( task: Locator, daysFrom1stDay: number = 3, recurrence?: number ): Promise<void>{
     const nextDate = new Date();
-    nextDate.setDate( nextDate.getDate() + daysFromNow );
+    nextDate.setDate( 1 + daysFrom1stDay );
     
     await task.hover();
     await expect( task.locator( '.select-dates' ) ).toBeVisible();
@@ -193,7 +193,7 @@ export class TrepTrackerPage{
     
     // Set end date (next day)
     const endDate = new Date( nextDate );
-    endDate.setDate( endDate.getDate() + 1 );
+    endDate.setDate( 3 + daysFrom1stDay );
     await this.page.locator( '.owl-dt-calendar-cell-content', {
       hasText: new RegExp( `^ ${endDate.getDate()} $` )
     } ).first().click();

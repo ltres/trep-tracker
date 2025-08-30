@@ -38,6 +38,8 @@ test.describe( 'Gantt Chart Features', () => {
       await expectEventuallyVisible( trepPage.page.locator( 'gantt' ) );
       
       // Verify gantt structure
+      trepPage.page.locator( '.gantt_bar_task' ).first().hover();
+
       await expect( trepPage.page.locator( '.gantt_task_row' ) ).toHaveCount( taskCount );
       const taskBars = await trepPage.page.locator( '.gantt_bar_task' ).count();
       expect( taskBars ).toBeGreaterThan( 0 );
@@ -64,10 +66,10 @@ test.describe( 'Gantt Chart Features', () => {
       
       // Test drag scrolling (empty space click and drag)
       const ganttArea = trepPage.page.locator( '.gantt_task_area' );
-      try {
+      try{
         await expectEventuallyVisible( ganttArea, 5000 );
         await ganttArea.hover();
-      } catch( error ){
+      }catch( error ){
         // If gantt area not found, try alternative approach
         const ganttContainer = trepPage.page.locator( 'gantt' );
         await ganttContainer.hover();
@@ -204,9 +206,9 @@ test.describe( 'Gantt Chart Features', () => {
       
       // Rolling tasks should move automatically when predecessors change
       // Test by moving first task and checking if dependent task follows
-      try {
+      try{
         await ganttHelpers.moveGanttBar( '.gantt_bar_task', 100 );
-      } catch( error ){
+      }catch( error ){
         console.log( 'Gantt bar movement failed, continuing test...' );
       }
       
@@ -368,7 +370,7 @@ test.describe( 'Gantt Chart Features', () => {
       // Look for progress bars
       const progressBar = trepPage.page.locator( '.gantt_task_progress' );
       if( await progressBar.count() > 0 ){
-        try {
+        try{
           // Wait for progress bar to be visible before interaction
           await expectEventuallyVisible( progressBar.first(), 2000 );
           
@@ -377,7 +379,7 @@ test.describe( 'Gantt Chart Features', () => {
           
           // Verify progress is displayed
           await expect( progressBar.first() ).toBeVisible();
-        } catch( error ){
+        }catch( error ){
           // Progress bars may not be visible in all gantt implementations
           console.log( 'Progress bar interaction skipped:', error.message );
         }
@@ -429,7 +431,7 @@ test.describe( 'Gantt Chart Features', () => {
       await trepPage.openGanttFromLane();
       
       // Should open gantt even with undated tasks
-      try {
+      try{
         await expectEventuallyVisible( trepPage.page.locator( 'gantt' ) );
         
         // May show default dates or handle gracefully
@@ -437,7 +439,7 @@ test.describe( 'Gantt Chart Features', () => {
         if( await ganttArea.count() > 0 ){
           await expect( ganttArea.first() ).toBeVisible();
         }
-      } catch( error ){
+      }catch( error ){
         // Gantt may not load without dates in some implementations
         console.log( 'Gantt without dates handling varies by implementation' );
       }
@@ -471,10 +473,10 @@ test.describe( 'Gantt Chart Features', () => {
       
       // Rapid task movements
       for( let i = 0; i < 3; i++ ){
-        try {
+        try{
           await ganttHelpers.moveGanttBar( '.gantt_bar_task', 20 );
           await trepPage.page.waitForTimeout( 200 );
-        } catch( error ){
+        }catch( error ){
           // Some movements may fail due to precision - that's expected
           console.log( `Movement ${i + 1} failed, continuing...` );
         }
