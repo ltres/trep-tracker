@@ -15,7 +15,7 @@ let win;
 let relPath = "/dist/trep-tracker/browser"
 
 require('electron-reload')(__dirname, {
-  electron: path.join(__dirname, 'node_modules/.bin/electron.cmd')
+  electron: path.join(__dirname, 'node_modules/.bin/electron')
 });
 
 function createWindow () {
